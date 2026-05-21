@@ -1,0 +1,6 @@
+requests>=2.32
+beautifulsoup4>=4.12
+lxml>=5.2
+# Makes requests use the Windows system cert store so corporate-MITM SSL
+# inspection doesn't break HTTPS. No-op on non-Windows.
+pip-system-certs>=4.0; sys_platform == "win32"
