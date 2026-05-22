@@ -1,0 +1,42 @@
+name: Deploy to Pages
+
+on:
+  # Run after every push to main so the dashboard reflects the latest data.js.
+  # The Daily Scrape workflow's auto-commits will also trigger this.
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Required permissions for the GitHub Pages deploy actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deploy. Newer pushes wait for in-flight ones to finish
+# rather than getting cancelled — keeps the published site consistent.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload web/ as the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
