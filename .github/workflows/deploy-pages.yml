@@ -1,9 +1,16 @@
 name: Deploy to Pages
 
 on:
-  # Run after every push to main so the dashboard reflects the latest data.js.
-  # The Daily Scrape workflow's auto-commits will also trigger this.
+  # Run on direct pushes to main (manual commits, PR merges).
   push:
+    branches: [main]
+  # Run after the Daily Scrape workflow finishes. Required because GitHub's
+  # default GITHUB_TOKEN does NOT trigger other workflows via push events
+  # (anti-loop safeguard) — so without this, the daily-scrape's auto-commit
+  # would never fire a Pages deploy.
+  workflow_run:
+    workflows: ["Daily Scrape"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
