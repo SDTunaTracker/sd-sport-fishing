@@ -175,7 +175,7 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
                 <span style={numStyle}>T/A</span>
                 <span>Moon</span>
               </div>
-              <div style={{maxHeight: 480, overflowY: 'auto'}}>
+              <div style={{maxHeight: 480, overflow: 'auto'}}>
                 {sortedTrips.length === 0 && (
                   <div className="muted-block" style={{padding:'12px'}}>No trips logged yet.</div>
                 )}
@@ -272,29 +272,31 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
 
       <div className="detail-grid" style={{marginBottom: 12}}>
         <Panel title="Boats at this Landing" meta="Click to drill in" padding={false}>
-          <table className="dt">
-            <thead><tr>
-              <th style={{width: 36}}>#</th><th>Boat</th><th className="num">Trips</th>
-              <th className="num">Tuna/Angler</th><th className="num">Median</th><th className="num">Success</th><th>Label</th>
-            </tr></thead>
-            <tbody>
-              {boats.map((b, i) => (
-                <tr key={b.boat} className="clickable" onClick={() => navigate('boat', { boat: b.boat })}>
-                  <td><span className="rank" style={{color: i<3?'var(--ss-orange-500)':null, fontWeight: i<3?700:500}}>{i+1}</span></td>
-                  <td><b>{b.boat}</b></td>
-                  <td className="num">{b.tripCount}</td>
-                  <td className={`num ${b.avgTPA > fleetMedianTPA ? 'hi' : ''}`}>{fmt.tpa(b.avgTPA)}</td>
-                  <td className="num">{fmt.tpa(b.medTPA)}</td>
-                  <td className="num">{fmt.pct(b.successRate, 0)}</td>
-                  <td>
-                    {b.label === 'Consistent' && <span className="tag consistent">Consistent</span>}
-                    {b.label === 'Spike' && <span className="tag spike">Spike</span>}
-                    {!b.label && <span style={{color:'var(--ss-gray-2)'}}>—</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{overflowX: 'auto'}}>
+            <table className="dt">
+              <thead><tr>
+                <th style={{width: 36}}>#</th><th>Boat</th><th className="num">Trips</th>
+                <th className="num">Tuna/Angler</th><th className="num">Median</th><th className="num">Success</th><th>Label</th>
+              </tr></thead>
+              <tbody>
+                {boats.map((b, i) => (
+                  <tr key={b.boat} className="clickable" onClick={() => navigate('boat', { boat: b.boat })}>
+                    <td><span className="rank" style={{color: i<3?'var(--ss-orange-500)':null, fontWeight: i<3?700:500}}>{i+1}</span></td>
+                    <td><b>{b.boat}</b></td>
+                    <td className="num">{b.tripCount}</td>
+                    <td className={`num ${b.avgTPA > fleetMedianTPA ? 'hi' : ''}`}>{fmt.tpa(b.avgTPA)}</td>
+                    <td className="num">{fmt.tpa(b.medTPA)}</td>
+                    <td className="num">{fmt.pct(b.successRate, 0)}</td>
+                    <td>
+                      {b.label === 'Consistent' && <span className="tag consistent">Consistent</span>}
+                      {b.label === 'Spike' && <span className="tag spike">Spike</span>}
+                      {!b.label && <span style={{color:'var(--ss-gray-2)'}}>—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Panel>
 
         <div style={{display:'flex', flexDirection:'column', gap: 12}}>
@@ -357,7 +359,7 @@ function LandingsView({ filters, setFilters, navigate }) {
       </div>
       <FilterBar filters={filters} setFilters={setFilters}/>
 
-      <div style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12, marginBottom: 12}}>
+      <div className="landings-grid" style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12, marginBottom: 12}}>
         {landings.map(l => {
           const max = Math.max(...landings.map(x => x.tpa), 0.01);
           return (

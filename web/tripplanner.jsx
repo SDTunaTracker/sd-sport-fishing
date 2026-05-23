@@ -124,7 +124,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
 
       <FilterBar filters={filters} setFilters={setFilters}/>
 
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+      <div className="two-col-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
         {/* LEFT: Top Boats panel (mirrors the dashboard widget) */}
         <Panel title={`Top Boats — ${speciesLabel} per Angler per Day`}
                meta={`Ranked by avg ${speciesLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips`}
@@ -199,7 +199,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
                 <span style={{textAlign: 'right'}}>Price</span>
                 <span style={{textAlign: 'right'}}>Open</span>
               </div>
-              <div style={{maxHeight: 720, overflowY: 'auto'}}>
+              <div style={{maxHeight: 720, overflow: 'auto'}}>
                 {grouped.map((item, idx) => item.kind === 'header' ? (
                   <div key={`h-${item.date}`} style={{
                     padding: '6px 12px',

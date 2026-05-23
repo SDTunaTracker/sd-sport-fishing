@@ -80,7 +80,7 @@ function HeadToHead({ filters, setFilters, navigate }) {
             No boats meet the minimum matchup threshold. Try lowering "Min Trips" in the filter bar.
           </div>
         ) : (
-          <div style={{maxHeight: 500, overflowY: 'auto'}}>
+          <div style={{maxHeight: 500, overflow: 'auto'}}>
             <table className="dt">
               <thead><tr>
                 <th style={{width: 36}}>#</th>
@@ -125,7 +125,7 @@ function HeadToHead({ filters, setFilters, navigate }) {
             No matchups found for these filters.
           </div>
         ) : (
-          <div style={{maxHeight: 720, overflowY: 'auto'}}>
+          <div style={{maxHeight: 720, overflow: 'auto'}}>
             {matchups.slice(0, 60).map((m) => (
               <MatchupCard key={`${m.date}-${m.tripLength}`} m={m} navigate={navigate}/>
             ))}

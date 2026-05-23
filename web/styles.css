@@ -375,10 +375,15 @@ body.compact .dt td { padding: 7px 12px; }
 @media (max-width: 768px) {
   /* General */
   body { overflow-x: hidden; }
-  .main-content { padding: 12px 12px 32px; }
+  .main-content { padding: 12px 12px 32px; max-width: 100%; }
 
   /* Page title */
+  .pagehead { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
   .pagehead h1 { font-size: 22px; line-height: 28px; }
+  .pagehead .actions { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+
+  /* Breadcrumbs */
+  .crumbs { flex-wrap: wrap; }
 
   /* Header: not sticky on mobile — scrolls with page */
   .app-header { position: static; }
@@ -411,6 +416,48 @@ body.compact .dt td { padding: 7px 12px; }
     height: 40px;
   }
 
+  /* KPI grid: 2-up instead of 4-up */
+  .kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .kpi { padding: 12px 14px; }
+  .kpi .v { font-size: 22px; line-height: 28px; }
+  .kpi .k { font-size: 9px; }
+
+  /* detail-grid (boat/landing drill-down): single column */
+  .detail-grid { grid-template-columns: 1fr; }
+
+  /* Two-col layout panels (analytics, boats, trip planner): stack */
+  .two-col-grid { grid-template-columns: 1fr !important; }
+
+  /* Landings overview: 4-col → 2-col */
+  .landings-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* SVG charts: scale to fit container, maintain aspect ratio */
+  svg { max-width: 100%; height: auto; }
+
+  /* Bar-row: shrink fixed label so bar track has room */
+  .bar-row { grid-template-columns: minmax(0, 140px) 1fr 58px; gap: 8px; }
+  .bar-row .label .lan { font-size: 9px; }
+
+  /* Panel head: allow wrapping for long titles + action buttons */
+  .panel .phead { flex-wrap: wrap; gap: 6px; }
+  .panel .phead .actions { flex-wrap: wrap; }
+
+  /* Panel body: allow horizontal scroll for wide tables/charts */
+  .panel .pbody { overflow-x: auto; }
+
+  /* Filter bar: tighten spacing */
+  .filterbar { gap: 8px; padding: 10px 12px; }
+  .filter { min-width: 100px; flex: 1 1 100px; }
+  .filter select, .filter input[type=number] { font-size: 11px; height: 28px; }
+  .filter-divider { display: none; }
+
+  /* Moon grid: 8-col → 4-col (2 rows) */
+  .moon-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .moon-cell { padding: 6px 4px; }
+  .moon-cell .lab { font-size: 8px; line-height: 11px; }
+  .moon-cell .val { font-size: 13px; line-height: 17px; }
+  .moon-cell .sub { font-size: 9px; }
+
   /* Today's Catch banner: stack vertically */
   .today-banner {
     flex-direction: column;
@@ -425,9 +472,10 @@ body.compact .dt td { padding: 7px 12px; }
 
   /* Today's Report table: 5-col mobile layout */
   .today-boat-row {
-    grid-template-columns: 1fr 70px 55px 52px 62px;
-    gap: 6px;
+    grid-template-columns: 1fr 60px 50px 48px 58px;
+    gap: 5px;
     padding: 7px 8px;
+    font-size: 11px;
   }
   /* Hide species + anglers cols; show trophy total col */
   .sp-col { display: none; }

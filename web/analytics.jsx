@@ -122,7 +122,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
       </div>
 
       {/* Monthly trend + trip length */}
-      <div style={{display:'grid', gridTemplateColumns:'2fr 1fr', gap:12, marginBottom:12}}>
+      <div className="two-col-grid" style={{display:'grid', gridTemplateColumns:'2fr 1fr', gap:12, marginBottom:12}}>
         <Panel title="Monthly Catch Pattern"
                meta={`${speciesLabel}/angler by month`}
                actions={<div className="row" style={{gap:4}}>

@@ -66,7 +66,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
       </div>
       <FilterBar filters={filters} setFilters={setFilters}/>
 
-      <div style={{display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 12}}>
+      <div className="two-col-grid" style={{display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 12}}>
         <Panel title="Consistent vs One-Off Spike"
                meta="Median catch rate vs trip-to-trip variance"
                actions={<div className="row" style={{gap:4}}>
