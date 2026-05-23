@@ -6,7 +6,7 @@ function TodayCatch({ navigate }) {
         <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
         <div className="today-date">{(() => { const d = new Date(); return `${d.getMonth()+1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`; })()}</div>
       </div>
-      <div style={{font:'500 13px/18px var(--ss-font-sans)', color:'#94A3B8'}}>No reports yet today — check back after the morning scrape.</div>
+      <div style={{font:'500 13px/18px var(--ss-font-sans)', color:'#94A3B8'}}>No reports yet today — check back later.</div>
     </div>
   );
   const species = [
