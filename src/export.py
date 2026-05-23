@@ -106,15 +106,23 @@ def _today_summary(trips: list[dict]) -> dict | None:
     if not trips:
         return None
     latest_date = max(t["date"] for t in trips)
-    today = [t for t in trips if t["date"] == latest_date]
+    today = [t for t in trips if t["date"] == latest_date
+             and t["tripLength"] in TRIP_LENGTHS]
     if not today:
         return None
-    boats = sorted(today, key=lambda t: t["trophyPerAnglerPerDay"] or 0, reverse=True)
+    # One row per boat: keep the trip with the highest trophyPerAnglerPerDay.
+    by_boat: dict[str, dict] = {}
+    for t in today:
+        key = t["boat"]
+        if key not in by_boat or (t["trophyPerAnglerPerDay"] or 0) > (by_boat[key]["trophyPerAnglerPerDay"] or 0):
+            by_boat[key] = t
+    boats = sorted(by_boat.values(), key=lambda t: t["trophyPerAnglerPerDay"] or 0, reverse=True)
+    deduped = list(by_boat.values())
     return {
         "date": latest_date,
-        "trophyCount": sum(t["trophyCount"] for t in today),
-        "anglers": sum(t["anglers"] for t in today),
-        "boatCount": len(today),
+        "trophyCount": sum(t["trophyCount"] for t in deduped),
+        "anglers": sum(t["anglers"] for t in deduped),
+        "boatCount": len(deduped),
         "boats": [
             {
                 "boat": t["boat"],
@@ -126,10 +134,10 @@ def _today_summary(trips: list[dict]) -> dict | None:
             }
             for t in boats
         ],
-        "Bluefin":    sum(t["Bluefin"]    for t in today),
-        "Yellowfin":  sum(t["Yellowfin"]  for t in today),
-        "Yellowtail": sum(t["Yellowtail"] for t in today),
-        "Dorado":     sum(t["Dorado"]     for t in today),
+        "Bluefin":    sum(t["Bluefin"]    for t in deduped),
+        "Yellowfin":  sum(t["Yellowfin"]  for t in deduped),
+        "Yellowtail": sum(t["Yellowtail"] for t in deduped),
+        "Dorado":     sum(t["Dorado"]     for t in deduped),
     }
 
 
