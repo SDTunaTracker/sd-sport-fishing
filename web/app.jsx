@@ -9,7 +9,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 function App() {
-  const [route, setRoute] = useS({ view: 'dashboard', params: {} });
+  const [route, setRoute] = useS({ view: 'today', params: {} });
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
 
@@ -45,16 +45,16 @@ function App() {
 
   // Map sidebar -> internal view
   const navMap = {
-    dashboard: 'dashboard', analytics: 'analytics', boats: 'boats', landings: 'landings',
+    dashboard: 'today', analytics: 'analytics', boats: 'boats', landings: 'landings',
     tripplanner: 'tripplanner',
     headtohead: 'headtohead',
-    seasonality: 'seasonality', moon: 'moon', watchlist: 'dashboard',
-    recent: 'dashboard', settings: 'settings',
+    seasonality: 'seasonality', moon: 'moon', watchlist: 'today',
+    recent: 'today', settings: 'settings',
   };
 
   let content;
-  if (route.view === 'dashboard') {
-    content = <Dashboard navigate={navigate} settings={settings}/>;
+  if (route.view === 'today') {
+    content = <TodayView navigate={navigate} settings={settings}/>;
   } else if (route.view === 'analytics') {
     content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings}/>;
   } else if (route.view === 'boats') {
@@ -81,7 +81,7 @@ function App() {
 
   return (
     <Fragment>
-      <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'dashboard')}/>
+      <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
 
       <TweaksPanel title="Tweaks">

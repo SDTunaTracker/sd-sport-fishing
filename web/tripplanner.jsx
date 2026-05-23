@@ -103,7 +103,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => navigate('dashboard') },
+        { label: 'Sportfish', onClick: () => navigate('today') },
         { label: 'Plan' },
         { label: 'Trip Planner' },
       ]}/>

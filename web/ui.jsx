@@ -25,7 +25,7 @@ const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'
 
 function AppHeader({ active, onNavigate }) {
   const NAV = [
-    { id: 'dashboard',   label: 'Dashboard',    icon: 'fa-chart-column' },
+    { id: 'today',       label: 'Today',         icon: 'fa-chart-column' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
     { id: 'boats',       label: 'Boats',         icon: 'fa-sailboat' },
     { id: 'landings',    label: 'Landings',      icon: 'fa-anchor' },
@@ -88,7 +88,7 @@ function AppHeader({ active, onNavigate }) {
 function SideNav({ active, onNavigate }) {
   const items = [
     { group: 'Analyze' },
-    { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-column' },
+    { id: 'today', label: 'Today', icon: 'fa-chart-column' },
     { id: 'analytics', label: 'Analytics', icon: 'fa-magnifying-glass-chart' },
     { id: 'boats', label: 'Boat Leaderboard', icon: 'fa-sailboat' },
     { id: 'landings', label: 'Landings', icon: 'fa-anchor' },

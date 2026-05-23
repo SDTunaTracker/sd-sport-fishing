@@ -1,4 +1,4 @@
-// Dashboard — Today's Catch (with date picker) + Current Year Leaderboard
+// Today view — Today's Catch (with date picker) + Current Year Leaderboard
 const { useMemo, useState: useS } = React;
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
@@ -135,7 +135,7 @@ function TodayCatch({ navigate, settings }) {
   );
 }
 
-function Dashboard({ navigate, settings }) {
+function TodayView({ navigate, settings }) {
   const currentYear = String(new Date().getFullYear());
 
   const yearTrips = useMemo(
@@ -204,4 +204,4 @@ function Dashboard({ navigate, settings }) {
   );
 }
 
-Object.assign(window, { Dashboard });
+Object.assign(window, { TodayView });

@@ -47,7 +47,7 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => navigate('dashboard') },
+        { label: 'Sportfish', onClick: () => navigate('today') },
         { label: 'Boats', onClick: () => navigate('boats') },
         { label: boat },
       ]}/>
@@ -248,7 +248,7 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => navigate('dashboard') },
+        { label: 'Sportfish', onClick: () => navigate('today') },
         { label: 'Landings', onClick: () => navigate('landings') },
         { label: landing },
       ]}/>
@@ -346,7 +346,7 @@ function LandingsView({ filters, setFilters, navigate }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => navigate('dashboard') },
+        { label: 'Sportfish', onClick: () => navigate('today') },
         { label: 'Landings' },
       ]}/>
       <div className="pagehead">

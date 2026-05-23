@@ -44,7 +44,7 @@ function HeadToHead({ filters, setFilters, navigate }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => navigate('dashboard') },
+        { label: 'Sportfish', onClick: () => navigate('today') },
         { label: 'Analyze' },
         { label: 'Head-to-Head' },
       ]}/>
