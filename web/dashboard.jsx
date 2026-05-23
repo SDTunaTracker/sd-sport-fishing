@@ -108,24 +108,26 @@ function TodayCatch({ navigate, settings }) {
             <span>Boat</span>
             <span>Landing</span>
             <span>Trip</span>
-            <span style={{color: SPECIES_COLORS.Bluefin}}>Bluefin</span>
-            <span style={{color: SPECIES_COLORS.Yellowfin}}>Yellowfin</span>
-            <span style={{color: SPECIES_COLORS.Yellowtail}}>Yellowtail</span>
-            <span style={{color: SPECIES_COLORS.Dorado}}>Dorado</span>
-            <span>Anglers</span>
+            <span className="sp-col" style={{color: SPECIES_COLORS.Bluefin}}>Bluefin</span>
+            <span className="sp-col" style={{color: SPECIES_COLORS.Yellowfin}}>Yellowfin</span>
+            <span className="sp-col" style={{color: SPECIES_COLORS.Yellowtail}}>Yellowtail</span>
+            <span className="sp-col" style={{color: SPECIES_COLORS.Dorado}}>Dorado</span>
+            <span className="trophy-col">Trophy</span>
+            <span className="anglers-col">Anglers</span>
             <span>TPA/Day</span>
           </div>
           {dateTrips.map((b, i) => (
             <div key={i} className="today-boat-row" style={{cursor:'pointer'}}
                  onClick={() => navigate('boat', { boat: b.boat })}>
-              <span style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
+              <span className="boat-name" style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
               <span>{b.landing.replace(' Sportfishing','').replace(' Landing','')}</span>
               <span>{b.tripLength}</span>
-              <span style={{fontWeight: b.Bluefin > 0 ? 600 : 400, color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)'}}>{fmt.n(b.Bluefin)}</span>
-              <span style={{fontWeight: b.Yellowfin > 0 ? 600 : 400, color: b.Yellowfin > 0 ? SPECIES_COLORS.Yellowfin : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowfin)}</span>
-              <span style={{fontWeight: b.Yellowtail > 0 ? 600 : 400, color: b.Yellowtail > 0 ? SPECIES_COLORS.Yellowtail : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowtail)}</span>
-              <span style={{fontWeight: b.Dorado > 0 ? 600 : 400, color: b.Dorado > 0 ? SPECIES_COLORS.Dorado : 'var(--tb-gray-3)'}}>{fmt.n(b.Dorado)}</span>
-              <span>{fmt.n(b.anglers)}</span>
+              <span className="sp-col" style={{fontWeight: b.Bluefin > 0 ? 600 : 400, color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)'}}>{fmt.n(b.Bluefin)}</span>
+              <span className="sp-col" style={{fontWeight: b.Yellowfin > 0 ? 600 : 400, color: b.Yellowfin > 0 ? SPECIES_COLORS.Yellowfin : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowfin)}</span>
+              <span className="sp-col" style={{fontWeight: b.Yellowtail > 0 ? 600 : 400, color: b.Yellowtail > 0 ? SPECIES_COLORS.Yellowtail : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowtail)}</span>
+              <span className="sp-col" style={{fontWeight: b.Dorado > 0 ? 600 : 400, color: b.Dorado > 0 ? SPECIES_COLORS.Dorado : 'var(--tb-gray-3)'}}>{fmt.n(b.Dorado)}</span>
+              <span className="trophy-col" style={{fontWeight:600, color:'var(--tb-ink)'}}>{fmt.n(b.totalTuna)}</span>
+              <span className="anglers-col">{fmt.n(b.anglers)}</span>
               <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
             </div>
           ))}

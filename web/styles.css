@@ -374,3 +374,52 @@ body.compact .dt td { padding: 7px 12px; }
 .today-boat-row:last-child { border-bottom: 0; }
 .today-boat-hd { font: 600 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 4px; }
 .spacer { flex: 1; }
+/* Desktop: show species cols, hide trophy total col */
+.trophy-col { display: none; }
+
+/* ───── Mobile (≤768px) ───── */
+@media (max-width: 768px) {
+  /* General */
+  body { overflow-x: hidden; }
+  .main-content { padding: 12px 12px 32px; }
+
+  /* Page title */
+  .pagehead h1 { font-size: 22px; line-height: 28px; }
+
+  /* Header: hide SST/moon eyebrow on mobile */
+  .eyebrow .meta { display: none; }
+
+  /* Header nav: scrollable, icon+label, no wrapping */
+  .app-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .app-nav .tabs { gap: 20px; }
+  .app-nav .tab { font-size: 11px; white-space: nowrap; }
+
+  /* Today's Catch banner: stack vertically */
+  .today-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .today-banner > div { width: 100%; }
+  .today-banner select { width: 100%; box-sizing: border-box; }
+  .today-stats { justify-content: space-around; }
+  .today-species { flex-wrap: wrap; gap: 8px; }
+
+  /* Today's Report table: 5-col mobile layout */
+  .today-boat-row {
+    grid-template-columns: 1fr 70px 55px 52px 62px;
+    gap: 6px;
+    padding: 7px 8px;
+  }
+  /* Hide species + anglers cols; show trophy total col */
+  .sp-col { display: none; }
+  .anglers-col { display: none; }
+  .trophy-col { display: block; }
+  /* Truncate boat name instead of wrapping */
+  .boat-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
