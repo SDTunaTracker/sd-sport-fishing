@@ -98,11 +98,19 @@ function AppHeader({ active, onNavigate }) {
         <div className="lime-strip"></div>
       </div>
 
-      {/* Mobile hamburger menu — portal-style fixed overlay */}
+      {/* Mobile slide-in nav panel */}
       {menuVisible && (
         <div className={`mobile-menu-overlay${menuClosing ? ' closing' : ''}`}
              onClick={closeMenu}>
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
+            <div className="mobile-menu-head">
+              <div className="mm-logo">
+                <i className="fa-solid fa-fish-fins"></i> SD Tuna Tracker
+              </div>
+              <span className="mm-close" onClick={closeMenu}>
+                <i className="fa-solid fa-xmark"></i>
+              </span>
+            </div>
             {NAV.map(t => (
               <div key={t.id}
                    className={`mobile-menu-item${active === t.id ? ' sel' : ''}`}
