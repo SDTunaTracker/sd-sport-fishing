@@ -43,7 +43,7 @@ function TodayCatch({ navigate }) {
           ))}
         </div>
       </div>
-      <Panel title="Today's Report" meta={`Sorted by tuna per angler per day · ${today.date}`}>
+      <Panel title="Today's Report" meta="Sorted by tuna per angler per day">
         <div className="today-boat-row today-boat-hd">
           <span>Boat</span>
           <span>Landing</span>
