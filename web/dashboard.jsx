@@ -112,7 +112,7 @@ function TodayCatch({ navigate, settings }) {
             <span className="sp-col" style={{color: SPECIES_COLORS.Yellowfin}}>Yellowfin</span>
             <span className="sp-col" style={{color: SPECIES_COLORS.Yellowtail}}>Yellowtail</span>
             <span className="sp-col" style={{color: SPECIES_COLORS.Dorado}}>Dorado</span>
-            <span className="trophy-col">Trophy</span>
+            <span className="trophy-col">Tuna</span>
             <span className="anglers-col">Anglers</span>
             <span>TPA/Day</span>
           </div>
