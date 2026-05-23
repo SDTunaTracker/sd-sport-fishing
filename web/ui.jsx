@@ -74,8 +74,11 @@ function AppHeader({ active, onNavigate }) {
               ))}
             </div>
             <div className="right">
-              <span className="iconbtn"><i className="fa-regular fa-bell"></i></span>
-              <div className="avatar">JT</div>
+              <span className="iconbtn" title="Settings"
+                    onClick={() => onNavigate && onNavigate('settings')}
+                    style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
+                <i className="fa-solid fa-gear"></i>
+              </span>
             </div>
           </div>
         </div>
