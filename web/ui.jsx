@@ -24,6 +24,8 @@ const fmt = {
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function AppHeader({ active, onNavigate }) {
+  const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
+
   const NAV = [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
@@ -34,44 +36,91 @@ function AppHeader({ active, onNavigate }) {
     { id: 'seasonality', label: 'Seasonality',  icon: 'fa-calendar-days' },
     { id: 'moon',        label: 'Moon & Tides', icon: 'fa-moon' },
   ];
+
   const m = (window.SD && window.SD.META) || {};
   const sst = m.sstF != null ? `${m.sstF.toFixed(1)}°F` : '—';
   const moon = m.moonPhase || '—';
   const illum = m.moonIllum != null ? ` (${m.moonIllum}%)` : '';
+
+  function openMenu() { setMenuState('open'); }
+
+  function closeMenu() {
+    setMenuState('closing');
+    window.setTimeout(() => setMenuState(s => s === 'closing' ? 'closed' : s), 220);
+  }
+
+  function handleNavItem(id) {
+    setMenuState('closed');
+    onNavigate && onNavigate(id);
+  }
+
+  const menuVisible = menuState !== 'closed';
+  const menuClosing = menuState === 'closing';
+
   return (
-    <div className="app-header">
-      {/* Row 1: logo + SST/moon + gear */}
-      <div className="header-top">
-        <div className="logo">
-          <span className="mark"><i className="fa-solid fa-fish-fins fish"></i> SD Tuna Tracker</span>
-          <span className="by">Sportfish Analytics</span>
-        </div>
-        <div className="header-meta">
-          <span title="Sea-surface temp at NDBC 46232 Point Loma South">
-            <i className="fa-solid fa-temperature-half"></i> SST: <b>{sst}</b>
-          </span>
-          <span title="Moon phase today">
-            <i className="fa-solid fa-moon"></i> <b>{moon}{illum}</b>
-          </span>
-        </div>
-        <span className="header-gear iconbtn" title="Settings"
-              onClick={() => onNavigate && onNavigate('settings')}
-              style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
-          <i className="fa-solid fa-gear"></i>
-        </span>
-      </div>
-      {/* Row 2: scrollable nav tab strip */}
-      <div className="header-nav">
-        {NAV.map(t => (
-          <div key={t.id}
-               className={`tab${active === t.id ? ' sel' : ''}`}
-               onClick={() => onNavigate && onNavigate(t.id)}>
-            <i className={`fa-solid ${t.icon}`}></i>{t.label}
+    <React.Fragment>
+      <div className="app-header">
+        {/* Row 1: logo + meta + icons */}
+        <div className="header-top">
+          <div className="logo">
+            <span className="mark"><i className="fa-solid fa-fish-fins fish"></i> SD Tuna Tracker</span>
+            <span className="by">Sportfish Analytics</span>
           </div>
-        ))}
+          <div className="header-meta">
+            <span title="Sea-surface temp at NDBC 46232 Point Loma South">
+              <i className="fa-solid fa-temperature-half"></i> SST: <b>{sst}</b>
+            </span>
+            <span title="Moon phase today">
+              <i className="fa-solid fa-moon"></i> <b>{moon}{illum}</b>
+            </span>
+          </div>
+          <span className="header-gear iconbtn" title="Settings"
+                onClick={() => handleNavItem('settings')}
+                style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
+            <i className="fa-solid fa-gear"></i>
+          </span>
+          {/* Hamburger: mobile only */}
+          <span className="header-hamburger iconbtn" title="Menu"
+                onClick={() => menuState === 'open' ? closeMenu() : openMenu()}>
+            <i className={`fa-solid ${menuState === 'open' ? 'fa-xmark' : 'fa-bars'}`}></i>
+          </span>
+        </div>
+        {/* Row 2: desktop nav tab strip (hidden on mobile) */}
+        <div className="header-nav">
+          {NAV.map(t => (
+            <div key={t.id}
+                 className={`tab${active === t.id ? ' sel' : ''}`}
+                 onClick={() => handleNavItem(t.id)}>
+              <i className={`fa-solid ${t.icon}`}></i>{t.label}
+            </div>
+          ))}
+        </div>
+        <div className="lime-strip"></div>
       </div>
-      <div className="lime-strip"></div>
-    </div>
+
+      {/* Mobile hamburger menu — portal-style fixed overlay */}
+      {menuVisible && (
+        <div className={`mobile-menu-overlay${menuClosing ? ' closing' : ''}`}
+             onClick={closeMenu}>
+          <div className="mobile-menu" onClick={e => e.stopPropagation()}>
+            {NAV.map(t => (
+              <div key={t.id}
+                   className={`mobile-menu-item${active === t.id ? ' sel' : ''}`}
+                   onClick={() => handleNavItem(t.id)}>
+                <i className={`fa-solid ${t.icon}`}></i>
+                <span>{t.label}</span>
+              </div>
+            ))}
+            <div className="mobile-menu-divider"></div>
+            <div className={`mobile-menu-item${active === 'settings' ? ' sel' : ''}`}
+                 onClick={() => handleNavItem('settings')}>
+              <i className="fa-solid fa-gear"></i>
+              <span>Settings</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </React.Fragment>
   );
 }
 
