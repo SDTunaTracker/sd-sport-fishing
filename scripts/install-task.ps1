@@ -1,9 +1,8 @@
-# Register the daily scrape with Windows Task Scheduler.
-# Runs at 06:30 local time every day. Adjust -TaskTime to change.
+# Register the hourly scrape with Windows Task Scheduler.
+# Runs at the top of every hour between 6am and 10pm local time.
 [CmdletBinding()]
 param(
-    [string]$TaskName = "SD Sport Fishing - Daily Scrape",
-    [string]$TaskTime = "06:30"
+    [string]$TaskName = "SD Sport Fishing - Daily Scrape"
 )
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -22,12 +21,12 @@ $action = New-ScheduledTaskAction `
     -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runDaily`"" `
     -WorkingDirectory $root
 
-$trigger = New-ScheduledTaskTrigger -Daily -At $TaskTime
+# One trigger per hour, 6am through 10pm (17 triggers total).
+$triggers = 6..22 | ForEach-Object {
+    New-ScheduledTaskTrigger -Daily -At ("{0:D2}:00" -f $_)
+}
 
 # Run as the current user, only when logged in (no stored password required).
-# If you want it to run when you're not logged in, swap in:
-#   -User "$env:USERDOMAIN\$env:USERNAME" -Password (Read-Host -AsSecureString) `
-#   -LogonType Password
 $principal = New-ScheduledTaskPrincipal `
     -UserId "$env:USERDOMAIN\$env:USERNAME" `
     -LogonType Interactive `
@@ -42,12 +41,12 @@ $settings = New-ScheduledTaskSettingsSet `
 Register-ScheduledTask `
     -TaskName $TaskName `
     -Action $action `
-    -Trigger $trigger `
+    -Trigger $triggers `
     -Principal $principal `
     -Settings $settings `
-    -Description "Scrape yesterday's fish counts from the 4 SD landings and regenerate the dashboard data."
+    -Description "Scrape fish counts from the 4 SD landings hourly, 6am-10pm, and regenerate the dashboard data."
 
 Write-Output ""
-Write-Output "Task '$TaskName' registered. It will run daily at $TaskTime."
+Write-Output "Task '$TaskName' registered. It will run hourly from 6:00am to 10:00pm."
 Write-Output "To run it now: Start-ScheduledTask -TaskName '$TaskName'"
 Write-Output "To remove it:  Unregister-ScheduledTask -TaskName '$TaskName' -Confirm:`$false"

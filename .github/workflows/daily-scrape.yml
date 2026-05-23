@@ -2,9 +2,11 @@ name: Daily Scrape
 
 on:
   schedule:
-    # 13:00 UTC = 6:00 AM Pacific (PST). During PDT (DST), this runs at 6:00 AM PDT.
-    # Actually: 13:00 UTC = 5:00 AM PST / 6:00 AM PDT. See note below.
-    - cron: '0 13 * * *'
+    # Top of every hour, 6am-10pm Pacific.
+    # PDT (summer, UTC-7): 6am=13 UTC, 10pm=05 UTC.
+    # PST (winter, UTC-8): 6am=14 UTC, 10pm=06 UTC.
+    # 13-06 UTC covers both.
+    - cron: '0 13,14,15,16,17,18,19,20,21,22,23,0,1,2,3,4,5,6 * * *'
   workflow_dispatch:  # allow manual triggering from the Actions tab
 
 permissions:
