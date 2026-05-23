@@ -12,7 +12,12 @@ function TodayCatch({ navigate }) {
       <div className="today-banner">
         <div className="today-left">
           <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
-          <div className="today-date">{fmt.date(today.date)}</div>
+          <div className="today-date">{(() => {
+            const [y, m, d] = today.date.split('-');
+            const scrape = window.SD?.META?.lastScrape;
+            const timeStr = scrape ? new Date(scrape).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null;
+            return `${+m}/${+d}/${String(+y).slice(-2)}${timeStr ? ` · as of ${timeStr}` : ''}`;
+          })()}</div>
         </div>
         <div className="today-stats">
           <div className="today-stat">
@@ -38,7 +43,7 @@ function TodayCatch({ navigate }) {
           ))}
         </div>
       </div>
-      <Panel title="Boats Out Today" meta={`Sorted by tuna per angler per day · ${today.date}`}>
+      <Panel title="Today's Report" meta={`Sorted by tuna per angler per day · ${today.date}`}>
         <div className="today-boat-row today-boat-hd">
           <span>Boat</span>
           <span>Landing</span>
