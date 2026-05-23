@@ -10,7 +10,7 @@ if (-not (Test-Path $py)) {
 }
 Push-Location $webDir
 try {
-    Start-Process "http://localhost:8765/SD%20Sport%20Fishing.html"
+    Start-Process "http://localhost:8765"
     & $py -m http.server 8765
 } finally {
     Pop-Location

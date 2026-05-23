@@ -23,7 +23,6 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
 
   const monthly = useMemo(() => SDA.monthlyTrend(trips, filters.species), [trips, filters.species]);
   const speciesMix = useMemo(() => SDA.speciesMix(trips), [trips]);
-  const moonData = useMemo(() => SDA.moonAnalysis(trips, filters.species), [trips, filters.species]);
   const lengthData = useMemo(() => SDA.tripLengthBreakdown(trips, filters.species), [trips, filters.species]);
   const landings = useMemo(() => SDA.landingSummary(trips, filters.species), [trips, filters.species]);
 
@@ -32,7 +31,6 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
   // Bar widths and the right-hand number on the Top Boats panel use the
   // trip-length-normalised per-day metric so a 5-day trip doesn't auto-win.
   const maxTPAPerDay = topBoats[0]?.avgTPAPerDay || 1;
-  const bestMoon = [...moonData].sort((a, b) => b.tpa - a.tpa)[0];
   const bestMonth = [...monthly].sort((a, b) => b.tpa - a.tpa)[0];
 
   const speciesActive = filters.species && filters.species !== 'all';
@@ -207,82 +205,30 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
         </Panel>
       </div>
 
-      {/* Bottom row: moon + landings */}
-      <div style={{display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12, marginBottom: 12}}>
-        <Panel title="Moon Phase Correlation"
-               meta={`Avg ${speciesLabel.toLowerCase()}/angler by lunar phase`}
-               actions={<span className="meta">Best: <b style={{color:'var(--ss-black)'}}>{bestMoon?.phase}</b> ({fmt.tpa(bestMoon?.tpa)})</span>}>
-          <div className="moon-grid">
-            {moonData.map((m) => {
-              const isBest = m.phase === bestMoon?.phase;
-              return (
-                <div key={m.phase} className={`moon-cell ${isBest ? 'best' : ''}`}>
-                  <MoonGlyph phase={m.phase}/>
-                  <div className="lab">{m.phase}</div>
-                  <div className="val">{fmt.tpa(m.tpa)}</div>
-                  <div className="sub">{m.trips} trips</div>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--ss-border-2)', font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)'}}>
-            <i className="fa-solid fa-circle-info"></i> {' '}
-            {(() => {
-              const sorted = [...moonData].sort((a,b)=>b.tpa-a.tpa);
-              const lift = sorted[0].tpa / (sorted[sorted.length-1].tpa || 0.001);
-              return `${sorted[0].phase} produces ${lift.toFixed(1)}× the catch rate of ${sorted[sorted.length-1].phase}. Bigger fish run on darker nights — Bluefin tuna especially favor crescent and new moon.`;
-            })()}
-          </div>
-        </Panel>
-
-        <Panel title="By Landing"
-               meta="Approved San Diego landings"
-               actions={<button className="btn sm ghost" onClick={() => navigate('landings')}>Compare →</button>}>
-          {landings.map((l) => {
-            const max = Math.max(...landings.map(x => x.tpa));
-            return (
-              <div key={l.landing} style={{padding:'8px 0', borderBottom:'1px solid var(--ss-border-2)', cursor:'pointer'}}
-                   onClick={() => navigate('landing', { landing: l.landing })}>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 4}}>
-                  <span style={{font:'500 13px/16px var(--ss-font-sans)'}}>{l.landing}</span>
-                  <span style={{font:'700 13px/16px var(--ss-font-sans)', fontVariantNumeric:'tabular-nums'}}>{fmt.tpa(l.tpa)}</span>
-                </div>
-                <div style={{display:'flex', gap: 8, alignItems:'center'}}>
-                  <div className="track" style={{height: 8, flex: 1}}>
-                    <div className="fill" style={{width: `${(l.tpa/max)*100}%`}}></div>
-                  </div>
-                  <span style={{font:'400 10px/12px var(--ss-font-sans)', color:'var(--ss-gray-3)', minWidth: 90, textAlign:'right'}}>
-                    {l.boatCount} boats · {fmt.n(l.trips)} trips
-                  </span>
-                </div>
+      {/* Bottom row: landings */}
+      <Panel title="By Landing"
+             meta="Approved San Diego landings"
+             actions={<button className="btn sm ghost" onClick={() => navigate('landings')}>Compare →</button>}>
+        {landings.map((l) => {
+          const max = Math.max(...landings.map(x => x.tpa));
+          return (
+            <div key={l.landing} style={{padding:'8px 0', borderBottom:'1px solid var(--ss-border-2)', cursor:'pointer'}}
+                 onClick={() => navigate('landing', { landing: l.landing })}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 4}}>
+                <span style={{font:'500 13px/16px var(--ss-font-sans)'}}>{l.landing}</span>
+                <span style={{font:'700 13px/16px var(--ss-font-sans)', fontVariantNumeric:'tabular-nums'}}>{fmt.tpa(l.tpa)}</span>
               </div>
-            );
-          })}
-        </Panel>
-      </div>
-
-      {/* Bottom: species seasonality stacked */}
-      <Panel title="Species Seasonality"
-             meta="Total catch by month, all approved boats">
-        <div className="chart-legend" style={{marginBottom: 8}}>
-          {Object.entries(SPECIES_COLORS).map(([sp, c]) => (
-            <span key={sp} className="ll"><span className="sw" style={{background: c}}></span>{sp}</span>
-          ))}
-        </div>
-        <StackedBarChart width={1080} height={220}
-          data={monthly.map((m, i) => ({
-            label: MONTH_NAMES[i],
-            Bluefin: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Bluefin||0), 0),
-            Yellowfin: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Yellowfin||0), 0),
-            Yellowtail: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Yellowtail||0), 0),
-            Dorado: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Dorado||0), 0),
-            Skipjack: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Skipjack||0), 0),
-            Bigeye: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Bigeye||0), 0),
-            Albacore: trips.filter(t => t.month === i+1).reduce((s, t) => s + (t.Albacore||0), 0),
-          }))}
-          series={['Bluefin','Yellowfin','Yellowtail','Dorado','Skipjack','Bigeye','Albacore']}
-          formatY={v => fmt.n(Math.round(v))}
-        />
+              <div style={{display:'flex', gap: 8, alignItems:'center'}}>
+                <div className="track" style={{height: 8, flex: 1}}>
+                  <div className="fill" style={{width: `${(l.tpa/max)*100}%`}}></div>
+                </div>
+                <span style={{font:'400 10px/12px var(--ss-font-sans)', color:'var(--ss-gray-3)', minWidth: 90, textAlign:'right'}}>
+                  {l.boatCount} boats · {fmt.n(l.trips)} trips
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </Panel>
     </Fragment>
   );

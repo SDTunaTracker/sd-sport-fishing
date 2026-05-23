@@ -38,7 +38,7 @@ function App() {
     dashboard: 'dashboard', boats: 'boats', landings: 'landings',
     tripplanner: 'tripplanner',
     headtohead: 'headtohead',
-    seasonality: 'dashboard', moon: 'dashboard', watchlist: 'dashboard',
+    seasonality: 'seasonality', moon: 'moon', watchlist: 'dashboard',
     recent: 'dashboard', settings: 'dashboard',
   };
 
@@ -57,6 +57,10 @@ function App() {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
   } else if (route.view === 'headtohead') {
     content = <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate}/>;
+  } else if (route.view === 'seasonality') {
+    content = <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>;
+  } else if (route.view === 'moon') {
+    content = <MoonView filters={filters} setFilters={setFilters} navigate={navigate}/>;
   }
 
   const sidebarActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view;

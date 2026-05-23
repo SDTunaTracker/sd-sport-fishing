@@ -308,9 +308,9 @@ main { padding: 16px 24px 32px; min-width: 0; }
 .moon-cell .glyph.shape-wang .lit { transform: scaleX(.85) translateX(-15%); }
 .moon-cell .glyph.shape-lastq .lit { transform: scaleX(.5) translateX(-50%); }
 .moon-cell .glyph.shape-wanc .lit { transform: scaleX(.3) translateX(-70%); }
-.moon-cell .lab { font: 500 10px/12px var(--ss-font-sans); color: var(--tb-slate); text-align: center; }
-.moon-cell .val { font: 700 16px/20px var(--ss-font-sans); color: var(--tb-ink); }
-.moon-cell .sub { font: 400 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); }
+.moon-cell .lab { font: 500 10px/12px var(--ss-font-sans); color: #CBD5E1; text-align: center; }
+.moon-cell .val { font: 700 16px/20px var(--ss-font-sans); color: #FFFFFF; }
+.moon-cell .sub { font: 400 10px/12px var(--ss-font-sans); color: #94A3B8; }
 
 /* species mix donut */
 .donut-legend { display: flex; flex-direction: column; gap: 8px; }
