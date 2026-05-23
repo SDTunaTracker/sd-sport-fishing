@@ -1,3 +1,53 @@
+function TodayCatch({ navigate }) {
+  const today = window.SD?.TODAY;
+  if (!today) return null;
+  const species = [
+    { key: 'Bluefin', color: SPECIES_COLORS.Bluefin },
+    { key: 'Yellowfin', color: SPECIES_COLORS.Yellowfin },
+    { key: 'Yellowtail', color: SPECIES_COLORS.Yellowtail },
+    { key: 'Dorado', color: SPECIES_COLORS.Dorado },
+  ].filter(s => today[s.key] > 0);
+  return (
+    <div className="today-banner">
+      <div className="today-left">
+        <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
+        <div className="today-date">{fmt.date(today.date)}</div>
+      </div>
+      <div className="today-stats">
+        <div className="today-stat">
+          <span className="ts-val">{fmt.n(today.trophyCount)}</span>
+          <span className="ts-lbl">trophy fish</span>
+        </div>
+        <div className="today-stat">
+          <span className="ts-val">{fmt.n(today.anglers)}</span>
+          <span className="ts-lbl">anglers</span>
+        </div>
+        <div className="today-stat">
+          <span className="ts-val">{fmt.n(today.boatCount)}</span>
+          <span className="ts-lbl">boats</span>
+        </div>
+      </div>
+      <div className="today-top-boat" onClick={() => navigate('boat', { boat: today.topBoat.boat })}>
+        <div className="tb-label">Top Boat Today</div>
+        <div className="tb-name">{today.topBoat.boat}</div>
+        <div className="tb-meta">
+          {today.topBoat.landing.replace(' Sportfishing','').replace(' Landing','')}
+          {' · '}{fmt.tpa(today.topBoat.trophyPerAnglerPerDay)}/angler/day
+        </div>
+      </div>
+      <div className="today-species">
+        {species.map(s => (
+          <div key={s.key} className="today-sp">
+            <span className="sp-dot" style={{background: s.color}}></span>
+            <span className="sp-name">{s.key}</span>
+            <span className="sp-val">{fmt.n(today[s.key])}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Dashboard view - main analytics screen
 function Dashboard({ filters, setFilters, navigate, tweaks }) {
   const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
@@ -62,6 +112,8 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
       </div>
 
       <FilterBar filters={filters} setFilters={setFilters}/>
+
+      <TodayCatch navigate={navigate}/>
 
       <div className="kpis">
         <KPI label={`Fleet ${speciesLabel} / Angler`}

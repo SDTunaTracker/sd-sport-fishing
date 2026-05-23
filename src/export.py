@@ -101,6 +101,33 @@ def _scheduled_to_js(row: sqlite3.Row) -> dict:
     }
 
 
+def _today_summary(trips: list[dict]) -> dict | None:
+    """Summarise the most recent date's catch for the Today's Catch banner."""
+    if not trips:
+        return None
+    latest_date = max(t["date"] for t in trips)
+    today = [t for t in trips if t["date"] == latest_date]
+    if not today:
+        return None
+    top = max(today, key=lambda t: t["trophyPerAnglerPerDay"] or 0)
+    return {
+        "date": latest_date,
+        "trophyCount": sum(t["trophyCount"] for t in today),
+        "anglers": sum(t["anglers"] for t in today),
+        "boatCount": len(today),
+        "topBoat": {
+            "boat": top["boat"],
+            "landing": top["landing"],
+            "trophyCount": top["trophyCount"],
+            "trophyPerAnglerPerDay": top["trophyPerAnglerPerDay"],
+        },
+        "Bluefin":    sum(t["Bluefin"]    for t in today),
+        "Yellowfin":  sum(t["Yellowfin"]  for t in today),
+        "Yellowtail": sum(t["Yellowtail"] for t in today),
+        "Dorado":     sum(t["Dorado"]     for t in today),
+    }
+
+
 def export(conn: sqlite3.Connection, out_path: Path) -> int:
     """Write data.js. Returns trip count written."""
     rows = conn.execute("SELECT * FROM trips ORDER BY date, id").fetchall()
@@ -121,6 +148,7 @@ def export(conn: sqlite3.Connection, out_path: Path) -> int:
         "MOON_PHASES": list(MOON_PHASES),
         "BOATS": boats,
         "TRIPS": trips,
+        "TODAY": _today_summary(trips),
         "SCHEDULE": schedule,
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,

@@ -358,4 +358,23 @@ body.compact .dt td { padding: 7px 12px; }
 
 /* Misc utilities */
 .row { display: flex; gap: 8px; align-items: center; }
+
+/* Today's Catch banner */
+.today-banner { display: flex; align-items: center; gap: 24px; background: var(--tb-midnight); border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; color: white; }
+.today-left .today-head { font: 600 12px/16px var(--ss-font-sans); color: var(--tb-lime); text-transform: uppercase; letter-spacing: 0.06em; }
+.today-left .today-date { font: 500 11px/14px var(--ss-font-sans); color: #94A3B8; margin-top: 2px; }
+.today-stats { display: flex; gap: 20px; }
+.today-stat { display: flex; flex-direction: column; align-items: center; }
+.today-stat .ts-val { font: 700 22px/26px var(--ss-font-sans); color: white; font-variant-numeric: tabular-nums; }
+.today-stat .ts-lbl { font: 400 10px/12px var(--ss-font-sans); color: #94A3B8; }
+.today-top-boat { padding: 8px 20px; border-left: 1px solid rgba(255,255,255,0.12); border-right: 1px solid rgba(255,255,255,0.12); cursor: pointer; flex: 1; }
+.today-top-boat:hover .tb-name { color: var(--tb-lime); }
+.today-top-boat .tb-label { font: 500 10px/12px var(--ss-font-sans); color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; }
+.today-top-boat .tb-name { font: 700 15px/20px var(--ss-font-sans); color: white; margin: 2px 0; }
+.today-top-boat .tb-meta { font: 400 11px/14px var(--ss-font-sans); color: #CBD5E1; }
+.today-species { display: flex; flex-direction: column; gap: 5px; }
+.today-sp { display: flex; align-items: center; gap: 6px; font: 500 11px/14px var(--ss-font-sans); }
+.today-sp .sp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.today-sp .sp-name { color: #CBD5E1; flex: 1; min-width: 72px; }
+.today-sp .sp-val { color: white; font-weight: 700; font-variant-numeric: tabular-nums; }
 .spacer { flex: 1; }
