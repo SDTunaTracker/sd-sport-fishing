@@ -44,6 +44,12 @@ def parse_trip_length(raw: str) -> tuple[str | None, float | None]:
     # the "5" inside "1.5". The (?<![\d.]) lookbehind also blocks partial hits.
     if re.search(r"\blong\s*range\b", s):
         return "Long Range", TRIP_LENGTHS_DAYS["Long Range"]
+    # Check half-day BEFORE numbered-day loop: "1/2 day" contains "2 day" as a
+    # substring and would otherwise be mis-parsed as "2 Day" by the loop below.
+    if re.search(r"\b1/2\s*day\b|\bhalf\s*day\b", s):
+        return "Half Day", 0.5
+    if re.search(r"\btwilight\b", s):
+        return "Twilight", 0.25
     for n_label, days in [
         ("1.5", 1.5), ("2.5", 2.5),
         ("7", 7.0), ("6", 6.0), ("5", 5.0), ("4", 4.0), ("3", 3.0), ("2", 2.0),
@@ -56,10 +62,6 @@ def parse_trip_length(raw: str) -> tuple[str | None, float | None]:
         return "3/4 Day", 0.75
     if re.search(r"\bfull\s*day\b", s):
         return "Full Day", 1.0
-    if re.search(r"\b1/2\s*day\b|\bhalf\s*day\b", s):
-        return "Half Day", 0.5
-    if re.search(r"\btwilight\b", s):
-        return "Twilight", 0.25
     return None, None
 
 
