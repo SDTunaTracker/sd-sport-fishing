@@ -45,7 +45,7 @@ function App() {
 
   // Map sidebar -> internal view
   const navMap = {
-    dashboard: 'dashboard', boats: 'boats', landings: 'landings',
+    dashboard: 'dashboard', analytics: 'analytics', boats: 'boats', landings: 'landings',
     tripplanner: 'tripplanner',
     headtohead: 'headtohead',
     seasonality: 'seasonality', moon: 'moon', watchlist: 'dashboard',
@@ -54,7 +54,9 @@ function App() {
 
   let content;
   if (route.view === 'dashboard') {
-    content = <Dashboard filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
+    content = <Dashboard navigate={navigate} settings={settings}/>;
+  } else if (route.view === 'analytics') {
+    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings}/>;
   } else if (route.view === 'boats') {
     content = <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
   } else if (route.view === 'landings') {
@@ -75,7 +77,7 @@ function App() {
     content = <SettingsView settings={settings} onSettingsChange={onSettingsChange}/>;
   }
 
-  const sidebarActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view;
+  const sidebarActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view === 'analytics' ? 'analytics' : route.view;
 
   return (
     <Fragment>

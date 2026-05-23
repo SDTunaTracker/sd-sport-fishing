@@ -89,6 +89,7 @@ function SideNav({ active, onNavigate }) {
   const items = [
     { group: 'Analyze' },
     { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-column' },
+    { id: 'analytics', label: 'Analytics', icon: 'fa-magnifying-glass-chart' },
     { id: 'boats', label: 'Boat Leaderboard', icon: 'fa-sailboat' },
     { id: 'landings', label: 'Landings', icon: 'fa-anchor' },
     { id: 'headtohead', label: 'Head-to-Head', icon: 'fa-scale-balanced' },
