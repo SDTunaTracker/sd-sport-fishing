@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from datetime import date
 from pathlib import Path
 
 from .conditions import snapshot as conditions_snapshot
@@ -105,8 +106,8 @@ def _today_summary(trips: list[dict]) -> dict | None:
     """Summarise the most recent date's catch for the Today's Catch banner."""
     if not trips:
         return None
-    latest_date = max(t["date"] for t in trips)
-    today = [t for t in trips if t["date"] == latest_date
+    today_str = date.today().isoformat()
+    today = [t for t in trips if t["date"] == today_str
              and t["tripLength"] in TRIP_LENGTHS]
     if not today:
         return None
@@ -119,7 +120,7 @@ def _today_summary(trips: list[dict]) -> dict | None:
     boats = sorted(by_boat.values(), key=lambda t: t["trophyPerAnglerPerDay"] or 0, reverse=True)
     deduped = list(by_boat.values())
     return {
-        "date": latest_date,
+        "date": today_str,
         "trophyCount": sum(t["trophyCount"] for t in deduped),
         "anglers": sum(t["anglers"] for t in deduped),
         "boatCount": len(deduped),
