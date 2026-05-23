@@ -106,7 +106,7 @@ function FilterBar({ filters, setFilters, hideBoat }) {
           options={window.SD.LANDINGS}
           value={filters.landing}
           onChange={v => update('landing', v)}
-          allLabel="All Approved Landings"/>
+          allLabel="All Landings"/>
       </div>
       {!hideBoat && (
         <div className="filter">
