@@ -87,7 +87,7 @@ function SettingsView({ settings, onSettingsChange }) {
     {
       id: 'actual',
       label: 'Actual trip length',
-      sub: 'Full Day = 1.0, Overnight = 1.0, 1.5-day = 1.5, 2.5-day = 2.5, etc.',
+      sub: 'Full Day = 0.75, Overnight = 1.0, 1.5-day = 1.5, 2.5-day = 2.5, etc.',
     },
   ];
 
