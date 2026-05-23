@@ -287,9 +287,9 @@ a { color: inherit; text-decoration: none; }
 
 /* moon panel */
 .moon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; padding: 8px 0; }
-.moon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; border-radius: 6px; cursor: default; }
-.moon-cell:hover { background: var(--tb-foam); }
-.moon-cell.best { background: var(--tb-accent-l); }
+.moon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; border-radius: 6px; cursor: default; background: #162636; }
+.moon-cell:hover { background: #1e3347; }
+.moon-cell.best { background: #0C3D2E; }
 .moon-cell .glyph { width: 36px; height: 36px; border-radius: 999px; background: var(--tb-midnight); position: relative; overflow: hidden; }
 .moon-cell .glyph .lit { position: absolute; inset: 0; background: var(--tb-lime); border-radius: 999px; }
 .moon-cell .glyph.shape-new .lit { transform: scaleX(0); }
