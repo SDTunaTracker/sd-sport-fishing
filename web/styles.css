@@ -377,4 +377,8 @@ body.compact .dt td { padding: 7px 12px; }
 .today-sp .sp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .today-sp .sp-name { color: #CBD5E1; flex: 1; min-width: 72px; }
 .today-sp .sp-val { color: white; font-weight: 700; font-variant-numeric: tabular-nums; }
+.today-boat-row { display: grid; grid-template-columns: 1fr 1fr 90px 60px 60px 72px; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--tb-border-2); align-items: center; font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); font-variant-numeric: tabular-nums; }
+.today-boat-row:hover:not(.today-boat-hd) { background: var(--tb-foam); }
+.today-boat-row:last-child { border-bottom: 0; }
+.today-boat-hd { font: 600 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 4px; }
 .spacer { flex: 1; }

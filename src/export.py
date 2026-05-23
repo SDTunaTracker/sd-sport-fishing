@@ -109,18 +109,23 @@ def _today_summary(trips: list[dict]) -> dict | None:
     today = [t for t in trips if t["date"] == latest_date]
     if not today:
         return None
-    top = max(today, key=lambda t: t["trophyPerAnglerPerDay"] or 0)
+    boats = sorted(today, key=lambda t: t["trophyPerAnglerPerDay"] or 0, reverse=True)
     return {
         "date": latest_date,
         "trophyCount": sum(t["trophyCount"] for t in today),
         "anglers": sum(t["anglers"] for t in today),
         "boatCount": len(today),
-        "topBoat": {
-            "boat": top["boat"],
-            "landing": top["landing"],
-            "trophyCount": top["trophyCount"],
-            "trophyPerAnglerPerDay": top["trophyPerAnglerPerDay"],
-        },
+        "boats": [
+            {
+                "boat": t["boat"],
+                "landing": t["landing"],
+                "tripLength": t["tripLength"],
+                "trophyCount": t["trophyCount"],
+                "anglers": t["anglers"],
+                "trophyPerAnglerPerDay": t["trophyPerAnglerPerDay"],
+            }
+            for t in boats
+        ],
         "Bluefin":    sum(t["Bluefin"]    for t in today),
         "Yellowfin":  sum(t["Yellowfin"]  for t in today),
         "Yellowtail": sum(t["Yellowtail"] for t in today),

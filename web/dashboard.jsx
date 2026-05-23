@@ -8,43 +8,58 @@ function TodayCatch({ navigate }) {
     { key: 'Dorado', color: SPECIES_COLORS.Dorado },
   ].filter(s => today[s.key] > 0);
   return (
-    <div className="today-banner">
-      <div className="today-left">
-        <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
-        <div className="today-date">{fmt.date(today.date)}</div>
+    <Fragment>
+      <div className="today-banner">
+        <div className="today-left">
+          <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
+          <div className="today-date">{fmt.date(today.date)}</div>
+        </div>
+        <div className="today-stats">
+          <div className="today-stat">
+            <span className="ts-val">{fmt.n(today.trophyCount)}</span>
+            <span className="ts-lbl">trophy fish</span>
+          </div>
+          <div className="today-stat">
+            <span className="ts-val">{fmt.n(today.anglers)}</span>
+            <span className="ts-lbl">anglers</span>
+          </div>
+          <div className="today-stat">
+            <span className="ts-val">{fmt.n(today.boatCount)}</span>
+            <span className="ts-lbl">boats</span>
+          </div>
+        </div>
+        <div className="today-species">
+          {species.map(s => (
+            <div key={s.key} className="today-sp">
+              <span className="sp-dot" style={{background: s.color}}></span>
+              <span className="sp-name">{s.key}</span>
+              <span className="sp-val">{fmt.n(today[s.key])}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="today-stats">
-        <div className="today-stat">
-          <span className="ts-val">{fmt.n(today.trophyCount)}</span>
-          <span className="ts-lbl">trophy fish</span>
+      <Panel title="Boats Out Today" meta={`Sorted by trophy fish per angler per day · ${today.date}`}>
+        <div className="today-boat-row today-boat-hd">
+          <span>Boat</span>
+          <span>Landing</span>
+          <span>Trip</span>
+          <span>Trophy</span>
+          <span>Anglers</span>
+          <span>TPA/Day</span>
         </div>
-        <div className="today-stat">
-          <span className="ts-val">{fmt.n(today.anglers)}</span>
-          <span className="ts-lbl">anglers</span>
-        </div>
-        <div className="today-stat">
-          <span className="ts-val">{fmt.n(today.boatCount)}</span>
-          <span className="ts-lbl">boats</span>
-        </div>
-      </div>
-      <div className="today-top-boat" onClick={() => navigate('boat', { boat: today.topBoat.boat })}>
-        <div className="tb-label">Top Boat Today</div>
-        <div className="tb-name">{today.topBoat.boat}</div>
-        <div className="tb-meta">
-          {today.topBoat.landing.replace(' Sportfishing','').replace(' Landing','')}
-          {' · '}{fmt.tpa(today.topBoat.trophyPerAnglerPerDay)}/angler/day
-        </div>
-      </div>
-      <div className="today-species">
-        {species.map(s => (
-          <div key={s.key} className="today-sp">
-            <span className="sp-dot" style={{background: s.color}}></span>
-            <span className="sp-name">{s.key}</span>
-            <span className="sp-val">{fmt.n(today[s.key])}</span>
+        {today.boats.map((b, i) => (
+          <div key={i} className="today-boat-row" style={{cursor:'pointer'}}
+               onClick={() => navigate('boat', { boat: b.boat })}>
+            <span style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
+            <span>{b.landing.replace(' Sportfishing','').replace(' Landing','')}</span>
+            <span>{b.tripLength}</span>
+            <span style={{fontWeight:600}}>{fmt.n(b.trophyCount)}</span>
+            <span>{fmt.n(b.anglers)}</span>
+            <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
           </div>
         ))}
-      </div>
-    </div>
+      </Panel>
+    </Fragment>
   );
 }
 
@@ -72,7 +87,6 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
   const tpaDelta = prevTPA > 0 ? ((fleetTPA - prevTPA) / prevTPA) * 100 : null;
 
   const monthly = useMemo(() => SDA.monthlyTrend(trips, filters.species), [trips, filters.species]);
-  const speciesMix = useMemo(() => SDA.speciesMix(trips), [trips]);
   const lengthData = useMemo(() => SDA.tripLengthBreakdown(trips, filters.species), [trips, filters.species]);
   const landings = useMemo(() => SDA.landingSummary(trips, filters.species), [trips, filters.species]);
 
@@ -131,8 +145,8 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
              ctx={bestMonth ? `${fmt.tpa(bestMonth.tpa)} ${speciesLabel.toLowerCase()}/angler · ${fmt.n(bestMonth.tuna)} caught` : ''}/>
       </div>
 
-      {/* Top row: leaderboard + species mix */}
-      <div style={{display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 12}}>
+      {/* Top row: leaderboard */}
+      <div style={{marginBottom: 12}}>
         <Panel title={`Top Boats — ${speciesLabel} per Angler per Day`}
                meta={`Ranked by avg ${speciesLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips · normalises trip length`}
                actions={<button className="btn sm ghost" onClick={() => navigate('boats')}>View All →</button>}>
@@ -174,44 +188,6 @@ function Dashboard({ filters, setFilters, navigate, tweaks }) {
               </div>
             </Fragment>
           )}
-        </Panel>
-
-        <Panel title="Species Mix" meta={`${fmt.n(totalTuna)} total fish`}>
-          <div style={{display: 'flex', gap: 16, alignItems: 'center'}}>
-            <Donut size={140} thickness={22} data={[
-              { value: speciesMix.Bluefin,    color: SPECIES_COLORS.Bluefin },
-              { value: speciesMix.Yellowfin,  color: SPECIES_COLORS.Yellowfin },
-              { value: speciesMix.Yellowtail, color: SPECIES_COLORS.Yellowtail },
-              { value: speciesMix.Dorado,     color: SPECIES_COLORS.Dorado },
-              { value: speciesMix.Skipjack,   color: SPECIES_COLORS.Skipjack },
-              { value: speciesMix.Bigeye,     color: SPECIES_COLORS.Bigeye },
-              { value: speciesMix.Albacore,   color: SPECIES_COLORS.Albacore },
-            ]}/>
-            <div className="donut-legend" style={{flex: 1}}>
-              {Object.entries(speciesMix).map(([sp, v]) => {
-                const pct = totalTuna ? v / totalTuna : 0;
-                return (
-                  <div key={sp} className="ll">
-                    <span className="sw" style={{background: SPECIES_COLORS[sp]}}></span>
-                    {sp}
-                    <span className="pct">{fmt.n(v)} · {fmt.pct(pct, 1)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div style={{marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--ss-border-2)'}}>
-            <div className="stat-row"><span className="lbl">Top species</span><span className="vl">
-              {(() => {
-                const top = Object.entries(speciesMix).sort((a,b)=>b[1]-a[1])[0];
-                return top ? `${top[0]} · ${fmt.pct(top[1]/(totalTuna||1), 0)}` : '—';
-              })()}
-            </span></div>
-            <div className="stat-row"><span className="lbl">Trips landing 10+ fish</span>
-              <span className="vl">{fmt.n(trips.filter(t => t.totalTuna >= 10).length)}</span></div>
-            <div className="stat-row"><span className="lbl">Skunked trips</span>
-              <span className="vl">{fmt.n(trips.filter(t => t.totalTuna === 0).length)}</span></div>
-          </div>
         </Panel>
       </div>
 
