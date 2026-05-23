@@ -41,7 +41,6 @@ function AppHeader({ section = 'Analytics', tab = 'Dashboard' }) {
         </div>
         <div className="col2">
           <div className="eyebrow">
-            {apps.map(a => <div key={a} className={`app${a === section ? ' sel' : ''}`}>{a}</div>)}
             <div className="meta">
               {(() => {
                 const m = (window.SD && window.SD.META) || {};
