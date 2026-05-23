@@ -1,9 +1,9 @@
 name: Deploy to Pages
 
 on:
-  # Run on direct pushes to main (manual commits, PR merges).
+  # Run on direct pushes to master (manual commits, PR merges).
   push:
-    branches: [main]
+    branches: [master]
   # Run after the Daily Scrape workflow finishes. Required because GitHub's
   # default GITHUB_TOKEN does NOT trigger other workflows via push events
   # (anti-loop safeguard) — so without this, the daily-scrape's auto-commit
@@ -11,7 +11,7 @@ on:
   workflow_run:
     workflows: ["Daily Scrape"]
     types: [completed]
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 # Required permissions for the GitHub Pages deploy actions.
