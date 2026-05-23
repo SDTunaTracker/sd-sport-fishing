@@ -17,7 +17,7 @@ function TodayCatch({ navigate }) {
         <div className="today-stats">
           <div className="today-stat">
             <span className="ts-val">{fmt.n(today.trophyCount)}</span>
-            <span className="ts-lbl">trophy fish</span>
+            <span className="ts-lbl">tuna</span>
           </div>
           <div className="today-stat">
             <span className="ts-val">{fmt.n(today.anglers)}</span>
@@ -38,7 +38,7 @@ function TodayCatch({ navigate }) {
           ))}
         </div>
       </div>
-      <Panel title="Boats Out Today" meta={`Sorted by trophy fish per angler per day · ${today.date}`}>
+      <Panel title="Boats Out Today" meta={`Sorted by tuna per angler per day · ${today.date}`}>
         <div className="today-boat-row today-boat-hd">
           <span>Boat</span>
           <span>Landing</span>
