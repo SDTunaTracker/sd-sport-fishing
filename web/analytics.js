@@ -1,5 +1,19 @@
 // Analytics aggregations over SD.TRIPS
 (function () {
+  // Called from app.jsx whenever settings change. Adds `totalTuna` (from
+  // user-selected trophy species) and `calcDays` (rounded or actual) to every
+  // trip so all downstream analytics respect user preferences without any
+  // further changes.
+  function preprocessTrips(settings) {
+    const trophySp = (settings && settings.trophySpecies) || ['Bluefin','Yellowfin','Yellowtail','Dorado'];
+    const method   = (settings && settings.tripLengthMethod) || 'rounded';
+    window.SD_PROC_TRIPS = window.SD.TRIPS.map(function(t) {
+      var totalTuna = trophySp.reduce(function(s, sp) { return s + (t[sp] || 0); }, 0);
+      var rawDays   = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
+      var calcDays  = method === 'rounded' ? Math.max(1, Math.floor(rawDays)) : rawDays;
+      return Object.assign({}, t, { totalTuna: totalTuna, calcDays: calcDays });
+    });
+  }
   // Helper: every filter can be 'all' / null / single value / array. This makes
   // each one behave the same way (multi-select compatible) without changing
   // the call sites.
@@ -17,7 +31,7 @@
   };
 
   function filterTrips(filters) {
-    const t = window.SD.TRIPS;
+    const t = window.SD_PROC_TRIPS || window.SD.TRIPS;
     return t.filter((r) => {
       if (!_passes(r.year, filters.year, { toNumber: true })) return false;
       if (!_passes(r.month, filters.month, { toNumber: true })) return false;
@@ -91,9 +105,7 @@
         if (t.anglers > 0) {
           const tpa = (t[sf] || 0) / t.anglers;
           allTPAs.push(tpa);
-          // Per-angler-per-day: normalises long trips so a 3-day trip with 12
-          // trophy/angler isn't auto-ranked above a 1-day trip with 4.
-          const days = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
+          const days = t.calcDays || 1;
           allTPAsPerDay.push(tpa / days);
         }
       });
@@ -104,16 +116,12 @@
     const rows = Object.values(byBoat).map((b) => {
       const tpas = b.trips.map((t) => (t[sf] || 0) / Math.max(1, t.anglers));
       const tpasPerDay = b.trips.map((t) => {
-        const days = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
+        const days = t.calcDays || 1;
         return ((t[sf] || 0) / Math.max(1, t.anglers)) / days;
       });
       const totalTuna = b.trips.reduce((s, t) => s + (t[sf] || 0), 0);
       const totalAnglers = b.trips.reduce((s, t) => s + t.anglers, 0);
-      // Total angler-days = sum of (anglers × trip length) across this boat's
-      // trips. avgTPAPerDay = trophy_count / angler-days, the apples-to-apples
-      // comparison across 1-day vs 5-day trips.
-      const totalAnglerDays = b.trips.reduce(
-        (s, t) => s + (t.anglers * (t.tripLengthDays > 0 ? t.tripLengthDays : 1)), 0);
+      const totalAnglerDays = b.trips.reduce((s, t) => s + (t.anglers * (t.calcDays || 1)), 0);
       const avgTPA = totalAnglers ? totalTuna / totalAnglers : 0;
       const avgTPAPerDay = totalAnglerDays ? totalTuna / totalAnglerDays : 0;
       const medTPA = median(tpas);
@@ -278,7 +286,7 @@
   // you whether it's outperforming the other boats that fished the same
   // conditions (same date, same trip duration).
   function _tpaPerDay(t, sf) {
-    const days = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
+    const days = t.calcDays || 1;
     return ((t[sf] || 0) / Math.max(1, t.anglers)) / days;
   }
 
@@ -348,6 +356,7 @@
   }
 
   window.SDA = {
+    preprocessTrips,
     filterTrips,
     boatLeaderboard,
     landingSummary,

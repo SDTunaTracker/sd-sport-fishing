@@ -13,6 +13,16 @@ function App() {
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
 
+  // Settings: trophy species + trip length methodology, persisted to localStorage.
+  const [settings, setSettingsState] = useS(() => loadSettings());
+  function onSettingsChange(next) {
+    saveSettings(next);
+    SDA.preprocessTrips(next);
+    setSettingsState(next);
+  }
+  // Initialize processed trips on first render.
+  useE(() => { SDA.preprocessTrips(settings); }, []);
+
   // expose tweak setter for inline buttons in dashboard
   window.__setTweak = (patch) => setTweaksState(patch);
 
@@ -39,7 +49,7 @@ function App() {
     tripplanner: 'tripplanner',
     headtohead: 'headtohead',
     seasonality: 'seasonality', moon: 'moon', watchlist: 'dashboard',
-    recent: 'dashboard', settings: 'dashboard',
+    recent: 'dashboard', settings: 'settings',
   };
 
   let content;
@@ -61,6 +71,8 @@ function App() {
     content = <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>;
   } else if (route.view === 'moon') {
     content = <MoonView filters={filters} setFilters={setFilters} navigate={navigate}/>;
+  } else if (route.view === 'settings') {
+    content = <SettingsView settings={settings} onSettingsChange={onSettingsChange}/>;
   }
 
   const sidebarActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view;
