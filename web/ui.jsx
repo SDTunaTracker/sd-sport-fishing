@@ -33,7 +33,6 @@ function AppHeader({ active, onNavigate }) {
     { id: 'tripplanner', label: 'Trip Planner',  icon: 'fa-calendar-check' },
     { id: 'seasonality', label: 'Seasonality',   icon: 'fa-calendar-days' },
     { id: 'moon',        label: 'Moon & Tides',  icon: 'fa-moon' },
-    { id: 'settings',    label: 'Settings',      icon: 'fa-gear' },
   ];
   return (
     <div className="app-header">
