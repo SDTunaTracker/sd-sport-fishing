@@ -128,8 +128,11 @@ def _today_summary(trips: list[dict]) -> dict | None:
                 "boat": t["boat"],
                 "landing": t["landing"],
                 "tripLength": t["tripLength"],
-                "trophyCount": t["trophyCount"],
                 "anglers": t["anglers"],
+                "Bluefin": t["Bluefin"],
+                "Yellowfin": t["Yellowfin"],
+                "Yellowtail": t["Yellowtail"],
+                "Dorado": t["Dorado"],
                 "trophyPerAnglerPerDay": t["trophyPerAnglerPerDay"],
             }
             for t in boats

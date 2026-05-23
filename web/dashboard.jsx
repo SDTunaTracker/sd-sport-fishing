@@ -48,7 +48,10 @@ function TodayCatch({ navigate }) {
           <span>Boat</span>
           <span>Landing</span>
           <span>Trip</span>
-          <span>Trophy</span>
+          <span style={{color: SPECIES_COLORS.Bluefin}}>Bluefin</span>
+          <span style={{color: SPECIES_COLORS.Yellowfin}}>Yellowfin</span>
+          <span style={{color: SPECIES_COLORS.Yellowtail}}>Yellowtail</span>
+          <span style={{color: SPECIES_COLORS.Dorado}}>Dorado</span>
           <span>Anglers</span>
           <span>TPA/Day</span>
         </div>
@@ -58,7 +61,10 @@ function TodayCatch({ navigate }) {
             <span style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
             <span>{b.landing.replace(' Sportfishing','').replace(' Landing','')}</span>
             <span>{b.tripLength}</span>
-            <span style={{fontWeight:600}}>{fmt.n(b.trophyCount)}</span>
+            <span style={{fontWeight: b.Bluefin > 0 ? 600 : 400, color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)'}}>{fmt.n(b.Bluefin)}</span>
+            <span style={{fontWeight: b.Yellowfin > 0 ? 600 : 400, color: b.Yellowfin > 0 ? SPECIES_COLORS.Yellowfin : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowfin)}</span>
+            <span style={{fontWeight: b.Yellowtail > 0 ? 600 : 400, color: b.Yellowtail > 0 ? SPECIES_COLORS.Yellowtail : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowtail)}</span>
+            <span style={{fontWeight: b.Dorado > 0 ? 600 : 400, color: b.Dorado > 0 ? SPECIES_COLORS.Dorado : 'var(--tb-gray-3)'}}>{fmt.n(b.Dorado)}</span>
             <span>{fmt.n(b.anglers)}</span>
             <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
           </div>
