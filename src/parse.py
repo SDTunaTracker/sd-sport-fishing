@@ -50,7 +50,7 @@ def parse_trip_length(raw: str) -> tuple[str | None, float | None]:
     if re.search(r"\b1/2\s*day\b|\bhalf\s*day\b", s):
         return "Half Day", 0.5
     if re.search(r"\b3/4\s*day\b", s):
-        return "3/4 Day", 0.75
+        return "Full Day", 1.0
     if re.search(r"\btwilight\b", s):
         return "Twilight", 0.25
     for n_label, days in [
@@ -183,8 +183,14 @@ class TrophyMetrics:
     trophy_per_angler_per_day: float
 
 
+def metric_days(trip_length_days: float) -> float:
+    """Days divisor for per-day metric: round down to nearest whole day, min 1.
+    e.g. 0.75→1, 1.0→1, 1.5→1, 2.0→2, 2.5→2, 3.0→3 ..."""
+    return max(1.0, float(int(trip_length_days)))
+
+
 def trophy_metrics(species: dict[str, int], anglers: int, trip_days: float) -> TrophyMetrics:
     total = sum(species.get(sp, 0) for sp in TROPHY_SPECIES)
     per_angler = (total / anglers) if anglers > 0 else 0.0
-    per_apd = (per_angler / trip_days) if trip_days > 0 else 0.0
+    per_apd = (per_angler / metric_days(trip_days)) if trip_days > 0 else 0.0
     return TrophyMetrics(total, per_angler, per_apd)
