@@ -25,62 +25,50 @@ const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'
 
 function AppHeader({ active, onNavigate }) {
   const NAV = [
-    { id: 'today',       label: 'Today',         icon: 'fa-chart-column' },
+    { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
-    { id: 'boats',       label: 'Boats',         icon: 'fa-sailboat' },
-    { id: 'landings',    label: 'Landings',      icon: 'fa-anchor' },
-    { id: 'headtohead',  label: 'Head-to-Head',  icon: 'fa-scale-balanced' },
-    { id: 'tripplanner', label: 'Trip Planner',  icon: 'fa-calendar-check' },
-    { id: 'seasonality', label: 'Seasonality',   icon: 'fa-calendar-days' },
-    { id: 'moon',        label: 'Moon & Tides',  icon: 'fa-moon' },
+    { id: 'boats',       label: 'Boats',        icon: 'fa-sailboat' },
+    { id: 'landings',    label: 'Landings',     icon: 'fa-anchor' },
+    { id: 'headtohead',  label: 'Head-to-Head', icon: 'fa-scale-balanced' },
+    { id: 'tripplanner', label: 'Trip Planner', icon: 'fa-calendar-check' },
+    { id: 'seasonality', label: 'Seasonality',  icon: 'fa-calendar-days' },
+    { id: 'moon',        label: 'Moon & Tides', icon: 'fa-moon' },
   ];
+  const m = (window.SD && window.SD.META) || {};
+  const sst = m.sstF != null ? `${m.sstF.toFixed(1)}°F` : '—';
+  const moon = m.moonPhase || '—';
+  const illum = m.moonIllum != null ? ` (${m.moonIllum}%)` : '';
   return (
     <div className="app-header">
-      <div className="row1">
+      {/* Row 1: logo + SST/moon + gear */}
+      <div className="header-top">
         <div className="logo">
           <span className="mark"><i className="fa-solid fa-fish-fins fish"></i> SD Tuna Tracker</span>
           <span className="by">Sportfish Analytics</span>
         </div>
-        <div className="col2">
-          <div className="eyebrow">
-            <div className="meta">
-              {(() => {
-                const m = (window.SD && window.SD.META) || {};
-                const sst = m.sstF != null ? `${m.sstF.toFixed(1)}°F` : '—';
-                const moon = m.moonPhase || '—';
-                const illum = m.moonIllum != null ? ` (${m.moonIllum}%)` : '';
-                return (
-                  <Fragment>
-                    <span title="Sea-surface temp at NDBC 46232 Point Loma South">
-                      <i className="fa-solid fa-temperature-half"></i> SST: <b>{sst}</b>
-                    </span>
-                    <span title="Moon phase today">
-                      <i className="fa-solid fa-moon"></i> <b>{moon}{illum}</b>
-                    </span>
-                  </Fragment>
-                );
-              })()}
-            </div>
-          </div>
-          <div className="app-nav">
-            <div className="tabs">
-              {NAV.map(t => (
-                <div key={t.id}
-                     className={`tab${active === t.id ? ' sel' : ''}`}
-                     onClick={() => onNavigate && onNavigate(t.id)}>
-                  <i className={`fa-solid ${t.icon}`}></i>{t.label}
-                </div>
-              ))}
-            </div>
-            <div className="right">
-              <span className="iconbtn" title="Settings"
-                    onClick={() => onNavigate && onNavigate('settings')}
-                    style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
-                <i className="fa-solid fa-gear"></i>
-              </span>
-            </div>
-          </div>
+        <div className="header-meta">
+          <span title="Sea-surface temp at NDBC 46232 Point Loma South">
+            <i className="fa-solid fa-temperature-half"></i> SST: <b>{sst}</b>
+          </span>
+          <span title="Moon phase today">
+            <i className="fa-solid fa-moon"></i> <b>{moon}{illum}</b>
+          </span>
         </div>
+        <span className="header-gear iconbtn" title="Settings"
+              onClick={() => onNavigate && onNavigate('settings')}
+              style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
+          <i className="fa-solid fa-gear"></i>
+        </span>
+      </div>
+      {/* Row 2: scrollable nav tab strip */}
+      <div className="header-nav">
+        {NAV.map(t => (
+          <div key={t.id}
+               className={`tab${active === t.id ? ' sel' : ''}`}
+               onClick={() => onNavigate && onNavigate(t.id)}>
+            <i className={`fa-solid ${t.icon}`}></i>{t.label}
+          </div>
+        ))}
       </div>
       <div className="lime-strip"></div>
     </div>
