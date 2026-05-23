@@ -39,6 +39,11 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Stamp cache-bust version into index.html
+        run: |
+          VERSION=$(date -u +%Y%m%d%H%M)
+          sed -i "s/?v=[^\"']*/?v=${VERSION}/g" web/index.html
+
       - name: Upload web/ as the Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
