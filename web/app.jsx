@@ -77,15 +77,12 @@ function App() {
     content = <SettingsView settings={settings} onSettingsChange={onSettingsChange}/>;
   }
 
-  const sidebarActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view === 'analytics' ? 'analytics' : route.view;
+  const headerActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view;
 
   return (
     <Fragment>
-      <AppHeader section="Analytics" tab={route.view === 'boats' || route.view === 'boat' ? 'Boats' : route.view === 'landings' || route.view === 'landing' ? 'Landings' : 'Dashboard'}/>
-      <div className="shell">
-        <SideNav active={sidebarActive} onNavigate={(id) => navigate(navMap[id] || 'dashboard')}/>
-        <main data-screen-label={route.view}>{content}</main>
-      </div>
+      <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'dashboard')}/>
+      <main className="main-content" data-screen-label={route.view}>{content}</main>
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">

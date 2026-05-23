@@ -23,14 +23,17 @@ const fmt = {
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function AppHeader({ section = 'Analytics', tab = 'Dashboard' }) {
-  const apps = ['Analytics','Trip Planner','Reports','Boats','Landings'];
-  const tabs = [
-    { id: 'Dashboard', icon: 'fa-chart-column' },
-    { id: 'Boats', icon: 'fa-sailboat' },
-    { id: 'Landings', icon: 'fa-anchor' },
-    { id: 'Trips', icon: 'fa-fish' },
-    { id: 'Tools', icon: 'fa-screwdriver-wrench' },
+function AppHeader({ active, onNavigate }) {
+  const NAV = [
+    { id: 'dashboard',   label: 'Dashboard',    icon: 'fa-chart-column' },
+    { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
+    { id: 'boats',       label: 'Boats',         icon: 'fa-sailboat' },
+    { id: 'landings',    label: 'Landings',      icon: 'fa-anchor' },
+    { id: 'headtohead',  label: 'Head-to-Head',  icon: 'fa-scale-balanced' },
+    { id: 'tripplanner', label: 'Trip Planner',  icon: 'fa-calendar-check' },
+    { id: 'seasonality', label: 'Seasonality',   icon: 'fa-calendar-days' },
+    { id: 'moon',        label: 'Moon & Tides',  icon: 'fa-moon' },
+    { id: 'settings',    label: 'Settings',      icon: 'fa-gear' },
   ];
   return (
     <div className="app-header">
@@ -62,19 +65,16 @@ function AppHeader({ section = 'Analytics', tab = 'Dashboard' }) {
           </div>
           <div className="app-nav">
             <div className="tabs">
-              {tabs.map(t => (
-                <div key={t.id} className={`tab${t.id === tab ? ' sel' : ''}`}>
-                  <i className={`fa-solid ${t.icon}`}></i>{t.id}
+              {NAV.map(t => (
+                <div key={t.id}
+                     className={`tab${active === t.id ? ' sel' : ''}`}
+                     onClick={() => onNavigate && onNavigate(t.id)}>
+                  <i className={`fa-solid ${t.icon}`}></i>{t.label}
                 </div>
               ))}
             </div>
             <div className="right">
-              <div className="search">
-                <i className="fa-solid fa-magnifying-glass"></i>
-                <input placeholder="Search boats, landings, captains…" />
-              </div>
               <span className="iconbtn"><i className="fa-regular fa-bell"></i></span>
-              <span className="iconbtn"><i className="fa-regular fa-bookmark"></i></span>
               <div className="avatar">JT</div>
             </div>
           </div>
