@@ -74,18 +74,17 @@ function TodayCatch({ navigate, settings }) {
           <div className="today-date">{fmtDate(selectedDate)}{timeStr}</div>
         </div>
 
-        {ratingData.fleetRatingKey && (() => {
-          const r = RATINGS[ratingData.fleetRatingKey];
-          return (
-            <div className="fleet-rating-badge">
-              <span className="frb-emoji">{r.emoji}</span>
-              <div>
-                <div className="frb-label" style={{color: r.color}}>{r.label}</div>
-                <div className="frb-sub">vs. last 30 days · same trip length</div>
+        {ratingData.fleetRatingKey && (
+          <div className="fleet-rating-badge">
+            <span className="frb-emoji">{RATINGS[ratingData.fleetRatingKey].emoji}</span>
+            <div>
+              <div className="frb-label" style={{color: RATINGS[ratingData.fleetRatingKey].color}}>
+                {RATINGS[ratingData.fleetRatingKey].label}
               </div>
+              <div className="frb-sub">vs. last 30 days · same trip length</div>
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         {/* Date picker */}
         <div style={{display:'flex', alignItems:'center'}}>
@@ -109,7 +108,7 @@ function TodayCatch({ navigate, settings }) {
             <span className="ts-lbl">anglers</span>
           </div>
           <div className="today-stat">
-            <span className="ts-val">{fmt.n(dateTrips.length)}</span>
+            <span className="ts-val">{fmt.n(ratingData.boats.length)}</span>
             <span className="ts-lbl">boats</span>
           </div>
         </div>
