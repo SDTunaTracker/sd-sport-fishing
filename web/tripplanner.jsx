@@ -39,20 +39,111 @@ function buildBoatStats() {
   return out;
 }
 
+function fmtDepDate(d) {
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+function fmtTime(d) {
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+function winRateColor(wr) {
+  if (wr >= 0.70) return 'var(--ss-darkseagreen-500)';
+  if (wr >= 0.50) return 'var(--ss-slate)';
+  return 'var(--ss-orange-500)';
+}
+
+function BestRow({ s }) {
+  const dep = new Date(s.departureAt);
+  const depStr = `${fmtDepDate(dep)} ${fmtTime(dep)}`;
+  const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
+  const wrPct = s._winRate != null ? Math.round(s._winRate * 100) : null;
+  const wrLabel = wrPct != null ? `${wrPct}%` : '—';
+  const wrColor = wrPct != null ? winRateColor(s._winRate) : 'var(--tb-gray-3)';
+  const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
+  const url = bookingUrl(s);
+  const boatLabel = url ? (
+    <a href={url} target="_blank" rel="noopener noreferrer"
+       style={{color: 'var(--ss-black)', textDecoration: 'none'}}
+       onMouseEnter={e => e.currentTarget.style.color = 'var(--ss-darkseagreen-500)'}
+       onMouseLeave={e => e.currentTarget.style.color = 'var(--ss-black)'}>
+      {s.boat} <i className="fa-solid fa-arrow-up-right-from-square" style={{fontSize: 10, opacity: 0.5, marginLeft: 2}}></i>
+    </a>
+  ) : s.boat;
+  return (
+    <div className="tp-best-row" style={{
+      padding: '10px 12px',
+      borderBottom: '1px solid var(--ss-border-2)',
+      font: '400 12px/16px var(--ss-font-sans)',
+    }}>
+      <div style={{minWidth: 0}}>
+        <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
+        <div style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{s.tripLength} · {landingShort}</div>
+      </div>
+      <span className="tp-trip-col" style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
+      <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
+      <div className="tp-wr-col" style={{textAlign: 'right'}}>
+        <div style={{fontWeight: 600, color: wrColor}}>{wrLabel}</div>
+        {s._trips > 0 && <div style={{font: '400 10px/13px var(--ss-font-sans)', color: 'var(--ss-slate)'}}>{s._trips}t</div>}
+      </div>
+      <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
+      <span style={{
+        font: '600 13px/16px var(--ss-font-sans)',
+        textAlign: 'right',
+        color: s.openSpots <= 2 ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)',
+        fontVariantNumeric: 'tabular-nums',
+      }}>{s.openSpots}</span>
+    </div>
+  );
+}
+
+function CheapestRow({ s }) {
+  const dep = new Date(s.departureAt);
+  const depStr = `${fmtDepDate(dep)} ${fmtTime(dep)}`;
+  const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
+  const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
+  const url = bookingUrl(s);
+  const boatLabel = url ? (
+    <a href={url} target="_blank" rel="noopener noreferrer"
+       style={{color: 'var(--ss-black)', textDecoration: 'none'}}
+       onMouseEnter={e => e.currentTarget.style.color = 'var(--ss-darkseagreen-500)'}
+       onMouseLeave={e => e.currentTarget.style.color = 'var(--ss-black)'}>
+      {s.boat} <i className="fa-solid fa-arrow-up-right-from-square" style={{fontSize: 10, opacity: 0.5, marginLeft: 2}}></i>
+    </a>
+  ) : s.boat;
+  return (
+    <div className="tp-cheapest-row" style={{
+      padding: '10px 12px',
+      borderBottom: '1px solid var(--ss-border-2)',
+      font: '400 12px/16px var(--ss-font-sans)',
+    }}>
+      <div style={{minWidth: 0}}>
+        <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
+        <div style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{s.tripLength} · {landingShort}</div>
+      </div>
+      <span className="tp-trip-col" style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
+      <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
+      <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
+      <span style={{
+        font: '600 13px/16px var(--ss-font-sans)',
+        textAlign: 'right',
+        color: s.openSpots <= 2 ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)',
+        fontVariantNumeric: 'tabular-nums',
+      }}>{s.openSpots}</span>
+    </div>
+  );
+}
+
 function TripPlanner({ filters, setFilters, navigate, tweaks }) {
-  // Filter the schedule: only future trips that respect any relevant filters.
-  // Year, Species, and Min Trips don't apply to scheduled trips (year is always
-  // forward, schedule has no species data, min-trips is a leaderboard concept).
   const SEASONS = { spring: [3,4,5], summer: [6,7,8], fall: [9,10,11], winter: [12,1,2] };
-  // Filter value may be 'all', a single string, or an array of strings (multi-select).
   const _matches = (val, filter) => {
     if (filter == null || filter === 'all' || filter === '') return true;
     const sel = Array.isArray(filter) ? filter : [filter];
     return sel.length === 0 || sel.map(String).includes(String(val));
   };
+
   const schedule = useMemo(() => {
     const now = new Date();
-    const all = (window.SD.SCHEDULE || []).filter(s => {
+    return (window.SD.SCHEDULE || []).filter(s => {
       const dep = new Date(s.departureAt);
       if (dep < now) return false;
       if (!_matches(s.landing, filters.landing)) return false;
@@ -66,26 +157,42 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
       }
       return true;
     });
-    all.sort((a, b) => a.departureAt.localeCompare(b.departureAt));
-    return all;
   }, [filters]);
 
-  // Group by departure date so the column has subtle date dividers.
-  const grouped = useMemo(() => {
-    const out = [];
-    let lastDate = null;
-    for (const s of schedule) {
-      const d = s.departureAt.slice(0, 10);
-      if (d !== lastDate) {
-        out.push({ kind: 'header', date: d });
-        lastDate = d;
-      }
-      out.push({ kind: 'trip', s });
-    }
-    return out;
+  const winRates = useMemo(() => SDA.boatWinRates(), []);
+
+  const bestSchedule = useMemo(() => {
+    return [...schedule].map(s => {
+      const wr = winRates[`${s.boat}|${s.tripLength}`];
+      return { ...s, _winRate: wr ? wr.winRate : null, _trips: wr ? wr.total : 0 };
+    }).sort((a, b) => {
+      if (a._winRate === null && b._winRate === null) return (a.price || 0) - (b.price || 0);
+      if (a._winRate === null) return 1;
+      if (b._winRate === null) return -1;
+      return b._winRate - a._winRate;
+    });
+  }, [schedule, winRates]);
+
+  const cheapestSchedule = useMemo(() => {
+    return [...schedule].sort((a, b) => {
+      if (a.price == null && b.price == null) return 0;
+      if (a.price == null) return 1;
+      if (b.price == null) return -1;
+      return a.price - b.price;
+    });
   }, [schedule]);
 
+  const [activeTab, setActiveTab] = useState('best');
   const [finderOpen, setFinderOpen] = useState(false);
+
+  const HDR_STYLE = {
+    padding: '8px 12px',
+    background: 'var(--ss-clay)',
+    borderBottom: '1px solid var(--ss-border-2)',
+    font: '700 10px/12px var(--ss-font-sans)',
+    textTransform: 'uppercase', letterSpacing: '.06em',
+    color: 'var(--ss-slate)',
+  };
 
   return (
     <Fragment>
@@ -110,111 +217,49 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
       <FilterBar filters={filters} setFilters={setFilters}/>
 
       <Panel title="Upcoming Open-Party Trips"
-               meta={`${schedule.length} bookable · sold-out hidden · filters apply`}
-               padding={false}>
-          {schedule.length === 0 ? (
-            <div className="muted-block" style={{padding: 16}}>
-              No upcoming trips match these filters. Try clearing landing or trip-length.
-            </div>
-          ) : (
-            <Fragment>
-              {/* Column header row, sticky at the top of the scroll panel. */}
-              <div style={{
-                ...SCHEDULE_GRID,
-                padding: '8px 12px',
-                background: 'var(--ss-clay)',
-                borderBottom: '1px solid var(--ss-border-2)',
-                font: '700 10px/12px var(--ss-font-sans)',
-                textTransform: 'uppercase', letterSpacing: '.06em',
-                color: 'var(--ss-slate)',
-                position: 'sticky', top: 0, zIndex: 2,
-              }}>
-                <span>Boat</span>
-                <span style={{textAlign: 'right'}}>Depart</span>
-                <span style={{textAlign: 'right'}}>Return</span>
-                <span style={{textAlign: 'right'}}>Load</span>
-                <span style={{textAlign: 'right'}}>Price</span>
-                <span style={{textAlign: 'right'}}>Open</span>
-              </div>
-              <div style={{maxHeight: 720, overflow: 'auto'}}>
-                {grouped.map((item, idx) => item.kind === 'header' ? (
-                  <div key={`h-${item.date}`} style={{
-                    padding: '6px 12px',
-                    background: 'var(--tb-foam, #F5F8FA)',
-                    borderTop: idx > 0 ? '1px solid var(--ss-border-2)' : 'none',
-                    borderBottom: '1px solid var(--ss-border-2)',
-                    font: '700 11px/14px var(--ss-font-sans)',
-                    color: 'var(--ss-black)',
-                  }}>
-                    {fmt.date(item.date)}
-                  </div>
-                ) : (
-                  <ScheduleRow key={`${item.s.landing}-${item.s.sourceId}`} s={item.s}/>
-                ))}
-              </div>
-            </Fragment>
-          )}
-        </Panel>
-    </Fragment>
-  );
-}
-
-// Shared grid template so the header row and data rows always line up.
-const SCHEDULE_GRID = {
-  display: 'grid',
-  gridTemplateColumns: '1fr 92px 110px 50px 64px 48px',
-  gap: 8,
-  alignItems: 'center',
-};
-
-function fmtDateShort(d) {
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-}
-function fmtTime(d) {
-  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-}
-
-function ScheduleRow({ s }) {
-  const dep = new Date(s.departureAt);
-  const ret = s.returnAt ? new Date(s.returnAt) : null;
-  const depStr = `${fmtDateShort(dep)} ${fmtTime(dep)}`;
-  const retStr = ret ? `${fmtDateShort(ret)} ${fmtTime(ret)}` : '—';
-  const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
-  const load = s.capacity != null ? String(s.capacity) : '—';
-  const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
-  const url = bookingUrl(s);
-  const boatLabel = url ? (
-    <a href={url} target="_blank" rel="noopener noreferrer"
-       style={{color: 'var(--ss-black)', textDecoration: 'none'}}
-       onMouseEnter={e => e.currentTarget.style.color = 'var(--ss-darkseagreen-500)'}
-       onMouseLeave={e => e.currentTarget.style.color = 'var(--ss-black)'}>
-      {s.boat} <i className="fa-solid fa-arrow-up-right-from-square" style={{fontSize: 10, opacity: 0.5, marginLeft: 2}}></i>
-    </a>
-  ) : s.boat;
-  return (
-    <div style={{
-      ...SCHEDULE_GRID,
-      padding: '10px 12px',
-      borderBottom: '1px solid var(--ss-border-2)',
-      font: '400 12px/16px var(--ss-font-sans)',
-    }}>
-      <div style={{minWidth: 0}}>
-        <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
-        <div style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>
-          {s.tripLength} · {landingShort}
+             meta={`${schedule.length} bookable · sold-out hidden · filters apply`}
+             padding={false}>
+        <div className="tp-tabs">
+          <button className={`tp-tab${activeTab === 'best' ? ' active' : ''}`}
+                  onClick={() => setActiveTab('best')}>Best</button>
+          <button className={`tp-tab${activeTab === 'cheapest' ? ' active' : ''}`}
+                  onClick={() => setActiveTab('cheapest')}>Cheapest</button>
         </div>
-      </div>
-      <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
-      <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{retStr}</span>
-      <span style={{textAlign: 'right', color: 'var(--ss-slate)', fontVariantNumeric: 'tabular-nums'}}>{load}</span>
-      <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
-      <span style={{
-        font: '600 13px/16px var(--ss-font-sans)',
-        textAlign: 'right',
-        color: s.openSpots <= 2 ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)',
-        fontVariantNumeric: 'tabular-nums',
-      }}>{s.openSpots}</span>
-    </div>
+
+        {schedule.length === 0 ? (
+          <div className="muted-block" style={{padding: 16}}>
+            No upcoming trips match these filters. Try clearing landing or trip-length.
+          </div>
+        ) : activeTab === 'best' ? (
+          <Fragment>
+            <div className="tp-best-row" style={HDR_STYLE}>
+              <span>Boat</span>
+              <span className="tp-trip-col">Trip</span>
+              <span style={{textAlign: 'right'}}>Depart</span>
+              <span className="tp-wr-col" style={{textAlign: 'right'}}>Win Rate</span>
+              <span style={{textAlign: 'right'}}>Price</span>
+              <span style={{textAlign: 'right'}}>Open</span>
+            </div>
+            <div style={{maxHeight: 720, overflow: 'auto'}}>
+              {bestSchedule.map(s => <BestRow key={`${s.landing}-${s.sourceId}`} s={s}/>)}
+            </div>
+          </Fragment>
+        ) : (
+          <Fragment>
+            <div className="tp-cheapest-row" style={HDR_STYLE}>
+              <span>Boat</span>
+              <span className="tp-trip-col">Trip</span>
+              <span style={{textAlign: 'right'}}>Depart</span>
+              <span style={{textAlign: 'right'}}>Price</span>
+              <span style={{textAlign: 'right'}}>Open</span>
+            </div>
+            <div style={{maxHeight: 720, overflow: 'auto'}}>
+              {cheapestSchedule.map(s => <CheapestRow key={`${s.landing}-${s.sourceId}`} s={s}/>)}
+            </div>
+          </Fragment>
+        )}
+      </Panel>
+    </Fragment>
   );
 }
 

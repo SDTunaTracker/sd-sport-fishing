@@ -399,6 +399,18 @@ body.compact .dt td { padding: 7px 12px; }
 /* Desktop: show species cols, hide trophy total col */
 .trophy-col { display: none; }
 
+/* ───── Trip Planner tabs ───── */
+.tp-tabs { display: flex; border-bottom: 1px solid var(--ss-border-2); background: var(--ss-clay); padding: 0 12px; gap: 4px; }
+.tp-tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 16px; font: 600 13px/18px var(--ss-font-sans); color: var(--ss-slate); cursor: pointer; margin-bottom: -1px; }
+.tp-tab.active { color: var(--ss-black); border-bottom-color: var(--ss-darkseagreen-500); }
+.tp-tab:hover:not(.active) { color: var(--ss-black); }
+/* Best tab: 6 cols — Boat, Trip, Depart, WinRate, Price, Open */
+.tp-best-row { display: grid; grid-template-columns: 2fr 90px 130px 80px 64px 48px; gap: 8px; align-items: center; }
+/* Cheapest tab: 5 cols — Boat, Trip, Depart, Price, Open */
+.tp-cheapest-row { display: grid; grid-template-columns: 2fr 90px 130px 64px 48px; gap: 8px; align-items: center; }
+.tp-wr-col { display: block; }
+.tp-trip-col { display: block; }
+
 /* ───── Mobile (≤768px) ───── */
 @media (max-width: 768px) {
   /* General */
@@ -585,4 +597,9 @@ body.compact .dt td { padding: 7px 12px; }
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* Trip planner — collapse to 4 cols on mobile (hide Trip + WinRate) */
+  .tp-best-row { grid-template-columns: 1fr 100px 52px 40px; }
+  .tp-cheapest-row { grid-template-columns: 1fr 100px 52px 40px; }
+  .tp-wr-col { display: none; }
+  .tp-trip-col { display: none; }
 }

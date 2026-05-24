@@ -372,6 +372,36 @@
   // For each trip on selectedDate, look back 30 days of same-trip-length history
   // and compute a percentile rating. Returns rated boat rows + angler-weighted
   // fleet rating key.
+  // Returns object keyed by "boat|tripLength" → { winRate, avgTPAPerDay, tripCount }.
+  // Win rate = fraction of that boat's trips (for that trip length) where its
+  // trophyPerAnglerPerDay beat the fleet median for the same trip length.
+  function boatWinRates() {
+    const allTrips = window.SD_PROC_TRIPS || window.SD.TRIPS;
+
+    // Fleet median trophyPerAnglerPerDay per trip length
+    const byLen = {};
+    allTrips.forEach(t => {
+      (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t.trophyPerAnglerPerDay || 0);
+    });
+    const fleetMed = {};
+    Object.entries(byLen).forEach(([len, vals]) => { fleetMed[len] = median(vals); });
+
+    // Per (boat, tripLength) accumulate wins / total / TPA sum
+    const out = {};
+    allTrips.forEach(t => {
+      const key = `${t.boat}|${t.tripLength}`;
+      const r = out[key] || (out[key] = { wins: 0, total: 0, tpaSum: 0 });
+      r.total++;
+      r.tpaSum += t.trophyPerAnglerPerDay || 0;
+      if ((t.trophyPerAnglerPerDay || 0) > (fleetMed[t.tripLength] || 0)) r.wins++;
+    });
+    Object.values(out).forEach(r => {
+      r.winRate     = r.total > 0 ? r.wins / r.total : 0;
+      r.avgTPAPerDay = r.total > 0 ? r.tpaSum / r.total : 0;
+    });
+    return out;
+  }
+
   function fishingRating(selectedDate) {
     const allTrips = window.SD_PROC_TRIPS || window.SD.TRIPS;
     const cutoff = _isoMinus(selectedDate, 30);
@@ -422,6 +452,7 @@
     peerMatchups,
     peerLeaderboard,
     fishingRating,
+    boatWinRates,
     median, mean, stddev, speciesField,
   };
 })();
