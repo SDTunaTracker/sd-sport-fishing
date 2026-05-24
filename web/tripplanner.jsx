@@ -155,11 +155,23 @@ function CheapestRow({ s }) {
 
 // ---- Filter Trips modal ---------------------------------------------------
 
+const MOON_PHASE_OPTIONS = [
+  { phase: 'Full',            emoji: '🌕', label: 'Full Moon',       color: '#FBBF24' },
+  { phase: 'New',             emoji: '🌑', label: 'New Moon',        color: '#38BDF8' },
+  { phase: 'First Quarter',   emoji: '🌓', label: 'First Quarter',   color: null },
+  { phase: 'Last Quarter',    emoji: '🌗', label: 'Last Quarter',    color: null },
+  { phase: 'Waxing Crescent', emoji: '🌒', label: 'Waxing Crescent', color: null },
+  { phase: 'Waning Crescent', emoji: '🌘', label: 'Waning Crescent', color: null },
+  { phase: 'Waxing Gibbous',  emoji: '🌔', label: 'Waxing Gibbous',  color: null },
+  { phase: 'Waning Gibbous',  emoji: '🌖', label: 'Waning Gibbous',  color: null },
+];
+
 function FilterTripsModal({ open, onClose, filters, onApply }) {
-  const [start, setStart] = useState(filters.start || '');
-  const [end, setEnd] = useState(filters.end || '');
-  const [landing, setLanding] = useState(filters.landing);
+  const [start, setStart]           = useState(filters.start || '');
+  const [end, setEnd]               = useState(filters.end || '');
+  const [landing, setLanding]       = useState(filters.landing);
   const [tripLength, setTripLength] = useState(filters.tripLength);
+  const [moonPhases, setMoonPhases] = useState(filters.moonPhases || 'all');
 
   useEffect(() => {
     if (open) {
@@ -167,6 +179,7 @@ function FilterTripsModal({ open, onClose, filters, onApply }) {
       setEnd(filters.end || '');
       setLanding(filters.landing);
       setTripLength(filters.tripLength);
+      setMoonPhases(filters.moonPhases || 'all');
     }
   }, [open]);
 
@@ -177,15 +190,27 @@ function FilterTripsModal({ open, onClose, filters, onApply }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
+  const togglePhase = (phase) => {
+    if (moonPhases === 'all') {
+      setMoonPhases(MOON_PHASE_OPTIONS.map(o => o.phase).filter(p => p !== phase));
+    } else {
+      const next = moonPhases.includes(phase)
+        ? moonPhases.filter(p => p !== phase)
+        : [...moonPhases, phase];
+      setMoonPhases(next.length === 0 || next.length === MOON_PHASE_OPTIONS.length ? 'all' : next);
+    }
+  };
+
   const handleReset = () => {
     setStart('');
     setEnd('');
     setLanding('all');
     setTripLength('all');
+    setMoonPhases('all');
   };
 
   const handleApply = () => {
-    onApply({ start: start || null, end: end || null, landing, tripLength });
+    onApply({ start: start || null, end: end || null, landing, tripLength, moonPhases });
     onClose();
   };
 
@@ -209,7 +234,7 @@ function FilterTripsModal({ open, onClose, filters, onApply }) {
           <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        <div className="modal-body" style={{padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20}}>
+        <div className="modal-body" style={{padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20, maxHeight: '72vh', overflowY: 'auto'}}>
           <div>
             <div style={SECTION_LABEL}>Date Range</div>
             <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8}}>
@@ -234,6 +259,32 @@ function FilterTripsModal({ open, onClose, filters, onApply }) {
             <div style={SECTION_LABEL}>Trip Length</div>
             <MultiSelect options={window.SD.TRIP_LENGTHS} value={tripLength}
                          onChange={setTripLength} allLabel="Any length"/>
+          </div>
+
+          <div>
+            <div style={SECTION_LABEL}>Moon Phase</div>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2}}>
+              {MOON_PHASE_OPTIONS.map(opt => {
+                const checked = moonPhases === 'all' || (Array.isArray(moonPhases) && moonPhases.includes(opt.phase));
+                return (
+                  <label key={opt.phase} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    cursor: 'pointer', padding: '5px 6px', borderRadius: 4,
+                    userSelect: 'none',
+                  }}>
+                    <input type="checkbox" checked={checked} onChange={() => togglePhase(opt.phase)}
+                           style={{width: 14, height: 14, accentColor: opt.color || '#64748B', flexShrink: 0}}/>
+                    <span style={{fontSize: 15, lineHeight: 1, flexShrink: 0}}>{opt.emoji}</span>
+                    <span style={{font: '400 12px/16px var(--ss-font-sans)', color: opt.color || 'var(--ss-black)'}}>
+                      {opt.label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <div style={{font: '400 11px/15px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 8}}>
+              Full and new moons historically produce the best tuna fishing.
+            </div>
           </div>
         </div>
 
@@ -262,10 +313,12 @@ function TripPlanner({ navigate }) {
     return sel.length === 0 || sel.map(String).includes(String(val));
   };
 
-  const [tpFilters, setTpFilters] = useState({ start: null, end: null, landing: 'all', tripLength: 'all' });
+  const [tpFilters, setTpFilters] = useState({ start: null, end: null, landing: 'all', tripLength: 'all', moonPhases: 'all' });
 
   const schedule = useMemo(() => {
     const now = new Date();
+    const DAY_MS = 86400000;
+    const selPhases = Array.isArray(tpFilters.moonPhases) ? tpFilters.moonPhases : null;
     return (window.SD.SCHEDULE || []).filter(s => {
       const dep = new Date(s.departureAt);
       if (dep < now) return false;
@@ -273,6 +326,14 @@ function TripPlanner({ navigate }) {
       if (tpFilters.end   && dep > new Date(tpFilters.end   + 'T23:59:59')) return false;
       if (!_matches(s.landing,    tpFilters.landing))    return false;
       if (!_matches(s.tripLength, tpFilters.tripLength)) return false;
+      if (selPhases && selPhases.length > 0) {
+        const nearby = [
+          moonInfo(dep).phase,
+          moonInfo(new Date(dep.getTime() - DAY_MS)).phase,
+          moonInfo(new Date(dep.getTime() + DAY_MS)).phase,
+        ];
+        if (!nearby.some(p => selPhases.includes(p))) return false;
+      }
       return true;
     });
   }, [tpFilters]);
@@ -308,7 +369,8 @@ function TripPlanner({ navigate }) {
   const activeFilterCount =
     (tpFilters.start || tpFilters.end ? 1 : 0) +
     (Array.isArray(tpFilters.landing)    ? 1 : 0) +
-    (Array.isArray(tpFilters.tripLength) ? 1 : 0);
+    (Array.isArray(tpFilters.tripLength) ? 1 : 0) +
+    (Array.isArray(tpFilters.moonPhases) ? 1 : 0);
 
   const HDR_STYLE = {
     padding: '8px 12px',
