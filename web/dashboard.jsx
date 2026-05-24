@@ -103,7 +103,7 @@ function TodayCatch({ navigate, settings }) {
           {isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}
         </div>
       ) : (
-        <Panel title="Today's Report" meta="Sorted by tuna per angler per day">
+        <Panel title="Today's Report" meta="Sorted by tuna per angler (TPA) per day">
           <div className="today-boat-row today-boat-hd">
             <span>Boat</span>
             <span>Landing</span>
