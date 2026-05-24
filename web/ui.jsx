@@ -63,8 +63,7 @@ function AppHeader({ active, onNavigate }) {
         {/* Row 1: logo + meta + icons */}
         <div className="header-top">
           <div className="logo">
-            <span className="mark"><i className="fa-solid fa-fish-fins fish"></i> SD Tuna Tracker</span>
-            <span className="by">Sportfish Analytics</span>
+            <img src="logo.png" alt="The Tuna Tracker" className="logo-img"/>
           </div>
           <div className="header-meta">
             <span title="Sea-surface temp at NDBC 46232 Point Loma South">
@@ -105,7 +104,7 @@ function AppHeader({ active, onNavigate }) {
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu-head">
               <div className="mm-logo">
-                <i className="fa-solid fa-fish-fins"></i> SD Tuna Tracker
+                <img src="logo.png" alt="The Tuna Tracker" className="logo-img logo-img-sm"/>
               </div>
               <span className="mm-close" onClick={closeMenu}>
                 <i className="fa-solid fa-xmark"></i>

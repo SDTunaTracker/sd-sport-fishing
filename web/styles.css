@@ -152,10 +152,9 @@ a { color: inherit; text-decoration: none; }
 .app-header { position: sticky; top: 0; z-index: 50; }
 /* Row 1: logo + meta + gear */
 .header-top { display: flex; align-items: center; background: var(--tb-midnight); color: #fff; padding: 0 16px; gap: 16px; min-height: 52px; }
-.logo { display: flex; flex-direction: column; gap: 2px; padding: 10px 16px 10px 0; border-right: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-.logo .mark { font: 700 18px/1 var(--ss-font-sans); letter-spacing: -0.02em; color: #fff; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.logo .mark .fish { color: var(--tb-lime); }
-.logo .by { font: 500 9px/1 var(--ss-font-sans); letter-spacing: .14em; color: var(--tb-gray-2); text-transform: uppercase; }
+.logo { display: flex; align-items: center; padding: 6px 16px 6px 0; border-right: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+.logo-img { height: 60px; width: 60px; border-radius: 50%; object-fit: cover; display: block; }
+.logo-img-sm { height: 36px; width: 36px; }
 .header-meta { margin-left: auto; display: flex; gap: 14px; align-items: center; color: var(--tb-gray-3); font: 400 11px/16px var(--ss-font-sans); flex-shrink: 0; }
 .header-meta b { color: #fff; font-weight: 600; }
 .header-gear { font-size: 16px; flex-shrink: 0; }
@@ -397,7 +396,8 @@ body.compact .dt td { padding: 7px 12px; }
   /* Header: not sticky on mobile */
   .app-header { position: static; }
   .header-top { padding: 8px 14px; gap: 8px; min-height: 48px; }
-  .logo { border-right: none; padding-right: 0; }
+  .logo { border-right: none; padding-right: 0; padding-left: 0; }
+  .logo-img { height: 44px; width: 44px; }
   .header-meta { display: none; }
   .header-gear { margin-left: auto; }
   .header-nav { display: none; }
@@ -442,13 +442,9 @@ body.compact .dt td { padding: 7px 12px; }
     flex-shrink: 0;
   }
   .mobile-menu-head .mm-logo {
-    font: 700 16px/1 var(--ss-font-sans);
-    color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
   }
-  .mobile-menu-head .mm-logo i { color: var(--tb-lime); }
   .mobile-menu-head .mm-close {
     color: rgba(255,255,255,0.5);
     font-size: 20px;
