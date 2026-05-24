@@ -88,10 +88,7 @@ function TodayCatch({ navigate, settings }) {
 
         {/* Date picker */}
         <div style={{display:'flex', alignItems:'center'}}>
-          <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-                  style={{font:'500 12px/16px var(--ss-font-sans)', padding:'5px 10px',
-                          borderRadius:6, border:'1px solid var(--ss-border)',
-                          background:'var(--ss-surface)', color:'var(--ss-ink)', cursor:'pointer'}}>
+          <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)}>
             {dates.map(dt => (
               <option key={dt} value={dt}>{fmtDate(dt)}{dt === TODAY_ISO ? ' (today)' : ''}</option>
             ))}
