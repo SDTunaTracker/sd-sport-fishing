@@ -37,11 +37,6 @@ function AppHeader({ active, onNavigate }) {
     { id: 'moon',        label: 'Moon & Tides', icon: 'fa-moon' },
   ];
 
-  const m = (window.SD && window.SD.META) || {};
-  const sst = m.sstF != null ? `${m.sstF.toFixed(1)}°F` : '—';
-  const moon = m.moonPhase || '—';
-  const illum = m.moonIllum != null ? ` (${m.moonIllum}%)` : '';
-
   function openMenu() { setMenuState('open'); }
 
   function closeMenu() {
@@ -60,19 +55,23 @@ function AppHeader({ active, onNavigate }) {
   return (
     <React.Fragment>
       <div className="app-header">
-        {/* Row 1: logo + meta + icons */}
         <div className="header-top">
-          <div className="logo">
-            <img src="logo.png" alt="The Tuna Tracker" className="logo-img"/>
+          {/* Logo: fish icon + wordmark */}
+          <div className="logo" onClick={() => handleNavItem('today')} style={{cursor:'pointer'}}>
+            <i className="fa-solid fa-fish-fins logo-fish"></i>
+            <span className="logo-wordmark">The Tuna Tracker</span>
           </div>
-          <div className="header-meta">
-            <span title="Sea-surface temp at NDBC 46232 Point Loma South">
-              <i className="fa-solid fa-temperature-half"></i> SST: <b>{sst}</b>
-            </span>
-            <span title="Moon phase today">
-              <i className="fa-solid fa-moon"></i> <b>{moon}{illum}</b>
-            </span>
+          {/* Nav tabs — desktop only */}
+          <div className="header-nav">
+            {NAV.map(t => (
+              <div key={t.id}
+                   className={`tab${active === t.id ? ' sel' : ''}`}
+                   onClick={() => handleNavItem(t.id)}>
+                <i className={`fa-solid ${t.icon}`}></i>{t.label}
+              </div>
+            ))}
           </div>
+          {/* Gear icon */}
           <span className="header-gear iconbtn" title="Settings"
                 onClick={() => handleNavItem('settings')}
                 style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
@@ -84,17 +83,6 @@ function AppHeader({ active, onNavigate }) {
             <i className={`fa-solid ${menuState === 'open' ? 'fa-xmark' : 'fa-bars'}`}></i>
           </span>
         </div>
-        {/* Row 2: desktop nav tab strip (hidden on mobile) */}
-        <div className="header-nav">
-          {NAV.map(t => (
-            <div key={t.id}
-                 className={`tab${active === t.id ? ' sel' : ''}`}
-                 onClick={() => handleNavItem(t.id)}>
-              <i className={`fa-solid ${t.icon}`}></i>{t.label}
-            </div>
-          ))}
-        </div>
-        <div className="lime-strip"></div>
       </div>
 
       {/* Mobile slide-in nav panel */}
@@ -104,7 +92,8 @@ function AppHeader({ active, onNavigate }) {
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu-head">
               <div className="mm-logo">
-                <img src="logo.png" alt="The Tuna Tracker" className="logo-img logo-img-sm"/>
+                <i className="fa-solid fa-fish-fins" style={{color:'var(--tb-lime)'}}></i>
+                <span>The Tuna Tracker</span>
               </div>
               <span className="mm-close" onClick={closeMenu}>
                 <i className="fa-solid fa-xmark"></i>
