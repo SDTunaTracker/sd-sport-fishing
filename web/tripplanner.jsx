@@ -1,4 +1,4 @@
-// Trip Planner — Top Boats leaderboard (left) + upcoming open-party trips (right)
+// Trip Planner — upcoming open-party trips
 
 // Per-landing booking URL pattern. Returns null if we can't build a usable link
 // (e.g. unknown landing). Discovered by inspecting the booking buttons on each
@@ -40,19 +40,6 @@ function buildBoatStats() {
 }
 
 function TripPlanner({ filters, setFilters, navigate, tweaks }) {
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
-  const { rows: leaderboard, fleetMedianTPAPerDay } = useMemo(
-    () => SDA.boatLeaderboard(trips, filters.species, filters.minTrips),
-    [trips, filters.species, filters.minTrips]
-  );
-  const eligibleBoats = leaderboard.filter(r => r.tripCount >= filters.minTrips);
-  const topBoatLimit = tweaks.density === 'compact' ? 15 : 12;
-  const topBoats = eligibleBoats.slice(0, topBoatLimit);
-  const maxTPAPerDay = topBoats[0]?.avgTPAPerDay || 1;
-
-  const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel = speciesActive ? filters.species : 'Tuna';
-
   // Filter the schedule: only future trips that respect any relevant filters.
   // Year, Species, and Min Trips don't apply to scheduled trips (year is always
   // forward, schedule has no species data, min-trips is a leaderboard concept).
@@ -110,9 +97,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
       <div className="pagehead">
         <div>
           <h1>Trip Planner</h1>
-          <div className="sub">
-            Top performing boats matched against {fmt.n(schedule.length)} upcoming open-party trips
-          </div>
+          <div className="sub">{fmt.n(schedule.length)} upcoming open-party trips</div>
         </div>
         <div className="actions">
           <button className="btn primary" onClick={() => setFinderOpen(true)}>
@@ -124,55 +109,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
 
       <FilterBar filters={filters} setFilters={setFilters}/>
 
-      <div className="two-col-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
-        {/* LEFT: Top Boats panel (mirrors the dashboard widget) */}
-        <Panel title={`Top Boats — ${speciesLabel} per Angler per Day`}
-               meta={`Ranked by avg ${speciesLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips`}
-               actions={<button className="btn sm ghost" onClick={() => navigate('boats')}>View All →</button>}>
-          {topBoats.length === 0 ? (
-            <div className="muted-block">No boats meet the minimum trip threshold for these filters.</div>
-          ) : (
-            <Fragment>
-              <div className="chart-legend" style={{marginBottom: 8}}>
-                <span className="ll"><span className="sw" style={{background: 'var(--ss-darkseagreen-500)'}}></span>Consistent / Avg performer</span>
-                <span className="ll"><span className="sw" style={{background: 'var(--ss-orange-500)'}}></span>One-off spike</span>
-                <span className="median-mark"><span className="line"></span>Fleet median ({fmt.tpa(fleetMedianTPAPerDay)})</span>
-              </div>
-              <div style={{position: 'relative'}}>
-                {topBoats.map((b, i) => {
-                  const wpct = (b.avgTPAPerDay / maxTPAPerDay) * 100;
-                  const medLinePct = (fleetMedianTPAPerDay / maxTPAPerDay) * 100;
-                  return (
-                    <div key={b.boat} className={`bar-row ${b.label === 'Spike' ? 'spike' : 'consistent'}`}
-                         style={{cursor: 'pointer'}}
-                         onClick={() => navigate('boat', { boat: b.boat })}>
-                      <div className="label">
-                        <span className="rank" style={{color: i < 3 ? 'var(--ss-orange-500)' : null, fontWeight: i < 3 ? 700 : 500}}>{i + 1}</span>
-                        <div style={{minWidth: 0, flex: 1}}>
-                          <div className="name">{b.boat}</div>
-                          <div className="lan">{b.landing.replace(' Sportfishing','').replace(' Landing','')} · {b.tripCount} trips</div>
-                        </div>
-                      </div>
-                      <div className="track" style={{position: 'relative'}}>
-                        <div className="fill" style={{width: `${wpct}%`}}></div>
-                        <div style={{position:'absolute', left: `${medLinePct}%`, top:-2, bottom:-2, width:0, borderLeft:'1.5px dashed #445460'}}></div>
-                        {b.label && (
-                          <span className={`tag ${b.label === 'Consistent' ? 'consistent' : 'spike'}`} style={{position:'absolute', right:6, top:-2, fontSize:9}}>
-                            {b.label === 'Consistent' ? 'Consistent' : 'Spike'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="num">{fmt.tpa(b.avgTPAPerDay)}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Fragment>
-          )}
-        </Panel>
-
-        {/* RIGHT: Upcoming Trips */}
-        <Panel title="Upcoming Open-Party Trips"
+      <Panel title="Upcoming Open-Party Trips"
                meta={`${schedule.length} bookable · sold-out hidden · filters apply`}
                padding={false}>
           {schedule.length === 0 ? (
@@ -218,7 +155,6 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
             </Fragment>
           )}
         </Panel>
-      </div>
     </Fragment>
   );
 }
