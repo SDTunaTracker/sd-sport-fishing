@@ -98,30 +98,6 @@ function TodayCatch({ navigate, settings }) {
           </select>
         </div>
 
-        <div className="today-stats">
-          <div className="today-stat">
-            <span className="ts-val">{fmt.n(summary.trophyCount)}</span>
-            <span className="ts-lbl">tuna</span>
-          </div>
-          <div className="today-stat">
-            <span className="ts-val">{fmt.n(summary.anglers)}</span>
-            <span className="ts-lbl">anglers</span>
-          </div>
-          <div className="today-stat">
-            <span className="ts-val">{fmt.n(ratingData.boats.length)}</span>
-            <span className="ts-lbl">boats</span>
-          </div>
-        </div>
-
-        <div className="today-species">
-          {activeSpecies.map(s => (
-            <div key={s.key} className="today-sp">
-              <span className="sp-dot" style={{background: s.color}}></span>
-              <span className="sp-name">{s.key}</span>
-              <span className="sp-val">{fmt.n(summary[s.key])}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
       {ratingData.boats.length === 0 ? (
