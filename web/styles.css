@@ -409,13 +409,16 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-tab-sub { font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); }
 .tp-tab-price { color: var(--ss-darkseagreen-500); font-weight: 700; }
 .tp-tab-info { font-size: 11px; opacity: 0.45; }
-/* Best tab: 7 cols — Boat, Trip, Depart, Moon, WinRate, Price, Open */
-.tp-best-row { display: grid; grid-template-columns: 2fr 90px 130px 56px 80px 64px 48px; gap: 8px; align-items: center; }
-/* Cheapest tab: 6 cols — Boat, Trip, Depart, Moon, Price, Open */
-.tp-cheapest-row { display: grid; grid-template-columns: 2fr 90px 130px 56px 64px 48px; gap: 8px; align-items: center; }
+/* Best tab: 8 cols — Boat, Landing, Trip, Depart, Moon, WinRate, Price, Open */
+.tp-best-row { display: grid; grid-template-columns: 1.6fr 1fr 72px 120px 56px 68px 56px 44px; gap: 8px; align-items: center; }
+/* Cheapest tab: 7 cols — Boat, Landing, Trip, Depart, Moon, Price, Open */
+.tp-cheapest-row { display: grid; grid-template-columns: 1.6fr 1fr 72px 120px 56px 56px 44px; gap: 8px; align-items: center; }
 .tp-wr-col { display: block; }
 .tp-trip-col { display: block; }
 .tp-moon-name { display: block; }
+.tp-landing-col { display: block; }
+.tp-boat-sub { display: none; }
+.tp-depart-time { display: inline; }
 
 /* ───── Mobile (≤768px) ───── */
 @media (max-width: 768px) {
@@ -603,10 +606,11 @@ body.compact .dt td { padding: 7px 12px; }
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* Trip planner — 5 cols on mobile (hide Trip + WinRate, show Moon emoji+% only) */
-  .tp-best-row { grid-template-columns: 1fr 90px 40px 52px 40px; }
-  .tp-cheapest-row { grid-template-columns: 1fr 90px 40px 52px 40px; }
-  .tp-wr-col { display: none; }
-  .tp-trip-col { display: none; }
+  /* Trip planner — hide Landing col, show as boat sub-line; keep Trip+WinRate; date only; moon emoji+% only */
+  .tp-best-row { grid-template-columns: 1fr 54px 56px 36px 40px 46px 30px; }
+  .tp-cheapest-row { grid-template-columns: 1fr 54px 56px 36px 46px 30px; }
+  .tp-landing-col { display: none; }
+  .tp-boat-sub { display: block; }
+  .tp-depart-time { display: none; }
   .tp-moon-name { display: none; }
 }

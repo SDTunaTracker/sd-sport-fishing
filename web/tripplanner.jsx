@@ -72,12 +72,14 @@ function winRateColor(wr) {
 
 function BestRow({ s }) {
   const dep = new Date(s.departureAt);
-  const depStr = `${fmtDepDate(dep)} ${fmtTime(dep)}`;
   const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
   const wrPct = s._winRate != null ? Math.round(s._winRate * 100) : null;
   const wrLabel = wrPct != null ? `${wrPct}%` : '—';
   const wrColor = wrPct != null ? winRateColor(s._winRate) : 'var(--tb-gray-3)';
   const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
+  const openSpots = s.openSpots ?? 0;
+  const openColor = openSpots === 0 ? 'var(--tb-gray-3)' : openSpots < 5 ? '#EF4444' : 'var(--ss-darkseagreen-500)';
+  const openLabel = openSpots === 0 ? 'Full' : openSpots;
   const url = bookingUrl(s);
   const boatLabel = url ? (
     <a href={url} target="_blank" rel="noopener noreferrer"
@@ -95,31 +97,31 @@ function BestRow({ s }) {
     }}>
       <div style={{minWidth: 0}}>
         <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
-        <div style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{s.tripLength} · {landingShort}</div>
+        <div className="tp-boat-sub" style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{landingShort}</div>
       </div>
-      <span className="tp-trip-col" style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
-      <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
+      <span className="tp-landing-col" style={{color: 'var(--ss-slate)', fontSize: 11}}>{landingShort}</span>
+      <span style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
+      <span style={{fontVariantNumeric: 'tabular-nums'}}>
+        {fmtDepDate(dep)}<span className="tp-depart-time"> {fmtTime(dep)}</span>
+      </span>
       <MoonCell departureAt={s.departureAt}/>
       <div className="tp-wr-col" style={{textAlign: 'right'}}>
         <div style={{fontWeight: 600, color: wrColor}}>{wrLabel}</div>
         {s._trips > 0 && <div style={{font: '400 10px/13px var(--ss-font-sans)', color: 'var(--ss-slate)'}}>{s._trips}t</div>}
       </div>
       <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
-      <span style={{
-        font: '600 13px/16px var(--ss-font-sans)',
-        textAlign: 'right',
-        color: s.openSpots <= 2 ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)',
-        fontVariantNumeric: 'tabular-nums',
-      }}>{s.openSpots}</span>
+      <span style={{font: '600 12px/16px var(--ss-font-sans)', textAlign: 'right', color: openColor, fontVariantNumeric: 'tabular-nums'}}>{openLabel}</span>
     </div>
   );
 }
 
 function CheapestRow({ s }) {
   const dep = new Date(s.departureAt);
-  const depStr = `${fmtDepDate(dep)} ${fmtTime(dep)}`;
   const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
   const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
+  const openSpots = s.openSpots ?? 0;
+  const openColor = openSpots === 0 ? 'var(--tb-gray-3)' : openSpots < 5 ? '#EF4444' : 'var(--ss-darkseagreen-500)';
+  const openLabel = openSpots === 0 ? 'Full' : openSpots;
   const url = bookingUrl(s);
   const boatLabel = url ? (
     <a href={url} target="_blank" rel="noopener noreferrer"
@@ -137,18 +139,16 @@ function CheapestRow({ s }) {
     }}>
       <div style={{minWidth: 0}}>
         <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
-        <div style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{s.tripLength} · {landingShort}</div>
+        <div className="tp-boat-sub" style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{landingShort}</div>
       </div>
-      <span className="tp-trip-col" style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
-      <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
+      <span className="tp-landing-col" style={{color: 'var(--ss-slate)', fontSize: 11}}>{landingShort}</span>
+      <span style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
+      <span style={{fontVariantNumeric: 'tabular-nums'}}>
+        {fmtDepDate(dep)}<span className="tp-depart-time"> {fmtTime(dep)}</span>
+      </span>
       <MoonCell departureAt={s.departureAt}/>
       <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
-      <span style={{
-        font: '600 13px/16px var(--ss-font-sans)',
-        textAlign: 'right',
-        color: s.openSpots <= 2 ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)',
-        fontVariantNumeric: 'tabular-nums',
-      }}>{s.openSpots}</span>
+      <span style={{font: '600 12px/16px var(--ss-font-sans)', textAlign: 'right', color: openColor, fontVariantNumeric: 'tabular-nums'}}>{openLabel}</span>
     </div>
   );
 }
@@ -437,8 +437,9 @@ function TripPlanner({ navigate }) {
           <Fragment>
             <div className="tp-best-row" style={HDR_STYLE}>
               <span>Boat</span>
-              <span className="tp-trip-col">Trip</span>
-              <span style={{textAlign: 'right'}}>Depart</span>
+              <span className="tp-landing-col">Landing</span>
+              <span>Trip</span>
+              <span>Depart</span>
               <span style={{textAlign: 'center'}}>Moon</span>
               <span className="tp-wr-col" style={{textAlign: 'right'}}>Win Rate</span>
               <span style={{textAlign: 'right'}}>Price</span>
@@ -452,8 +453,9 @@ function TripPlanner({ navigate }) {
           <Fragment>
             <div className="tp-cheapest-row" style={HDR_STYLE}>
               <span>Boat</span>
-              <span className="tp-trip-col">Trip</span>
-              <span style={{textAlign: 'right'}}>Depart</span>
+              <span className="tp-landing-col">Landing</span>
+              <span>Trip</span>
+              <span>Depart</span>
               <span style={{textAlign: 'center'}}>Moon</span>
               <span style={{textAlign: 'right'}}>Price</span>
               <span style={{textAlign: 'right'}}>Open</span>
