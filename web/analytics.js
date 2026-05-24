@@ -355,6 +355,59 @@
     return rows;
   }
 
+  function _isoMinus(isoDate, days) {
+    const d = new Date(isoDate + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() - days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function _pctToRatingKey(pct) {
+    if (pct >= 90) return 'fire';
+    if (pct >= 60) return 'above';
+    if (pct >= 40) return 'avg';
+    if (pct >= 20) return 'below';
+    return 'slow';
+  }
+
+  // For each trip on selectedDate, look back 30 days of same-trip-length history
+  // and compute a percentile rating. Returns rated boat rows + angler-weighted
+  // fleet rating key.
+  function fishingRating(selectedDate) {
+    const allTrips = window.SD_PROC_TRIPS || window.SD.TRIPS;
+    const cutoff = _isoMinus(selectedDate, 30);
+
+    const histByLength = {};
+    allTrips.forEach(t => {
+      if (t.date >= cutoff && t.date < selectedDate) {
+        const vals = histByLength[t.tripLength] || (histByLength[t.tripLength] = []);
+        vals.push(t.trophyPerAnglerPerDay || 0);
+      }
+    });
+
+    const todayBoats = allTrips
+      .filter(t => t.date === selectedDate)
+      .map(t => {
+        const hist = histByLength[t.tripLength] || [];
+        if (hist.length < 3) return Object.assign({}, t, { ratingKey: 'new', ratingPct: null });
+        const myVal = t.trophyPerAnglerPerDay || 0;
+        const pct = (hist.filter(v => v <= myVal).length / hist.length) * 100;
+        return Object.assign({}, t, { ratingKey: _pctToRatingKey(pct), ratingPct: pct });
+      })
+      .sort((a, b) => (b.trophyPerAnglerPerDay || 0) - (a.trophyPerAnglerPerDay || 0));
+
+    const valid = todayBoats.filter(b => b.ratingPct != null);
+    let fleetRatingKey = null;
+    if (valid.length > 0) {
+      const totalAnglers = valid.reduce((s, b) => s + b.anglers, 0);
+      if (totalAnglers > 0) {
+        const wPct = valid.reduce((s, b) => s + b.ratingPct * b.anglers, 0) / totalAnglers;
+        fleetRatingKey = _pctToRatingKey(wPct);
+      }
+    }
+
+    return { boats: todayBoats, fleetRatingKey };
+  }
+
   window.SDA = {
     preprocessTrips,
     filterTrips,
@@ -368,6 +421,7 @@
     tripLengthBreakdown,
     peerMatchups,
     peerLeaderboard,
+    fishingRating,
     median, mean, stddev, speciesField,
   };
 })();

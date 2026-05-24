@@ -3,6 +3,24 @@ const { useMemo, useState: useS } = React;
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
+const RATINGS = {
+  fire:  { emoji: '🔥', label: 'On Fire',       short: 'On Fire',   color: '#F97316' },
+  above: { emoji: '⬆️',  label: 'Above Average', short: 'Above Avg', color: '#22C55E' },
+  avg:   { emoji: '➡️',  label: 'Average',        short: 'Average',   color: '#94A3B8' },
+  below: { emoji: '⬇️',  label: 'Below Average', short: 'Below Avg', color: '#EAB308' },
+  slow:  { emoji: '🧊', label: 'Slow Day',       short: 'Slow',      color: '#3B82F6' },
+  new:   { emoji: '—',  label: 'New',            short: 'New',       color: '#94A3B8' },
+};
+
+function RatingBadge({ ratingKey }) {
+  const r = RATINGS[ratingKey] || RATINGS.new;
+  return (
+    <span style={{ color: r.color, fontWeight: 600, whiteSpace: 'nowrap', fontSize: 11 }}>
+      {r.emoji} {r.short}
+    </span>
+  );
+}
+
 function fmtDate(iso) {
   const [y, m, d] = iso.split('-');
   return `${+m}/${+d}/${String(+y).slice(-2)}`;
@@ -20,23 +38,20 @@ function TodayCatch({ navigate, settings }) {
     () => dates.includes(TODAY_ISO) ? TODAY_ISO : (dates[0] || TODAY_ISO)
   );
 
-  // Trips for selected date, sorted by trophyPerAnglerPerDay desc.
-  const dateTrips = useMemo(() => {
-    const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
-    return raw
-      .filter(t => t.date === selectedDate)
-      .slice()
-      .sort((a, b) => (b.trophyPerAnglerPerDay || 0) - (a.trophyPerAnglerPerDay || 0));
-  }, [selectedDate, settings]);
+  // Rating data for selected date (includes sorted boat rows + fleet rating key).
+  const ratingData = useMemo(() => SDA.fishingRating(selectedDate), [selectedDate, settings]);
 
-  const summary = useMemo(() => ({
-    trophyCount: dateTrips.reduce((s, t) => s + (t.totalTuna || 0), 0),
-    anglers:     dateTrips.reduce((s, t) => s + t.anglers, 0),
-    Bluefin:     dateTrips.reduce((s, t) => s + (t.Bluefin || 0), 0),
-    Yellowfin:   dateTrips.reduce((s, t) => s + (t.Yellowfin || 0), 0),
-    Yellowtail:  dateTrips.reduce((s, t) => s + (t.Yellowtail || 0), 0),
-    Dorado:      dateTrips.reduce((s, t) => s + (t.Dorado || 0), 0),
-  }), [dateTrips]);
+  const summary = useMemo(() => {
+    const boats = ratingData.boats;
+    return {
+      trophyCount: boats.reduce((s, t) => s + (t.totalTuna || 0), 0),
+      anglers:     boats.reduce((s, t) => s + t.anglers, 0),
+      Bluefin:     boats.reduce((s, t) => s + (t.Bluefin || 0), 0),
+      Yellowfin:   boats.reduce((s, t) => s + (t.Yellowfin || 0), 0),
+      Yellowtail:  boats.reduce((s, t) => s + (t.Yellowtail || 0), 0),
+      Dorado:      boats.reduce((s, t) => s + (t.Dorado || 0), 0),
+    };
+  }, [ratingData]);
 
   const isToday = selectedDate === TODAY_ISO;
   const scrape = window.SD?.META?.lastScrape;
@@ -58,6 +73,19 @@ function TodayCatch({ navigate, settings }) {
           <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
           <div className="today-date">{fmtDate(selectedDate)}{timeStr}</div>
         </div>
+
+        {ratingData.fleetRatingKey && (() => {
+          const r = RATINGS[ratingData.fleetRatingKey];
+          return (
+            <div className="fleet-rating-badge">
+              <span className="frb-emoji">{r.emoji}</span>
+              <div>
+                <div className="frb-label" style={{color: r.color}}>{r.label}</div>
+                <div className="frb-sub">vs. last 30 days · same trip length</div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Date picker */}
         <div style={{display:'flex', alignItems:'center'}}>
@@ -97,7 +125,7 @@ function TodayCatch({ navigate, settings }) {
         </div>
       </div>
 
-      {dateTrips.length === 0 ? (
+      {ratingData.boats.length === 0 ? (
         <div style={{padding:'32px 0', textAlign:'center',
                      color:'var(--ss-slate)', font:'400 14px/20px var(--ss-font-sans)'}}>
           {isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}
@@ -115,8 +143,9 @@ function TodayCatch({ navigate, settings }) {
             <span className="trophy-col">Tuna</span>
             <span className="anglers-col">Anglers</span>
             <span>TPA/Day</span>
+            <span className="rating-col">Rating</span>
           </div>
-          {dateTrips.map((b, i) => (
+          {ratingData.boats.map((b, i) => (
             <div key={i} className="today-boat-row" style={{cursor:'pointer'}}
                  onClick={() => navigate('boat', { boat: b.boat })}>
               <span className="boat-name" style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
@@ -129,6 +158,7 @@ function TodayCatch({ navigate, settings }) {
               <span className="trophy-col" style={{fontWeight:600, color:'var(--tb-ink)'}}>{fmt.n(b.totalTuna)}</span>
               <span className="anglers-col">{fmt.n(b.anglers)}</span>
               <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
+              <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
             </div>
           ))}
         </Panel>
