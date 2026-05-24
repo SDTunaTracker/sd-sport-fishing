@@ -282,6 +282,7 @@ const PLUS_DAYS_ISO = (n) => {
 function TripFinderModal({ open, onClose }) {
   const [start, setStart] = useState(TOMORROW_ISO());
   const [end, setEnd] = useState(PLUS_DAYS_ISO(30));
+  const [landing, setLanding] = useState('all');
   const [lengths, setLengths] = useState('all');
   const [submitted, setSubmitted] = useState(false);
 
@@ -303,11 +304,13 @@ function TripFinderModal({ open, onClose }) {
     const startD = new Date(start + 'T00:00:00');
     const endD = new Date(end + 'T23:59:59');
     const selLens = Array.isArray(lengths) ? lengths : (lengths === 'all' ? [] : [lengths]);
+    const selLandings = Array.isArray(landing) ? landing : (landing === 'all' ? [] : [landing]);
     const out = [];
     for (const s of (window.SD.SCHEDULE || [])) {
       const dep = new Date(s.departureAt);
       if (dep < startD || dep > endD) continue;
       if (selLens.length > 0 && !selLens.includes(s.tripLength)) continue;
+      if (selLandings.length > 0 && !selLandings.includes(s.landing)) continue;
       const stats = boatStats[s.boat] || { avgTPAPerDay: 0, trips: 0 };
       const expected = stats.avgTPAPerDay * (s.tripLengthDays || 1);
       const valuePer$ = (s.price && s.price > 0) ? expected / s.price : 0;
@@ -316,7 +319,7 @@ function TripFinderModal({ open, onClose }) {
     // Rank desc by value. Boats with no history (_value=0) go to the bottom.
     out.sort((a, b) => b._value - a._value);
     return out;
-  }, [submitted, start, end, lengths, boatStats]);
+  }, [submitted, start, end, landing, lengths, boatStats]);
 
   if (!open) return null;
 
@@ -338,7 +341,7 @@ function TripFinderModal({ open, onClose }) {
         <div className="modal-body">
           {/* Filter form */}
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 12,
+            display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr 1.5fr auto', gap: 12,
             alignItems: 'end', padding: '12px 16px',
             background: 'var(--ss-clay)', borderBottom: '1px solid var(--ss-border-2)',
           }}>
@@ -349,6 +352,11 @@ function TripFinderModal({ open, onClose }) {
             <div className="filter">
               <label>Depart on or before</label>
               <input type="date" value={end} onChange={e => setEnd(e.target.value)}/>
+            </div>
+            <div className="filter">
+              <label>Landing</label>
+              <MultiSelect options={window.SD.LANDINGS} value={landing}
+                           onChange={setLanding} allLabel="All landings"/>
             </div>
             <div className="filter">
               <label>Trip length</label>
