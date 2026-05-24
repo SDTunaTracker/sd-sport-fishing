@@ -1,7 +1,7 @@
 # SD Sport Fishing — Claude Code Context
 
 ## What this project is
-A daily-updated analytics dashboard tracking trophy fish catches across the four major San Diego sportfishing landings. The site is live at **SDtunatracker.com**.
+A daily-updated analytics dashboard tracking trophy fish catches across the four major San Diego sportfishing landings. The site is live at **thetunatracker.com**.
 
 ## The four landings we track
 | Landing | Source |
@@ -107,7 +107,7 @@ for r in c.execute("SELECT boat, trip_length, trophy_count, ROUND(trophy_per_ang
 ```
 
 ## Deployment
-Live at SDtunatracker.com. The daily scrape runs via Windows Task Scheduler at 06:30 local time (configured by `scripts/install-task.ps1`).
+Live at thetunatracker.com. The daily scrape runs via Windows Task Scheduler at 06:30 local time (configured by `scripts/install-task.ps1`).
 
 ## Things to know
 - **Babel-in-browser**: JSX is transpiled in the browser at runtime — no build step needed, but also no hot reload. After editing any `.jsx` or `.css` file, just hard-refresh the browser.
