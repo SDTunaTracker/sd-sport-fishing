@@ -23,13 +23,15 @@ function MoonView({ filters, setFilters }) {
       <FilterBar filters={filters} setFilters={setFilters}/>
       <Panel title="Moon Phase Correlation"
              meta={`Avg ${speciesLabel.toLowerCase()}/angler by lunar phase`}
-             actions={<span className="meta">Best: <b style={{color:'var(--ss-black)'}}>{bestMoon?.phase}</b> ({fmt.tpa(bestMoon?.tpa)})</span>}>
+             className="moon-panel"
+             actions={<span className="meta">Best: <b style={{color:'#34D399'}}>{bestMoon?.phase}</b> ({fmt.tpa(bestMoon?.tpa)})</span>}>
         <div className="moon-grid">
           {moonData.map((m) => {
             const isBest = m.phase === bestMoon?.phase;
             return (
               <div key={m.phase} className={`moon-cell ${isBest ? 'best' : ''}`}>
                 <MoonGlyph phase={m.phase}/>
+                <div className="moon-connector"></div>
                 <div className="lab">{m.phase}</div>
                 <div className="val">{fmt.tpa(m.tpa)}</div>
                 <div className="sub">{m.trips} trips</div>
@@ -37,7 +39,7 @@ function MoonView({ filters, setFilters }) {
             );
           })}
         </div>
-        <div style={{marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--ss-border-2)', font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)'}}>
+        <div style={{marginTop: 8, paddingTop: 12, borderTop: '1px solid rgba(52,211,153,0.2)', font: '400 11px/14px var(--ss-font-sans)', color: 'rgba(255,255,255,0.5)'}}>
           <i className="fa-solid fa-circle-info"></i>{' '}
           {(() => {
             const sorted = [...moonData].sort((a,b)=>b.tpa-a.tpa);

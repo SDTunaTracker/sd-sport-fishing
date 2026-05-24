@@ -282,13 +282,18 @@ a { color: inherit; text-decoration: none; }
 .hm-row-label { font: 500 11px/14px var(--ss-font-sans); color: var(--tb-slate); padding-right: 6px; align-self: center; text-align: right; }
 .hm-col-label { font: 400 9px/12px var(--ss-font-sans); color: var(--tb-gray-3); text-align: center; }
 
-/* moon panel */
-.moon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; padding: 8px 0; }
-.moon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; border-radius: 6px; cursor: default; background: #162636; }
-.moon-cell:hover { background: #1e3347; }
-.moon-cell.best { background: #0C3D2E; }
-.moon-cell .glyph { width: 36px; height: 36px; border-radius: 999px; background: var(--tb-midnight); position: relative; overflow: hidden; }
-.moon-cell .glyph .lit { position: absolute; inset: 0; background: var(--tb-lime); border-radius: 999px; }
+/* moon panel — dark teal theme */
+.moon-panel { background: #0F4C4C !important; }
+.moon-panel .phead { background: #0F4C4C; border-bottom: 1px solid rgba(52,211,153,0.2); }
+.moon-panel .phead h3 { color: #FFFFFF; }
+.moon-panel .phead .meta { color: rgba(255,255,255,0.65); }
+.moon-panel .pbody { background: #0F4C4C; }
+.moon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 16px; padding: 16px 0; }
+.moon-cell { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 16px 4px; border-radius: 8px; cursor: default; background: transparent; }
+.moon-cell:hover { background: rgba(52,211,153,0.07); }
+.moon-cell.best { background: rgba(52,211,153,0.14); }
+.moon-cell .glyph { width: 48px; height: 48px; border-radius: 999px; background: #2D3B4E; position: relative; overflow: hidden; }
+.moon-cell .glyph .lit { position: absolute; inset: 0; background: #FFFFFF; border-radius: 999px; }
 .moon-cell .glyph.shape-new .lit { transform: scaleX(0); }
 .moon-cell .glyph.shape-waxc .lit { transform: scaleX(.3) translateX(70%); }
 .moon-cell .glyph.shape-firstq .lit { transform: scaleX(.5) translateX(50%); }
@@ -297,9 +302,10 @@ a { color: inherit; text-decoration: none; }
 .moon-cell .glyph.shape-wang .lit { transform: scaleX(.85) translateX(-15%); }
 .moon-cell .glyph.shape-lastq .lit { transform: scaleX(.5) translateX(-50%); }
 .moon-cell .glyph.shape-wanc .lit { transform: scaleX(.3) translateX(-70%); }
-.moon-cell .lab { font: 500 10px/12px var(--ss-font-sans); color: #CBD5E1; text-align: center; }
-.moon-cell .val { font: 700 16px/20px var(--ss-font-sans); color: #FFFFFF; }
-.moon-cell .sub { font: 400 10px/12px var(--ss-font-sans); color: #94A3B8; }
+.moon-cell .moon-connector { width: 2px; height: 14px; background: #34D399; margin: 8px 0 4px; }
+.moon-cell .lab { font: 500 10px/12px var(--ss-font-sans); color: #FFFFFF; text-align: center; }
+.moon-cell .val { font: 700 16px/20px var(--ss-font-sans); color: #FFFFFF; margin-top: 6px; }
+.moon-cell .sub { font: 400 10px/12px var(--ss-font-sans); color: rgba(255,255,255,0.5); }
 
 /* species mix donut */
 .donut-legend { display: flex; flex-direction: column; gap: 8px; }
@@ -524,9 +530,11 @@ body.compact .dt td { padding: 7px 12px; }
 
   /* Moon grid: 8-col → 4-col (2 rows) */
   .moon-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .moon-cell { padding: 6px 4px; }
+  .moon-cell { padding: 10px 4px; }
+  .moon-cell .glyph { width: 36px; height: 36px; }
+  .moon-cell .moon-connector { height: 10px; margin: 5px 0 3px; }
   .moon-cell .lab { font-size: 8px; line-height: 11px; }
-  .moon-cell .val { font-size: 13px; line-height: 17px; }
+  .moon-cell .val { font-size: 13px; line-height: 17px; margin-top: 4px; }
   .moon-cell .sub { font-size: 9px; }
 
   /* Today's Catch banner: stack vertically */

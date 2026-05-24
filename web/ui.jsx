@@ -200,9 +200,9 @@ function KPI({ label, value, unit, delta, deltaLabel, ctx, accent }) {
   );
 }
 
-function Panel({ title, meta, actions, children, padding = true }) {
+function Panel({ title, meta, actions, children, padding = true, className = '' }) {
   return (
-    <div className="panel">
+    <div className={`panel${className ? ' ' + className : ''}`}>
       <div className="phead">
         <div>
           <h3>{title}</h3>
