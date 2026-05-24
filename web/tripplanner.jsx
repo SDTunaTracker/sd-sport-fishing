@@ -185,6 +185,8 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
   const [activeTab, setActiveTab] = useState('best');
   const [finderOpen, setFinderOpen] = useState(false);
 
+  const minPrice = cheapestSchedule.find(s => s.price != null)?.price;
+
   const HDR_STYLE = {
     padding: '8px 12px',
     background: 'var(--ss-clay)',
@@ -221,9 +223,21 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
              padding={false}>
         <div className="tp-tabs">
           <button className={`tp-tab${activeTab === 'best' ? ' active' : ''}`}
-                  onClick={() => setActiveTab('best')}>Best</button>
+                  onClick={() => setActiveTab('best')}>
+            <div className="tp-tab-main">
+              Best <span className="tp-tab-info">ⓘ</span>
+            </div>
+            <div className="tp-tab-sub">Ranked by win rate &amp; performance</div>
+          </button>
           <button className={`tp-tab${activeTab === 'cheapest' ? ' active' : ''}`}
-                  onClick={() => setActiveTab('cheapest')}>Cheapest</button>
+                  onClick={() => setActiveTab('cheapest')}>
+            <div className="tp-tab-main">
+              Cheapest
+              {minPrice != null && <span className="tp-tab-price"> from ${minPrice.toFixed(0)}</span>}
+              <span className="tp-tab-info">ⓘ</span>
+            </div>
+            <div className="tp-tab-sub">Sorted by price</div>
+          </button>
         </div>
 
         {schedule.length === 0 ? (
