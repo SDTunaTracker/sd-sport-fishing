@@ -391,8 +391,9 @@ body.compact .dt td { padding: 7px 12px; }
   /* Header: not sticky on mobile */
   .app-header { position: static; }
   .header-top { padding: 0 14px; height: 48px; }
-  .logo { border-right: none; padding-right: 0; }
-  .logo .logo-wordmark { font-size: 15px; }
+  .logo { border-right: none; padding-right: 0; gap: 7px; }
+  .logo .logo-fish { font-size: 14px; }
+  .logo .logo-wordmark { font-size: 13px; letter-spacing: -0.01em; }
   .header-gear { margin-left: auto; }
   .header-nav { display: none; }
 
