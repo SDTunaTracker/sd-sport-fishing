@@ -8,8 +8,33 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "includeZero": false
 }/*EDITMODE-END*/;
 
+// URL-hash routing: the hash is the source of truth for the active route,
+// so refreshing or bookmarking keeps you on the same page.
+const HASH_VIEWS = {
+  today: 'today', analytics: 'analytics', boats: 'boats', landings: 'landings',
+  tripplanner: 'tripplanner', headtohead: 'headtohead', seasonality: 'seasonality',
+  moon: 'moon', settings: 'settings',
+};
+
+function routeFromHash() {
+  const raw = window.location.hash.replace(/^#/, '');
+  if (!raw) return { view: 'today', params: {} };
+  const [seg, ...rest] = raw.split('/');
+  const detail = rest.length ? decodeURIComponent(rest.join('/')) : '';
+  if (seg === 'boat' && detail) return { view: 'boat', params: { boat: detail } };
+  if (seg === 'landing' && detail) return { view: 'landing', params: { landing: detail } };
+  if (HASH_VIEWS[seg]) return { view: HASH_VIEWS[seg], params: {} };
+  return { view: 'today', params: {} };
+}
+
+function hashFromRoute(view, params = {}) {
+  if (view === 'boat' && params.boat) return 'boat/' + encodeURIComponent(params.boat);
+  if (view === 'landing' && params.landing) return 'landing/' + encodeURIComponent(params.landing);
+  return view;
+}
+
 function App() {
-  const [route, setRoute] = useS({ view: 'today', params: {} });
+  const [route, setRoute] = useS(() => routeFromHash());
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
 
@@ -38,8 +63,20 @@ function App() {
     document.body.classList.toggle('compact', tweaks.density === 'compact');
   }, [tweaks.density]);
 
+  // Keep route in sync when the hash changes (navigation, back/forward, manual edit).
+  useE(() => {
+    const onHashChange = () => setRoute(routeFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
   const navigate = (view, params = {}) => {
-    setRoute({ view, params });
+    const nextHash = hashFromRoute(view, params);
+    if (window.location.hash.replace(/^#/, '') === nextHash) {
+      setRoute({ view, params }); // hash unchanged (e.g. re-click same tab) — update directly
+    } else {
+      window.location.hash = nextHash; // triggers hashchange -> setRoute
+    }
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
