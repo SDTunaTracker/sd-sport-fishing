@@ -1,4 +1,4 @@
-// Today view — Today's Catch (with date picker) + Current Year Leaderboard
+// Today view — Today's Report (with date picker) + Current Year Leaderboard
 const { useMemo, useState: useS } = React;
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
@@ -70,7 +70,7 @@ function TodayCatch({ navigate, settings }) {
     <Fragment>
       <div className="today-banner">
         <div className="today-left">
-          <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Catch</div>
+          <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</div>
           <div className="today-date">{fmtDate(selectedDate)}{timeStr}</div>
         </div>
 
