@@ -1,5 +1,40 @@
 // Trip Planner — upcoming open-party trips
 
+// ── Moon phase (synodic-month approximation, port of src/moon.py) ──────────
+const _MOON_REF    = Date.UTC(2000, 0, 6, 18, 14, 0); // 2000-01-06 18:14 UTC
+const _SYNODIC     = 29.53058867;
+const _MOON_NAMES  = ['New','Waxing Crescent','First Quarter','Waxing Gibbous',
+                      'Full','Waning Gibbous','Last Quarter','Waning Crescent'];
+const _MOON_EMOJIS = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+
+function moonInfo(date) {
+  const days  = (date.getTime() - _MOON_REF) / 86400000;
+  const p     = ((days % _SYNODIC) + _SYNODIC) % _SYNODIC;
+  const illum = Math.round(((1 - Math.cos((p / _SYNODIC) * 2 * Math.PI)) / 2) * 100);
+  const idx   = Math.round((p / _SYNODIC) * 8) % 8;
+  return { phase: _MOON_NAMES[idx], emoji: _MOON_EMOJIS[idx], illum };
+}
+
+function moonColor(illum) {
+  if (illum >= 90) return '#FBBF24'; // full: gold
+  if (illum <= 10) return '#38BDF8'; // new: sky blue
+  if (illum >= 40 && illum <= 60) return '#34D399'; // quarter: green
+  return '#94A3B8';
+}
+
+function MoonCell({ departureAt }) {
+  const m = moonInfo(new Date(departureAt));
+  const c = moonColor(m.illum);
+  return (
+    <div title="Full and new moons historically correlate with better tuna catches"
+         style={{display:'flex', flexDirection:'column', alignItems:'center', gap:1, cursor:'default'}}>
+      <span style={{fontSize:17, lineHeight:1}}>{m.emoji}</span>
+      <span className="tp-moon-name" style={{font:'400 9px/12px var(--ss-font-sans)', color:c}}>{m.phase}</span>
+      <span style={{font:'600 10px/13px var(--ss-font-sans)', color:c}}>{m.illum}%</span>
+    </div>
+  );
+}
+
 // Per-landing booking URL pattern. Returns null if we can't build a usable link
 // (e.g. unknown landing). Discovered by inspecting the booking buttons on each
 // landing's schedule page during scraper development.
@@ -81,6 +116,7 @@ function BestRow({ s }) {
       </div>
       <span className="tp-trip-col" style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
       <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
+      <MoonCell departureAt={s.departureAt}/>
       <div className="tp-wr-col" style={{textAlign: 'right'}}>
         <div style={{fontWeight: 600, color: wrColor}}>{wrLabel}</div>
         {s._trips > 0 && <div style={{font: '400 10px/13px var(--ss-font-sans)', color: 'var(--ss-slate)'}}>{s._trips}t</div>}
@@ -122,6 +158,7 @@ function CheapestRow({ s }) {
       </div>
       <span className="tp-trip-col" style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
       <span style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{depStr}</span>
+      <MoonCell departureAt={s.departureAt}/>
       <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
       <span style={{
         font: '600 13px/16px var(--ss-font-sans)',
@@ -250,6 +287,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
               <span>Boat</span>
               <span className="tp-trip-col">Trip</span>
               <span style={{textAlign: 'right'}}>Depart</span>
+              <span style={{textAlign: 'center'}}>Moon</span>
               <span className="tp-wr-col" style={{textAlign: 'right'}}>Win Rate</span>
               <span style={{textAlign: 'right'}}>Price</span>
               <span style={{textAlign: 'right'}}>Open</span>
@@ -264,6 +302,7 @@ function TripPlanner({ filters, setFilters, navigate, tweaks }) {
               <span>Boat</span>
               <span className="tp-trip-col">Trip</span>
               <span style={{textAlign: 'right'}}>Depart</span>
+              <span style={{textAlign: 'center'}}>Moon</span>
               <span style={{textAlign: 'right'}}>Price</span>
               <span style={{textAlign: 'right'}}>Open</span>
             </div>
