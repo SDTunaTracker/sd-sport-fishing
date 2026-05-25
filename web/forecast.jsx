@@ -406,7 +406,7 @@ function ForecastView({ navigate }) {
         <div className="pagehead">
           <h1>Fishing Forecast</h1>
           <p style={{fontSize:14, color:'var(--tb-gray-3)', maxWidth:560, marginBottom:16, lineHeight:1.6}}>
-            Daily score (1–10) based on water temperature, moon phase, wind, swell, pressure, and historical catch rates.
+            Daily fishing conditions score (1–10) based on proprietary multi-factor analysis.
           </p>
         </div>
         <NoForecastData/>
@@ -424,7 +424,7 @@ function ForecastView({ navigate }) {
         <div>
           <h1>Fishing Forecast</h1>
           <p style={{fontSize:14, color:'var(--tb-gray-3)', maxWidth:560, marginBottom:16, lineHeight:1.6}}>
-            Daily score (1–10) based on water temperature, moon phase, wind, swell, pressure, and historical catch rates.
+            Daily fishing conditions score (1–10) based on proprietary multi-factor analysis.
           </p>
         </div>
       </div>
