@@ -16,6 +16,7 @@ from .analytics import (
     build_forecast,
 )
 from .conditions import snapshot as conditions_snapshot
+from .forecast import build_forecast_payload
 from .sst import LOCATIONS as SST_LOCATIONS
 
 LANDINGS = (
@@ -337,8 +338,12 @@ def _admin_payload(conn: sqlite3.Connection) -> dict:
     }
 
 
-def export(conn: sqlite3.Connection, out_path: Path) -> int:
-    """Write data.js. Returns trip count written."""
+def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | None = None) -> int:
+    """Write data.js. Returns trip count written.
+
+    weather_forecast: optional output of weather.fetch_marine_forecast() — passed
+    through to build_forecast_payload() for wind/swell scoring in the 7-day strip.
+    """
     rows = conn.execute(
         "SELECT * FROM trips WHERE is_half_day = 0 ORDER BY date, id"
     ).fetchall()
@@ -351,6 +356,15 @@ def export(conn: sqlite3.Connection, out_path: Path) -> int:
     last_scrape = conn.execute(
         "SELECT MAX(finished_at) AS t FROM scrape_log WHERE status='ok'"
     ).fetchone()
+
+    # Build forecast payload — non-fatal if something goes wrong
+    forecast_payload: dict | None = None
+    try:
+        forecast_payload = build_forecast_payload(conn, weather_forecast)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning("Forecast payload failed: %s", e)
+
     payload = {
         "LANDINGS": list(LANDINGS),
         "TRIP_LENGTHS": list(TRIP_LENGTHS),
@@ -362,6 +376,7 @@ def export(conn: sqlite3.Connection, out_path: Path) -> int:
         "TODAY": _today_summary(trips),
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
+        "FORECAST": forecast_payload,
         "ADMIN": _admin_payload(conn),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,

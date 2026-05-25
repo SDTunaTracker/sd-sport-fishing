@@ -28,6 +28,7 @@ function AppHeader({ active, onNavigate }) {
 
   const NAV = [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
+    { id: 'forecast',    label: 'Forecast',     icon: 'fa-cloud-sun-rain' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
     { id: 'boats',       label: 'Boats',        icon: 'fa-sailboat' },
     { id: 'landings',    label: 'Landings',     icon: 'fa-anchor' },

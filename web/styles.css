@@ -734,3 +734,144 @@ body.compact .dt td { padding: 7px 12px; }
 
 /* Placeholder */
 .adm-placeholder { background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.1); border-radius:10px; padding:32px; text-align:center; color:#475569; font:400 13px/20px var(--ss-font-sans); }
+
+/* ════════════════════════════════════════════════════════════════
+   FORECAST PAGE & WIDGET
+   ════════════════════════════════════════════════════════════════ */
+
+/* Today forecast widget — shown above Today's Catch on the home page */
+.fc-widget {
+  display: flex; align-items: center; gap: 20px;
+  background: linear-gradient(135deg, #0F1E2B 0%, #1B2B3B 100%);
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  color: #F8FAFC;
+}
+.fc-widget-left { flex-shrink: 0; min-width: 90px; }
+.fc-widget-label { font: 600 11px/14px var(--ss-font-sans); color: #94A3B8; margin-bottom: 2px; }
+.fc-widget-score { font: 800 36px/40px var(--ss-font-display); line-height: 1; }
+.fc-widget-denom { font: 600 16px/20px var(--ss-font-sans); color: #64748B; margin-left: 2px; }
+.fc-widget-sub   { font: 400 11px/14px var(--ss-font-sans); color: #475569; margin-top: 3px; }
+.fc-widget-mid   { flex: 1; min-width: 0; }
+.fc-widget-conds { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+.fc-widget-cond  { font: 500 12px/16px var(--ss-font-sans); color: #CBD5E1; white-space: nowrap; }
+.fc-widget-summary { font: 400 12px/18px var(--ss-font-sans); color: #64748B; font-style: italic; }
+.fc-widget-right { flex-shrink: 0; }
+
+/* Forecast page header score */
+.fc-today-hero {
+  display: flex; align-items: flex-start; gap: 24px;
+  padding: 4px 0;
+}
+.fc-hero-left  { flex-shrink: 0; min-width: 120px; }
+.fc-hero-right { flex: 1; min-width: 0; }
+.fc-hero-label { font: 600 12px/16px var(--ss-font-sans); color: var(--tb-slate); margin-bottom: 4px; }
+.fc-hero-score { font: 800 52px/56px var(--ss-font-display); line-height: 1; }
+.fc-hero-denom { font: 700 22px/28px var(--ss-font-sans); color: var(--tb-gray-3); margin-left: 2px; }
+.fc-hero-date  { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 6px; }
+.fc-hero-summary { font: 500 14px/22px var(--ss-font-sans); color: var(--tb-ink);
+                   font-style: italic; margin-bottom: 12px; }
+
+/* Conditions bar */
+.fc-conditions-bar { display: flex; gap: 16px; flex-wrap: wrap; }
+.fc-cond-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fc-cond-icon { font-size: 18px; line-height: 1; }
+.fc-cond-val  { font: 600 13px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.fc-cond-lbl  { font: 400 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); }
+
+/* 7-day strip */
+.fc-strip-wrap { overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; }
+.fc-strip { display: flex; gap: 8px; min-width: max-content; }
+.fc-day-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--tb-white); border: 2px solid var(--tb-border-2);
+  border-radius: 10px; padding: 10px 12px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+  min-width: 86px; font-family: var(--ss-font-sans);
+}
+.fc-day-card:hover { border-color: var(--tb-accent); }
+.fc-day-card.active { border-color: var(--tb-accent); background: var(--tb-foam); }
+.fc-day-name  { font: 700 11px/14px var(--ss-font-sans); color: var(--tb-slate); text-transform: uppercase; }
+.fc-day-label { font: 500 10px/12px var(--ss-font-sans); color: var(--tb-slate); }
+.fc-day-score { font: 800 22px/26px var(--ss-font-display); }
+.fc-day-meta  { display: flex; gap: 6px; font: 400 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); }
+
+/* Panel inline title (used for 7-day header) */
+.panel-title-inline {
+  font: 700 13px/18px var(--ss-font-display); color: var(--tb-slate);
+  text-transform: uppercase; letter-spacing: .04em;
+  margin-bottom: 8px;
+}
+
+/* Selected day detail */
+.fc-detail-grid { display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
+.fc-big-score { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+.fc-score-num   { font: 800 56px/60px var(--ss-font-display); }
+.fc-score-denom { font: 700 24px/28px var(--ss-font-sans); color: var(--tb-gray-3); }
+.fc-score-label { font: 600 13px/18px var(--ss-font-sans); color: var(--tb-slate); width: 100%; margin-top: 4px; }
+.fc-factor-title { font: 600 11px/14px var(--ss-font-sans); color: var(--tb-gray-3);
+                   text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.fc-factor-row   { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.fc-factor-label { font: 500 12px/16px var(--ss-font-sans); color: var(--tb-slate);
+                   width: 140px; flex-shrink: 0; white-space: nowrap; font-size: 11px; }
+.fc-factor-track { flex: 1; height: 6px; background: var(--tb-border-2); border-radius: 3px; overflow: hidden; }
+.fc-factor-fill  { height: 100%; border-radius: 3px; transition: width .3s; }
+.fc-factor-val   { width: 28px; text-align: right; font: 700 12px/16px var(--ss-font-sans); }
+
+/* Species 2x2 grid */
+.fc-species-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fc-species-card { background: var(--tb-foam); border-radius: 10px; padding: 14px; }
+.fc-species-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.fc-species-emoji { font-size: 18px; }
+.fc-species-name  { font: 700 13px/18px var(--ss-font-display); flex: 1; }
+.fc-species-score { font: 700 14px/18px var(--ss-font-display); }
+.fc-species-bar-wrap { height: 6px; background: var(--tb-border-2); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+.fc-species-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+.fc-species-tip { font: 400 10px/14px var(--ss-font-sans); color: var(--tb-gray-3); }
+
+/* Historical match */
+.fc-hist-intro { font: 500 13px/20px var(--ss-font-sans); color: var(--tb-slate);
+                 margin-bottom: 12px; font-style: italic; }
+.fc-hist-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+.fc-hist-kpi  { background: var(--tb-foam); border-radius: 8px; padding: 10px; text-align: center; }
+.fc-hist-v { font: 800 20px/24px var(--ss-font-display); color: var(--tb-ink); }
+.fc-hist-k { font: 500 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
+.fc-hist-boats { display: flex; flex-direction: column; gap: 0; }
+.fc-hist-boat-row {
+  display: grid; grid-template-columns: 24px 1fr 80px 60px 50px;
+  align-items: center; gap: 8px; padding: 6px 0;
+  border-bottom: 1px solid var(--tb-border-2);
+  font: 400 12px/16px var(--ss-font-sans);
+}
+.fc-hist-boat-row:last-child { border: 0; }
+.fc-hist-rank    { font: 700 12px/16px var(--ss-font-sans); color: var(--ss-orange-500); }
+.fc-hist-bname   { font: 600 12px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.fc-hist-landing { color: var(--tb-gray-3); font-size: 11px; }
+.fc-hist-tpa     { font: 700 12px/16px var(--ss-font-sans); color: var(--tb-accent); text-align: right; }
+.fc-hist-trips   { color: var(--tb-gray-3); font-size: 11px; text-align: right; }
+
+/* Accuracy widget */
+.fc-accuracy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+.fc-acc-kpi { background: var(--tb-foam); border-radius: 8px; padding: 10px; text-align: center; }
+.fc-acc-v { font: 800 22px/26px var(--ss-font-display); color: var(--tb-ink); }
+.fc-acc-k { font: 500 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
+
+/* SST chart legend */
+.fc-sst-legend { display: flex; gap: 16px; margin-top: 8px; }
+
+/* ── Mobile responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .fc-widget { flex-direction: column; align-items: stretch; gap: 12px; }
+  .fc-widget-right { display: flex; justify-content: flex-end; }
+  .fc-today-hero { flex-direction: column; gap: 16px; }
+  .fc-detail-grid { grid-template-columns: 1fr; }
+  .fc-species-grid { grid-template-columns: 1fr 1fr; }
+  .fc-hist-kpis { grid-template-columns: 1fr 1fr; }
+  .fc-accuracy-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .fc-hist-boat-row { grid-template-columns: 20px 1fr 50px 50px; font-size: 11px; }
+  .fc-hist-landing { display: none; }
+  /* Accuracy widget hidden on mobile per spec */
+  .fc-accuracy-grid ~ div { display: none; }
+}

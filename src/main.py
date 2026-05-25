@@ -19,6 +19,8 @@ from .scrape import SOURCES, scrape_all
 from .schedule import scrape_all_schedules
 from .backtest import daily_accuracy_update
 from .sst import fetch_daily_sst, insert_sst
+from .forecast import score_yesterday as forecast_score_yesterday
+from .weather import fetch_marine_forecast
 
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / "tracker.db"
@@ -91,7 +93,27 @@ def run(target_date: date | None, export_only: bool) -> int:
         except Exception as e:
             summary_lines.append(f"  Accuracy update ERROR (non-fatal): {e}")
 
-        n = export(conn, DATA_JS_PATH)
+        # Forecast accuracy log (new 6-factor scoring)
+        try:
+            fa = forecast_score_yesterday(conn)
+            if fa:
+                summary_lines.append(
+                    f"  Forecast accuracy {fa['date']}: predicted={fa['predicted']:.1f}"
+                    f"  actual={fa['actual_rating']:.1f}  error={fa['error']:.2f}"
+                )
+        except Exception as e:
+            summary_lines.append(f"  Forecast scoring ERROR (non-fatal): {e}")
+
+        # Weather + swell forecast (for 7-day strip in data.js)
+        weather_fc: list = []
+        try:
+            target_dt = target_date or date.today()
+            weather_fc = fetch_marine_forecast(target_dt)
+            summary_lines.append(f"  Weather forecast: {len(weather_fc)} days fetched")
+        except Exception as e:
+            summary_lines.append(f"  Weather fetch ERROR (non-fatal): {e}")
+
+        n = export(conn, DATA_JS_PATH, weather_forecast=weather_fc)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
 
     print("Daily run summary:")

@@ -13,7 +13,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 const HASH_VIEWS = {
   today: 'today', analytics: 'analytics', boats: 'boats', landings: 'landings',
   tripplanner: 'tripplanner', headtohead: 'headtohead', seasonality: 'seasonality',
-  moon: 'moon', settings: 'settings', admin: 'admin',
+  moon: 'moon', settings: 'settings', admin: 'admin', forecast: 'forecast',
 };
 
 function routeFromHash() {
@@ -90,7 +90,7 @@ function App() {
     tripplanner: 'tripplanner',
     headtohead: 'headtohead',
     seasonality: 'seasonality', moon: 'moon', watchlist: 'today',
-    recent: 'today', settings: 'settings',
+    recent: 'today', settings: 'settings', forecast: 'forecast',
   };
 
   let content;
@@ -114,11 +114,15 @@ function App() {
     content = <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>;
   } else if (route.view === 'moon') {
     content = <MoonView filters={filters} setFilters={setFilters} navigate={navigate}/>;
+  } else if (route.view === 'forecast') {
+    content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'settings') {
     content = <SettingsView settings={settings} onSettingsChange={onSettingsChange}/>;
   }
 
-  const headerActive = route.view === 'boat' ? 'boats' : route.view === 'landing' ? 'landings' : route.view;
+  const headerActive = route.view === 'boat' ? 'boats'
+    : route.view === 'landing' ? 'landings'
+    : route.view;
 
   return (
     <Fragment>

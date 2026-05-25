@@ -119,6 +119,34 @@ CREATE TABLE IF NOT EXISTS scrape_log (
     status TEXT NOT NULL,
     error TEXT
 );
+
+CREATE TABLE IF NOT EXISTS forecast_scores (
+    date TEXT PRIMARY KEY,
+    overall_score REAL,
+    bluefin_score REAL,
+    yellowfin_score REAL,
+    yellowtail_score REAL,
+    dorado_score REAL,
+    conditions_label TEXT,
+    summary TEXT,
+    sst_nearshore REAL,
+    sst_offshore REAL,
+    anomaly REAL,
+    wind_speed REAL,
+    swell_height REAL,
+    moon_phase REAL,
+    moon_phase_name TEXT,
+    weights_used TEXT
+);
+
+CREATE TABLE IF NOT EXISTS forecast_accuracy_log (
+    date TEXT PRIMARY KEY,
+    predicted_score REAL,
+    actual_tpa REAL,
+    actual_rating REAL,
+    error REAL,
+    correct_direction INTEGER
+);
 """
 
 

@@ -1,5 +1,54 @@
 // Today view — Today's Report (with date picker) + Current Year Leaderboard
+// ForecastWidget is intentionally above TodayCatch to surface conditions before catch data.
 const { useMemo, useState: useS } = React;
+
+function _fcScoreColor(s) {
+  if (s == null) return 'var(--tb-gray-3)';
+  if (s >= 8)   return 'var(--tb-lime)';
+  if (s >= 6)   return 'var(--tb-accent)';
+  if (s >= 4)   return 'var(--tb-gold)';
+  return 'var(--tb-coral)';
+}
+
+// TODO: PRO FEATURE — lock for free users later
+function ForecastWidget({ navigate }) {
+  const fc = window.SD?.FORECAST?.today;
+  if (!fc) return null;
+  const score = fc.overall_score;
+  const sst   = fc.sst_offshore ?? fc.sst_nearshore;
+  const items = [
+    { icon: '🌡️', val: sst != null ? `${Math.round(sst)}°F` : '—' },
+    { icon: fc.moon_phase != null && fc.moon_phase >= 85 ? '🌕' : '🌓',
+      val: fc.moon_phase_name || '—' },
+    { icon: '💨', val: fc.wind_speed != null ? `${Math.round(fc.wind_speed)}kn` : '—' },
+    { icon: '🌊', val: fc.swell_height != null ? `${fc.swell_height.toFixed(1)}ft` : '—' },
+  ];
+  return (
+    <div className="fc-widget">
+      <div className="fc-widget-left">
+        <div className="fc-widget-label">{fc.conditions_label || '—'}</div>
+        <div className="fc-widget-score" style={{color: _fcScoreColor(score)}}>
+          {score != null ? score.toFixed(1) : '—'}
+          <span className="fc-widget-denom">/10</span>
+        </div>
+        <div className="fc-widget-sub">Today's Forecast</div>
+      </div>
+      <div className="fc-widget-mid">
+        <div className="fc-widget-conds">
+          {items.map(({icon, val}, i) => (
+            <span key={i} className="fc-widget-cond">{icon} {val}</span>
+          ))}
+        </div>
+        {fc.summary && <div className="fc-widget-summary">{fc.summary}</div>}
+      </div>
+      <div className="fc-widget-right">
+        <button className="btn sm ghost" onClick={() => navigate('forecast')}>
+          7-Day Forecast →
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
@@ -165,6 +214,8 @@ function TodayView({ navigate, settings }) {
           </p>
         </div>
       </div>
+
+      <ForecastWidget navigate={navigate}/>
 
       <TodayCatch navigate={navigate} settings={settings}/>
 
