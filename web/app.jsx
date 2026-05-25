@@ -13,7 +13,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 const HASH_VIEWS = {
   today: 'today', analytics: 'analytics', boats: 'boats', landings: 'landings',
   tripplanner: 'tripplanner', headtohead: 'headtohead', seasonality: 'seasonality',
-  moon: 'moon', settings: 'settings',
+  moon: 'moon', settings: 'settings', admin: 'admin',
 };
 
 function routeFromHash() {
@@ -35,6 +35,10 @@ function hashFromRoute(view, params = {}) {
 
 function App() {
   const [route, setRoute] = useS(() => routeFromHash());
+
+  // Admin is a fully standalone page — render before any shared state is set up.
+  if (route.view === 'admin') return <AdminView />;
+
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
 

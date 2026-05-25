@@ -87,6 +87,7 @@ _SPECIES_ALIASES = {
     "mahi": "Dorado",
     "mahi-mahi": "Dorado",
     "mahimahi": "Dorado",
+    "dolphinfish": "Dorado",
     "skipjack tuna": "Skipjack",
     "skipjack": "Skipjack",
     "bigeye tuna": "Bigeye",
@@ -95,13 +96,110 @@ _SPECIES_ALIASES = {
     "albacore": "Albacore",
 }
 
+# Extended species aliases for the 10 new DB columns.
+_EXTENDED_ALIASES: dict[str, str] = {
+    # Rockfish (many sub-species; wildcard also applied in normalize_species)
+    "rockfish": "Rockfish",
+    "red rockfish": "Rockfish",
+    "black rockfish": "Rockfish",
+    "vermilion rockfish": "Rockfish",
+    "bocaccio": "Rockfish",
+    "chilipepper": "Rockfish",
+    "chilipepper rockfish": "Rockfish",
+    "copper rockfish": "Rockfish",
+    "canary rockfish": "Rockfish",
+    "widow rockfish": "Rockfish",
+    "greenspotted rockfish": "Rockfish",
+    "china rockfish": "Rockfish",
+    "blue rockfish": "Rockfish",
+    # Sheephead
+    "sheephead": "Sheephead",
+    "california sheephead": "Sheephead",
+    # Bass
+    "calico bass": "Calico Bass",
+    "calico": "Calico Bass",
+    "kelp bass": "Calico Bass",
+    "sand bass": "Sand Bass",
+    "barred sand bass": "Sand Bass",
+    "spotted sand bass": "Sand Bass",
+    # Halibut
+    "halibut": "Halibut",
+    "california halibut": "Halibut",
+    "pacific halibut": "Halibut",
+    # Lingcod
+    "lingcod": "Lingcod",
+    # Whitefish
+    "whitefish": "Whitefish",
+    "ocean whitefish": "Whitefish",
+    # Bonito
+    "bonito": "Bonito",
+    "pacific bonito": "Bonito",
+    # Barracuda
+    "barracuda": "Barracuda",
+    "california barracuda": "Barracuda",
+    "pacific barracuda": "Barracuda",
+}
+
+# Maps canonical extended-species name -> DB column name.
+EXTENDED_SPECIES_COLUMNS: dict[str, str] = {
+    "Rockfish":    "rockfish",
+    "Sheephead":   "sheephead",
+    "Calico Bass": "calico_bass",
+    "Sand Bass":   "sand_bass",
+    "Halibut":     "halibut",
+    "Lingcod":     "lingcod",
+    "Whitefish":   "whitefish",
+    "Bonito":      "bonito",
+    "Barracuda":   "barracuda",
+}
+
 
 def normalize_species(raw: str) -> str:
-    """Return canonical name for one of the 7 tracked species, or the original
-    string trimmed of trailing 'Released' markers for everything else."""
+    """Return canonical name for one of the 7 tracked species, one of the 9
+    extended species, or the original string trimmed of trailing 'Released'
+    markers for everything else."""
     s = raw.strip()
     s_clean = re.sub(r"\s*\bReleased\b\s*$", "", s, flags=re.I).strip()
-    return _SPECIES_ALIASES.get(s_clean.lower(), s_clean)
+    # Strip parenthetical size/weight qualifiers appended by some landings,
+    # e.g. "Bluefin Tuna (up to 100 pounds)" → "Bluefin Tuna".
+    s_clean = re.sub(r"\s*\(.*?\)\s*$", "", s_clean).strip()
+    s_lower = s_clean.lower()
+    canon = _SPECIES_ALIASES.get(s_lower) or _EXTENDED_ALIASES.get(s_lower)
+    if canon is not None:
+        return canon
+    # Catch rockfish sub-species not in the explicit alias table (e.g.
+    # "Starry Rockfish", "Flag Rockfish") rather than letting them all land
+    # in other_fish as unknowns.
+    if re.search(r"\brockfish\b", s_clean, re.I):
+        return "Rockfish"
+    return s_clean
+
+
+def extract_extended_species(
+    other: dict[str, int],
+) -> tuple[dict[str, int], int, list[tuple[str, int]]]:
+    """Split the 'other' dict from parse_fish_counts into:
+      col_counts  – {db_column: total} for the 9 extended tracked species
+      other_fish  – sum of counts for truly unrecognized species
+      unknowns    – [(raw_name, count)] for unrecognized species (for logging)
+
+    Released variants of the 7 core TRACKED_SPECIES appear in 'other' under
+    their raw names (e.g. "Bluefin Released") — they are silently skipped here
+    since they're already handled by the tracked columns.
+    """
+    col_counts = {col: 0 for col in EXTENDED_SPECIES_COLUMNS.values()}
+    other_fish = 0
+    unknowns: list[tuple[str, int]] = []
+    for raw, count in other.items():
+        canon = normalize_species(raw)
+        if canon in EXTENDED_SPECIES_COLUMNS:
+            col_counts[EXTENDED_SPECIES_COLUMNS[canon]] += count
+        elif canon in TRACKED_SPECIES:
+            pass  # released trophy-fish variant already counted in tracked columns
+        else:
+            other_fish += count
+            unknowns.append((raw, count))
+    return col_counts, other_fish, unknowns
 
 
 # --- Fish-count tokenization ---------------------------------------------

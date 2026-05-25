@@ -22,6 +22,38 @@
 <body>
 <div id="root"></div>
 
+<!-- Safety net: if the app fails to mount, surface the error on-screen instead of a blank page.
+     Registered before the app scripts so it captures their parse/runtime errors. -->
+<script>
+(function () {
+  var errs = [];
+  function record(label, msg, src, line) {
+    errs.push('• ' + label + ': ' + (msg || 'unknown')
+      + (src ? ' [' + String(src).split('/').pop() + (line ? ':' + line : '') + ']' : ''));
+  }
+  window.addEventListener('error', function (e) {
+    record('Error', e.message, e.filename, e.lineno);
+    showIfBlank();
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason;
+    record('Promise', r && r.message ? r.message : String(r));
+    showIfBlank();
+  });
+  function showIfBlank() {
+    var root = document.getElementById('root');
+    if (!root || root.childElementCount > 0) return;
+    root.innerHTML =
+      '<div style="padding:16px;font:13px/1.6 -apple-system,system-ui,monospace;color:#7f1d1d">' +
+      '<b style="font-size:15px">The Tuna Tracker hit a load error</b>' +
+      '<pre style="white-space:pre-wrap;margin:12px 0">' +
+      (errs.length ? errs.join('\n') : '(no JS error captured — likely a resource/memory limit)') +
+      '</pre><div style="color:#475569;font-size:11px">' + navigator.userAgent + '</div></div>';
+  }
+  window.setTimeout(showIfBlank, 4000);
+})();
+</script>
+
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
@@ -41,6 +73,7 @@
 <script type="text/babel" src="moon.jsx?v=20260523-5"></script>
 <script type="text/babel" src="settings.jsx?v=20260523-5"></script>
 <script type="text/babel" src="analytics.jsx?v=20260523-5"></script>
+<script type="text/babel" src="admin.jsx?v=20260525-1"></script>
 <script type="text/babel" src="app.jsx?v=20260523-5"></script>
 </body>
 </html>

@@ -169,15 +169,14 @@ def parse_page(html: str, landing: str, source_url: str,
             log.warning("skip: unparsable trip length %r on %s (%s)",
                         r["trip_type_raw"], r["date"], landing)
             continue
-        if length_days < P.MIN_TRIP_DAYS:
-            log.debug("skip: trip too short %r (%.2fd)", r["trip_type_raw"], length_days)
-            continue
         anglers = P.parse_anglers(r["anglers_text"])
         if not anglers or anglers <= 0:
             log.warning("skip: bad anglers %r for %s on %s",
                         r["anglers_text"], r["boat"], r["date"])
             continue
         tracked, other = P.parse_fish_counts(r["fish_count_text"])
+        col_counts, other_fish, unknowns = P.extract_extended_species(other)
+        is_half_day = 1 if length_days < P.MIN_TRIP_DAYS else 0
         metrics = P.trophy_metrics(tracked, anglers, length_days)
         m = moon_info(datetime.combine(r["date"], datetime.min.time(), tzinfo=timezone.utc))
         out.append({
@@ -205,6 +204,10 @@ def parse_page(html: str, landing: str, source_url: str,
             "days_from_full": m.days_from_full,
             "scraped_at": scraped_at,
             "source_url": source_url,
+            **col_counts,
+            "other_fish": other_fish,
+            "is_half_day": is_half_day,
+            "_unknowns": unknowns,
         })
     return out
 

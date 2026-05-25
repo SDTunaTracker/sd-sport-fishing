@@ -165,9 +165,9 @@ def _row_to_trip(r: HistRow, *, boat: str, landing: str, source_url: str) -> dic
     length_bucket, length_days = P.parse_trip_length(r.trip_type_raw)
     if length_bucket is None or length_days is None:
         return None
-    if length_days < P.MIN_TRIP_DAYS:
-        return None
     tracked, other = P.parse_fish_counts(r.fish_count_text)
+    col_counts, other_fish, unknowns = P.extract_extended_species(other)
+    is_half_day = 1 if length_days < P.MIN_TRIP_DAYS else 0
     metrics = P.trophy_metrics(tracked, r.anglers, length_days)
     dt = datetime.fromisoformat(r.date).replace(tzinfo=timezone.utc)
     m = moon_info(dt)
@@ -196,6 +196,10 @@ def _row_to_trip(r: HistRow, *, boat: str, landing: str, source_url: str) -> dic
         "days_from_full": m.days_from_full,
         "scraped_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "source_url": source_url,
+        **col_counts,
+        "other_fish": other_fish,
+        "is_half_day": is_half_day,
+        "_unknowns": unknowns,
     }
 
 

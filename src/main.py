@@ -17,6 +17,8 @@ from . import db
 from .export import export
 from .scrape import SOURCES, scrape_all
 from .schedule import scrape_all_schedules
+from .backtest import daily_accuracy_update
+from .sst import fetch_daily_sst, insert_sst
 
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / "tracker.db"
@@ -46,7 +48,7 @@ def run(target_date: date | None, export_only: bool) -> int:
                     )
                     summary_lines.append(f"  {src.name:30s} ERROR  {err}")
                     continue
-                kept = db.insert_trips(conn, trips)
+                kept = db.insert_trips(conn, trips, upsert=True)
                 db.log_scrape(
                     conn, started_at=started, finished_at=started,
                     landing=src.name, source_url=src.url,
@@ -69,6 +71,26 @@ def run(target_date: date | None, export_only: bool) -> int:
             db.replace_scheduled_trips(conn, all_scheduled)
             summary_lines.append(f"  scheduled_trips refreshed: {len(all_scheduled)} rows")
 
+        # SST — runs after trip scraping; failure is non-fatal.
+        try:
+            sst_records = fetch_daily_sst(target_date or date.today(), conn)
+            n_sst = insert_sst(conn, sst_records)
+            summary_lines.append(f"  SST fetched: {n_sst} location-days stored")
+        except Exception as e:
+            summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
+
+        # Daily accuracy check — score yesterday's forecast vs actual catch.
+        try:
+            acc = daily_accuracy_update(conn)
+            if acc:
+                summary_lines.append(
+                    f"  Accuracy {acc['date']}: predicted={acc['predicted']:.1f}"
+                    f"  actual={acc['actual_rating']:.1f}  error={acc['error']:.2f}"
+                    f"  ({acc['n_boats']} boats)"
+                )
+        except Exception as e:
+            summary_lines.append(f"  Accuracy update ERROR (non-fatal): {e}")
+
         n = export(conn, DATA_JS_PATH)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
 
@@ -84,10 +106,25 @@ def main(argv: list[str] | None = None) -> int:
                    help="Target ISO date (YYYY-MM-DD). Default: keep whatever the page reports.")
     p.add_argument("--export-only", action="store_true",
                    help="Skip scraping, only regenerate web/data.js.")
+    p.add_argument("--backfill", action="store_true",
+                   help="Scrape per-boat history pages to backfill all available historical data.")
+    p.add_argument("--backfill-sst", action="store_true",
+                   help="Fetch 90 days of SST history from NOAA ERDDAP.")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(argv)
 
     _setup_logging(args.verbose)
+
+    if args.backfill:
+        from .backfill import run_backfill
+        run_backfill(DB_PATH)
+        return 0
+
+    if args.backfill_sst:
+        from .sst import backfill_sst
+        backfill_sst(DB_PATH)
+        return 0
+
     return run(args.date, args.export_only)
 
 

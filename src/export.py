@@ -8,10 +8,15 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
+from .analytics import (
+    _OVERALL_BREAKS, _anomaly_boost, _breaks_from_weights, _load_weights, _score,
+    build_forecast,
+)
 from .conditions import snapshot as conditions_snapshot
+from .sst import LOCATIONS as SST_LOCATIONS
 
 LANDINGS = (
     "H&M Landing",
@@ -103,12 +108,19 @@ def _scheduled_to_js(row: sqlite3.Row) -> dict:
 
 
 def _today_summary(trips: list[dict]) -> dict | None:
-    """Summarise the most recent date's catch for the Today's Catch banner."""
+    """Summarise the most recent date's catch for the Today's Catch banner.
+
+    Uses the latest date present in the data rather than calendar today,
+    because landing sites typically post yesterday's results — the widget
+    would otherwise always be empty until sites catch up.
+    """
     if not trips:
         return None
-    today_str = date.today().isoformat()
-    today = [t for t in trips if t["date"] == today_str
-             and t["tripLength"] in TRIP_LENGTHS]
+    qualifying = [t for t in trips if t["tripLength"] in TRIP_LENGTHS]
+    if not qualifying:
+        return None
+    today_str = max(t["date"] for t in qualifying)
+    today = [t for t in qualifying if t["date"] == today_str]
     if not today:
         return None
     # One row per boat: keep the trip with the highest trophyPerAnglerPerDay.
@@ -145,9 +157,191 @@ def _today_summary(trips: list[dict]) -> dict | None:
     }
 
 
+def _sst_payload(conn: sqlite3.Connection) -> dict:
+    """Build window.SD.SST: forecast + 90-day history per location."""
+    history_rows = conn.execute(
+        """SELECT date, location, sst_fahrenheit, anomaly
+           FROM ocean_temps
+           WHERE date >= date('now', '-90 days')
+           ORDER BY date, location"""
+    ).fetchall()
+    history = [
+        {
+            "date": r["date"],
+            "location": r["location"],
+            "sst": r["sst_fahrenheit"],
+            "anomaly": r["anomaly"],
+        }
+        for r in history_rows
+    ]
+    return {
+        "forecast": build_forecast(conn),
+        "history": history,
+        "locations": list(SST_LOCATIONS.keys()),
+    }
+
+
+def _recent_predictions(conn: sqlite3.Connection, days: int = 14) -> list[dict]:
+    """Last `days` days of model-predicted score vs actual fishing quality."""
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    all_tpa = [r[0] for r in conn.execute(
+        "SELECT AVG(trophy_per_angler_per_day) FROM trips"
+        " WHERE is_half_day=0 AND anglers>=5 GROUP BY date HAVING COUNT(*)>=2"
+    ).fetchall() if r[0] is not None]
+    if not all_tpa:
+        return []
+    w = _load_weights()
+    overall_breaks = _breaks_from_weights(w, "overall_breaks", _OVERALL_BREAKS)
+
+    def _pct_rating(tpa: float) -> float:
+        rank = sum(1 for v in all_tpa if v <= tpa) / len(all_tpa)
+        return round(max(1.0, min(10.0, 1.0 + rank * 9.0)), 1)
+
+    try:
+        rows = conn.execute(
+            """SELECT hc.date, hc.sst_offshore, hc.sst_anomaly,
+                      AVG(t.trophy_per_angler_per_day) AS avg_tpa,
+                      COUNT(DISTINCT t.id) AS n_boats
+               FROM historical_conditions hc
+               JOIN trips t ON t.date = hc.date
+               WHERE hc.date >= ? AND t.is_half_day=0 AND t.anglers>=5
+               GROUP BY hc.date
+               HAVING COUNT(DISTINCT t.id) >= 2
+               ORDER BY hc.date DESC LIMIT ?""",
+            (cutoff, days),
+        ).fetchall()
+    except Exception:
+        return []
+
+    result = []
+    for r in rows:
+        if r["sst_offshore"] is None:
+            continue
+        boost = _anomaly_boost(r["sst_anomaly"])
+        predicted = round(min(10.0, max(1.0, _score(r["sst_offshore"], overall_breaks) + boost)), 1)
+        actual_rating = _pct_rating(r["avg_tpa"])
+        result.append({
+            "date": r["date"],
+            "predicted": predicted,
+            "actualTpa": round(r["avg_tpa"], 3),
+            "actualRating": actual_rating,
+            "error": round(abs(predicted - actual_rating), 2),
+            "nBoats": r["n_boats"],
+        })
+    return result
+
+
+def _admin_payload(conn: sqlite3.Connection) -> dict:
+    """Build window.SD.ADMIN: data for the internal admin dashboard."""
+    # Scrape log — last 10 runs per source
+    log_rows = conn.execute(
+        "SELECT started_at, landing, trips_seen, trips_kept, status, error"
+        " FROM scrape_log ORDER BY started_at DESC LIMIT 200"
+    ).fetchall()
+    by_source: dict = {}
+    for r in log_rows:
+        src = r["landing"]
+        if src not in by_source:
+            by_source[src] = []
+        if len(by_source[src]) < 10:
+            by_source[src].append({
+                "at": r["started_at"], "seen": r["trips_seen"],
+                "kept": r["trips_kept"], "status": r["status"],
+                "error": r["error"],
+            })
+
+    # SST — latest date + value per location
+    sst_recent = conn.execute(
+        "SELECT location, MAX(date) AS last_date, sst_fahrenheit, anomaly"
+        " FROM ocean_temps GROUP BY location"
+    ).fetchall()
+    sst_log = [{"location": r["location"], "date": r["last_date"],
+                 "sstF": r["sst_fahrenheit"], "anomaly": r["anomaly"]}
+               for r in sst_recent]
+
+    # DB stats
+    ts = conn.execute(
+        """SELECT COUNT(*) AS total,
+                  SUM(CASE WHEN is_half_day=1 THEN 1 ELSE 0 END) AS half_day,
+                  MIN(date) AS earliest, MAX(date) AS latest,
+                  SUM(anglers) AS total_anglers,
+                  SUM(trophy_count) AS total_tuna
+           FROM trips"""
+    ).fetchone()
+    by_landing = [{"landing": r["landing"], "count": r["n"]} for r in conn.execute(
+        "SELECT landing, COUNT(*) AS n FROM trips WHERE is_half_day=0"
+        " GROUP BY landing ORDER BY n DESC"
+    ).fetchall()]
+    by_year = [{"year": r["yr"], "count": r["n"]} for r in conn.execute(
+        "SELECT strftime('%Y',date) AS yr, COUNT(*) AS n"
+        " FROM trips WHERE is_half_day=0 GROUP BY yr ORDER BY yr"
+    ).fetchall()]
+    unknowns = [{"species": r["species_name"], "total": r["n"], "lastSeen": r["last_seen"]}
+                for r in conn.execute(
+                    "SELECT species_name, SUM(count) AS n, MAX(date) AS last_seen"
+                    " FROM unknown_species GROUP BY species_name ORDER BY n DESC LIMIT 50"
+                ).fetchall()]
+    new_species_week = conn.execute(
+        "SELECT COUNT(DISTINCT species_name) FROM unknown_species"
+        " WHERE date >= date('now','-7 days')"
+        "   AND species_name NOT IN ("
+        "     SELECT DISTINCT species_name FROM unknown_species"
+        "     WHERE date < date('now','-7 days'))"
+    ).fetchone()[0]
+
+    # Backtest results — latest run
+    backtest = None
+    try:
+        bt = conn.execute(
+            "SELECT * FROM backtest_results ORDER BY run_date DESC LIMIT 1"
+        ).fetchone()
+        if bt:
+            backtest = dict(bt)
+            for field in ("by_month", "weights", "by_species"):
+                if backtest.get(field):
+                    try:
+                        backtest[field] = json.loads(backtest[field])
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+    # Current weights (scalar keys only — skip calibrated break arrays)
+    weights_path = Path(__file__).resolve().parents[1] / "backtest_weights.json"
+    weights: dict = {}
+    if weights_path.exists():
+        try:
+            raw = json.loads(weights_path.read_text())
+            weights = {k: v for k, v in raw.items() if not k.endswith("_breaks")}
+        except Exception:
+            pass
+
+    return {
+        "scrapeLog":         by_source,
+        "sstLog":            sst_log,
+        "dbStats": {
+            "totalTrips":        ts["total"],
+            "halfDayTrips":      ts["half_day"],
+            "earliestDate":      ts["earliest"],
+            "latestDate":        ts["latest"],
+            "totalAnglers":      ts["total_anglers"],
+            "totalTuna":         ts["total_tuna"],
+            "byLanding":         by_landing,
+            "byYear":            by_year,
+            "unknownSpecies":    unknowns,
+            "newSpeciesThisWeek": new_species_week,
+        },
+        "backtestResults":   backtest,
+        "recentPredictions": _recent_predictions(conn),
+        "weights":           weights,
+    }
+
+
 def export(conn: sqlite3.Connection, out_path: Path) -> int:
     """Write data.js. Returns trip count written."""
-    rows = conn.execute("SELECT * FROM trips ORDER BY date, id").fetchall()
+    rows = conn.execute(
+        "SELECT * FROM trips WHERE is_half_day = 0 ORDER BY date, id"
+    ).fetchall()
     trips = [_trip_to_js(r) for r in rows]
     boats = _boats_from_trips(trips)
     schedule_rows = conn.execute(
@@ -167,6 +361,8 @@ def export(conn: sqlite3.Connection, out_path: Path) -> int:
         "TRIPS": trips,
         "TODAY": _today_summary(trips),
         "SCHEDULE": schedule,
+        "SST": _sst_payload(conn),
+        "ADMIN": _admin_payload(conn),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,
             "tripCount": len(trips),
