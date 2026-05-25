@@ -120,12 +120,8 @@ function SevenDayStrip({ days, selectedIdx, onSelect }) {
 // ─── Selected day detail ──────────────────────────────────────────────────────
 function DayDetail({ day }) {
   if (!day) return null;
-  const fs = day.factor_scores || {};
-  const fw = day.factor_weights || {};
-  const pct = (k) => fw[k] != null ? `${Math.round(fw[k] * 100)}%` : '';
-
   return (
-    <Panel title={`${day.dayName || day.date} — Conditions Breakdown`}>
+    <Panel title={`${day.dayName || day.date} — Conditions`}>
       <div className="fc-detail-grid">
         <div className="fc-detail-left">
           <div className="fc-big-score">
@@ -139,19 +135,6 @@ function DayDetail({ day }) {
             {day.date && `📅 ${new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'})}`}
           </div>
         </div>
-        <div className="fc-detail-right">
-          <div className="fc-factor-title">Factor Breakdown</div>
-          {[
-            ['sst',       `🌡️ Water Temp`],
-            ['moon',      `${moonEmoji(day.moon_phase)} Moon Phase`],
-            ['wind',      '💨 Wind'],
-            ['swell',     '🌊 Swell'],
-            ['pressure',  '📊 Pressure'],
-            ['historical','📈 Historical'],
-          ].map(([k, lbl]) => (
-            <ScoreBar key={k} score={fs[k]} label={`${lbl} ${pct(k)}`}/>
-          ))}
-        </div>
       </div>
     </Panel>
   );
@@ -161,15 +144,15 @@ function DayDetail({ day }) {
 function SpeciesGrid({ day }) {
   if (!day) return null;
   const species = [
-    { key: 'bluefin_score',    name: 'Bluefin',    emoji: '🐟', color: SPECIES_COLORS.Bluefin,    tip: 'Optimal 62-68°F' },
-    { key: 'yellowfin_score',  name: 'Yellowfin',  emoji: '🐠', color: SPECIES_COLORS.Yellowfin,  tip: 'Optimal 68-75°F' },
-    { key: 'yellowtail_score', name: 'Yellowtail', emoji: '🐡', color: SPECIES_COLORS.Yellowtail, tip: 'Optimal 60-67°F' },
-    { key: 'dorado_score',     name: 'Dorado',     emoji: '🐬', color: SPECIES_COLORS.Dorado,     tip: 'Optimal 72-76°F' },
+    { key: 'bluefin_score',    name: 'Bluefin',    emoji: '🐟', color: SPECIES_COLORS.Bluefin    },
+    { key: 'yellowfin_score',  name: 'Yellowfin',  emoji: '🐠', color: SPECIES_COLORS.Yellowfin  },
+    { key: 'yellowtail_score', name: 'Yellowtail', emoji: '🐡', color: SPECIES_COLORS.Yellowtail },
+    { key: 'dorado_score',     name: 'Dorado',     emoji: '🐬', color: SPECIES_COLORS.Dorado     },
   ];
   return (
     <Panel title="Species Forecast">
       <div className="fc-species-grid">
-        {species.map(({ key, name, emoji, color, tip }) => {
+        {species.map(({ key, name, emoji, color }) => {
           const s = day[key];
           const pct = s != null ? Math.round(((s - 1) / 9) * 100) : 0;
           return (
@@ -184,7 +167,6 @@ function SpeciesGrid({ day }) {
               <div className="fc-species-bar-wrap">
                 <div className="fc-species-bar-fill" style={{width: `${pct}%`, background: color}}/>
               </div>
-              <div className="fc-species-tip">{tip}</div>
             </div>
           );
         })}
