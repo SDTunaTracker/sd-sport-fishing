@@ -7,9 +7,17 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// Reference point: when was data.js built? Fall back to Date.now() if missing.
+const DATA_BUILD_TIME = (() => {
+  try { return new Date(window.SD.META.lastScrape).getTime(); } catch { return Date.now(); }
+})();
+
+// Hours between isoStr and data.js build time (not browser clock).
+// This prevents scrapers from appearing stale just because the page was
+// loaded hours after data.js was generated.
 function hoursAgo(isoStr) {
   if (!isoStr) return Infinity;
-  return (Date.now() - new Date(isoStr).getTime()) / 3_600_000;
+  return (DATA_BUILD_TIME - new Date(isoStr).getTime()) / 3_600_000;
 }
 
 function healthColor(isoStr, hasError) {
