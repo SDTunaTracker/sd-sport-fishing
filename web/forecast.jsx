@@ -256,7 +256,7 @@ function SSTChart() {
   cutoff.setDate(cutoff.getDate() - 30);
   const cutoffStr = cutoff.toISOString().slice(0, 10);
 
-  const byLoc: Record<string, {date: string, sst: number}[]> = {};
+  const byLoc = {};
   for (const r of sstData) {
     if (r.date < cutoffStr) continue;
     if (!locations.includes(r.location)) continue;
@@ -273,8 +273,8 @@ function SSTChart() {
   const W = 600, H = 180, PL = 40, PR = 12, PT = 12, PB = 28;
   const iW = W - PL - PR, iH = H - PT - PB;
 
-  const x = (i: number) => PL + (i / (allDates.length - 1)) * iW;
-  const y = (v: number) => PT + iH - ((v - minS) / (maxS - minS)) * iH;
+  const x = (i) => PL + (i / (allDates.length - 1)) * iW;
+  const y = (v) => PT + iH - ((v - minS) / (maxS - minS)) * iH;
 
   const speciesBands = [
     { lo: 62, hi: 68, color: '#1F4E8F22', label: 'Bluefin zone' },
