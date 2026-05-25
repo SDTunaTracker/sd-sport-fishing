@@ -35,10 +35,6 @@ function hashFromRoute(view, params = {}) {
 
 function App() {
   const [route, setRoute] = useS(() => routeFromHash());
-
-  // Admin is a fully standalone page — render before any shared state is set up.
-  if (route.view === 'admin') return <AdminView />;
-
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
 
@@ -73,6 +69,10 @@ function App() {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  // Admin is a fully standalone page — no header, no nav, no shared state used.
+  // Must be after all hooks (React rules: no conditional hooks).
+  if (route.view === 'admin') return <AdminView />;
 
   const navigate = (view, params = {}) => {
     const nextHash = hashFromRoute(view, params);
