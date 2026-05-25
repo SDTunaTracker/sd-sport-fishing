@@ -28,7 +28,7 @@ function healthColor(isoStr, hasError) {
   return "red";
 }
 
-function fmt(n, dec = 0) {
+function fmtN(n, dec = 0) {
   if (n == null) return "—";
   return Number(n).toLocaleString(undefined, { maximumFractionDigits: dec });
 }
@@ -174,7 +174,7 @@ function BarChart({ data, labelKey, valueKey, color = "var(--tb-accent)" }) {
           <div className="adm-bar-track">
             <div className="adm-bar-fill" style={{ width: `${(d[valueKey] / max * 100).toFixed(1)}%`, background: color }} />
           </div>
-          <div className="adm-bar-val">{fmt(d[valueKey])}</div>
+          <div className="adm-bar-val">{fmtN(d[valueKey])}</div>
         </div>
       ))}
     </div>
@@ -188,14 +188,14 @@ function Section2({ dbStats }) {
     <div className="adm-section">
       <div className="adm-section-title">Database Stats</div>
       <div className="adm-kpis">
-        <div className="adm-kpi"><div className="k">Full-Day Trips</div><div className="v">{fmt(s.totalTrips)}</div></div>
-        <div className="adm-kpi"><div className="k">Half-Day Trips</div><div className="v">{fmt(s.halfDayTrips)}</div></div>
-        <div className="adm-kpi"><div className="k">Total Anglers</div><div className="v">{fmt(s.totalAnglers)}</div></div>
-        <div className="adm-kpi"><div className="k">Total Trophy Fish</div><div className="v">{fmt(s.totalTuna)}</div></div>
+        <div className="adm-kpi"><div className="k">Full-Day Trips</div><div className="v">{fmtN(s.totalTrips)}</div></div>
+        <div className="adm-kpi"><div className="k">Half-Day Trips</div><div className="v">{fmtN(s.halfDayTrips)}</div></div>
+        <div className="adm-kpi"><div className="k">Total Anglers</div><div className="v">{fmtN(s.totalAnglers)}</div></div>
+        <div className="adm-kpi"><div className="k">Total Trophy Fish</div><div className="v">{fmtN(s.totalTuna)}</div></div>
         <div className="adm-kpi"><div className="k">Earliest Record</div><div className="v" style={{ fontSize: 16 }}>{s.earliestDate || "—"}</div></div>
         <div className="adm-kpi"><div className="k">Latest Record</div><div className="v" style={{ fontSize: 16 }}>{s.latestDate || "—"}</div></div>
-        <div className="adm-kpi"><div className="k">Unknown Species</div><div className="v">{fmt(unknowns.length)}<span className="u"> types</span></div></div>
-        <div className="adm-kpi"><div className="k">New This Week</div><div className="v" style={{ color: s.newSpeciesThisWeek ? "#FBBF24" : "#34D399" }}>{fmt(s.newSpeciesThisWeek)}</div></div>
+        <div className="adm-kpi"><div className="k">Unknown Species</div><div className="v">{fmtN(unknowns.length)}<span className="u"> types</span></div></div>
+        <div className="adm-kpi"><div className="k">New This Week</div><div className="v" style={{ color: s.newSpeciesThisWeek ? "#FBBF24" : "#34D399" }}>{fmtN(s.newSpeciesThisWeek)}</div></div>
       </div>
 
       <div className="adm-two-col" style={{ gap: 16 }}>
@@ -219,7 +219,7 @@ function Section2({ dbStats }) {
                 {unknowns.slice(0, 30).map(u => (
                   <tr key={u.species}>
                     <td>{u.species}</td>
-                    <td style={{ fontVariantNumeric: "tabular-nums" }}>{fmt(u.total)}</td>
+                    <td style={{ fontVariantNumeric: "tabular-nums" }}>{fmtN(u.total)}</td>
                     <td style={{ color: "#64748B" }}>{u.lastSeen}</td>
                   </tr>
                 ))}
@@ -310,7 +310,7 @@ function Section3({ backtest, weights }) {
         </div>
         <div className="adm-kpi">
           <div className="k">Backtest Days</div>
-          <div className="v">{fmt(bt.total_days)}</div>
+          <div className="v">{fmtN(bt.total_days)}</div>
           <div className="u">{bt.date_range_start} → {bt.date_range_end?.slice(2)}</div>
         </div>
         <div className="adm-kpi">
