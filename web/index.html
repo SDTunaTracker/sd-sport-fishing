@@ -27,17 +27,18 @@
 <script>
 (function () {
   var errs = [];
-  function record(label, msg, src, line) {
-    errs.push('• ' + label + ': ' + (msg || 'unknown')
-      + (src ? ' [' + String(src).split('/').pop() + (line ? ':' + line : '') + ']' : ''));
+  function record(label, msg, src, line, stack) {
+    var loc = src ? ' [' + String(src).split('/').pop() + (line ? ':' + line : '') + ']' : '';
+    var st = stack ? '\n' + String(stack).split('\n').slice(0, 8).join('\n') : '';
+    errs.push('• ' + label + ': ' + (msg || 'unknown') + loc + st);
   }
   window.addEventListener('error', function (e) {
-    record('Error', e.message, e.filename, e.lineno);
+    record('Error', e.message, e.filename, e.lineno, e.error && e.error.stack);
     showIfBlank();
   });
   window.addEventListener('unhandledrejection', function (e) {
     var r = e.reason;
-    record('Promise', r && r.message ? r.message : String(r));
+    record('Promise', r && r.message ? r.message : String(r), null, null, r && r.stack);
     showIfBlank();
   });
   function showIfBlank() {

@@ -480,3 +480,5 @@ function ForecastView({ navigate }) {
     </Fragment>
   );
 }
+
+Object.assign(window, { ForecastView });
