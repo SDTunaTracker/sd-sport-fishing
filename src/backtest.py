@@ -33,7 +33,7 @@ from .analytics import (
 from .moon import moon_info
 from .sst import (
     LOCATIONS as SST_LOCATIONS,
-    _c_to_f, _compute_anomaly, _fetch_range,
+    _c_to_f, _compute_anomaly, _fetch_mur as _fetch_range,
     insert_sst,
 )
 
@@ -388,24 +388,57 @@ def build_historical_conditions(
 
 # ─── Backtest engine ──────────────────────────────────────────────────────────
 
+_HC_NUMERIC_COLS = (
+    "sst_nearshore", "sst_9mile", "sst_offshore", "sst_cortez",
+    "sst_anomaly", "wind_speed", "wind_direction",
+    "swell_height", "swell_period", "pressure", "pressure_trend", "moon_illum",
+)
+
+
 def _get_daily_tpa(conn: sqlite3.Connection) -> dict[str, dict]:
-    """Daily average trophy metrics (full-day trips, ≥5 anglers, ≥2 boats)."""
+    """Catch metrics keyed by *departure* date, trips ≤ 2.5 days.
+
+    Each trip is shifted to its departure date so conditions are matched to
+    the start of the trip, not the return.  avg_days records how many days
+    of conditions to average when building the conditions vector.
+    trophy_per_angler_per_day already normalises for trip length.
+    """
     rows = conn.execute(
-        """SELECT date,
+        """SELECT date(date, '-' || CAST(ROUND(trip_length_days - 1) AS INTEGER) || ' days') AS dep_date,
                   AVG(trophy_per_angler_per_day)              AS avg_tpa,
                   AVG(bluefin   * 1.0 / NULLIF(anglers, 0))  AS bf_pa,
                   AVG(yellowfin * 1.0 / NULLIF(anglers, 0))  AS yf_pa,
                   AVG(yellowtail* 1.0 / NULLIF(anglers, 0))  AS yt_pa,
                   AVG(dorado    * 1.0 / NULLIF(anglers, 0))  AS dor_pa,
                   COUNT(*)                                    AS n_boats,
-                  SUM(anglers)                                AS total_anglers
+                  SUM(anglers)                                AS total_anglers,
+                  CAST(ROUND(AVG(trip_length_days)) AS INTEGER) AS avg_days
            FROM trips
-           WHERE is_half_day = 0 AND anglers >= 5
-           GROUP BY date
+           WHERE is_half_day = 0 AND anglers >= 5 AND trip_length_days <= 2.5
+           GROUP BY dep_date
            HAVING COUNT(*) >= 2
-           ORDER BY date"""
+           ORDER BY dep_date"""
     ).fetchall()
-    return {r["date"]: dict(r) for r in rows}
+    return {r["dep_date"]: dict(r) for r in rows}
+
+
+def _avg_conditions(hc_by_date: dict, dep_date: date, n_days: int) -> dict | None:
+    """Average historical_conditions over n_days starting from dep_date.
+
+    Returns None if no conditions rows are found for any day in the range.
+    All numeric columns are averaged; moon_phase_name is taken from day 1.
+    """
+    rows = [hc_by_date.get((dep_date + timedelta(days=i)).isoformat())
+            for i in range(max(n_days, 1))]
+    rows = [r for r in rows if r]
+    if not rows:
+        return None
+    result: dict = {}
+    for col in _HC_NUMERIC_COLS:
+        vals = [r[col] for r in rows if r.get(col) is not None]
+        result[col] = round(sum(vals) / len(vals), 4) if vals else None
+    result["moon_phase_name"] = rows[0].get("moon_phase_name")
+    return result
 
 
 def _tpa_to_rating(tpa: float, all_values: list[float]) -> float:
@@ -417,7 +450,7 @@ def _tpa_to_rating(tpa: float, all_values: list[float]) -> float:
 
 
 def _predict_from_conditions(hc: dict) -> dict:
-    """Score from historical_conditions row — SST + anomaly only.
+    """Score from averaged conditions dict — SST + anomaly only.
     Historical factor is omitted to prevent data leakage in backtesting."""
     sst_f = (hc.get("sst_offshore") or hc.get("sst_9mile") or hc.get("sst_nearshore"))
     if sst_f is None:
@@ -440,42 +473,51 @@ def backtest_model(
         return []
     all_tpa_vals = [v["avg_tpa"] for v in daily_tpa.values() if v["avg_tpa"] is not None]
 
-    hc_rows = conn.execute(
-        "SELECT * FROM historical_conditions WHERE date BETWEEN ? AND ?",
-        (start.isoformat(), end.isoformat()),
-    ).fetchall()
+    # Fetch a slightly wider window so multi-day trips' return dates are covered.
+    hc_start = (start - timedelta(days=3)).isoformat()
+    hc_end   = (end   + timedelta(days=3)).isoformat()
+    hc_by_date = {
+        r["date"]: dict(r)
+        for r in conn.execute(
+            "SELECT * FROM historical_conditions WHERE date BETWEEN ? AND ?",
+            (hc_start, hc_end),
+        ).fetchall()
+    }
 
     results = []
-    for row in hc_rows:
-        d_str = row["date"]
-        if d_str not in daily_tpa:
+    for dep_date_str, actual in daily_tpa.items():
+        dep_date = date.fromisoformat(dep_date_str)
+        if not (start <= dep_date <= end):
             continue
-        actual    = daily_tpa[d_str]
-        predicted = _predict_from_conditions(dict(row))
+        n_days = actual.get("avg_days") or 1
+        cond = _avg_conditions(hc_by_date, dep_date, n_days)
+        if cond is None:
+            continue
+        predicted = _predict_from_conditions(cond)
         if predicted["overall"] is None:
             continue
         actual_rating = _tpa_to_rating(actual["avg_tpa"], all_tpa_vals)
         error         = abs(predicted["overall"] - actual_rating)
         results.append({
-            "date":               d_str,
-            "month":              int(d_str[5:7]),
-            "predicted_overall":  predicted["overall"],
-            "predicted_bluefin":  predicted["bluefin"],
+            "date":                dep_date_str,
+            "month":               dep_date.month,
+            "predicted_overall":   predicted["overall"],
+            "predicted_bluefin":   predicted["bluefin"],
             "predicted_yellowfin": predicted["yellowfin"],
-            "actual_tpa":         round(actual["avg_tpa"], 4),
-            "actual_rating":      actual_rating,
-            "bf_pa":              actual.get("bf_pa"),
-            "yf_pa":              actual.get("yf_pa"),
-            "yt_pa":              actual.get("yt_pa"),
-            "n_boats":            actual["n_boats"],
-            "error":              round(error, 2),
-            "correct_direction":  (predicted["overall"] >= 5.5) == (actual_rating >= 5.5),
-            "sst_offshore":       row["sst_offshore"],
-            "sst_anomaly":        row["sst_anomaly"],
-            "wind_speed":         row["wind_speed"],
-            "swell_height":       row["swell_height"],
-            "pressure_trend":     row["pressure_trend"],
-            "moon_illum":         row["moon_illum"],
+            "actual_tpa":          round(actual["avg_tpa"], 4),
+            "actual_rating":       actual_rating,
+            "bf_pa":               actual.get("bf_pa"),
+            "yf_pa":               actual.get("yf_pa"),
+            "yt_pa":               actual.get("yt_pa"),
+            "n_boats":             actual["n_boats"],
+            "error":               round(error, 2),
+            "correct_direction":   (predicted["overall"] >= 5.5) == (actual_rating >= 5.5),
+            "sst_offshore":        cond.get("sst_offshore"),
+            "sst_anomaly":         cond.get("sst_anomaly"),
+            "wind_speed":          cond.get("wind_speed"),
+            "swell_height":        cond.get("swell_height"),
+            "pressure_trend":      cond.get("pressure_trend"),
+            "moon_illum":          cond.get("moon_illum"),
         })
     return sorted(results, key=lambda x: x["date"])
 
@@ -509,15 +551,16 @@ def correlate_factors(
             pairs = [(f, t) for f, t in zip(fvals, tvals) if f is not None and t is not None]
             matrix[fname][tname] = _pearson_r(*zip(*pairs)) if len(pairs) >= 10 else None
 
-    # Moon correlation over ALL trip dates — far more statistical power
+    # Moon correlation over all departure dates — more statistical power
     all_moon = conn.execute(
         """SELECT AVG(moon_illum)                             AS illum,
                   AVG(trophy_per_angler_per_day)             AS tpa,
                   AVG(bluefin    * 1.0 / NULLIF(anglers,0)) AS bf_pa,
                   AVG(yellowfin  * 1.0 / NULLIF(anglers,0)) AS yf_pa,
                   AVG(yellowtail * 1.0 / NULLIF(anglers,0)) AS yt_pa
-           FROM trips WHERE is_half_day=0 AND anglers>=5
-           GROUP BY date HAVING COUNT(*)>=2"""
+           FROM trips WHERE is_half_day=0 AND anglers>=5 AND trip_length_days<=2.5
+           GROUP BY date(date, '-' || CAST(ROUND(trip_length_days - 1) AS INTEGER) || ' days')
+           HAVING COUNT(*)>=2"""
     ).fetchall()
     if len(all_moon) >= 30:
         illums = [r["illum"] for r in all_moon]
@@ -552,8 +595,9 @@ def calibrate_score_breaks(conn: sqlite3.Connection) -> dict | None:
     def _pool(metric_sql: str) -> list[float]:
         return [r[0] for r in conn.execute(
             f"SELECT {metric_sql} FROM trips"
-            " WHERE is_half_day=0 AND anglers>=5"
-            " GROUP BY date HAVING COUNT(*)>=2"
+            " WHERE is_half_day=0 AND anglers>=5 AND trip_length_days<=2.5"
+            " GROUP BY date(date, '-' || CAST(ROUND(trip_length_days - 1) AS INTEGER) || ' days')"
+            " HAVING COUNT(*)>=2"
         ).fetchall() if r[0] is not None]
 
     all_tpa = _pool("AVG(trophy_per_angler_per_day)")
@@ -562,17 +606,17 @@ def calibrate_score_breaks(conn: sqlite3.Connection) -> dict | None:
     if len(all_tpa) < 30:
         return None
 
-    # Daily SST + catch metrics, full-day trips, >= 2 boats per day
+    # Daily SST + catch metrics joined on departure date, trips <= 2.5 days
     rows = conn.execute(
         """SELECT o.sst_fahrenheit AS sst,
                   AVG(t.trophy_per_angler_per_day)              AS tpa,
                   AVG(t.bluefin   * 1.0 / NULLIF(t.anglers,0)) AS bf_pa,
                   AVG(t.yellowfin * 1.0 / NULLIF(t.anglers,0)) AS yf_pa
            FROM ocean_temps o
-           JOIN trips t ON t.date = o.date
+           JOIN trips t ON date(t.date, '-' || CAST(ROUND(t.trip_length_days - 1) AS INTEGER) || ' days') = o.date
            WHERE o.location = '60-Mile Bank'
-             AND t.is_half_day = 0 AND t.anglers >= 5
-           GROUP BY t.date
+             AND t.is_half_day = 0 AND t.anglers >= 5 AND t.trip_length_days <= 2.5
+           GROUP BY o.date
            HAVING COUNT(DISTINCT t.id) >= 2"""
     ).fetchall()
     if len(rows) < 20:

@@ -1,22 +1,30 @@
-"""Fetch Sea Surface Temperature from NOAA ERDDAP (MUR SST) for SD fishing grounds.
+"""Fetch Sea Surface Temperature for SD fishing grounds.
 
-Data source: JPL MUR SST v4.1 — 0.01° resolution, daily at 09:00 UTC.
-Endpoint: https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41
+Source priority per location:
+  1. NDBC buoy 46232 (Nearshore only) — real-time, hourly updates.
+  2. UKMO OSTIA SST — 0.05° L4 analyzed, ~1-2 day lag.
+  3. JPL MUR SST v4.1 — 0.01° L4 analyzed, 3-6 day lag (fallback).
 
-Typical data lag is 3–6 days. Range fetches degrade gracefully if the
-requested end date is beyond the dataset's current coverage.
+ERDDAP endpoints: https://coastwatch.pfeg.noaa.gov/erddap/griddap/
 """
 from __future__ import annotations
 
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
 
 log = logging.getLogger(__name__)
 
-ERDDAP_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json"
+# ── ERDDAP endpoints ──────────────────────────────────────────────────────────
+MUR_BASE   = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json"
+OSTIA_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplOSTIASSTv20.json"
+
+# NOAA NDBC realtime2 feed — Point Loma South buoy (nearshore SD).
+NDBC_URL = "https://www.ndbc.noaa.gov/data/realtime2/46232.txt"
+NDBC_WTMP_COL = 14   # WTMP is column index 14 in realtime2 plain-text
+NDBC_MISSING  = "MM"
 
 # Key SD offshore fishing locations. Nearshore pushed slightly west (-117.3
 # instead of -117.2) so the coordinate clears the coastal land mask in MUR SST.
@@ -52,11 +60,12 @@ _CLIM_F: dict[str, dict[int, float]] = {
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
 
-# How many days to look back when no data exists for recent dates.
-_MAX_LAG_DAYS = 10
-# Safe end-date offset: stay this many days behind today to avoid ERDDAP 404
-# when the requested date is beyond the dataset's current coverage.
-_SAFE_LAG = 5
+# OSTIA: typically available within 1-2 days; look back up to 7 days.
+_OSTIA_SAFE_LAG  = 2
+_OSTIA_LOOKBACK  = 7
+# MUR SST: 3-6 day lag; reduced from 5 to 3 to grab data sooner when available.
+_MUR_SAFE_LAG    = 3
+_MUR_LOOKBACK    = 10
 
 
 def _c_to_f(c: float) -> float:
@@ -67,63 +76,124 @@ def _baseline_f(location: str, month: int) -> float:
     return _CLIM_F.get(location, _CLIM_F["Nearshore"])[month]
 
 
-def _erddap_url(lat: float, lon: float, start: date, end: date) -> str:
-    t0 = f"{start.isoformat()}T09:00:00Z"
-    t1 = f"{end.isoformat()}T09:00:00Z"
+# ── ERDDAP fetch helpers ──────────────────────────────────────────────────────
+
+def _erddap_url(base: str, time_suffix: str, lat: float, lon: float,
+                start: date, end: date) -> str:
+    t0 = f"{start.isoformat()}{time_suffix}"
+    t1 = f"{end.isoformat()}{time_suffix}"
     return (
-        f"{ERDDAP_BASE}?analysed_sst"
+        f"{base}?analysed_sst"
         f"[({t0}):1:({t1})]"
         f"[({lat}):1:({lat})]"
         f"[({lon}):1:({lon})]"
     )
 
 
-def _fetch_range(
-    lat: float, lon: float, start: date, end: date, timeout: float = 45.0
+def _fetch_erddap(
+    base: str, time_suffix: str,
+    lat: float, lon: float,
+    start: date, end: date,
+    timeout: float = 45.0,
+    label: str = "ERDDAP",
 ) -> list[tuple[date, float]]:
-    """Fetch SST (°C) for one lat/lon over a date range via ERDDAP.
+    """Fetch analysed_sst from any ERDDAP griddap endpoint.
 
-    Returns [(date, sst_celsius)] for rows with non-null values.
-    Returns [] on HTTP error or parse failure — never raises.
+    Returns [(date, sst_celsius)] for non-null rows; [] on any error.
     """
-    url = _erddap_url(lat, lon, start, end)
+    url = _erddap_url(base, time_suffix, lat, lon, start, end)
     try:
         r = requests.get(url, headers={"User-Agent": UA}, timeout=timeout)
         if r.status_code == 404:
-            log.debug("ERDDAP 404 (beyond coverage?): %s to %s at (%.2f, %.2f)", start, end, lat, lon)
+            log.debug("%s 404 (beyond coverage?): %s–%s at (%.2f, %.2f)",
+                      label, start, end, lat, lon)
             return []
         if r.status_code != 200:
-            log.warning("ERDDAP HTTP %s for (%.2f, %.2f): %s...", r.status_code, lat, lon, r.text[:120])
+            log.warning("%s HTTP %s for (%.2f, %.2f): %s…",
+                        label, r.status_code, lat, lon, r.text[:120])
             return []
         tbl = r.json().get("table", {})
         col_names = tbl.get("columnNames", [])
         try:
-            t_idx = col_names.index("time")
+            t_idx   = col_names.index("time")
             sst_idx = col_names.index("analysed_sst")
         except ValueError:
-            log.warning("Unexpected ERDDAP columns: %s", col_names)
+            log.warning("%s unexpected columns: %s", label, col_names)
             return []
         out: list[tuple[date, float]] = []
         for row in tbl.get("rows", []):
             if row[sst_idx] is None:
                 continue
             sst_c = float(row[sst_idx])
-            if sst_c > 200:      # Kelvin — should not happen with jplMURSST41
+            if sst_c > 200:      # Kelvin guard
                 sst_c -= 273.15
             d = date.fromisoformat(row[t_idx][:10])
             out.append((d, sst_c))
         return out
     except Exception as e:
-        log.warning("ERDDAP fetch error (%.2f, %.2f) %s–%s: %s", lat, lon, start, end, e)
+        log.warning("%s fetch error (%.2f, %.2f) %s–%s: %s",
+                    label, lat, lon, start, end, e)
         return []
 
 
-def _compute_anomaly(conn, location: str, sst_date: date, sst_f: float) -> float:
-    """SST departure from seasonal norm.
+# Convenience wrappers with dataset-specific time suffixes.
+def _fetch_mur(lat: float, lon: float, start: date, end: date,
+               timeout: float = 45.0) -> list[tuple[date, float]]:
+    return _fetch_erddap(MUR_BASE, "T09:00:00Z", lat, lon, start, end,
+                         timeout=timeout, label="MUR")
 
-    Prefers a DB-derived average when we have ≥ 30 same-month observations;
-    otherwise falls back to the hardcoded monthly climatology.
+
+def _fetch_ostia(lat: float, lon: float, start: date, end: date,
+                 timeout: float = 30.0) -> list[tuple[date, float]]:
+    return _fetch_erddap(OSTIA_BASE, "T12:00:00Z", lat, lon, start, end,
+                         timeout=timeout, label="OSTIA")
+
+
+# ── NDBC buoy (nearshore only) ────────────────────────────────────────────────
+
+def _fetch_ndbc_nearshore(timeout: float = 15.0) -> tuple[date, float] | None:
+    """Return (today, sst_celsius) from NDBC buoy 46232 if WTMP is current.
+
+    Returns None if fetch fails or the most recent observation is > 3 hours old.
     """
+    try:
+        r = requests.get(NDBC_URL, headers={"User-Agent": UA}, timeout=timeout)
+        r.raise_for_status()
+    except Exception as e:
+        log.debug("NDBC fetch failed: %s", e)
+        return None
+
+    now_utc = datetime.now(tz=timezone.utc)
+    for line in r.text.splitlines():
+        if line.startswith("#") or not line.strip():
+            continue
+        parts = line.split()
+        if len(parts) <= NDBC_WTMP_COL:
+            continue
+        wtmp = parts[NDBC_WTMP_COL]
+        if wtmp == NDBC_MISSING:
+            continue
+        try:
+            sst_c = float(wtmp)
+        except ValueError:
+            continue
+        # Parse observation time (cols 0-4: YY MM DD hh mm UTC).
+        try:
+            yr, mo, dy, hr, mi = (int(x) for x in parts[:5])
+            obs_dt = datetime(yr, mo, dy, hr, mi, tzinfo=timezone.utc)
+            age_h  = (now_utc - obs_dt).total_seconds() / 3600
+            if age_h > 3:
+                log.debug("NDBC obs is %.1f h old — skipping as nearshore SST", age_h)
+                return None
+            return obs_dt.date(), sst_c
+        except Exception:
+            return None
+    return None
+
+
+# ── Anomaly ───────────────────────────────────────────────────────────────────
+
+def _compute_anomaly(conn, location: str, sst_date: date, sst_f: float) -> float:
     if conn is not None:
         try:
             row = conn.execute(
@@ -139,35 +209,79 @@ def _compute_anomaly(conn, location: str, sst_date: date, sst_f: float) -> float
     return round(sst_f - _baseline_f(location, sst_date.month), 2)
 
 
-def fetch_daily_sst(target_date: date, conn=None) -> list[dict]:
-    """Fetch the most recent available SST for each location near target_date.
+# ── Per-location SST fetch (NDBC → OSTIA → MUR) ───────────────────────────────
 
-    Because MUR SST has a 3–6 day lag, we request a window ending at
-    min(target_date, today - _SAFE_LAG) and take the latest non-null row.
-    Returns a list of dicts ready for insert_sst().
-    """
-    safe_end = min(target_date, date.today() - timedelta(days=_SAFE_LAG))
-    safe_start = safe_end - timedelta(days=_MAX_LAG_DAYS)
-    results: list[dict] = []
-    for name, (lat, lon) in LOCATIONS.items():
-        rows = _fetch_range(lat, lon, safe_start, safe_end)
-        if not rows:
-            log.warning("No SST data for %s around %s", name, target_date)
-            continue
+def _fetch_location(
+    name: str, lat: float, lon: float,
+    target_date: date, conn=None,
+) -> dict | None:
+    """Fetch the freshest available SST for one location, trying sources in order."""
+
+    # 1. NDBC buoy (nearshore only, real-time)
+    if name == "Nearshore":
+        result = _fetch_ndbc_nearshore()
+        if result is not None:
+            data_date, sst_c = result
+            sst_f = _c_to_f(sst_c)
+            log.info("SST %s %s (NDBC buoy): %.1f°F", data_date, name, sst_f)
+            return {
+                "date": data_date.isoformat(),
+                "location": name,
+                "lat": lat, "lon": lon,
+                "sst_celsius":   round(sst_c, 2),
+                "sst_fahrenheit": sst_f,
+                "anomaly": _compute_anomaly(conn, name, data_date, sst_f),
+            }
+
+    # 2. OSTIA (~1-2 day lag)
+    ostia_end   = min(target_date, date.today() - timedelta(days=_OSTIA_SAFE_LAG))
+    ostia_start = ostia_end - timedelta(days=_OSTIA_LOOKBACK)
+    rows = _fetch_ostia(lat, lon, ostia_start, ostia_end)
+    if rows:
         rows.sort(key=lambda x: x[0], reverse=True)
         data_date, sst_c = rows[0]
         sst_f = _c_to_f(sst_c)
-        anomaly = _compute_anomaly(conn, name, data_date, sst_f)
-        results.append({
+        log.info("SST %s %s (OSTIA): %.1f°F", data_date, name, sst_f)
+        return {
             "date": data_date.isoformat(),
             "location": name,
-            "lat": lat,
-            "lon": lon,
-            "sst_celsius": round(sst_c, 2),
+            "lat": lat, "lon": lon,
+            "sst_celsius":   round(sst_c, 2),
             "sst_fahrenheit": sst_f,
-            "anomaly": anomaly,
-        })
-        log.info("SST %s %s: %.1f°F (anomaly %+.1f°)", data_date, name, sst_f, anomaly)
+            "anomaly": _compute_anomaly(conn, name, data_date, sst_f),
+        }
+
+    # 3. MUR SST (3-6 day lag, most reliable fallback)
+    mur_end   = min(target_date, date.today() - timedelta(days=_MUR_SAFE_LAG))
+    mur_start = mur_end - timedelta(days=_MUR_LOOKBACK)
+    rows = _fetch_mur(lat, lon, mur_start, mur_end)
+    if rows:
+        rows.sort(key=lambda x: x[0], reverse=True)
+        data_date, sst_c = rows[0]
+        sst_f = _c_to_f(sst_c)
+        log.info("SST %s %s (MUR fallback): %.1f°F", data_date, name, sst_f)
+        return {
+            "date": data_date.isoformat(),
+            "location": name,
+            "lat": lat, "lon": lon,
+            "sst_celsius":   round(sst_c, 2),
+            "sst_fahrenheit": sst_f,
+            "anomaly": _compute_anomaly(conn, name, data_date, sst_f),
+        }
+
+    log.warning("No SST data from any source for %s around %s", name, target_date)
+    return None
+
+
+# ── Public API ────────────────────────────────────────────────────────────────
+
+def fetch_daily_sst(target_date: date, conn=None) -> list[dict]:
+    """Fetch the freshest SST for each location, trying NDBC → OSTIA → MUR."""
+    results: list[dict] = []
+    for name, (lat, lon) in LOCATIONS.items():
+        record = _fetch_location(name, lat, lon, target_date, conn)
+        if record:
+            results.append(record)
     return results
 
 
@@ -187,19 +301,19 @@ def insert_sst(conn, records: list[dict]) -> int:
 def backfill_sst(db_path: Path, days: int = 90) -> None:
     """Fetch and store SST for the past `days` days for all locations.
 
-    Uses a single range request per location (efficient). Stops at today minus
-    _SAFE_LAG to avoid requesting dates beyond the dataset's coverage.
+    Uses MUR SST for the full history (OSTIA has the same depth but MUR is more
+    established for backfills). Range request per location is efficient.
     """
     from . import db as dbmod
 
-    end = date.today() - timedelta(days=_SAFE_LAG)
+    end   = date.today() - timedelta(days=_MUR_SAFE_LAG)
     start = end - timedelta(days=days - 1)
-    print(f"SST backfill: {start} to {end} for {len(LOCATIONS)} locations")
+    print(f"SST backfill: {start} to {end} for {len(LOCATIONS)} locations (MUR SST)")
 
     with dbmod.connect(db_path) as conn:
         total = 0
         for name, (lat, lon) in LOCATIONS.items():
-            rows = _fetch_range(lat, lon, start, end, timeout=60.0)
+            rows = _fetch_mur(lat, lon, start, end, timeout=60.0)
             if not rows:
                 print(f"  {name}: no data")
                 continue
@@ -209,9 +323,8 @@ def backfill_sst(db_path: Path, days: int = 90) -> None:
                 records.append({
                     "date": d.isoformat(),
                     "location": name,
-                    "lat": lat,
-                    "lon": lon,
-                    "sst_celsius": round(sst_c, 2),
+                    "lat": lat, "lon": lon,
+                    "sst_celsius":    round(sst_c, 2),
                     "sst_fahrenheit": sst_f,
                     "anomaly": _compute_anomaly(conn, name, d, sst_f),
                 })
