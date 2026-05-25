@@ -118,8 +118,34 @@ function SevenDayStrip({ days, selectedIdx, onSelect }) {
 }
 
 // ─── Selected day detail ──────────────────────────────────────────────────────
+function forecastStatement(day) {
+  if (day.summary) return day.summary;
+  const s = day.overall_score;
+  const ranked = [
+    { name: 'Bluefin',    score: day.bluefin_score },
+    { name: 'Yellowfin',  score: day.yellowfin_score },
+    { name: 'Yellowtail', score: day.yellowtail_score },
+    { name: 'Dorado',     score: day.dorado_score },
+  ].filter(x => x.score != null).sort((a, b) => b.score - a.score);
+
+  const opener = s >= 8 ? 'Excellent day on the water'
+    : s >= 6 ? 'Good conditions expected'
+    : s >= 4 ? 'Fair conditions'
+    : 'Slow day expected';
+
+  const hot = ranked.filter(x => x.score >= 7);
+  if (hot.length) {
+    const names = hot.slice(0, 2).map(x => x.name).join(' and ');
+    return `${opener} — ${names} ${hot.length === 1 ? 'looks' : 'look'} like the best bet.`;
+  }
+  const top = ranked[0];
+  if (top && top.score >= 5) return `${opener} — ${top.name} showing the strongest outlook.`;
+  return `${opener} — tough bite across all species.`;
+}
+
 function DayDetail({ day }) {
   if (!day) return null;
+  const stmt = forecastStatement(day);
   return (
     <Panel title={`${day.dayName || day.date} — Conditions`}>
       <div className="fc-detail-grid">
@@ -135,6 +161,11 @@ function DayDetail({ day }) {
             {day.date && `📅 ${new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'})}`}
           </div>
         </div>
+        {stmt && (
+          <div className="fc-detail-right">
+            <p style={{margin: 0, fontSize: 14, lineHeight: 1.7, color: 'var(--tb-ink)'}}>{stmt}</p>
+          </div>
+        )}
       </div>
     </Panel>
   );
