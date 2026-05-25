@@ -1,5 +1,8 @@
 // Admin Dashboard — internal only. Access via #admin (not linked in nav).
 // Password protected via sessionStorage; change ADMIN_PASSWORD before deploy.
+// Wrapped in an IIFE so none of its helpers (fmtN, hoursAgo, etc.) leak to
+// the shared global scope and shadow names exported by ui.jsx.
+(function () {
 const ADMIN_PASSWORD = "StepStone1";
 
 const { useState: useS, useEffect: useE, useCallback: useCB, Fragment } = React;
@@ -533,3 +536,6 @@ function AdminView() {
     </div>
   );
 }
+
+Object.assign(window, { AdminView });
+})(); // end IIFE

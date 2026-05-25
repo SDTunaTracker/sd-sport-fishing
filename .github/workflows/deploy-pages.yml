@@ -39,6 +39,26 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Check for global name collisions in JSX files
+        run: |
+          # Names exported by ui.jsx into window — any other file defining these
+          # at the top level (outside an IIFE) would silently clobber them.
+          GLOBALS="fmt SPECIES_COLORS TROPHY_SPECIES MONTH_NAMES AppHeader SideNav Crumbs KPI Panel Sparkline VBarChart StackedBarChart LineChart Donut MoonGlyph"
+          FAIL=0
+          for name in $GLOBALS; do
+            # Look for bare top-level declarations: function X, const X =, var X =
+            # Exclude ui.jsx itself and any IIFE-wrapped file (admin.jsx).
+            hits=$(grep -rn --include="*.jsx" \
+              -E "^(function ${name}[( ]|const ${name}\s*=|var ${name}\s*=|let ${name}\s*=)" \
+              web/ | grep -v "web/ui.jsx" || true)
+            if [ -n "$hits" ]; then
+              echo "COLLISION: '$name' redefined outside ui.jsx:"
+              echo "$hits"
+              FAIL=1
+            fi
+          done
+          [ $FAIL -eq 0 ] || exit 1
+
       - name: Stamp cache-bust version into index.html
         run: |
           VERSION=$(date -u +%Y%m%d%H%M)
