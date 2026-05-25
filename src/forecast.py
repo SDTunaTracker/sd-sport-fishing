@@ -51,12 +51,51 @@ _CONDITIONS_LABELS = [
 _MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun",
                 "Jul","Aug","Sep","Oct","Nov","Dec"]
 
-# Default factor weights; override via backtest_weights.json keys
-# "fw_sst", "fw_moon", etc. (separate from sst_weight/anomaly_weight multipliers)
-_DEFAULT_WEIGHTS = {
-    "sst": 0.30, "moon": 0.20, "wind": 0.15,
+# Fallback factor weights used only when backtest_weights.json is absent.
+_FALLBACK_WEIGHTS = {
+    "sst": 0.35, "moon": 0.10, "wind": 0.20,
     "swell": 0.10, "pressure": 0.10, "historical": 0.15,
 }
+
+# Fixed defaults for factors the backtest doesn't directly measure.
+_SWELL_DEFAULT    = 0.10
+_PRESSURE_DEFAULT = 0.10
+_HISTORICAL_DEFAULT = 0.15
+
+
+def _load_factor_weights() -> dict:
+    """Derive proportional factor weights from backtest_weights.json.
+
+    The backtest produces correlation-derived multipliers (sst_weight, moon_weight,
+    wind_weight) — higher = stronger real-world correlation.  We normalize these
+    alongside fixed defaults for swell/pressure/historical (not measured by the
+    backtest) to get weights that sum to 1.0.
+
+    With the current backtest run (sst=1.284, moon=0.082, wind=0.545) this yields
+    roughly:  sst≈57%  wind≈24%  historical≈7%  swell≈4%  pressure≈4%  moon≈4%
+    — i.e. SST and wind dominate, moon gets credit only for what the data supports.
+    """
+    bw = _load_weights()
+    if not bw or bw == {"sst_weight": 1.0, "anomaly_weight": 1.0, "moon_weight": 0.0, "wind_weight": 0.0}:
+        return _FALLBACK_WEIGHTS.copy()
+
+    sst_w  = max(0.05, bw.get("sst_weight",  1.0))
+    moon_w = max(0.01, bw.get("moon_weight", 0.0))
+    wind_w = max(0.05, bw.get("wind_weight", 0.5))
+    # swell / pressure / historical not in backtest — keep fixed
+    swell_w = _SWELL_DEFAULT
+    pres_w  = _PRESSURE_DEFAULT
+    hist_w  = _HISTORICAL_DEFAULT
+
+    total = sst_w + moon_w + wind_w + swell_w + pres_w + hist_w
+    return {
+        "sst":       round(sst_w  / total, 4),
+        "moon":      round(moon_w / total, 4),
+        "wind":      round(wind_w / total, 4),
+        "swell":     round(swell_w / total, 4),
+        "pressure":  round(pres_w  / total, 4),
+        "historical": round(hist_w  / total, 4),
+    }
 
 
 # ─── Scoring helpers ──────────────────────────────────────────────────────────
@@ -159,7 +198,7 @@ def score_day(
     Returns a dict with overall_score, species scores, conditions_label,
     factor_scores, and factor_weights.
     """
-    w = {**_DEFAULT_WEIGHTS, **(weight_overrides or {})}
+    w = {**_load_factor_weights(), **(weight_overrides or {})}
 
     bw = _load_weights()
     overall_breaks   = _breaks_from_weights(bw, "overall_breaks",   _OVERALL_BREAKS)
