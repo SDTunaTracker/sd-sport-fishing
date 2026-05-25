@@ -401,8 +401,21 @@ function Section5() {
   return (
     <div className="adm-section">
       <div className="adm-section-title">User Stats</div>
-      <div className="adm-placeholder">
-        Coming soon — user analytics will appear here after auth launch
+      <div className="adm-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
+        <div>
+          <div className="adm-card-title" style={{ marginBottom: 6 }}>Google Analytics — G-6QDTY73V37</div>
+          <div style={{ font: "400 12px/18px var(--ss-font-sans)", color: "#64748B", maxWidth: 480 }}>
+            Sessions, page views, user counts, countries, devices, and real-time visitors are all available in the GA4 dashboard.
+          </div>
+        </div>
+        <a
+          href="https://analytics.google.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ flexShrink: 0, padding: "9px 20px", background: "rgba(56,189,248,0.12)", color: "var(--tb-accent)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 7, font: "600 13px/18px var(--ss-font-sans)", textDecoration: "none", whiteSpace: "nowrap" }}
+        >
+          Open GA4 Dashboard ↗
+        </a>
       </div>
     </div>
   );
