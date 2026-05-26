@@ -290,20 +290,24 @@ def _admin_payload(conn: sqlite3.Connection) -> dict:
         "     WHERE date < date('now','-7 days'))"
     ).fetchone()[0]
 
-    # Backtest results — latest run
+    # Backtest results — latest run + history for weight changelog
     backtest = None
+    backtest_history: list = []
     try:
-        bt = conn.execute(
-            "SELECT * FROM backtest_results ORDER BY run_date DESC LIMIT 1"
-        ).fetchone()
-        if bt:
-            backtest = dict(bt)
+        rows = conn.execute(
+            "SELECT * FROM backtest_results ORDER BY run_date DESC LIMIT 12"
+        ).fetchall()
+        for i, bt in enumerate(rows):
+            entry = dict(bt)
             for field in ("by_month", "weights", "by_species"):
-                if backtest.get(field):
+                if entry.get(field):
                     try:
-                        backtest[field] = json.loads(backtest[field])
+                        entry[field] = json.loads(entry[field])
                     except Exception:
                         pass
+            if i == 0:
+                backtest = entry
+            backtest_history.append(entry)
     except Exception:
         pass
 
@@ -333,6 +337,7 @@ def _admin_payload(conn: sqlite3.Connection) -> dict:
             "newSpeciesThisWeek": new_species_week,
         },
         "backtestResults":   backtest,
+        "backtestHistory":   backtest_history,
         "recentPredictions": _recent_predictions(conn),
         "weights":           weights,
     }

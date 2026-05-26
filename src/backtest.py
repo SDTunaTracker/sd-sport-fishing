@@ -840,9 +840,9 @@ def _print_summary(report: dict) -> None:
 def weekly_recalibrate(
     db_path: Path,
     window_years: int = 3,
-    min_days_between_runs: int = 7,
+    min_days_between_runs: int = 30,
 ) -> dict | None:
-    """Re-optimize forecast weights on a rolling window if ≥7 days since last run.
+    """Re-optimize forecast weights on a rolling window if ≥30 days since last run.
 
     Skips itself if a recalibration already ran recently (checks backtest_results).
     Non-fatal — all exceptions are caught and logged.
@@ -860,14 +860,14 @@ def weekly_recalibrate(
             days_since = (date.today() - date.fromisoformat(last_run)).days
             if days_since < min_days_between_runs:
                 log.info(
-                    "Weekly recalibration skipped — last run %d day(s) ago (%s)",
+                    "Monthly recalibration skipped — last run %d day(s) ago (%s)",
                     days_since, last_run,
                 )
                 return None
 
         start = date.today() - timedelta(days=window_years * 365)
         end   = date.today()
-        log.info("Weekly recalibration: %s → %s (%d-year window)", start, end, window_years)
+        log.info("Monthly recalibration: %s → %s (%d-year window)", start, end, window_years)
 
         return run_backtest(
             db_path=db_path,

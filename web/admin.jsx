@@ -281,7 +281,94 @@ function WeightsDisplay({ weights }) {
   );
 }
 
-function Section3({ backtest, weights }) {
+const WEIGHT_KEYS = [
+  { key: "sst_weight",    label: "SST" },
+  { key: "anomaly_weight",label: "Anomaly" },
+  { key: "wind_weight",   label: "Wind" },
+  { key: "moon_weight",   label: "Moon" },
+];
+
+function WeightHistory({ history }) {
+  if (!history || history.length === 0) return null;
+  // history is newest-first; compute deltas vs the next-older row
+  return (
+    <div className="adm-card" style={{ marginTop: 16 }}>
+      <div className="adm-card-title" style={{ marginBottom: 12 }}>
+        Weight History
+        <span style={{ fontWeight: 400, color: "#64748B", fontSize: 11, marginLeft: 8 }}>
+          — Δ vs previous run · last {history.length} recalibrations
+        </span>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table className="adm-pred-table">
+          <thead>
+            <tr>
+              <th>Run Date</th>
+              <th>Window</th>
+              <th style={{ textAlign: "right" }}>MAE</th>
+              <th style={{ textAlign: "right" }}>Dir%</th>
+              {WEIGHT_KEYS.map(w => (
+                <th key={w.key} style={{ textAlign: "right" }}>{w.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {history.map((row, i) => {
+              const prev = history[i + 1];
+              const w     = row.weights  || {};
+              const prevW = prev?.weights || {};
+              function delta(cur, old) {
+                if (cur == null || old == null) return null;
+                return cur - old;
+              }
+              function fmtDelta(d) {
+                if (d == null) return null;
+                const color = Math.abs(d) < 0.005 ? "#64748B"
+                            : d > 0 ? "#34D399" : "#F87171";
+                return <span style={{ color, fontSize: 10, marginLeft: 3 }}>
+                  {d > 0 ? "+" : ""}{d.toFixed(3)}
+                </span>;
+              }
+              const dMae = delta(row.mae, prev?.mae);
+              const dDir = delta(row.direction_accuracy, prev?.direction_accuracy);
+              return (
+                <tr key={row.run_date} style={{ opacity: i === 0 ? 1 : 0.8 }}>
+                  <td style={{ fontWeight: i === 0 ? 600 : 400 }}>
+                    {row.run_date}
+                    {i === 0 && <span style={{ marginLeft: 6, fontSize: 10, color: "#38BDF8" }}>current</span>}
+                  </td>
+                  <td style={{ color: "#64748B", fontSize: 11 }}>
+                    {row.date_range_start?.slice(0, 7)} → {row.date_range_end?.slice(0, 7)}
+                  </td>
+                  <td style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {row.mae?.toFixed(3)}
+                    {fmtDelta(dMae != null ? -dMae : null) /* lower MAE = better → invert color */}
+                  </td>
+                  <td style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {row.direction_accuracy?.toFixed(1)}%
+                    {fmtDelta(dDir)}
+                  </td>
+                  {WEIGHT_KEYS.map(wk => {
+                    const val  = w[wk.key];
+                    const d    = delta(val, prevW[wk.key]);
+                    return (
+                      <td key={wk.key} style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                        {val?.toFixed(3) ?? "—"}
+                        {fmtDelta(d)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function Section3({ backtest, weights, history }) {
   const bt = backtest || {};
   const lastRunDate = bt.run_date;
   const daysAgo = lastRunDate
@@ -322,7 +409,7 @@ function Section3({ backtest, weights }) {
           <div className="u">{daysAgo != null ? `${daysAgo}d ago` : ""}</div>
         </div>
         <div className="adm-kpi">
-          <div className="k">Next Optimization</div>
+          <div className="k">Next Recalibration</div>
           <div className="v" style={{ fontSize: 20, color: nextOpt === 0 ? "#F87171" : "#CBD5E1" }}>
             {nextOpt != null ? (nextOpt === 0 ? "Overdue" : `${nextOpt}d`) : "—"}
           </div>
@@ -340,6 +427,8 @@ function Section3({ backtest, weights }) {
           <WeightsDisplay weights={weights} />
         </div>
       </div>
+
+      <WeightHistory history={history} />
     </div>
   );
 }
@@ -528,7 +617,7 @@ function AdminView() {
       <div className="adm-body">
         <Section1 scrapeLog={admin.scrapeLog || {}} sstLog={admin.sstLog || []} />
         <Section2 dbStats={admin.dbStats} />
-        <Section3 backtest={admin.backtestResults} weights={admin.weights} />
+        <Section3 backtest={admin.backtestResults} weights={admin.weights} history={admin.backtestHistory} />
         <Section4 preds={admin.recentPredictions} />
         <Section5 />
         <Section6 />
