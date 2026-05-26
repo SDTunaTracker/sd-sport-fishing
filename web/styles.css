@@ -399,6 +399,9 @@ body.compact .dt td { padding: 7px 12px; }
 /* Desktop: show species cols, hide trophy total col */
 .trophy-col { display: none; }
 
+/* ───── Analytics page — mobile filter button (hidden on desktop) ───── */
+.analytics-mobile-filter-btn { display: none; }
+
 /* ───── Trip Planner tabs (Google Flights style) ───── */
 .tp-tabs { display: flex; gap: 12px; padding: 12px; background: var(--ss-clay); border-bottom: 1px solid var(--ss-border-2); }
 .tp-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: #fff; border: 1.5px solid #CBD5E1; border-radius: 8px; min-height: 60px; padding: 10px 16px; cursor: pointer; text-align: center; transition: border-color .15s, box-shadow .15s; }
@@ -621,6 +624,13 @@ body.compact .dt td { padding: 7px 12px; }
 
   /* Buttons — same radius and transition as desktop */
   .btn { border-radius: 8px; transition: all 0.15s ease; }
+
+  /* Analytics page — mobile filter treatment */
+  .analytics-filterbar-desktop { display: none; }
+  .analytics-mobile-filter-btn { display: inline-flex; height: 36px; font-size: 13px; }
+  .analytics-leaderboard-btn { height: 36px; font-size: 13px; }
+  .analytics-trophy-icon { display: none; }
+  .analytics-sub { font-size: 12px; }
 }
 
 /* ─── Admin Dashboard (//#admin) ─────────────────────────────────────────── */

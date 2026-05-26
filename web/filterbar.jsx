@@ -148,4 +148,4 @@ const DEFAULT_FILTERS = {
   includeZero: false,
 };
 
-Object.assign(window, { FilterBar, DEFAULT_FILTERS });
+Object.assign(window, { FilterBar, DEFAULT_FILTERS, MultiSelect });
