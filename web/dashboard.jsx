@@ -103,10 +103,15 @@ function TodayCatch({ navigate, settings }) {
   }, [ratingData]);
 
   const isToday = selectedDate === TODAY_ISO;
-  const scrape = window.SD?.META?.lastScrape;
-  const timeStr = isToday && scrape
-    ? ` · as of ${new Date(scrape).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
-    : '';
+  const lastScrape = window.SD?.META?.lastScrape;
+  const timeStr = lastScrape
+    ? new Date(lastScrape).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: 'America/Los_Angeles',
+        timeZoneName: 'short'
+      })
+    : null;
 
   const activeSpecies = [
     { key: 'Bluefin',    color: SPECIES_COLORS.Bluefin },
@@ -120,7 +125,8 @@ function TodayCatch({ navigate, settings }) {
       <div className="today-banner">
         <div className="today-left">
           <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</div>
-          <div className="today-date">{fmtDate(selectedDate)}{timeStr}</div>
+          <div className="today-date">{fmtDate(selectedDate)}</div>
+          {timeStr && <div style={{fontSize:11, color:'#94A3B8', marginTop:2}}>Updated {timeStr}</div>}
         </div>
 
         {ratingData.fleetRatingKey && (
