@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS trips (
     barracuda INTEGER DEFAULT 0,
     other_fish INTEGER DEFAULT 0,
     is_half_day INTEGER DEFAULT 0,
+    region TEXT DEFAULT 'san_diego',
     UNIQUE(date, boat, landing, trip_length, anglers)
 );
 
@@ -206,6 +207,7 @@ _NEW_TRIP_COLUMNS = [
     ("barracuda",   "INTEGER DEFAULT 0"),
     ("other_fish",  "INTEGER DEFAULT 0"),
     ("is_half_day", "INTEGER DEFAULT 0"),
+    ("region",      "TEXT DEFAULT 'san_diego'"),
 ]
 
 
@@ -255,6 +257,7 @@ TRIP_FIELDS = (
     "days_from_new", "days_from_full", "scraped_at", "source_url",
     "rockfish", "sheephead", "calico_bass", "sand_bass", "halibut",
     "lingcod", "whitefish", "bonito", "barracuda", "other_fish", "is_half_day",
+    "region",
 )
 
 

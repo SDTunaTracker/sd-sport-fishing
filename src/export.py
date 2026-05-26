@@ -24,6 +24,16 @@ LANDINGS = (
     "Fisherman's Landing",
     "Point Loma Sportfishing",
     "Seaforth Sportfishing",
+    # OC/LA
+    "22nd Street Landing",
+    "Long Beach Sportfishing",
+    "Marina Del Rey Sportfishing",
+    "Redondo Beach Sportfishing",
+    "LA Waterfront Sportfishing",
+    "Pierpoint Landing",
+    "Newport Landing",
+    "Davey's Locker",
+    "Dana Wharf Sportfishing",
 )
 
 TRIP_LENGTHS = (
@@ -73,6 +83,7 @@ def _trip_to_js(row: sqlite3.Row) -> dict:
         "moonIllum": row["moon_illum"],
         "daysFromNew": row["days_from_new"],
         "daysFromFull": row["days_from_full"],
+        "region": row["region"] or "san_diego",
     }
 
 

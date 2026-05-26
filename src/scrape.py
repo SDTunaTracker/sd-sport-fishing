@@ -33,6 +33,7 @@ class LandingSource:
     name: str             # Canonical landing name written into DB
     url: str              # Fish-count page URL
     referer: str | None   # Optional Referer header (needed for fishcounts.com iframes)
+    region: str = 'san_diego'
 
 
 SOURCES: tuple[LandingSource, ...] = (
@@ -55,6 +56,61 @@ SOURCES: tuple[LandingSource, ...] = (
         name="Point Loma Sportfishing",
         url="https://www.pointlomasportfishing.com/fishcounts.php",
         referer=None,
+    ),
+    # OC/LA landings — socalfishreports.com
+    LandingSource(
+        name="22nd Street Landing",
+        url="https://socalfishreports.com/landings/22nd_street_landing.php",
+        referer=None,
+        region="los_angeles",
+    ),
+    LandingSource(
+        name="Long Beach Sportfishing",
+        url="https://socalfishreports.com/landings/long_beach_sportfishing.php",
+        referer=None,
+        region="los_angeles",
+    ),
+    LandingSource(
+        name="Marina Del Rey Sportfishing",
+        url="https://socalfishreports.com/landings/marina_del_rey_sportfishing.php",
+        referer=None,
+        region="los_angeles",
+    ),
+    LandingSource(
+        name="Redondo Beach Sportfishing",
+        url="https://socalfishreports.com/landings/redondo_beach_sportfishing.php",
+        referer=None,
+        region="los_angeles",
+    ),
+    LandingSource(
+        name="LA Waterfront Sportfishing",
+        url="https://socalfishreports.com/landings/la_waterfront_cruises_&_sportfishing.php",
+        referer=None,
+        region="los_angeles",
+    ),
+    LandingSource(
+        name="Pierpoint Landing",
+        url="https://socalfishreports.com/landings/pierpoint_landing.php",
+        referer=None,
+        region="los_angeles",
+    ),
+    LandingSource(
+        name="Newport Landing",
+        url="https://socalfishreports.com/landings/newport_landing.php",
+        referer=None,
+        region="orange_county",
+    ),
+    LandingSource(
+        name="Davey's Locker",
+        url="https://socalfishreports.com/landings/daveys_locker.php",
+        referer=None,
+        region="orange_county",
+    ),
+    LandingSource(
+        name="Dana Wharf Sportfishing",
+        url="https://socalfishreports.com/landings/dana_wharf_sportfishing.php",
+        referer=None,
+        region="orange_county",
     ),
 )
 
@@ -145,7 +201,8 @@ def _extract_rows(html: str) -> tuple[list[dict], date | None]:
 
 
 def parse_page(html: str, landing: str, source_url: str,
-               target_date: date | None = None) -> list[dict]:
+               target_date: date | None = None,
+               region: str = 'san_diego') -> list[dict]:
     """Convert a fish-count page into trip dicts ready for DB insert.
 
     Trips shorter than 3/4 day are excluded. Trips without a recognizable trip
@@ -207,6 +264,7 @@ def parse_page(html: str, landing: str, source_url: str,
             **col_counts,
             "other_fish": other_fish,
             "is_half_day": is_half_day,
+            "region": region,
             "_unknowns": unknowns,
         })
     return out
@@ -216,7 +274,7 @@ def scrape_landing(src: LandingSource, target_date: date | None = None,
                    ) -> tuple[list[dict], date | None, str]:
     """Fetch + parse one landing. Returns (trips, page_date, raw_html)."""
     html = _fetch(src)
-    trips = parse_page(html, src.name, src.url, target_date=target_date)
+    trips = parse_page(html, src.name, src.url, target_date=target_date, region=src.region)
     _, page_date = _extract_rows(html)
     return trips, page_date, html
 
