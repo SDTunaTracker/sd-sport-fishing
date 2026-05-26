@@ -74,7 +74,14 @@ function WinRateBadge({ wr }) {
   return <span className={`tp-badge ${cls}`}>{pct}%</span>;
 }
 
-function SpotsBadge({ spots }) {
+function SpotsBadge({ spots, capacity }) {
+  if (capacity != null) {
+    if (spots == null || spots === 0)
+      return <span className="tp-badge tp-spots-full">Full</span>;
+    const pct = spots / capacity;
+    const cls = pct >= 0.3 ? 'tp-spots-green' : pct >= 0.15 ? 'tp-spots-yellow' : 'tp-spots-red';
+    return <span className={`tp-badge ${cls}`}>{spots} / {capacity} open</span>;
+  }
   if (spots == null || spots === 0)
     return <span className="tp-badge tp-spots-full">Full</span>;
   if (spots < 5)
@@ -89,14 +96,26 @@ function LengthBadge({ label }) {
 }
 
 // ── Trip card ─────────────────────────────────────────────────────────────────
+const NOTE_MAX = 90;
+
 function TripCard({ s, avgTpaByKey }) {
-  const dep   = new Date(s.departureAt);
-  const moon  = moonInfo(dep);
-  const moonC = moonColor(moon.illum);
-  const price = s.price != null ? `$${s.price.toFixed(0)}` : null;
-  const url   = bookingUrl(s);
+  const [noteExpanded, setNoteExpanded] = useState(false);
+
+  const dep    = new Date(s.departureAt);
+  const ret    = s.returnAt ? new Date(s.returnAt) : null;
+  const moon   = moonInfo(dep);
+  const moonC  = moonColor(moon.illum);
+  const price  = s.price != null ? `$${s.price.toFixed(0)}` : null;
+  const url    = bookingUrl(s);
   const tpaKey = `${s.boat}|${s.tripLength}`;
   const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
+
+  const noteLong     = s.note && s.note.length > NOTE_MAX;
+  const noteText     = noteLong && !noteExpanded ? s.note.slice(0, NOTE_MAX).trimEnd() + '…' : s.note;
+
+  // Capacity bar fill % (only when capacity known)
+  const capPct = s.capacity ? Math.round((s.openSpots / s.capacity) * 100) : null;
+  const capBarColor = capPct >= 30 ? '#34D399' : capPct >= 15 ? '#FBBF24' : '#F87171';
 
   const boatEl = url ? (
     <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-boat-link">
@@ -104,42 +123,80 @@ function TripCard({ s, avgTpaByKey }) {
     </a>
   ) : <span className="tp-card-boat-name">{s.boat}</span>;
 
+  const TimeRow = ({ label, dt }) => (
+    <div className="tp-card-time-row">
+      <span className="tp-card-time-label">{label}</span>
+      <span className="tp-card-depart-date">{fmtDepDate(dt)}</span>
+      <span className="tp-card-depart-sep"> · </span>
+      <span className="tp-card-depart-time">{fmtTime(dt)}</span>
+    </div>
+  );
+
   return (
     <div className="tp-card">
+      {/* LEFT — boat info */}
       <div className="tp-card-left">
         <div className="tp-card-boat">{boatEl}</div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <LengthBadge label={s.tripLength}/>
       </div>
 
+      {/* MIDDLE — trip details */}
       <div className="tp-card-middle">
-        <div className="tp-card-depart">
-          <i className="fa-regular fa-calendar" style={{marginRight: 6, opacity: 0.4, fontSize: 13}}></i>
-          <span className="tp-card-depart-date">{fmtDepDate(dep)}</span>
-          <span className="tp-card-depart-sep"> · </span>
-          <span className="tp-card-depart-time">{fmtTime(dep)}</span>
+        {/* Departure + Return */}
+        <div className="tp-card-times">
+          <TimeRow label="Dep" dt={dep}/>
+          {ret && <TimeRow label="Ret" dt={ret}/>}
         </div>
+
         <div className="tp-card-moon" style={{color: moonC}}>
           {moon.emoji} {moon.phase} · {moon.illum}%
         </div>
+
         <div className="tp-card-wr-row">
           <span className="tp-card-stat-label">Win Rate</span>
           <WinRateBadge wr={s._winRate}/>
           {s._trips > 0 && <span className="tp-card-trips-hint">{s._trips} trips</span>}
         </div>
+
         {avgTpa != null && (
           <div className="tp-card-tpa">
             Avg TPA: <strong>{avgTpa.toFixed(2)}</strong>/day
           </div>
         )}
+
+        {/* Capacity bar (desktop only; mobile shows X/Y badge) */}
+        {s.capacity != null && (
+          <div className="tp-card-cap-row">
+            <div className="tp-card-cap-bar-wrap">
+              <div className="tp-card-cap-bar-fill"
+                   style={{width: `${capPct}%`, background: capBarColor}}/>
+            </div>
+            <span className="tp-card-cap-label">{s.openSpots} of {s.capacity} open</span>
+          </div>
+        )}
+
+        {/* Trip note */}
+        {s.note && (
+          <div className="tp-card-note">
+            {noteText}
+            {noteLong && (
+              <button className="tp-card-note-toggle"
+                      onClick={() => setNoteExpanded(e => !e)}>
+                {noteExpanded ? ' less' : ' more'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* RIGHT — price + booking */}
       <div className="tp-card-right">
         {price
           ? <><div className="tp-card-price">{price}</div><div className="tp-card-per">per person</div></>
           : <div className="tp-card-price tp-card-price-na">—</div>
         }
-        <SpotsBadge spots={s.openSpots}/>
+        <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
         {url && (
           <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn">
             View Trip →
@@ -147,10 +204,11 @@ function TripCard({ s, avgTpaByKey }) {
         )}
       </div>
 
+      {/* MOBILE bottom row */}
       <div className="tp-card-mobile-footer">
         <div style={{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'}}>
           <WinRateBadge wr={s._winRate}/>
-          <SpotsBadge spots={s.openSpots}/>
+          <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
           {price && <span className="tp-card-price-mobile">{price}</span>}
         </div>
         {url && (

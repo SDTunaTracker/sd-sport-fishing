@@ -1203,7 +1203,10 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-card-landing            { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
 .tp-length-badge            { display: inline-block; margin-top: 6px; padding: 2px 8px; background: #E0F2FE; color: #0284C7; border-radius: 20px; font: 600 11px/16px var(--ss-font-sans); }
 .tp-card-middle             { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
-.tp-card-depart             { display: flex; align-items: baseline; }
+/* Dep / Ret time rows */
+.tp-card-times              { display: flex; flex-direction: column; gap: 3px; }
+.tp-card-time-row           { display: flex; align-items: baseline; }
+.tp-card-time-label         { font: 700 9px/16px var(--ss-font-sans); color: var(--tb-gray-2); text-transform: uppercase; letter-spacing: 0.07em; width: 26px; flex-shrink: 0; margin-right: 4px; }
 .tp-card-depart-date        { font: 600 15px/20px var(--ss-font-sans); color: #0A0A0A; }
 .tp-card-depart-sep         { font: 400 14px/20px var(--ss-font-sans); color: var(--tb-gray-2); margin: 0 3px; }
 .tp-card-depart-time        { font: 500 14px/20px var(--ss-font-sans); color: #1B2B3B; }
@@ -1212,6 +1215,15 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-card-stat-label         { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
 .tp-card-trips-hint         { font: 400 10px/14px var(--ss-font-sans); color: var(--tb-gray-2); }
 .tp-card-tpa                { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+/* Capacity bar */
+.tp-card-cap-row            { display: flex; align-items: center; gap: 8px; }
+.tp-card-cap-bar-wrap       { flex: 1; max-width: 72px; height: 5px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+.tp-card-cap-bar-fill       { height: 100%; border-radius: 3px; transition: width .3s; }
+.tp-card-cap-label          { font: 500 11px/16px var(--ss-font-sans); color: var(--tb-slate); white-space: nowrap; }
+/* Trip note */
+.tp-card-note               { font: 400 11px/15px var(--ss-font-sans); color: var(--tb-gray-3); font-style: italic; }
+.tp-card-note-toggle        { font: 600 11px/15px var(--ss-font-sans); color: #38BDF8; padding: 0; }
+.tp-card-note-toggle:hover  { text-decoration: underline; }
 .tp-card-right              { padding: 16px; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; background: #FAFCFF; border-left: 1px solid #E2E8F0; gap: 8px; }
 .tp-card-price              { font: 700 22px/28px var(--ss-font-sans); color: var(--tb-ink); }
 .tp-card-price-na           { font-size: 18px; color: var(--tb-gray-2); }
