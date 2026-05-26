@@ -423,12 +423,12 @@ body.compact .dt td { padding: 7px 12px; }
 /* ───── Mobile (≤768px) ───── */
 @media (max-width: 768px) {
   /* General */
-  body { overflow-x: hidden; }
+  body { overflow-x: hidden; font-size: 14px; line-height: 1.6; background: #FFFFFF; }
   .main-content { padding: 12px 12px 32px; max-width: 100%; }
 
   /* Page title */
-  .pagehead { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
-  .pagehead h1 { font-size: 22px; line-height: 28px; }
+  .pagehead { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+  .pagehead h1 { font-size: 26px; line-height: 32px; font-weight: 800; }
   .pagehead .actions { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
 
   /* Breadcrumbs */
@@ -533,8 +533,8 @@ body.compact .dt td { padding: 7px 12px; }
   @keyframes mmPanelOut   { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 
   /* KPI grid: 2-up instead of 4-up */
-  .kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .kpi { padding: 12px 14px; }
+  .kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+  .kpi { padding: 12px 14px; border-radius: 12px; border: 1px solid #EEF2F7; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   .kpi .v { font-size: 22px; line-height: 28px; }
   .kpi .k { font-size: 9px; }
 
@@ -554,15 +554,15 @@ body.compact .dt td { padding: 7px 12px; }
   .bar-row { grid-template-columns: minmax(0, 140px) 1fr 58px; gap: 8px; }
   .bar-row .label .lan { font-size: 9px; }
 
-  /* Panel head: allow wrapping for long titles + action buttons */
+  /* Panel — tighter body, same clean style */
+  .panel { border-radius: 12px; border: 1px solid #EEF2F7; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   .panel .phead { flex-wrap: wrap; gap: 6px; }
+  .panel .phead h3 { font-size: 15px; line-height: 20px; font-weight: 700; }
   .panel .phead .actions { flex-wrap: wrap; }
-
-  /* Panel body: allow horizontal scroll for wide tables/charts */
-  .panel .pbody { overflow-x: auto; }
+  .panel .pbody { padding: 16px; overflow-x: auto; }
 
   /* Filter bar: tighten spacing */
-  .filterbar { gap: 8px; padding: 10px 12px; }
+  .filterbar { gap: 8px; padding: 10px 12px; margin-bottom: 16px; }
   .filter { min-width: 100px; flex: 1 1 100px; }
   .filter select, .filter input[type=number] { font-size: 11px; height: 28px; }
   .filter-divider { display: none; }
@@ -613,6 +613,14 @@ body.compact .dt td { padding: 7px 12px; }
   .tp-boat-sub { display: block; }
   .tp-depart-time { display: none; }
   .tp-moon-name { display: none; }
+
+  /* Tables — clean style matching desktop: no zebra, subtle border, 44px min row */
+  .dt td { padding: 12px; border-bottom: 1px solid #F1F5F9; font-variant-numeric: tabular-nums; }
+  .dt tr.zebra td { background: transparent; }
+  .dt tr.clickable:hover td { background: #F8FAFC; }
+
+  /* Buttons — same radius and transition as desktop */
+  .btn { border-radius: 8px; transition: all 0.15s ease; }
 }
 
 /* ─── Admin Dashboard (//#admin) ─────────────────────────────────────────── */
