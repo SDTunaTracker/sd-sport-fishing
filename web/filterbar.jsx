@@ -79,19 +79,6 @@ function FilterBar({ filters, setFilters, hideBoat }) {
           allLabel="All Years"/>
       </div>
       <div className="filter">
-        <label>Season</label>
-        <MultiSelect
-          options={[
-            { value: 'spring', label: 'Spring (Mar–May)' },
-            { value: 'summer', label: 'Summer (Jun–Aug)' },
-            { value: 'fall',   label: 'Fall (Sep–Nov)' },
-            { value: 'winter', label: 'Winter (Dec–Feb)' },
-          ]}
-          value={filters.season}
-          onChange={v => update('season', v)}
-          allLabel="All Seasons"/>
-      </div>
-      <div className="filter">
         <label>Month</label>
         <MultiSelect
           options={MONTH_NAMES.map((m, i) => ({ value: String(i+1), label: m }))}
@@ -152,7 +139,6 @@ function FilterBar({ filters, setFilters, hideBoat }) {
 
 const DEFAULT_FILTERS = {
   year: String(new Date().getFullYear()),
-  season: 'all',
   month: 'all',
   landing: 'all',
   boat: 'all',

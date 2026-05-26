@@ -26,10 +26,6 @@
     return sel.map(String).includes(String(value));
   }
 
-  const _SEASONS = {
-    spring: [3,4,5], summer: [6,7,8], fall: [9,10,11], winter: [12,1,2],
-  };
-
   function filterTrips(filters) {
     const t = window.SD_PROC_TRIPS || window.SD.TRIPS;
     return t.filter((r) => {
@@ -42,14 +38,6 @@
       if (filters.species && filters.species !== 'all') {
         const sel = Array.isArray(filters.species) ? filters.species : [filters.species];
         if (sel.length > 0 && !sel.some(sp => (r[sp] || 0) > 0)) return false;
-      }
-      // Season: trip's month must fall inside ANY selected season's months.
-      if (filters.season && filters.season !== 'all') {
-        const sel = Array.isArray(filters.season) ? filters.season : [filters.season];
-        if (sel.length > 0) {
-          const months = sel.flatMap(s => _SEASONS[s] || []);
-          if (months.length > 0 && !months.includes(r.month)) return false;
-        }
       }
       if (!filters.includeZero && r.totalTuna === 0) return false;
       return true;
