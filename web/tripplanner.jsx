@@ -173,8 +173,8 @@ function TripCard({ s, avgTpaByKey, context }) {
     </a>
   ) : <span className="tp-card-boat-name">{s.boat}</span>;
 
-  const TimeRow = ({ label, dt }) => (
-    <div className="tp-card-time-row">
+  const TimeRow = ({ label, dt, isReturn }) => (
+    <div className={`tp-card-time-row${isReturn ? ' tp-card-time-row-ret' : ''}`}>
       <span className="tp-card-time-label">{label}</span>
       <span className="tp-card-depart-date">{fmtDepDate(dt)}</span>
       <span className="tp-card-depart-sep"> · </span>
@@ -189,33 +189,26 @@ function TripCard({ s, avgTpaByKey, context }) {
         <div className="tp-card-boat">{boatEl}</div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <LengthBadge label={s.tripLength}/>
+        <div className="tp-card-moon" style={{color: moonC}}>
+          {moon.emoji} {moon.phase} · {moon.illum}%
+        </div>
       </div>
 
       {/* MIDDLE — times + stats */}
       <div className="tp-card-middle">
         <div className="tp-card-times">
           <TimeRow label="Dep" dt={dep}/>
-          {ret && <TimeRow label="Ret" dt={ret}/>}
-        </div>
-        <div className="tp-card-moon" style={{color: moonC}}>
-          {moon.emoji} {moon.phase} · {moon.illum}%
+          {ret && <TimeRow label="Ret" dt={ret} isReturn/>}
         </div>
         <div className="tp-card-wr-row">
           <span className="tp-card-stat-label">Win Rate</span>
           <WinRateBadge wr={s._winRate}/>
-          {s._trips > 0 && <span className="tp-card-trips-hint">{s._trips} trips</span>}
+          {s._trips > 0 && <span className="tp-card-trip-count">{s._trips} trips</span>}
+          {avgTpa != null && (
+            <><span className="tp-card-stats-sep">·</span>
+              <span className="tp-card-tpa">Avg TPA <strong>{avgTpa.toFixed(2)}</strong>/day</span></>
+          )}
         </div>
-        {avgTpa != null && (
-          <div className="tp-card-tpa">Avg TPA: <strong>{avgTpa.toFixed(2)}</strong>/day</div>
-        )}
-        {s.capacity != null && (
-          <div className="tp-card-cap-row">
-            <div className="tp-card-cap-bar-wrap">
-              <div className="tp-card-cap-bar-fill" style={{width:`${capPct}%`, background:capBarColor}}/>
-            </div>
-            <span className="tp-card-cap-label">{s.openSpots} of {s.capacity} open</span>
-          </div>
-        )}
       </div>
 
       {/* RIGHT — price + booking */}
@@ -225,7 +218,16 @@ function TripCard({ s, avgTpaByKey, context }) {
           ? <><div className="tp-card-price">{price}</div><div className="tp-card-per">per person</div></>
           : <div className="tp-card-price tp-card-price-na">—</div>
         }
-        <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
+        {s.capacity != null ? (
+          <div className="tp-card-cap-row">
+            <div className="tp-card-cap-bar-wrap">
+              <div className="tp-card-cap-bar-fill" style={{width:`${capPct}%`, background:capBarColor}}/>
+            </div>
+            <span className="tp-card-cap-label">{s.openSpots}/{s.capacity} open</span>
+          </div>
+        ) : (
+          <SpotsBadge spots={s.openSpots} capacity={null}/>
+        )}
         {url && (
           <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn"
              onClick={trackClick}>
