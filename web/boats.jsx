@@ -92,7 +92,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
               const fill = b.label === 'Consistent' ? '#008566' : b.label === 'Spike' ? '#FF7705' : '#90979F';
               const r = b.label === 'Consistent' ? 6 : b.label === 'Spike' ? 6 : 4;
               return (
-                <g key={b.boat} style={{cursor:'pointer'}} onClick={() => navigate('boat', { boat: b.boat })}>
+                <g key={b.boat} style={{cursor:'pointer'}} onClick={() => { if (window.TTTrack) TTTrack.boatView(b.boat, b.landing || ''); navigate('boat', { boat: b.boat }); }}>
                   <circle cx={x} cy={y} r={r} fill={fill} fillOpacity="0.85" stroke="#fff" strokeWidth="1"/>
                   {(b.label === 'Consistent' || b.label === 'Spike') && (
                     <text x={x + 8} y={y + 3} fontSize="9" fill="#191F23">{b.boat}</text>
@@ -155,7 +155,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
             </thead>
             <tbody>
               {sorted.map((b, i) => (
-                <tr key={b.boat} className="clickable" onClick={() => navigate('boat', { boat: b.boat })}>
+                <tr key={b.boat} className="clickable" onClick={() => { if (window.TTTrack) TTTrack.boatView(b.boat, b.landing || ''); navigate('boat', { boat: b.boat }); }}>
                   <td><span className="rank" style={{color: i < 3 ? 'var(--ss-orange-500)' : null, fontWeight: i < 3 ? 700 : 500}}>{i + 1}</span></td>
                   <td><b>{b.boat}</b></td>
                   <td>{b.landing}</td>

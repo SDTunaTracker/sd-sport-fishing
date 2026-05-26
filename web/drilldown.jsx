@@ -3,6 +3,9 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
   const allTrips = useMemo(() => SDA.filterTrips({ ...filters, boat: 'all' }).filter(t => t.boat === boat), [filters, boat]);
   const fleetTrips = useMemo(() => SDA.filterTrips({ ...filters, boat: 'all' }), [filters]);
   const meta = window.SD.BOATS.find(b => b.name === boat);
+  useEffect(() => {
+    if (meta && window.TTTrack) TTTrack.boatView(boat, meta.landing || '');
+  }, [boat]);
   if (!meta) return <div className="muted-block">Boat not found.</div>;
 
   const sf = SDA.speciesField(filters.species);

@@ -1,5 +1,5 @@
 // TODO: PRO FEATURE — lock for free users later (7-day strip, historical match)
-const { useMemo, useState: useS } = React;
+const { useMemo, useState: useS, useEffect: useE } = React;
 
 const FC = window.SD?.FORECAST || null;
 
@@ -760,6 +760,12 @@ function NoForecastData() {
 function ForecastView({ navigate }) {
   const fc = window.SD?.FORECAST;
   const [selectedDay, setSelectedDay] = useS(0);
+
+  useE(() => {
+    if (!window.TTTrack || !fc?.today) return;
+    const s = fc.today.overall_score;
+    if (s != null) TTTrack.forecastView('overall', s);
+  }, []);
 
   if (!fc || !fc.today) {
     return (

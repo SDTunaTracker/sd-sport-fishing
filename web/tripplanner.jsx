@@ -23,21 +23,32 @@ function moonColor(illum) {
   return '#94A3B8';
 }
 
-// ── Per-landing booking URL ───────────────────────────────────────────────────
+// ── Per-landing booking URL (with UTM params via TTTrack.buildUrl) ────────────
 function bookingUrl(s) {
+  let base = null;
   switch (s.landing) {
     case 'Point Loma Sportfishing':
-      return `https://pointloma.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
+      base = `https://pointloma.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
+      break;
     case 'Seaforth Sportfishing':
-      return `https://seaforth.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
+      base = `https://seaforth.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
+      break;
     case "Fisherman's Landing":
-      return `https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
+      base = `https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
+      break;
     case 'H&M Landing': {
       const slug = (s.boat || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      return slug ? `https://www.hmlanding.com/boat/${slug}#tab-open-trips` : null;
+      base = slug ? `https://www.hmlanding.com/boat/${slug}` : null;
+      break;
     }
-    default: return null;
+    default: break;
   }
+  if (!base) return null;
+  if (window.TTTrack?.buildUrl) {
+    const dep = s.departureAt ? s.departureAt.slice(0, 10) : '';
+    return TTTrack.buildUrl(base, s.boat, s.landing, dep);
+  }
+  return base;
 }
 
 function fmtDepDate(d) {
@@ -136,7 +147,7 @@ function HighlightedNote({ text }) {
 // ── Trip card ─────────────────────────────────────────────────────────────────
 const NOTE_LINES = 2; // lines visible when collapsed
 
-function TripCard({ s, avgTpaByKey }) {
+function TripCard({ s, avgTpaByKey, context }) {
   const [noteOpen, setNoteOpen] = useState(false);
 
   const dep    = new Date(s.departureAt);
@@ -147,6 +158,10 @@ function TripCard({ s, avgTpaByKey }) {
   const url    = bookingUrl(s);
   const tpaKey = `${s.boat}|${s.tripLength}`;
   const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
+
+  const trackClick = () => {
+    if (window.TTTrack) TTTrack.tripClick({ ...s, moonPhase: moon.phase }, context || {});
+  };
 
   const capPct      = s.capacity ? Math.round((s.openSpots / s.capacity) * 100) : null;
   const capBarColor = capPct >= 30 ? '#34D399' : capPct >= 15 ? '#FBBF24' : '#F87171';
@@ -212,7 +227,8 @@ function TripCard({ s, avgTpaByKey }) {
         }
         <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
         {url && (
-          <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn"
+             onClick={trackClick}>
             View Trip →
           </a>
         )}
@@ -261,7 +277,8 @@ function TripCard({ s, avgTpaByKey }) {
           {price && <span className="tp-card-price-mobile">{price}</span>}
         </div>
         {url && (
-          <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn tp-card-book-full">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn tp-card-book-full"
+             onClick={trackClick}>
             View Trip →
           </a>
         )}
@@ -569,11 +586,30 @@ function TripPlanner({ navigate }) {
   const [sortBy,            setSortBy]            = useState('recommended');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  // Clear refine dates when month changes
+  // Clear refine dates when month changes; fire filter tracking
   const setSelMonth = (m) => {
     setSelMonthRaw(m);
     setRefineStart('');
     setRefineEnd('');
+    if (m && window.TTTrack) TTTrack.filterApplied('month', `${MONTH_NAMES_SHORT[m.month]} ${m.year}`);
+  };
+
+  // Tracked filter setters
+  const setSelLandingsTracked = (v) => {
+    setSelLandings(v);
+    if (window.TTTrack) TTTrack.filterApplied('landing', v);
+  };
+  const setSelLengthsTracked = (v) => {
+    setSelLengths(v);
+    if (window.TTTrack) TTTrack.filterApplied('trip_length', v);
+  };
+  const setMoonPhasesTracked = (v) => {
+    setMoonPhases(v);
+    if (window.TTTrack) TTTrack.filterApplied('moon_phase', v);
+  };
+  const setMinWinRateTracked = (v) => {
+    setMinWinRate(v);
+    if (window.TTTrack && v > 0) TTTrack.filterApplied('win_rate', `${Math.round(v * 100)}%+`);
   };
 
   // Close popovers on outside click
@@ -696,6 +732,7 @@ function TripPlanner({ navigate }) {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSortBy(tab === 'best' ? 'recommended' : 'price-asc');
+    if (window.TTTrack) TTTrack.tabSwitch(tab);
   };
 
   const handleReset = () => {
@@ -718,7 +755,8 @@ function TripPlanner({ navigate }) {
 
   const sidebarProps = {
     selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
-    moonPhases, setMoonPhases, minWinRate, setMinWinRate,
+    moonPhases, setMoonPhases: setMoonPhasesTracked,
+    minWinRate, setMinWinRate: setMinWinRateTracked,
     minPrice, setMinPrice, maxPrice, setMaxPrice, onReset: handleReset,
   };
 
@@ -741,8 +779,8 @@ function TripPlanner({ navigate }) {
       <div className="tp-search-wrap" onClick={e => e.stopPropagation()}>
         <TopSearchBar
           selMonth={selMonth} setSelMonth={setSelMonth} tripMonths={tripMonths}
-          selLandings={selLandings} setSelLandings={setSelLandings}
-          selLengths={selLengths}   setSelLengths={setSelLengths}
+          selLandings={selLandings} setSelLandings={setSelLandingsTracked}
+          selLengths={selLengths}   setSelLengths={setSelLengthsTracked}
           openPop={openPop} setOpenPop={setOpenPop}
         />
       </div>
@@ -803,8 +841,14 @@ function TripPlanner({ navigate }) {
             </div>
           ) : (
             <div className="tp-card-list">
-              {displayed.map(s => (
-                <TripCard key={`${s.landing}-${s.sourceId}`} s={s} avgTpaByKey={avgTpaByKey}/>
+              {displayed.map((s, idx) => (
+                <TripCard key={`${s.landing}-${s.sourceId}`} s={s} avgTpaByKey={avgTpaByKey}
+                          context={{
+                            tab:      activeTab,
+                            position: idx + 1,
+                            filters:  activeFilterCount,
+                            month:    selMonth ? `${MONTH_NAMES_SHORT[selMonth.month]} ${selMonth.year}` : null,
+                          }}/>
               ))}
             </div>
           )}

@@ -92,6 +92,11 @@ function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  // Fire page view tracking on every route change.
+  useE(() => {
+    if (window.TTTrack) TTTrack.pageView(route.view);
+  }, [route.view]);
+
   // Admin is a fully standalone page — no header, no nav, no shared state used.
   // Must be after all hooks (React rules: no conditional hooks).
   if (route.view === 'admin') return <AdminView />;

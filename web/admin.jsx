@@ -235,6 +235,238 @@ function Section2({ dbStats }) {
   );
 }
 
+// ─── Section 2B — Traffic & Clicks ───────────────────────────────────────────
+
+function SparklineBar({ last14Days }) {
+  const maxV = Math.max(...last14Days.map(d => d.count), 1);
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 52 }}>
+      {last14Days.map(d => (
+        <div key={d.day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <div style={{
+            width: '100%', background: '#38BDF8', borderRadius: 2,
+            height: `${Math.max(2, Math.round((d.count / maxV) * 44))}px`,
+            opacity: d.count > 0 ? 0.85 : 0.15,
+          }} title={`${d.day}: ${d.count} clicks`}/>
+          <div style={{ fontSize: 8, color: '#64748B', lineHeight: 1 }}>{d.day.slice(3)}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SectionTraffic() {
+  const [pitchOpen, setPitchOpen] = useS(false);
+  const [copied, setCopied] = useS(false);
+
+  const stats = window.TTTrack ? TTTrack.getClickStats() : null;
+
+  if (!stats || stats.total === 0) {
+    return (
+      <div className="adm-section">
+        <div className="adm-section-title">Traffic &amp; Clicks</div>
+        <div className="adm-placeholder">
+          No click data yet — click some "View Trip →" buttons in the Trip Planner to start collecting.
+          <br/>Data is stored locally in <code>localStorage</code> and accumulates as you browse.
+        </div>
+      </div>
+    );
+  }
+
+  const today   = new Date().toISOString().slice(0, 10);
+  const weekAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+
+  const todayClicks = stats.byDay[today] || 0;
+  const weekClicks  = Object.entries(stats.byDay)
+    .filter(([d]) => d >= weekAgo)
+    .reduce((s, [, v]) => s + v, 0);
+
+  const topLandingEntry = Object.entries(stats.byLanding).sort(([,a],[,b]) => b - a)[0];
+  const topLandingLabel = topLandingEntry
+    ? `${topLandingEntry[0].replace(' Sportfishing','').replace(' Landing','')} (${Math.round(topLandingEntry[1]/stats.total*100)}%)`
+    : '—';
+
+  const landingBars = Object.entries(stats.byLanding)
+    .sort(([,a],[,b]) => b - a)
+    .map(([landing, count]) => ({ landing: landing.replace(' Sportfishing','').replace(' Landing',''), count }));
+
+  const tabBars = [
+    { tab: 'Best',     count: stats.byTab.best     || 0 },
+    { tab: 'Cheapest', count: stats.byTab.cheapest || 0 },
+  ];
+
+  const topBoats = Object.entries(stats.byBoat)
+    .sort(([,a],[,b]) => b - a)
+    .slice(0, 10)
+    .map(([boat, clicks], i) => ({ rank: i + 1, boat, clicks }));
+
+  const last14Days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    last14Days.push({ day: d, count: stats.byDay[d] || 0 });
+  }
+
+  const pitchLines = Object.entries(stats.byLanding)
+    .sort(([,a],[,b]) => b - a)
+    .map(([l, c]) => `  • ${c.toLocaleString()} clicks to ${l}`)
+    .join('\n');
+  const pitchText = `In the past 30 days, The Tuna Tracker sent:\n${pitchLines}\n\nTotal: ${stats.total.toLocaleString()} trip planner clicks`;
+
+  const copyPitch = () => {
+    navigator.clipboard.writeText(pitchText).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="adm-section">
+      <div className="adm-section-title">Traffic &amp; Clicks</div>
+
+      {/* KPI row */}
+      <div className="adm-kpis">
+        <div className="adm-kpi">
+          <div className="k">Total Clicks</div>
+          <div className="v">{fmtN(stats.total)}</div>
+          <div className="u">all time</div>
+        </div>
+        <div className="adm-kpi">
+          <div className="k">Today</div>
+          <div className="v">{fmtN(todayClicks)}</div>
+        </div>
+        <div className="adm-kpi">
+          <div className="k">This Week</div>
+          <div className="v">{fmtN(weekClicks)}</div>
+        </div>
+        <div className="adm-kpi">
+          <div className="k">Top Landing</div>
+          <div className="v" style={{ fontSize: 14 }}>{topLandingLabel}</div>
+        </div>
+      </div>
+
+      {/* Bar charts */}
+      <div className="adm-two-col" style={{ gap: 16 }}>
+        <div className="adm-card">
+          <div className="adm-card-title" style={{ marginBottom: 12 }}>Clicks by Landing</div>
+          <BarChart data={landingBars} labelKey="landing" valueKey="count" color="#38BDF8" />
+        </div>
+        <div className="adm-card">
+          <div className="adm-card-title" style={{ marginBottom: 12 }}>Clicks by Tab</div>
+          <BarChart data={tabBars} labelKey="tab" valueKey="count" color="#34D399" />
+        </div>
+      </div>
+
+      {/* Sparkline */}
+      {last14Days.some(d => d.count > 0) && (
+        <div className="adm-card" style={{ marginTop: 16 }}>
+          <div className="adm-card-title" style={{ marginBottom: 10 }}>Clicks — Last 14 Days</div>
+          <SparklineBar last14Days={last14Days} />
+        </div>
+      )}
+
+      {/* Top boats */}
+      {topBoats.length > 0 && (
+        <div className="adm-card" style={{ marginTop: 16 }}>
+          <div className="adm-card-title" style={{ marginBottom: 12 }}>Top Clicked Boats</div>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="adm-pred-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Boat</th>
+                  <th style={{ textAlign: 'right' }}>Clicks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topBoats.map(b => (
+                  <tr key={b.boat}>
+                    <td style={{ color: '#64748B' }}>{b.rank}</td>
+                    <td>{b.boat}</td>
+                    <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{b.clicks}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Recent clicks */}
+      {stats.recent.length > 0 && (
+        <div className="adm-card" style={{ marginTop: 16 }}>
+          <div className="adm-card-title" style={{ marginBottom: 12 }}>
+            Recent Clicks
+            <span style={{ fontWeight: 400, color: '#64748B', fontSize: 11, marginLeft: 8 }}>last {stats.recent.length}</span>
+          </div>
+          <div style={{ overflowX: 'auto', maxHeight: 300, overflowY: 'auto' }}>
+            <table className="adm-pred-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Boat</th>
+                  <th>Landing</th>
+                  <th>Tab</th>
+                  <th style={{ textAlign: 'right' }}>Pos</th>
+                  <th style={{ textAlign: 'right' }}>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recent.map((c, i) => {
+                  const ageMs  = Date.now() - new Date(c.ts).getTime();
+                  const ageMin = Math.round(ageMs / 60000);
+                  const lbl    = ageMin < 1    ? 'just now'
+                               : ageMin < 60   ? `${ageMin}m ago`
+                               : ageMin < 1440 ? `${Math.round(ageMin/60)}h ago`
+                               : c.ts.slice(0, 10);
+                  return (
+                    <tr key={i}>
+                      <td style={{ color: '#64748B', fontSize: 11 }}>{lbl}</td>
+                      <td>{c.boat}</td>
+                      <td style={{ color: '#64748B' }}>{(c.landing||'').replace(' Sportfishing','').replace(' Landing','')}</td>
+                      <td style={{ color: '#64748B' }}>{c.tab || '—'}</td>
+                      <td style={{ textAlign: 'right', color: '#64748B' }}>{c.position ? `#${c.position}` : '—'}</td>
+                      <td style={{ textAlign: 'right' }}>{c.price != null ? `$${c.price}` : '—'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Partnership pitch */}
+      <div className="adm-card" style={{ marginTop: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="adm-card-title">Partnership Pitch Data</div>
+          <button
+            style={{ font: '500 12px/18px var(--ss-font-sans)', color: '#64748B', padding: '2px 8px' }}
+            onClick={() => setPitchOpen(o => !o)}
+          >
+            {pitchOpen ? 'Hide ▲' : 'Show ▼'}
+          </button>
+        </div>
+        {pitchOpen && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ font: '400 11px/16px var(--ss-font-sans)', color: '#64748B', marginBottom: 8 }}>
+              Copy this when reaching out to landings about referral partnerships:
+            </div>
+            <pre style={{ font: '400 12px/1.8 monospace', color: '#CBD5E1', background: '#0F172A', padding: '10px 14px', borderRadius: 6, whiteSpace: 'pre-wrap', margin: 0 }}>
+              {pitchText}
+            </pre>
+            <button
+              className={`adm-copy-btn${copied ? ' copied' : ''}`}
+              style={{ marginTop: 10 }}
+              onClick={copyPitch}
+            >
+              {copied ? 'Copied!' : 'Copy to clipboard'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Section 3 — Forecast Model Performance ───────────────────────────────────
 
 function MonthlyHeatmap({ byMonth }) {
@@ -794,6 +1026,7 @@ function AdminView() {
       <div className="adm-body">
         <Section1 scrapeLog={admin.scrapeLog || {}} sstLog={admin.sstLog || []} />
         <Section2 dbStats={admin.dbStats} />
+        <SectionTraffic />
         <Section3 backtest={admin.backtestResults} weights={admin.weights} history={admin.backtestHistory} />
         <Section3B history={admin.backtestHistory} />
         <Section3C correlation={admin.consensusCorrelation} />
