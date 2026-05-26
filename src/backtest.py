@@ -835,6 +835,54 @@ def _print_summary(report: dict) -> None:
             print(f"  {bucket:10s}: {mae}")
 
 
+# ─── Weekly recalibration (called from main.py) ──────────────────────────────
+
+def weekly_recalibrate(
+    db_path: Path,
+    window_years: int = 3,
+    min_days_between_runs: int = 7,
+) -> dict | None:
+    """Re-optimize forecast weights on a rolling window if ≥7 days since last run.
+
+    Skips itself if a recalibration already ran recently (checks backtest_results).
+    Non-fatal — all exceptions are caught and logged.
+    Returns the full report dict (with report["metrics"]) or None if skipped/failed.
+    """
+    try:
+        with dbmod.connect(db_path) as conn:
+            _apply_schema(conn)
+            row = conn.execute(
+                "SELECT MAX(run_date) FROM backtest_results"
+            ).fetchone()
+            last_run = row[0] if row else None
+
+        if last_run:
+            days_since = (date.today() - date.fromisoformat(last_run)).days
+            if days_since < min_days_between_runs:
+                log.info(
+                    "Weekly recalibration skipped — last run %d day(s) ago (%s)",
+                    days_since, last_run,
+                )
+                return None
+
+        start = date.today() - timedelta(days=window_years * 365)
+        end   = date.today()
+        log.info("Weekly recalibration: %s → %s (%d-year window)", start, end, window_years)
+
+        return run_backtest(
+            db_path=db_path,
+            start=start,
+            end=end,
+            optimize=True,
+            extend_sst=True,
+            fetch_wind=True,
+            fetch_swell=True,
+        )
+    except Exception as e:
+        log.warning("Weekly recalibration failed (non-fatal): %s", e, exc_info=True)
+        return None
+
+
 # ─── Daily accuracy update (called from main.py) ──────────────────────────────
 
 def daily_accuracy_update(conn: sqlite3.Connection) -> dict | None:

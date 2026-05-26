@@ -17,7 +17,7 @@ from . import db
 from .export import export
 from .scrape import SOURCES, scrape_all
 from .schedule import scrape_all_schedules
-from .backtest import daily_accuracy_update
+from .backtest import daily_accuracy_update, weekly_recalibrate
 from .sst import fetch_daily_sst, insert_sst
 from .forecast import score_yesterday as forecast_score_yesterday
 from .weather import fetch_marine_forecast
@@ -115,6 +115,20 @@ def run(target_date: date | None, export_only: bool) -> int:
 
         n = export(conn, DATA_JS_PATH, weather_forecast=weather_fc)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
+
+    # Weekly recalibration — runs after the main connection closes to avoid locking.
+    # Skips itself if a backtest ran < 7 days ago; otherwise re-optimizes weights
+    # on a rolling 3-year window and saves updated backtest_weights.json.
+    try:
+        recap = weekly_recalibrate(DB_PATH)
+        if recap:
+            m = recap.get("metrics", {})
+            summary_lines.append(
+                f"  Recalibration complete: MAE={m.get('mae')}  "
+                f"direction={m.get('direction_accuracy')}%  weights updated"
+            )
+    except Exception as e:
+        summary_lines.append(f"  Recalibration ERROR (non-fatal): {e}")
 
     print("Daily run summary:")
     for line in summary_lines:
