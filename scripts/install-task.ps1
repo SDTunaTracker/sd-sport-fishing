@@ -26,37 +26,56 @@ $action = New-ScheduledTaskAction `
     -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$runDaily`"" `
     -WorkingDirectory $root
 
-# Every 15 minutes, 6:00am through 10:00pm (65 triggers: :00/:15/:30/:45 each
-# hour for 6-21, plus the final 22:00 trigger).
-$triggers = [System.Collections.Generic.List[object]]::new()
-for ($h = 6; $h -le 22; $h++) {
-    $maxMinute = if ($h -eq 22) { 0 } else { 45 }
-    for ($m = 0; $m -le $maxMinute; $m += 15) {
-        $triggers.Add(
-            (New-ScheduledTaskTrigger -Daily -At ("{0:D2}:{1:D2}" -f $h, $m))
-        )
-    }
-}
+# Register via XML — the only reliable way to set a repetition interval on a
+# daily trigger in PowerShell 5.1. The CalendarTrigger fires at 06:00 each day
+# and repeats every 15 minutes (PT15M) for 16 hours (PT16H, ending at 22:00).
+$userId = "$env:USERDOMAIN\$env:USERNAME"
+$taskXml = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>Scrape trip availability from the 4 SD landings every 15 minutes, 6am-10pm, and regenerate the dashboard data.</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <CalendarTrigger>
+      <Repetition>
+        <Interval>PT15M</Interval>
+        <Duration>PT16H</Duration>
+        <StopAtDurationEnd>false</StopAtDurationEnd>
+      </Repetition>
+      <StartBoundary>2000-01-01T06:00:00</StartBoundary>
+      <Enabled>true</Enabled>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>$userId</UserId>
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <ExecutionTimeLimit>PT10M</ExecutionTimeLimit>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <Enabled>true</Enabled>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>powershell.exe</Command>
+      <Arguments>-NoProfile -ExecutionPolicy Bypass -File "$runDaily"</Arguments>
+      <WorkingDirectory>$root</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
+"@
 
-# Run as the current user, only when logged in (no stored password required).
-$principal = New-ScheduledTaskPrincipal `
-    -UserId "$env:USERDOMAIN\$env:USERNAME" `
-    -LogonType Interactive `
-    -RunLevel Limited
-
-$settings = New-ScheduledTaskSettingsSet `
-    -StartWhenAvailable `
-    -DontStopIfGoingOnBatteries `
-    -AllowStartIfOnBatteries `
-    -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
-
-Register-ScheduledTask `
-    -TaskName $TaskName `
-    -Action $action `
-    -Trigger $triggers.ToArray() `
-    -Principal $principal `
-    -Settings $settings `
-    -Description "Scrape trip availability from the 4 SD landings every 15 minutes, 6am-10pm, and regenerate the dashboard data."
+Register-ScheduledTask -TaskName $TaskName -Xml $taskXml -Force
 
 Write-Output ""
 Write-Output "Task '$TaskName' registered. It will run every 15 minutes from 6:00am to 10:00pm."
