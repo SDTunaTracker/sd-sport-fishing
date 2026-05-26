@@ -1343,4 +1343,10 @@ body.compact .dt td { padding: 7px 12px; }
 
   .tp-card-notes-strip { grid-column: 1 / -1; }
   .tp-card-notes-text  { font-size: 12px; }
+
+  /* Capacity bar is redundant — spots count in footer already communicates this */
+  .tp-card-cap-row { display: none; }
+
+  /* Win rate badge is shown in the card middle; hide the duplicate in the mobile footer */
+  .tp-card-mobile-footer [class*="tp-wr-"] { display: none; }
 }
