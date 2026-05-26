@@ -71,8 +71,8 @@ def _load_factor_weights() -> dict:
     alongside fixed defaults for swell/pressure/historical (not measured by the
     backtest) to get weights that sum to 1.0.
 
-    With the current backtest run (sst=1.284, moon=0.082, wind=0.545) this yields
-    roughly:  sst≈57%  wind≈24%  historical≈7%  swell≈4%  pressure≈4%  moon≈4%
+    With the current backtest run (sst=1.334, moon=0.091, wind=0.488) this yields
+    roughly:  sst≈59%  wind≈22%  historical≈7%  swell≈4%  pressure≈4%  moon≈4%
     — i.e. SST and wind dominate, moon gets credit only for what the data supports.
     """
     bw = _load_weights()
@@ -213,8 +213,8 @@ def score_day(
     f_pres = _pressure_score(pressure_trend)
     f_hist = historical_val
 
-    # Anomaly nudges SST factor slightly
-    anom_mod = _anomaly_boost(anomaly) * 0.4
+    # Anomaly nudges SST factor; scale by calibrated anomaly_weight (baseline 1.0 → ±0.4 pts)
+    anom_mod = _anomaly_boost(anomaly) * (bw.get("anomaly_weight", 1.0) * 0.4)
     f_sst_adj = round(min(10.0, max(1.0, f_sst + anom_mod)), 1)
 
     # Weighted average
