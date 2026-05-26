@@ -151,7 +151,7 @@ function FilterBar({ filters, setFilters, hideBoat }) {
 }
 
 const DEFAULT_FILTERS = {
-  year: 'all',
+  year: String(new Date().getFullYear()),
   season: 'all',
   month: 'all',
   landing: 'all',

@@ -211,7 +211,7 @@ function SpeciesGrid({ day }) {
 function HistoricalMatch({ match }) {
   if (!match || !match.matching_days) return null;
   return (
-    <Panel title="📅 Conditions Like These">
+    <Panel title="Conditions Like These">
       <div className="fc-hist-intro">{match.description}</div>
       <div className="fc-hist-kpis">
         <div className="fc-hist-kpi">
@@ -366,7 +366,7 @@ function AccuracyWidget({ accuracy }) {
     ? (trend > dacc ? ` ⬆️ Last 30d: ${trend}%` : trend < dacc ? ` ⬇️ Last 30d: ${trend}%` : '')
     : '';
   return (
-    <Panel title="📈 Forecast Accuracy">
+    <Panel title="Forecast Accuracy">
       <div className="fc-accuracy-grid">
         <div className="fc-acc-kpi">
           <div className="fc-acc-v">{dacc != null ? `${dacc}%` : '—'}</div>
