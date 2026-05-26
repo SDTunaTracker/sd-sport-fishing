@@ -1,43 +1,29 @@
-// Trip Planner — upcoming open-party trips
+// Trip Planner — Expedia-style redesign
+const { useState, useMemo, useEffect, Fragment } = React;
 
-// ── Moon phase (synodic-month approximation, port of src/moon.py) ──────────
-const _MOON_REF    = Date.UTC(2000, 0, 6, 18, 14, 0); // 2000-01-06 18:14 UTC
+// ── Moon helpers (kept from original) ───────────────────────────────────────
+const _MOON_REF    = Date.UTC(2000, 0, 6, 18, 14, 0);
 const _SYNODIC     = 29.53058867;
 const _MOON_NAMES  = ['New','Waxing Crescent','First Quarter','Waxing Gibbous',
                       'Full','Waning Gibbous','Last Quarter','Waning Crescent'];
 const _MOON_EMOJIS = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
 
 function moonInfo(date) {
-  const days  = (date.getTime() - _MOON_REF) / 86400000;
-  const p     = ((days % _SYNODIC) + _SYNODIC) % _SYNODIC;
+  const days = (date.getTime() - _MOON_REF) / 86400000;
+  const p    = ((days % _SYNODIC) + _SYNODIC) % _SYNODIC;
   const illum = Math.round(((1 - Math.cos((p / _SYNODIC) * 2 * Math.PI)) / 2) * 100);
   const idx   = Math.round((p / _SYNODIC) * 8) % 8;
   return { phase: _MOON_NAMES[idx], emoji: _MOON_EMOJIS[idx], illum };
 }
 
 function moonColor(illum) {
-  if (illum >= 90) return '#FBBF24'; // full: gold
-  if (illum <= 10) return '#38BDF8'; // new: sky blue
-  if (illum >= 40 && illum <= 60) return '#34D399'; // quarter: green
+  if (illum >= 90) return '#FBBF24';
+  if (illum <= 10) return '#38BDF8';
+  if (illum >= 40 && illum <= 60) return '#34D399';
   return '#94A3B8';
 }
 
-function MoonCell({ departureAt }) {
-  const m = moonInfo(new Date(departureAt));
-  const c = moonColor(m.illum);
-  return (
-    <div title="Full and new moons historically correlate with better tuna catches"
-         style={{display:'flex', flexDirection:'column', alignItems:'center', gap:1, cursor:'default'}}>
-      <span style={{fontSize:17, lineHeight:1}}>{m.emoji}</span>
-      <span className="tp-moon-name" style={{font:'400 9px/12px var(--ss-font-sans)', color:c}}>{m.phase}</span>
-      <span style={{font:'600 10px/13px var(--ss-font-sans)', color:c}}>{m.illum}%</span>
-    </div>
-  );
-}
-
-// Per-landing booking URL pattern. Returns null if we can't build a usable link
-// (e.g. unknown landing). Discovered by inspecting the booking buttons on each
-// landing's schedule page during scraper development.
+// ── Per-landing booking URL (kept from original) ─────────────────────────────
 function bookingUrl(s) {
   switch (s.landing) {
     case 'Point Loma Sportfishing':
@@ -47,13 +33,10 @@ function bookingUrl(s) {
     case "Fisherman's Landing":
       return `https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=${encodeURIComponent(s.sourceId)}`;
     case 'H&M Landing': {
-      // H&M's xola integration doesn't give per-trip URLs, so we link to the
-      // boat page where the "Book" widget for upcoming trips lives.
       const slug = (s.boat || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       return slug ? `https://www.hmlanding.com/boat/${slug}#tab-open-trips` : null;
     }
-    default:
-      return null;
+    default: return null;
   }
 }
 
@@ -63,126 +46,314 @@ function fmtDepDate(d) {
 function fmtTime(d) {
   return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
-
-function winRateColor(wr) {
-  if (wr >= 0.70) return 'var(--ss-darkseagreen-500)';
-  if (wr >= 0.50) return 'var(--ss-slate)';
-  return 'var(--ss-orange-500)';
+function shortLanding(name) {
+  return (name || '').replace(' Sportfishing', '').replace(' Landing', '');
 }
 
-function BestRow({ s }) {
-  const dep = new Date(s.departureAt);
-  const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
-  const wrPct = s._winRate != null ? Math.round(s._winRate * 100) : null;
-  const wrLabel = wrPct != null ? `${wrPct}%` : '—';
-  const wrColor = wrPct != null ? winRateColor(s._winRate) : 'var(--tb-gray-3)';
-  const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
-  const openSpots = s.openSpots ?? 0;
-  const openColor = openSpots === 0 ? 'var(--tb-gray-3)' : openSpots < 5 ? '#EF4444' : 'var(--ss-darkseagreen-500)';
-  const openLabel = openSpots === 0 ? 'Full' : openSpots;
-  const url = bookingUrl(s);
-  const boatLabel = url ? (
-    <a href={url} target="_blank" rel="noopener noreferrer"
-       style={{color: 'var(--ss-black)', textDecoration: 'none'}}
-       onMouseEnter={e => e.currentTarget.style.color = 'var(--ss-darkseagreen-500)'}
-       onMouseLeave={e => e.currentTarget.style.color = 'var(--ss-black)'}>
-      {s.boat} <i className="fa-solid fa-arrow-up-right-from-square" style={{fontSize: 10, opacity: 0.5, marginLeft: 2}}></i>
-    </a>
-  ) : s.boat;
-  return (
-    <div className="tp-best-row" style={{
-      padding: '10px 12px',
-      borderBottom: '1px solid var(--ss-border-2)',
-      font: '400 12px/16px var(--ss-font-sans)',
-    }}>
-      <div style={{minWidth: 0}}>
-        <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
-        <div className="tp-boat-sub" style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{landingShort}</div>
-      </div>
-      <span className="tp-landing-col" style={{color: 'var(--ss-slate)', fontSize: 11}}>{landingShort}</span>
-      <span style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
-      <span style={{fontVariantNumeric: 'tabular-nums'}}>
-        {fmtDepDate(dep)}<span className="tp-depart-time"> {fmtTime(dep)}</span>
-      </span>
-      <MoonCell departureAt={s.departureAt}/>
-      <div className="tp-wr-col" style={{textAlign: 'right'}}>
-        <div style={{fontWeight: 600, color: wrColor}}>{wrLabel}</div>
-        {s._trips > 0 && <div style={{font: '400 10px/13px var(--ss-font-sans)', color: 'var(--ss-slate)'}}>{s._trips}t</div>}
-      </div>
-      <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
-      <span style={{font: '600 12px/16px var(--ss-font-sans)', textAlign: 'right', color: openColor, fontVariantNumeric: 'tabular-nums'}}>{openLabel}</span>
-    </div>
-  );
-}
-
-function CheapestRow({ s }) {
-  const dep = new Date(s.departureAt);
-  const price = s.price != null ? `$${s.price.toFixed(0)}` : '—';
-  const landingShort = s.landing.replace(' Sportfishing', '').replace(' Landing', '');
-  const openSpots = s.openSpots ?? 0;
-  const openColor = openSpots === 0 ? 'var(--tb-gray-3)' : openSpots < 5 ? '#EF4444' : 'var(--ss-darkseagreen-500)';
-  const openLabel = openSpots === 0 ? 'Full' : openSpots;
-  const url = bookingUrl(s);
-  const boatLabel = url ? (
-    <a href={url} target="_blank" rel="noopener noreferrer"
-       style={{color: 'var(--ss-black)', textDecoration: 'none'}}
-       onMouseEnter={e => e.currentTarget.style.color = 'var(--ss-darkseagreen-500)'}
-       onMouseLeave={e => e.currentTarget.style.color = 'var(--ss-black)'}>
-      {s.boat} <i className="fa-solid fa-arrow-up-right-from-square" style={{fontSize: 10, opacity: 0.5, marginLeft: 2}}></i>
-    </a>
-  ) : s.boat;
-  return (
-    <div className="tp-cheapest-row" style={{
-      padding: '10px 12px',
-      borderBottom: '1px solid var(--ss-border-2)',
-      font: '400 12px/16px var(--ss-font-sans)',
-    }}>
-      <div style={{minWidth: 0}}>
-        <div style={{font: '600 13px/16px var(--ss-font-sans)', color: 'var(--ss-black)'}}>{boatLabel}</div>
-        <div className="tp-boat-sub" style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-slate)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{landingShort}</div>
-      </div>
-      <span className="tp-landing-col" style={{color: 'var(--ss-slate)', fontSize: 11}}>{landingShort}</span>
-      <span style={{color: 'var(--ss-slate)'}}>{s.tripLength}</span>
-      <span style={{fontVariantNumeric: 'tabular-nums'}}>
-        {fmtDepDate(dep)}<span className="tp-depart-time"> {fmtTime(dep)}</span>
-      </span>
-      <MoonCell departureAt={s.departureAt}/>
-      <span style={{font: '600 13px/16px var(--ss-font-sans)', textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>{price}</span>
-      <span style={{font: '600 12px/16px var(--ss-font-sans)', textAlign: 'right', color: openColor, fontVariantNumeric: 'tabular-nums'}}>{openLabel}</span>
-    </div>
-  );
-}
-
-// ---- Filter Trips modal ---------------------------------------------------
-
+// ── Moon phase options ────────────────────────────────────────────────────────
 const MOON_PHASE_OPTIONS = [
-  { phase: 'Full',            emoji: '🌕', label: 'Full Moon',       color: '#FBBF24' },
-  { phase: 'New',             emoji: '🌑', label: 'New Moon',        color: '#38BDF8' },
-  { phase: 'First Quarter',   emoji: '🌓', label: 'First Quarter',   color: null },
-  { phase: 'Last Quarter',    emoji: '🌗', label: 'Last Quarter',    color: null },
-  { phase: 'Waxing Crescent', emoji: '🌒', label: 'Waxing Crescent', color: null },
-  { phase: 'Waning Crescent', emoji: '🌘', label: 'Waning Crescent', color: null },
-  { phase: 'Waxing Gibbous',  emoji: '🌔', label: 'Waxing Gibbous',  color: null },
-  { phase: 'Waning Gibbous',  emoji: '🌖', label: 'Waning Gibbous',  color: null },
+  { phase: 'New',             emoji: '🌑', label: 'New Moon',        note: '0–10%'  },
+  { phase: 'Waxing Crescent', emoji: '🌒', label: 'Waxing Crescent', note: null     },
+  { phase: 'First Quarter',   emoji: '🌓', label: 'First Quarter',   note: null     },
+  { phase: 'Waxing Gibbous',  emoji: '🌔', label: 'Waxing Gibbous',  note: null     },
+  { phase: 'Full',            emoji: '🌕', label: 'Full Moon',       note: '90–100%'},
+  { phase: 'Waning Gibbous',  emoji: '🌖', label: 'Waning Gibbous',  note: null     },
+  { phase: 'Last Quarter',    emoji: '🌗', label: 'Last Quarter',    note: null     },
+  { phase: 'Waning Crescent', emoji: '🌘', label: 'Waning Crescent', note: null     },
 ];
 
-function FilterTripsModal({ open, onClose, filters, onApply }) {
-  const [start, setStart]           = useState(filters.start || '');
-  const [end, setEnd]               = useState(filters.end || '');
-  const [landing, setLanding]       = useState(filters.landing);
-  const [tripLength, setTripLength] = useState(filters.tripLength);
-  const [moonPhases, setMoonPhases] = useState(filters.moonPhases || 'all');
+// ── Badges ────────────────────────────────────────────────────────────────────
+function WinRateBadge({ wr }) {
+  if (wr == null) return <span className="tp-badge tp-wr-none">—</span>;
+  const pct = Math.round(wr * 100);
+  const cls = wr >= 0.60 ? 'tp-wr-green' : wr >= 0.40 ? 'tp-wr-yellow' : 'tp-wr-red';
+  return <span className={`tp-badge ${cls}`}>{pct}%</span>;
+}
 
-  useEffect(() => {
-    if (open) {
-      setStart(filters.start || '');
-      setEnd(filters.end || '');
-      setLanding(filters.landing);
-      setTripLength(filters.tripLength);
-      setMoonPhases(filters.moonPhases || 'all');
-    }
-  }, [open]);
+function SpotsBadge({ spots }) {
+  if (spots == null || spots === 0)
+    return <span className="tp-badge tp-spots-full">Full</span>;
+  if (spots < 5)
+    return <span className="tp-badge tp-spots-red">{spots} left!</span>;
+  if (spots < 10)
+    return <span className="tp-badge tp-spots-yellow">{spots} spots left</span>;
+  return <span className="tp-badge tp-spots-green">{spots} spots</span>;
+}
 
+function LengthBadge({ label }) {
+  return <span className="tp-length-badge">{label}</span>;
+}
+
+// ── Trip card ─────────────────────────────────────────────────────────────────
+function TripCard({ s, avgTpaByKey }) {
+  const dep   = new Date(s.departureAt);
+  const moon  = moonInfo(dep);
+  const moonC = moonColor(moon.illum);
+  const price = s.price != null ? `$${s.price.toFixed(0)}` : null;
+  const url   = bookingUrl(s);
+  const tpaKey = `${s.boat}|${s.tripLength}`;
+  const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
+
+  const boatEl = url ? (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-boat-link">
+      {s.boat}
+    </a>
+  ) : <span className="tp-card-boat-name">{s.boat}</span>;
+
+  return (
+    <div className="tp-card">
+      {/* LEFT — boat info */}
+      <div className="tp-card-left">
+        <div className="tp-card-boat">{boatEl}</div>
+        <div className="tp-card-landing">{shortLanding(s.landing)}</div>
+        <LengthBadge label={s.tripLength}/>
+      </div>
+
+      {/* MIDDLE — trip details */}
+      <div className="tp-card-middle">
+        <div className="tp-card-depart">
+          <i className="fa-regular fa-calendar" style={{marginRight: 5, opacity: 0.5}}></i>
+          {fmtDepDate(dep)} · {fmtTime(dep)}
+        </div>
+        <div className="tp-card-moon" style={{color: moonC}}>
+          {moon.emoji} {moon.phase} · {moon.illum}%
+        </div>
+        <div className="tp-card-wr-row">
+          <span className="tp-card-stat-label">Win Rate</span>
+          <WinRateBadge wr={s._winRate}/>
+          {s._trips > 0 && <span className="tp-card-trips-hint">{s._trips} trips</span>}
+        </div>
+        {avgTpa != null && (
+          <div className="tp-card-tpa">
+            Avg TPA: <strong>{avgTpa.toFixed(2)}</strong>/day
+          </div>
+        )}
+      </div>
+
+      {/* RIGHT — price + booking */}
+      <div className="tp-card-right">
+        {price
+          ? <><div className="tp-card-price">{price}</div><div className="tp-card-per">per person</div></>
+          : <div className="tp-card-price tp-card-price-na">—</div>
+        }
+        <SpotsBadge spots={s.openSpots}/>
+        {url && (
+          <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn">
+            View Trip →
+          </a>
+        )}
+      </div>
+
+      {/* MOBILE bottom row */}
+      <div className="tp-card-mobile-footer">
+        <div style={{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'}}>
+          <WinRateBadge wr={s._winRate}/>
+          <SpotsBadge spots={s.openSpots}/>
+          {price && <span className="tp-card-price-mobile">{price}</span>}
+        </div>
+        {url && (
+          <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn tp-card-book-full">
+            View Trip →
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Top search bar ────────────────────────────────────────────────────────────
+function SearchInput({ icon, label, value, onClick, active }) {
+  return (
+    <button className={`tp-search-field${active ? ' tp-search-field-active' : ''}`} onClick={onClick}>
+      <span className="tp-search-icon">{icon}</span>
+      <div className="tp-search-field-body">
+        <div className="tp-search-field-label">{label}</div>
+        <div className="tp-search-field-value">{value}</div>
+      </div>
+    </button>
+  );
+}
+
+function DatePopover({ start, end, onStart, onEnd, onClose }) {
+  return (
+    <div className="tp-popover tp-popover-date">
+      <div className="tp-pop-row">
+        <div className="tp-pop-field">
+          <label className="tp-pop-label">From</label>
+          <input type="date" className="tp-pop-date-input" value={start}
+                 onChange={e => onStart(e.target.value)}/>
+        </div>
+        <div className="tp-pop-field">
+          <label className="tp-pop-label">To</label>
+          <input type="date" className="tp-pop-date-input" value={end}
+                 onChange={e => onEnd(e.target.value)}/>
+        </div>
+      </div>
+      <div className="tp-pop-footer">
+        <button className="tp-pop-clear" onClick={() => { onStart(''); onEnd(''); }}>Clear</button>
+        <button className="tp-pop-done" onClick={onClose}>Done</button>
+      </div>
+    </div>
+  );
+}
+
+function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
+  const selected = value === 'all' ? options : (Array.isArray(value) ? value : []);
+  const allSelected = value === 'all' || selected.length === options.length;
+
+  const toggle = (opt) => {
+    const next = selected.includes(opt)
+      ? selected.filter(o => o !== opt)
+      : [...selected, opt];
+    onChange(next.length === 0 || next.length === options.length ? 'all' : next);
+  };
+
+  return (
+    <div className="tp-popover tp-popover-check">
+      <label className="tp-pop-check-row tp-pop-check-all">
+        <input type="checkbox" checked={allSelected}
+               onChange={() => onChange('all')}/>
+        <span>{allLabel || 'All'}</span>
+      </label>
+      <div className="tp-pop-divider"/>
+      {options.map(opt => (
+        <label key={opt} className="tp-pop-check-row">
+          <input type="checkbox"
+                 checked={allSelected || selected.includes(opt)}
+                 onChange={() => toggle(opt)}/>
+          <span>{opt.replace(' Sportfishing', '').replace(' Landing', '')}</span>
+        </label>
+      ))}
+      <div className="tp-pop-footer">
+        <button className="tp-pop-done" onClick={onClose}>Done</button>
+      </div>
+    </div>
+  );
+}
+
+function TopSearchBar({ dateStart, dateEnd, setDateStart, setDateEnd,
+                         selLandings, setSelLandings, selLengths, setSelLengths,
+                         openPop, setOpenPop }) {
+  const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString([], { month: 'short', day: 'numeric' }) : null;
+  const dateLabel = dateStart || dateEnd
+    ? [fmtDate(dateStart) || 'Start', fmtDate(dateEnd) || 'End'].join(' – ')
+    : 'Any dates';
+  const landingLabel = selLandings === 'all' ? 'All landings'
+    : Array.isArray(selLandings) ? `${selLandings.length} selected` : 'All landings';
+  const lengthLabel = selLengths === 'all' ? 'All lengths'
+    : Array.isArray(selLengths) ? `${selLengths.length} selected` : 'All lengths';
+
+  const closePop = () => setOpenPop(null);
+
+  return (
+    <div className="tp-search-bar">
+      <div className="tp-search-field-wrap">
+        <SearchInput icon="📅" label="Date Range" value={dateLabel}
+                     active={openPop === 'date'}
+                     onClick={() => setOpenPop(openPop === 'date' ? null : 'date')}/>
+        {openPop === 'date' && (
+          <DatePopover start={dateStart} end={dateEnd}
+                       onStart={setDateStart} onEnd={setDateEnd} onClose={closePop}/>
+        )}
+      </div>
+      <div className="tp-search-divider"/>
+      <div className="tp-search-field-wrap">
+        <SearchInput icon="⚓" label="Landing" value={landingLabel}
+                     active={openPop === 'landing'}
+                     onClick={() => setOpenPop(openPop === 'landing' ? null : 'landing')}/>
+        {openPop === 'landing' && (
+          <ChecklistPopover options={window.SD.LANDINGS} value={selLandings}
+                            onChange={setSelLandings} allLabel="All landings" onClose={closePop}/>
+        )}
+      </div>
+      <div className="tp-search-divider"/>
+      <div className="tp-search-field-wrap">
+        <SearchInput icon="🎣" label="Trip Length" value={lengthLabel}
+                     active={openPop === 'length'}
+                     onClick={() => setOpenPop(openPop === 'length' ? null : 'length')}/>
+        {openPop === 'length' && (
+          <ChecklistPopover options={window.SD.TRIP_LENGTHS} value={selLengths}
+                            onChange={setSelLengths} allLabel="All lengths" onClose={closePop}/>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function SidebarSection({ title, children }) {
+  return (
+    <div className="tp-sb-section">
+      <div className="tp-sb-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function SidebarFilters({ moonPhases, setMoonPhases, minWinRate, setMinWinRate,
+                          minPrice, setMinPrice, maxPrice, setMaxPrice, onReset }) {
+  const togglePhase = (phase) => {
+    const all = moonPhases === 'all';
+    const sel = all ? MOON_PHASE_OPTIONS.map(o => o.phase) : [...moonPhases];
+    const next = sel.includes(phase) ? sel.filter(p => p !== phase) : [...sel, phase];
+    setMoonPhases(next.length === 0 || next.length === MOON_PHASE_OPTIONS.length ? 'all' : next);
+  };
+
+  return (
+    <div className="tp-sidebar">
+      <div className="tp-sb-head">
+        Filter by
+        <button className="tp-sb-reset" onClick={onReset}>Reset all</button>
+      </div>
+
+      <SidebarSection title="Moon Phase">
+        {MOON_PHASE_OPTIONS.map(opt => {
+          const isBest = opt.phase === 'New' || opt.phase === 'Full';
+          const checked = moonPhases === 'all' || (Array.isArray(moonPhases) && moonPhases.includes(opt.phase));
+          return (
+            <label key={opt.phase} className="tp-sb-check-row">
+              <input type="checkbox" checked={checked} onChange={() => togglePhase(opt.phase)}/>
+              <span className="tp-sb-moon-emoji">{opt.emoji}</span>
+              <span className="tp-sb-check-label">{opt.label}</span>
+              {opt.note && <span className="tp-sb-check-note">{opt.note}</span>}
+              {isBest && <span className="tp-sb-best-dot">★</span>}
+            </label>
+          );
+        })}
+        <div className="tp-sb-hint">★ New and full moons historically produce better fishing</div>
+      </SidebarSection>
+
+      <SidebarSection title="Min Win Rate">
+        {[['Any', 0], ['40%+', 0.40], ['60%+', 0.60], ['80%+', 0.80]].map(([label, val]) => (
+          <label key={label} className="tp-sb-radio-row">
+            <input type="radio" name="minWinRate" checked={minWinRate === val}
+                   onChange={() => setMinWinRate(val)}/>
+            <span>{label}</span>
+          </label>
+        ))}
+      </SidebarSection>
+
+      <SidebarSection title="Price Range">
+        <div className="tp-sb-price-row">
+          <div className="tp-sb-price-field">
+            <span className="tp-sb-price-prefix">$</span>
+            <input type="number" className="tp-sb-price-input" placeholder="Min"
+                   value={minPrice} min="0" onChange={e => setMinPrice(e.target.value)}/>
+          </div>
+          <span className="tp-sb-price-dash">—</span>
+          <div className="tp-sb-price-field">
+            <span className="tp-sb-price-prefix">$</span>
+            <input type="number" className="tp-sb-price-input" placeholder="Max"
+                   value={maxPrice} min="0" onChange={e => setMaxPrice(e.target.value)}/>
+          </div>
+        </div>
+      </SidebarSection>
+    </div>
+  );
+}
+
+// ── Mobile filter sheet ───────────────────────────────────────────────────────
+function MobileFilterSheet({ open, onClose, ...filterProps }) {
   useEffect(() => {
     if (!open) return;
     const onKey = e => { if (e.key === 'Escape') onClose(); };
@@ -190,142 +361,96 @@ function FilterTripsModal({ open, onClose, filters, onApply }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const togglePhase = (phase) => {
-    if (moonPhases === 'all') {
-      setMoonPhases(MOON_PHASE_OPTIONS.map(o => o.phase).filter(p => p !== phase));
-    } else {
-      const next = moonPhases.includes(phase)
-        ? moonPhases.filter(p => p !== phase)
-        : [...moonPhases, phase];
-      setMoonPhases(next.length === 0 || next.length === MOON_PHASE_OPTIONS.length ? 'all' : next);
-    }
-  };
-
-  const handleReset = () => {
-    setStart('');
-    setEnd('');
-    setLanding('all');
-    setTripLength('all');
-    setMoonPhases('all');
-  };
-
-  const handleApply = () => {
-    onApply({ start: start || null, end: end || null, landing, tripLength, moonPhases });
-    onClose();
-  };
-
   if (!open) return null;
-
-  const SECTION_LABEL = {
-    font: '600 11px/14px var(--ss-font-sans)',
-    textTransform: 'uppercase',
-    letterSpacing: '.06em',
-    color: 'var(--ss-slate)',
-    marginBottom: 8,
-  };
-
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" style={{maxWidth: 440}} onClick={e => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2 style={{margin: 0, font: '600 18px/22px var(--ss-font-serif, Fraunces, serif)'}}>
-            Filter Trips
-          </h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+    <div className="tp-sheet-backdrop" onClick={onClose}>
+      <div className="tp-sheet" onClick={e => e.stopPropagation()}>
+        <div className="tp-sheet-head">
+          <span className="tp-sheet-title">Filters</span>
+          <button className="tp-sheet-close" onClick={onClose}>✕</button>
         </div>
-
-        <div className="modal-body" style={{padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20, maxHeight: '72vh', overflowY: 'auto'}}>
-          <div>
-            <div style={SECTION_LABEL}>Date Range</div>
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8}}>
-              <div className="filter">
-                <label>From</label>
-                <input type="date" value={start} onChange={e => setStart(e.target.value)}/>
-              </div>
-              <div className="filter">
-                <label>To</label>
-                <input type="date" value={end} onChange={e => setEnd(e.target.value)}/>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div style={SECTION_LABEL}>Landing</div>
-            <MultiSelect options={window.SD.LANDINGS} value={landing}
-                         onChange={setLanding} allLabel="All landings"/>
-          </div>
-
-          <div>
-            <div style={SECTION_LABEL}>Trip Length</div>
-            <MultiSelect options={window.SD.TRIP_LENGTHS} value={tripLength}
-                         onChange={setTripLength} allLabel="Any length"/>
-          </div>
-
-          <div>
-            <div style={SECTION_LABEL}>Moon Phase</div>
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2}}>
-              {MOON_PHASE_OPTIONS.map(opt => {
-                const checked = moonPhases === 'all' || (Array.isArray(moonPhases) && moonPhases.includes(opt.phase));
-                return (
-                  <label key={opt.phase} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    cursor: 'pointer', padding: '5px 6px', borderRadius: 4,
-                    userSelect: 'none',
-                  }}>
-                    <input type="checkbox" checked={checked} onChange={() => togglePhase(opt.phase)}
-                           style={{width: 14, height: 14, accentColor: opt.color || '#64748B', flexShrink: 0}}/>
-                    <span style={{fontSize: 15, lineHeight: 1, flexShrink: 0}}>{opt.emoji}</span>
-                    <span style={{font: '400 12px/16px var(--ss-font-sans)', color: opt.color || 'var(--ss-black)'}}>
-                      {opt.label}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-            <div style={{font: '400 11px/15px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 8}}>
-              Full and new moons historically produce the best tuna fishing.
-            </div>
-          </div>
+        <div className="tp-sheet-body">
+          <SidebarFilters {...filterProps}/>
         </div>
-
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '12px 20px',
-          borderTop: '1px solid var(--ss-border-2)',
-          background: 'var(--ss-clay)',
-          borderRadius: '0 0 12px 12px',
-        }}>
-          <button className="btn ghost" onClick={handleReset}>Reset</button>
-          <button className="btn primary" onClick={handleApply}
-                  style={{background: '#0EA5E9', borderColor: '#0EA5E9'}}>
-            Apply Filters
-          </button>
+        <div className="tp-sheet-foot">
+          <button className="btn ghost" onClick={() => { filterProps.onReset(); onClose(); }}>Reset</button>
+          <button className="tp-apply-btn" onClick={onClose}>Apply</button>
         </div>
       </div>
     </div>
   );
 }
 
+// ── Main TripPlanner ──────────────────────────────────────────────────────────
 function TripPlanner({ navigate }) {
+  // Top bar filter state
+  const [dateStart, setDateStart]   = useState('');
+  const [dateEnd, setDateEnd]       = useState('');
+  const [selLandings, setSelLandings] = useState('all');
+  const [selLengths, setSelLengths]   = useState('all');
+  const [openPop, setOpenPop]         = useState(null);
+
+  // Sidebar filter state
+  const [moonPhases, setMoonPhases]   = useState('all');
+  const [minWinRate, setMinWinRate]   = useState(0);
+  const [minPrice, setMinPrice]       = useState('');
+  const [maxPrice, setMaxPrice]       = useState('');
+
+  // Display state
+  const [activeTab, setActiveTab]         = useState('best');
+  const [sortBy, setSortBy]               = useState('recommended');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Close popovers on outside click
+  useEffect(() => {
+    if (!openPop) return;
+    const handler = () => setOpenPop(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [openPop]);
+
+  const winRates = useMemo(() => SDA.boatWinRates(), []);
+
+  // Avg TPA per boat+length from historical trip data
+  const avgTpaByKey = useMemo(() => {
+    const acc = {};
+    (window.SD.TRIPS || []).forEach(t => {
+      if (t.trophyPerAnglerPerDay == null) return;
+      const k = `${t.boat}|${t.tripLength}`;
+      acc[k] = acc[k] || { sum: 0, n: 0 };
+      acc[k].sum += t.trophyPerAnglerPerDay;
+      acc[k].n++;
+    });
+    const out = {};
+    for (const [k, v] of Object.entries(acc)) {
+      if (v.n >= 3) out[k] = Math.round((v.sum / v.n) * 100) / 100;
+    }
+    return out;
+  }, []);
+
   const _matches = (val, filter) => {
     if (filter == null || filter === 'all' || filter === '') return true;
     const sel = Array.isArray(filter) ? filter : [filter];
     return sel.length === 0 || sel.map(String).includes(String(val));
   };
 
-  const [tpFilters, setTpFilters] = useState({ start: null, end: null, landing: 'all', tripLength: 'all', moonPhases: 'all' });
-
-  const schedule = useMemo(() => {
+  // Filter schedule
+  const filtered = useMemo(() => {
     const now = new Date();
     const DAY_MS = 86400000;
-    const selPhases = Array.isArray(tpFilters.moonPhases) ? tpFilters.moonPhases : null;
+    const selPhases = Array.isArray(moonPhases) ? moonPhases : null;
+    const minP = minPrice !== '' ? parseFloat(minPrice) : null;
+    const maxP = maxPrice !== '' ? parseFloat(maxPrice) : null;
+
     return (window.SD.SCHEDULE || []).filter(s => {
       const dep = new Date(s.departureAt);
       if (dep < now) return false;
-      if (tpFilters.start && dep < new Date(tpFilters.start + 'T00:00:00')) return false;
-      if (tpFilters.end   && dep > new Date(tpFilters.end   + 'T23:59:59')) return false;
-      if (!_matches(s.landing,    tpFilters.landing))    return false;
-      if (!_matches(s.tripLength, tpFilters.tripLength)) return false;
+      if (dateStart && dep < new Date(dateStart + 'T00:00:00')) return false;
+      if (dateEnd   && dep > new Date(dateEnd   + 'T23:59:59')) return false;
+      if (!_matches(s.landing,    selLandings)) return false;
+      if (!_matches(s.tripLength, selLengths))  return false;
+      if (minP != null && s.price != null && s.price < minP) return false;
+      if (maxP != null && s.price != null && s.price > maxP) return false;
       if (selPhases && selPhases.length > 0) {
         const nearby = [
           moonInfo(dep).phase,
@@ -334,52 +459,69 @@ function TripPlanner({ navigate }) {
         ];
         if (!nearby.some(p => selPhases.includes(p))) return false;
       }
+      if (minWinRate > 0) {
+        const wr = winRates[`${s.boat}|${s.tripLength}`];
+        if (!wr || wr.winRate < minWinRate) return false;
+      }
       return true;
     });
-  }, [tpFilters]);
+  }, [dateStart, dateEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, winRates]);
 
-  const winRates = useMemo(() => SDA.boatWinRates(), []);
-
-  const bestSchedule = useMemo(() => {
-    return [...schedule].map(s => {
+  // Enrich with win rate + sort
+  const displayed = useMemo(() => {
+    const enriched = filtered.map(s => {
       const wr = winRates[`${s.boat}|${s.tripLength}`];
       return { ...s, _winRate: wr ? wr.winRate : null, _trips: wr ? wr.total : 0 };
-    }).sort((a, b) => {
-      if (a._winRate === null && b._winRate === null) return (a.price || 0) - (b.price || 0);
-      if (a._winRate === null) return 1;
-      if (b._winRate === null) return -1;
-      return b._winRate - a._winRate;
     });
-  }, [schedule, winRates]);
+    const copy = [...enriched];
+    switch (sortBy) {
+      case 'price-asc':
+        return copy.sort((a, b) => a.price == null ? 1 : b.price == null ? -1 : a.price - b.price);
+      case 'price-desc':
+        return copy.sort((a, b) => a.price == null ? 1 : b.price == null ? -1 : b.price - a.price);
+      case 'date':
+        return copy.sort((a, b) => new Date(a.departureAt) - new Date(b.departureAt));
+      case 'spots':
+        return copy.sort((a, b) => (b.openSpots ?? 0) - (a.openSpots ?? 0));
+      case 'win-rate':
+      case 'recommended':
+      default:
+        return copy.sort((a, b) => {
+          if (a._winRate == null && b._winRate == null) return a.price == null ? 1 : b.price == null ? -1 : a.price - b.price;
+          if (a._winRate == null) return 1;
+          if (b._winRate == null) return -1;
+          return b._winRate - a._winRate;
+        });
+    }
+  }, [filtered, sortBy, winRates]);
 
-  const cheapestSchedule = useMemo(() => {
-    return [...schedule].sort((a, b) => {
-      if (a.price == null && b.price == null) return 0;
-      if (a.price == null) return 1;
-      if (b.price == null) return -1;
-      return a.price - b.price;
-    });
-  }, [schedule]);
+  const minPriceVal = useMemo(() => {
+    const prices = filtered.map(s => s.price).filter(p => p != null);
+    return prices.length ? Math.min(...prices) : null;
+  }, [filtered]);
 
-  const [activeTab, setActiveTab] = useState('best');
-  const [filterOpen, setFilterOpen] = useState(false);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSortBy(tab === 'best' ? 'recommended' : 'price-asc');
+  };
 
-  const minPrice = cheapestSchedule.find(s => s.price != null)?.price;
+  const handleReset = () => {
+    setDateStart(''); setDateEnd('');
+    setSelLandings('all'); setSelLengths('all');
+    setMoonPhases('all'); setMinWinRate(0);
+    setMinPrice(''); setMaxPrice('');
+  };
 
   const activeFilterCount =
-    (tpFilters.start || tpFilters.end ? 1 : 0) +
-    (Array.isArray(tpFilters.landing)    ? 1 : 0) +
-    (Array.isArray(tpFilters.tripLength) ? 1 : 0) +
-    (Array.isArray(tpFilters.moonPhases) ? 1 : 0);
+    (dateStart || dateEnd ? 1 : 0) +
+    (Array.isArray(selLandings) ? 1 : 0) +
+    (Array.isArray(selLengths)  ? 1 : 0) +
+    (Array.isArray(moonPhases)  ? 1 : 0) +
+    (minWinRate > 0 ? 1 : 0) +
+    (minPrice || maxPrice ? 1 : 0);
 
-  const HDR_STYLE = {
-    padding: '8px 12px',
-    background: 'var(--ss-clay)',
-    borderBottom: '1px solid var(--ss-border-2)',
-    font: '700 10px/12px var(--ss-font-sans)',
-    textTransform: 'uppercase', letterSpacing: '.06em',
-    color: 'var(--ss-slate)',
-  };
+  const sidebarProps = { moonPhases, setMoonPhases, minWinRate, setMinWinRate,
+                         minPrice, setMinPrice, maxPrice, setMaxPrice, onReset: handleReset };
 
   return (
     <Fragment>
@@ -388,84 +530,99 @@ function TripPlanner({ navigate }) {
         { label: 'Plan' },
         { label: 'Trip Planner' },
       ]}/>
+
+      {/* Page title */}
       <div className="pagehead">
         <div>
           <h1>Trip Planner</h1>
-          <div className="sub">{fmt.n(schedule.length)} upcoming open-party trips</div>
-        </div>
-        <div className="actions">
-          <button className="btn primary" onClick={() => setFilterOpen(true)}>
-            🔧 Filter Trips{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-          </button>
+          <div className="sub">Find and book upcoming open-party fishing trips</div>
         </div>
       </div>
 
-      <FilterTripsModal
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        filters={tpFilters}
-        onApply={setTpFilters}
-      />
+      {/* Top search bar — stop click from propagating to doc (would close popovers) */}
+      <div className="tp-search-wrap" onClick={e => e.stopPropagation()}>
+        <TopSearchBar
+          dateStart={dateStart} dateEnd={dateEnd}
+          setDateStart={setDateStart} setDateEnd={setDateEnd}
+          selLandings={selLandings} setSelLandings={setSelLandings}
+          selLengths={selLengths}   setSelLengths={setSelLengths}
+          openPop={openPop} setOpenPop={setOpenPop}
+        />
+      </div>
 
-      <Panel title="Upcoming Open-Party Trips"
-             meta={`${schedule.length} bookable · sold-out hidden`}
-             padding={false}>
-        <div className="tp-tabs">
-          <button className={`tp-tab${activeTab === 'best' ? ' active' : ''}`}
-                  onClick={() => setActiveTab('best')}>
-            <div className="tp-tab-main">
-              Best <span className="tp-tab-info">ⓘ</span>
-            </div>
-            <div className="tp-tab-sub">Ranked by win rate &amp; performance</div>
-          </button>
-          <button className={`tp-tab${activeTab === 'cheapest' ? ' active' : ''}`}
-                  onClick={() => setActiveTab('cheapest')}>
-            <div className="tp-tab-main">
-              Cheapest
-              {minPrice != null && <span className="tp-tab-price"> from ${minPrice.toFixed(0)}</span>}
-              <span className="tp-tab-info">ⓘ</span>
-            </div>
-            <div className="tp-tab-sub">Sorted by price</div>
-          </button>
+      {/* Body: sidebar + results */}
+      <div className="tp-body">
+        {/* Desktop sidebar */}
+        <div className="tp-sidebar-wrap">
+          <SidebarFilters {...sidebarProps}/>
         </div>
 
-        {schedule.length === 0 ? (
-          <div className="muted-block" style={{padding: 16}}>
-            No trips match your filters. Click "🔧 Filter Trips" to adjust.
+        {/* Results */}
+        <div className="tp-results">
+          {/* Results header */}
+          <div className="tp-results-head">
+            <div className="tp-results-count">
+              <strong>{fmt.n(displayed.length)}</strong> upcoming trip{displayed.length !== 1 ? 's' : ''}
+            </div>
+            <div className="tp-results-controls">
+              {/* Mobile filter button */}
+              <button className="tp-mobile-filter-btn" onClick={() => setMobileFiltersOpen(true)}>
+                <i className="fa-solid fa-sliders"></i>
+                Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              </button>
+              {/* Sort dropdown */}
+              <div className="tp-sort-wrap">
+                <label className="tp-sort-label">Sort:</label>
+                <select className="tp-sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                  <option value="recommended">Recommended</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="date">Departure Date</option>
+                  <option value="win-rate">Win Rate</option>
+                  <option value="spots">Open Spots</option>
+                </select>
+              </div>
+            </div>
           </div>
-        ) : activeTab === 'best' ? (
-          <Fragment>
-            <div className="tp-best-row" style={HDR_STYLE}>
-              <span>Boat</span>
-              <span className="tp-landing-col">Landing</span>
-              <span>Trip</span>
-              <span>Depart</span>
-              <span style={{textAlign: 'center'}}>Moon</span>
-              <span className="tp-wr-col" style={{textAlign: 'right'}}>Win Rate</span>
-              <span style={{textAlign: 'right'}}>Price</span>
-              <span style={{textAlign: 'right'}}>Open</span>
+
+          {/* Best / Cheapest tabs */}
+          <div className="tp-tabs2">
+            <button className={`tp-tab2${activeTab === 'best' ? ' active' : ''}`}
+                    onClick={() => handleTabChange('best')}>
+              <span className="tp-tab2-main">Best <span className="tp-tab2-info">ⓘ</span></span>
+              <span className="tp-tab2-sub">Ranked by win rate</span>
+            </button>
+            <button className={`tp-tab2${activeTab === 'cheapest' ? ' active' : ''}`}
+                    onClick={() => handleTabChange('cheapest')}>
+              <span className="tp-tab2-main">
+                Cheapest
+                {minPriceVal != null && <span className="tp-tab2-price"> from ${minPriceVal.toFixed(0)}</span>}
+                <span className="tp-tab2-info">ⓘ</span>
+              </span>
+              <span className="tp-tab2-sub">Sorted by price</span>
+            </button>
+          </div>
+
+          {/* Trip list */}
+          {displayed.length === 0 ? (
+            <div className="tp-empty">
+              <i className="fa-solid fa-fish" style={{fontSize:24, opacity:0.3}}></i>
+              <div>No trips match your filters.</div>
+              <button className="tp-empty-reset" onClick={handleReset}>Clear all filters</button>
             </div>
-            <div style={{maxHeight: 720, overflow: 'auto'}}>
-              {bestSchedule.map(s => <BestRow key={`${s.landing}-${s.sourceId}`} s={s}/>)}
+          ) : (
+            <div className="tp-card-list">
+              {displayed.map(s => (
+                <TripCard key={`${s.landing}-${s.sourceId}`} s={s} avgTpaByKey={avgTpaByKey}/>
+              ))}
             </div>
-          </Fragment>
-        ) : (
-          <Fragment>
-            <div className="tp-cheapest-row" style={HDR_STYLE}>
-              <span>Boat</span>
-              <span className="tp-landing-col">Landing</span>
-              <span>Trip</span>
-              <span>Depart</span>
-              <span style={{textAlign: 'center'}}>Moon</span>
-              <span style={{textAlign: 'right'}}>Price</span>
-              <span style={{textAlign: 'right'}}>Open</span>
-            </div>
-            <div style={{maxHeight: 720, overflow: 'auto'}}>
-              {cheapestSchedule.map(s => <CheapestRow key={`${s.landing}-${s.sourceId}`} s={s}/>)}
-            </div>
-          </Fragment>
-        )}
-      </Panel>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile filter sheet */}
+      <MobileFilterSheet open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)}
+                         {...sidebarProps}/>
     </Fragment>
   );
 }

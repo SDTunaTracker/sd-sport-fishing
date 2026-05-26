@@ -1028,3 +1028,229 @@ body.compact .dt td { padding: 7px 12px; }
   /* Accuracy widget hidden on mobile per spec */
   .fc-accuracy-grid ~ div { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Trip Planner — Expedia-style redesign
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Search bar ──────────────────────────────────────────────── */
+.tp-search-wrap { margin-bottom: 16px; }
+.tp-search-bar {
+  display: flex; align-items: stretch;
+  background: #fff;
+  border: 1px solid #E2E8F0; border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  overflow: visible;
+}
+.tp-search-field-wrap { position: relative; flex: 1; }
+.tp-search-field {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; height: 56px; padding: 0 16px;
+  background: transparent; border: none; cursor: pointer;
+  text-align: left; border-radius: 12px; transition: background .15s;
+}
+.tp-search-field:hover           { background: var(--tb-foam); }
+.tp-search-field-active          { background: var(--tb-foam); }
+.tp-search-icon                  { font-size: 16px; flex-shrink: 0; }
+.tp-search-field-body            { display: flex; flex-direction: column; min-width: 0; }
+.tp-search-field-label           { font: 600 10px/14px var(--ss-font-sans); color: var(--tb-gray-3); text-transform: uppercase; letter-spacing: 0.06em; }
+.tp-search-field-value           { font: 500 13px/18px var(--ss-font-sans); color: var(--tb-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tp-search-divider               { width: 1px; background: #E2E8F0; flex-shrink: 0; margin: 10px 0; }
+
+/* ── Popovers ─────────────────────────────────────────────────── */
+.tp-popover {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 200;
+  background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 16px; min-width: 280px;
+}
+.tp-popover-check   { min-width: 220px; padding: 8px 0 0; }
+.tp-pop-row         { display: flex; gap: 12px; }
+.tp-pop-field       { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.tp-pop-label       { font: 600 11px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.tp-pop-date-input  {
+  height: 36px; padding: 0 10px;
+  border: 1px solid #E2E8F0; border-radius: 8px;
+  font: 500 13px/36px var(--ss-font-sans); color: var(--tb-ink);
+  background: #fff; width: 100%;
+}
+.tp-pop-date-input:focus { border-color: #38BDF8; outline: none; box-shadow: 0 0 0 2px #E0F2FE; }
+.tp-pop-footer  { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.tp-pop-clear   { font: 500 12px/16px var(--ss-font-sans); color: var(--tb-slate); padding: 5px 10px; border-radius: 6px; }
+.tp-pop-clear:hover { background: var(--tb-foam); color: var(--tb-ink); }
+.tp-pop-done    { font: 600 12px/16px var(--ss-font-sans); color: #fff; background: #1E3A5F; padding: 6px 14px; border-radius: 6px; }
+.tp-pop-done:hover { background: #243447; }
+.tp-pop-check-row   { display: flex; align-items: center; gap: 8px; padding: 7px 16px; cursor: pointer; font: 400 13px/18px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-pop-check-row:hover { background: var(--tb-foam); }
+.tp-pop-check-all   { font-weight: 600; }
+.tp-pop-divider     { height: 1px; background: #E2E8F0; margin: 2px 0; }
+
+/* ── Body layout ─────────────────────────────────────────────── */
+.tp-body {
+  display: grid; grid-template-columns: 240px 1fr;
+  gap: 20px; align-items: start;
+}
+.tp-sidebar-wrap { position: sticky; top: 68px; }
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.tp-sidebar {
+  background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
+}
+.tp-sb-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid #E2E8F0;
+  font: 700 13px/18px var(--ss-font-sans); color: var(--tb-ink);
+}
+.tp-sb-reset           { font: 500 11px/16px var(--ss-font-sans); color: #38BDF8; }
+.tp-sb-reset:hover     { text-decoration: underline; }
+.tp-sb-section         { padding: 12px 14px; border-bottom: 1px solid #E2E8F0; }
+.tp-sb-section:last-child { border-bottom: none; }
+.tp-sb-title           { font: 700 11px/14px var(--ss-font-sans); color: var(--tb-slate); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.tp-sb-check-row       { display: flex; align-items: center; gap: 6px; padding: 3px 0; cursor: pointer; font: 400 12px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-sb-moon-emoji      { font-size: 13px; flex-shrink: 0; width: 16px; }
+.tp-sb-check-label     { flex: 1; }
+.tp-sb-check-note      { font-size: 10px; color: var(--tb-gray-2); }
+.tp-sb-best-dot        { color: #FBBF24; font-size: 10px; }
+.tp-sb-hint            { font: 400 10px/14px var(--ss-font-sans); color: var(--tb-gray-2); margin-top: 6px; font-style: italic; }
+.tp-sb-radio-row       { display: flex; align-items: center; gap: 6px; padding: 3px 0; cursor: pointer; font: 400 12px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-sb-price-row       { display: flex; align-items: center; gap: 6px; }
+.tp-sb-price-field     { display: flex; align-items: center; gap: 4px; flex: 1; border: 1px solid #E2E8F0; border-radius: 6px; padding: 0 6px; }
+.tp-sb-price-prefix    { font: 500 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.tp-sb-price-input     { flex: 1; width: 100%; border: none; background: transparent; font: 500 12px/36px var(--ss-font-sans); color: var(--tb-ink); outline: none; min-width: 0; height: 32px; }
+.tp-sb-price-dash      { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
+
+/* ── Results area ────────────────────────────────────────────── */
+.tp-results { min-width: 0; }
+.tp-results-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+}
+.tp-results-count     { font: 600 14px/20px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-results-controls  { display: flex; align-items: center; gap: 10px; }
+.tp-mobile-filter-btn {
+  display: none; align-items: center; gap: 6px;
+  padding: 6px 12px; border: 1px solid #E2E8F0; border-radius: 8px;
+  font: 600 12px/16px var(--ss-font-sans); color: var(--tb-ink); background: #fff;
+}
+.tp-mobile-filter-btn:hover { background: var(--tb-foam); }
+.tp-sort-wrap  { display: flex; align-items: center; gap: 6px; }
+.tp-sort-label { font: 500 12px/16px var(--ss-font-sans); color: var(--tb-slate); white-space: nowrap; }
+
+/* ── Best / Cheapest tabs ────────────────────────────────────── */
+.tp-tabs2 {
+  display: flex; border: 1px solid #E2E8F0; border-radius: 10px;
+  overflow: hidden; margin-bottom: 14px; background: var(--tb-foam);
+}
+.tp-tab2 {
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start;
+  padding: 12px 16px; background: transparent; cursor: pointer;
+  border-right: 1px solid #E2E8F0; text-align: left; transition: background .15s;
+}
+.tp-tab2:last-child            { border-right: none; }
+.tp-tab2:hover:not(.active)    { background: rgba(255,255,255,0.6); }
+.tp-tab2.active                { background: #fff; }
+.tp-tab2-main                  { font: 700 14px/20px var(--ss-font-sans); color: var(--tb-slate); display: flex; align-items: center; gap: 4px; }
+.tp-tab2.active .tp-tab2-main  { color: #1E3A5F; }
+.tp-tab2-sub                   { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-2); margin-top: 2px; }
+.tp-tab2-info                  { font-size: 11px; opacity: 0.4; }
+.tp-tab2-price                 { color: var(--tb-success); font-weight: 700; }
+
+/* ── Trip card list ──────────────────────────────────────────── */
+.tp-card-list { display: flex; flex-direction: column; gap: 10px; }
+.tp-card {
+  display: grid; grid-template-columns: 200px 1fr 140px;
+  background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
+  transition: box-shadow .18s, border-color .18s;
+}
+.tp-card:hover              { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #CBD5E1; }
+.tp-card-left               { padding: 16px; border-right: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 4px; }
+.tp-card-boat-link          { font: 700 16px/22px var(--ss-font-sans); color: #1E3A5F; text-decoration: none; }
+.tp-card-boat-link:hover    { text-decoration: underline; }
+.tp-card-boat-name          { font: 700 16px/22px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-card-landing            { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
+.tp-length-badge            { display: inline-block; margin-top: 6px; padding: 2px 8px; background: #E0F2FE; color: #0284C7; border-radius: 20px; font: 600 11px/16px var(--ss-font-sans); }
+.tp-card-middle             { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.tp-card-depart             { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.tp-card-moon               { font: 500 12px/16px var(--ss-font-sans); }
+.tp-card-wr-row             { display: flex; align-items: center; gap: 6px; }
+.tp-card-stat-label         { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
+.tp-card-trips-hint         { font: 400 10px/14px var(--ss-font-sans); color: var(--tb-gray-2); }
+.tp-card-tpa                { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.tp-card-right              { padding: 16px; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; background: #FAFCFF; border-left: 1px solid #E2E8F0; gap: 8px; }
+.tp-card-price              { font: 700 22px/28px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-card-price-na           { font-size: 18px; color: var(--tb-gray-2); }
+.tp-card-per                { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-2); margin-top: -6px; }
+.tp-card-book-btn           { display: inline-block; padding: 8px 14px; background: #1E3A5F; color: #fff; border-radius: 8px; font: 600 12px/16px var(--ss-font-sans); text-align: center; transition: background .15s; }
+.tp-card-book-btn:hover     { background: #243447; }
+.tp-card-mobile-footer      { display: none; }
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.tp-badge        { display: inline-block; padding: 2px 8px; border-radius: 20px; font: 600 11px/18px var(--ss-font-sans); }
+.tp-wr-none      { background: var(--tb-foam); color: var(--tb-gray-3); }
+.tp-wr-green     { background: #D1FAE5; color: #065F46; }
+.tp-wr-yellow    { background: #FEF3C7; color: #92400E; }
+.tp-wr-red       { background: #FEE2E2; color: #991B1B; }
+.tp-spots-full   { background: #F1F5F9; color: var(--tb-gray-3); }
+.tp-spots-red    { background: #FEE2E2; color: #991B1B; }
+.tp-spots-yellow { background: #FEF3C7; color: #92400E; }
+.tp-spots-green  { background: #D1FAE5; color: #065F46; }
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.tp-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 48px 24px; text-align: center;
+  color: var(--tb-gray-2); font: 400 14px/20px var(--ss-font-sans);
+  border: 1px dashed #E2E8F0; border-radius: 12px; background: #FAFCFF;
+}
+.tp-empty-reset       { font: 600 12px/16px var(--ss-font-sans); color: #38BDF8; margin-top: 4px; }
+.tp-empty-reset:hover { text-decoration: underline; }
+
+/* ── Mobile filter sheet ─────────────────────────────────────── */
+.tp-sheet-backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.5); }
+.tp-sheet {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff; border-radius: 16px 16px 0 0;
+  max-height: 90vh; display: flex; flex-direction: column; z-index: 501;
+}
+.tp-sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid #E2E8F0;
+}
+.tp-sheet-title             { font: 700 16px/22px var(--ss-font-sans); color: var(--tb-ink); }
+.tp-sheet-close             { font: 400 20px/20px var(--ss-font-sans); color: var(--tb-slate); padding: 2px 4px; }
+.tp-sheet-body              { flex: 1; overflow-y: auto; }
+.tp-sheet-body .tp-sidebar  { border: none; border-radius: 0; box-shadow: none; }
+.tp-sheet-foot              { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid #E2E8F0; }
+.tp-apply-btn               { flex: 1; padding: 10px 14px; background: #1E3A5F; color: #fff; border-radius: 8px; font: 700 13px/18px var(--ss-font-sans); text-align: center; }
+.tp-apply-btn:hover         { background: #243447; }
+
+/* ── Trip Planner mobile ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .tp-search-bar { border-radius: 10px; }
+  .tp-search-field { height: 48px; padding: 0 12px; gap: 8px; }
+  .tp-search-divider { margin: 8px 0; }
+
+  .tp-body { grid-template-columns: 1fr; }
+  .tp-sidebar-wrap { display: none; }
+  .tp-mobile-filter-btn { display: flex !important; }
+
+  .tp-card {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  .tp-card-left   { border-right: 1px solid #E2E8F0; }
+  .tp-card-middle { grid-column: 1 / -1; border-top: 1px solid #E2E8F0; }
+  .tp-card-right  { display: none; }
+  .tp-card-mobile-footer {
+    display: flex; grid-column: 1 / -1;
+    align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    padding: 10px 14px; border-top: 1px solid #E2E8F0; background: #FAFCFF;
+  }
+  .tp-card-price-mobile { font: 700 16px/22px var(--ss-font-sans); color: var(--tb-ink); }
+  .tp-card-book-full    { display: block; text-align: center; padding: 8px 16px; }
+
+  .tp-tabs2  { border-radius: 8px; }
+  .tp-tab2   { padding: 10px 12px; }
+  .tp-tab2-main { font-size: 13px; }
+}
