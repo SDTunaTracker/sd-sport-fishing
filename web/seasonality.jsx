@@ -1,13 +1,12 @@
 // Seasonality view — species catch patterns by month
-function SeasonalityView({ filters, setFilters }) {
+function SeasonalityView({ filters, setFilters, navigate }) {
   const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
   const monthly = useMemo(() => SDA.monthlyTrend(trips, filters.species), [trips, filters.species]);
 
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => {} },
-        { label: 'Analyze', onClick: () => {} },
+        { label: 'Seasonality & Moon', onClick: () => navigate('seasonality', { subtab: 'seasonality' }) },
         { label: 'Seasonality' },
       ]}/>
       <div className="pagehead">

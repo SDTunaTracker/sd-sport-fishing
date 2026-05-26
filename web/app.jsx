@@ -11,18 +11,35 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // URL-hash routing: the hash is the source of truth for the active route,
 // so refreshing or bookmarking keeps you on the same page.
 const HASH_VIEWS = {
-  today: 'today', analytics: 'analytics', boats: 'boats', landings: 'landings',
-  tripplanner: 'tripplanner', headtohead: 'headtohead', seasonality: 'seasonality',
-  moon: 'moon', settings: 'settings', admin: 'admin', forecast: 'forecast',
+  today: 'today', tripplanner: 'tripplanner',
+  settings: 'settings', admin: 'admin', forecast: 'forecast',
 };
+
+const ANALYTICS_SUBTABS = ['overview', 'boats', 'landings', 'headtohead'];
 
 function routeFromHash() {
   const raw = window.location.hash.replace(/^#/, '');
   if (!raw) return { view: 'today', params: {} };
   const [seg, ...rest] = raw.split('/');
   const detail = rest.length ? decodeURIComponent(rest.join('/')) : '';
+
   if (seg === 'boat' && detail) return { view: 'boat', params: { boat: detail } };
   if (seg === 'landing' && detail) return { view: 'landing', params: { landing: detail } };
+
+  if (seg === 'analytics') {
+    const subtab = ANALYTICS_SUBTABS.includes(detail) ? detail : 'overview';
+    return { view: 'analytics', params: { subtab } };
+  }
+  if (seg === 'seasonality') {
+    return { view: 'seasonality', params: { subtab: detail === 'moon' ? 'moon' : 'seasonality' } };
+  }
+
+  // Legacy URL redirects
+  if (seg === 'boats')      return { view: 'analytics',   params: { subtab: 'boats' } };
+  if (seg === 'landings')   return { view: 'analytics',   params: { subtab: 'landings' } };
+  if (seg === 'headtohead') return { view: 'analytics',   params: { subtab: 'headtohead' } };
+  if (seg === 'moon')       return { view: 'seasonality', params: { subtab: 'moon' } };
+
   if (HASH_VIEWS[seg]) return { view: HASH_VIEWS[seg], params: {} };
   return { view: 'today', params: {} };
 }
@@ -30,6 +47,11 @@ function routeFromHash() {
 function hashFromRoute(view, params = {}) {
   if (view === 'boat' && params.boat) return 'boat/' + encodeURIComponent(params.boat);
   if (view === 'landing' && params.landing) return 'landing/' + encodeURIComponent(params.landing);
+  if (view === 'analytics') return 'analytics/' + (params.subtab || 'overview');
+  if (view === 'seasonality') {
+    const sub = params.subtab || 'seasonality';
+    return sub === 'moon' ? 'seasonality/moon' : 'seasonality';
+  }
   return view;
 }
 
@@ -84,45 +106,32 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  // Map sidebar -> internal view
+  // Map nav tab id -> navigate() view
   const navMap = {
-    dashboard: 'today', analytics: 'analytics', boats: 'boats', landings: 'landings',
-    tripplanner: 'tripplanner',
-    headtohead: 'headtohead',
-    seasonality: 'seasonality', moon: 'moon', watchlist: 'today',
-    recent: 'today', settings: 'settings', forecast: 'forecast',
+    today: 'today', forecast: 'forecast', analytics: 'analytics',
+    tripplanner: 'tripplanner', seasonality: 'seasonality', settings: 'settings',
   };
 
   let content;
   if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings}/>;
   } else if (route.view === 'analytics') {
-    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings}/>;
-  } else if (route.view === 'boats') {
-    content = <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
-  } else if (route.view === 'landings') {
-    content = <LandingsView filters={filters} setFilters={setFilters} navigate={navigate}/>;
+    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} subtab={route.params.subtab || 'overview'}/>;
   } else if (route.view === 'boat') {
     content = <BoatDetail filters={filters} setFilters={setFilters} navigate={navigate} boat={route.params.boat}/>;
   } else if (route.view === 'landing') {
     content = <LandingDetail filters={filters} setFilters={setFilters} navigate={navigate} landing={route.params.landing}/>;
   } else if (route.view === 'tripplanner') {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
-  } else if (route.view === 'headtohead') {
-    content = <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate}/>;
   } else if (route.view === 'seasonality') {
-    content = <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>;
-  } else if (route.view === 'moon') {
-    content = <MoonView filters={filters} setFilters={setFilters} navigate={navigate}/>;
+    content = <SeasonalityMoonView filters={filters} setFilters={setFilters} navigate={navigate} subtab={route.params.subtab || 'seasonality'}/>;
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'settings') {
     content = <SettingsView settings={settings} onSettingsChange={onSettingsChange}/>;
   }
 
-  const headerActive = route.view === 'boat' ? 'boats'
-    : route.view === 'landing' ? 'landings'
-    : route.view;
+  const headerActive = (route.view === 'boat' || route.view === 'landing') ? 'analytics' : route.view;
 
   return (
     <Fragment>

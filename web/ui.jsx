@@ -27,15 +27,11 @@ function AppHeader({ active, onNavigate }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
 
   const NAV = [
-    { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
-    { id: 'forecast',    label: 'Forecast',     icon: 'fa-cloud-sun-rain' },
-    { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
-    { id: 'boats',       label: 'Boats',        icon: 'fa-sailboat' },
-    { id: 'landings',    label: 'Landings',     icon: 'fa-anchor' },
-    { id: 'headtohead',  label: 'Head-to-Head', icon: 'fa-scale-balanced' },
-    { id: 'tripplanner', label: 'Trip Planner', icon: 'fa-calendar-check' },
-    { id: 'seasonality', label: 'Seasonality',  icon: 'fa-calendar-days' },
-    { id: 'moon',        label: 'Moon & Tides', icon: 'fa-moon' },
+    { id: 'today',       label: 'Today',              icon: 'fa-chart-column' },
+    { id: 'forecast',    label: 'Forecast',           icon: 'fa-cloud-sun-rain' },
+    { id: 'analytics',   label: 'Analytics',          icon: 'fa-magnifying-glass-chart' },
+    { id: 'tripplanner', label: 'Trip Planner',       icon: 'fa-calendar-check' },
+    { id: 'seasonality', label: 'Seasonality & Moon', icon: 'fa-calendar-days' },
   ];
 
   function openMenu() { setMenuState('open'); }
@@ -75,7 +71,7 @@ function AppHeader({ active, onNavigate }) {
           {/* Gear icon */}
           <span className="header-gear iconbtn" title="Settings"
                 onClick={() => handleNavItem('settings')}
-                style={{color: active === 'settings' ? '#fff' : 'rgba(255,255,255,0.75)'}}>
+                style={{color: active === 'settings' ? 'var(--tb-ink)' : 'var(--tb-slate)'}}>
             <i className="fa-solid fa-gear"></i>
           </span>
           {/* Hamburger: mobile only */}

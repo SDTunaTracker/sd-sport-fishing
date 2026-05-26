@@ -79,8 +79,15 @@ function AnalyticsMobileFilterModal({ open, onClose, filters, onApply }) {
   );
 }
 
-function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
+function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab = 'overview' }) {
   const { useMemo, useState } = React;
+
+  const SUBTABS = [
+    { id: 'overview',   label: 'Overview' },
+    { id: 'boats',      label: 'Boats' },
+    { id: 'landings',   label: 'Landings' },
+    { id: 'headtohead', label: 'Head-to-Head' },
+  ];
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const df = window.DEFAULT_FILTERS;
@@ -129,16 +136,26 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
 
   return (
     <Fragment>
+      {/* Sub-tab bar — always visible */}
+      <div className="tabbar analytics-subtabbar">
+        {SUBTABS.map(t => (
+          <a key={t.id} className={subtab === t.id ? 'sel' : ''}
+             onClick={() => navigate('analytics', { subtab: t.id })}>{t.label}</a>
+        ))}
+      </div>
+
+      {/* Overview sub-tab */}
+      {subtab === 'overview' && <Fragment>
       <AnalyticsMobileFilterModal
         open={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
         filters={filters}
         onApply={setFilters}/>
 
-      <Crumbs items={[{ label: 'Analytics' }]}/>
+      <Crumbs items={[{ label: 'Analytics' }, { label: 'Overview' }]}/>
       <div className="pagehead">
         <div>
-          <h1>Fleet Analytics</h1>
+          <h1>Overview</h1>
           <div className="sub analytics-sub">
             {fmt.n(trips.length)} trips · {eligibleBoats.length} boats · {landings.length} landings
             {' · '}{filters.year === 'all' ? 'All years' : filters.year}
@@ -148,9 +165,6 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
         <div className="actions">
           <button className="btn secondary analytics-mobile-filter-btn" onClick={() => setMobileFilterOpen(true)}>
             ⚙️ Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-          </button>
-          <button className="btn primary analytics-leaderboard-btn" onClick={() => navigate('boats')}>
-            <i className="fa-solid fa-trophy analytics-trophy-icon"></i> Full Leaderboard
           </button>
         </div>
       </div>
@@ -179,7 +193,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
       <div style={{marginBottom: 12}}>
         <Panel title={`Top Boats — ${speciesLabel} per Angler per Day`}
                meta={`Ranked by avg ${speciesLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips`}
-               actions={<button className="btn sm ghost" onClick={() => navigate('boats')}>View All →</button>}>
+               actions={<button className="btn sm ghost" onClick={() => navigate('analytics', {subtab:'boats'})}>View All →</button>}>
           {topBoats.length === 0 ? (
             <div className="muted-block">No boats meet the minimum trip threshold for these filters.</div>
           ) : (
@@ -268,7 +282,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
       {/* By Landing */}
       <Panel title="By Landing"
              meta="Approved San Diego landings"
-             actions={<button className="btn sm ghost" onClick={() => navigate('landings')}>Compare →</button>}>
+             actions={<button className="btn sm ghost" onClick={() => navigate('analytics', {subtab:'landings'})}>Compare →</button>}>
         {landings.map((l) => {
           const max = Math.max(...landings.map(x => x.tpa));
           return (
@@ -290,6 +304,16 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings }) {
           );
         })}
       </Panel>
+      </Fragment>}
+
+      {/* Boats sub-tab */}
+      {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>}
+
+      {/* Landings sub-tab */}
+      {subtab === 'landings' && <LandingsView filters={filters} setFilters={setFilters} navigate={navigate}/>}
+
+      {/* Head-to-Head sub-tab */}
+      {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate}/>}
     </Fragment>
   );
 }

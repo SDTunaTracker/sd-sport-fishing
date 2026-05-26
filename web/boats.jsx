@@ -47,9 +47,8 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => navigate('today') },
-        { label: 'Analyze', onClick: () => navigate('today') },
-        { label: 'Boat Leaderboard' },
+        { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'overview' }) },
+        { label: 'Boats' },
       ]}/>
       <div className="pagehead">
         <div>

@@ -399,6 +399,25 @@ body.compact .dt td { padding: 7px 12px; }
 /* Desktop: show species cols, hide trophy total col */
 .trophy-col { display: none; }
 
+/* ───── Sub-tab bar (Analytics + Seasonality & Moon) ───── */
+.analytics-subtabbar {
+  margin: -16px -16px 20px;   /* bleed to main-content edges */
+  padding: 0 16px;
+  background: #F8FAFC;
+  border-bottom: 1px solid var(--tb-border-2);
+}
+.analytics-subtabbar a {
+  font: 600 13px/16px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  padding: 10px 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.analytics-subtabbar a.sel { color: var(--tb-ink); border-color: var(--tb-accent-d); }
+.analytics-subtabbar a:hover { color: var(--tb-ink); }
+
 /* ───── Analytics page — mobile filter button (hidden on desktop) ───── */
 .analytics-mobile-filter-btn { display: none; }
 
@@ -624,6 +643,11 @@ body.compact .dt td { padding: 7px 12px; }
 
   /* Buttons — same radius and transition as desktop */
   .btn { border-radius: 8px; transition: all 0.15s ease; }
+
+  /* Sub-tab bar on mobile */
+  .analytics-subtabbar { margin: -12px -12px 16px; padding: 0 12px; gap: 16px; overflow-x: auto; scrollbar-width: none; }
+  .analytics-subtabbar::-webkit-scrollbar { display: none; }
+  .analytics-subtabbar a { font-size: 12px; }
 
   /* Analytics page — mobile filter treatment */
   .analytics-filterbar-desktop { display: none; }

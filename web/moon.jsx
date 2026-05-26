@@ -1,5 +1,5 @@
-// Moon & Tides view — lunar phase correlation with catch rates
-function MoonView({ filters, setFilters }) {
+// Moon Phase view — lunar phase correlation with catch rates
+function MoonView({ filters, setFilters, navigate }) {
   const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
   const moonData = useMemo(() => SDA.moonAnalysis(trips, filters.species), [trips, filters.species]);
   const bestMoon = [...moonData].sort((a, b) => b.tpa - a.tpa)[0];
@@ -10,13 +10,12 @@ function MoonView({ filters, setFilters }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Sportfish', onClick: () => {} },
-        { label: 'Analyze', onClick: () => {} },
-        { label: 'Moon & Tides' },
+        { label: 'Seasonality & Moon', onClick: () => navigate('seasonality', { subtab: 'seasonality' }) },
+        { label: 'Moon Phase' },
       ]}/>
       <div className="pagehead">
         <div>
-          <h1>Moon & Tides</h1>
+          <h1>Moon Phase</h1>
           <div className="sub">Lunar phase correlation with catch rates across {fmt.n(trips.length)} trips</div>
         </div>
       </div>
@@ -52,4 +51,24 @@ function MoonView({ filters, setFilters }) {
   );
 }
 
-Object.assign(window, { MoonView });
+// Seasonality & Moon container — sub-tab wrapper
+function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'seasonality' }) {
+  const SUBTABS = [
+    { id: 'seasonality', label: 'Seasonality' },
+    { id: 'moon',        label: 'Moon Phase' },
+  ];
+  return (
+    <Fragment>
+      <div className="tabbar analytics-subtabbar">
+        {SUBTABS.map(t => (
+          <a key={t.id} className={subtab === t.id ? 'sel' : ''}
+             onClick={() => navigate('seasonality', { subtab: t.id })}>{t.label}</a>
+        ))}
+      </div>
+      {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>}
+      {subtab === 'moon'        && <MoonView        filters={filters} setFilters={setFilters} navigate={navigate}/>}
+    </Fragment>
+  );
+}
+
+Object.assign(window, { MoonView, SeasonalityMoonView });

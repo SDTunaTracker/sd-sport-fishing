@@ -230,7 +230,7 @@ function TodayView({ navigate, settings }) {
       <div style={{marginTop: 20}}>
         <Panel title={`Top Boats — ${currentYear} Season`}
                meta="Ranked by avg tuna/angler/day · min 5 trips"
-               actions={<button className="btn sm ghost" onClick={() => navigate('analytics')}>Full Analytics →</button>}>
+               actions={<button className="btn sm ghost" onClick={() => navigate('analytics', { subtab: 'overview' })}>Full Analytics →</button>}>
           {topBoats.length === 0 ? (
             <div className="muted-block">No data yet for {currentYear}.</div>
           ) : (
