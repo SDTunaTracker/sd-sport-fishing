@@ -906,6 +906,92 @@ function Section4({ preds }) {
 
 // ─── Section 5 — User Stats placeholder ──────────────────────────────────────
 
+function SectionCommunity() {
+  const community = window.SD?.COMMUNITY || {};
+  const stats = community.stats || {};
+  const bite = community.biteReport?.species || [];
+  const hotspots = community.hotspots || [];
+  const weekly = community.weeklySummary;
+  const recentPosts = community.recentPosts || [];
+
+  return (
+    <div className="adm-section">
+      <div className="adm-section-title">Community Intelligence</div>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:12, marginBottom:16}}>
+        {[
+          {label:'Posts Analyzed', value: stats.totalAnalyzed ?? '—'},
+          {label:'This Week', value: stats.weekAnalyzed ?? '—'},
+          {label:'Top Species', value: stats.topSpeciesWeek?.[0]?.[0] ?? '—'},
+          {label:'Top Location', value: stats.topLocsWeek?.[0]?.[0] ?? '—'},
+        ].map(({label, value}) => (
+          <div key={label} className="adm-card" style={{padding:'12px 14px'}}>
+            <div style={{fontSize:22, fontWeight:700, color:'var(--tb-ink)'}}>{value}</div>
+            <div style={{fontSize:11, color:'var(--ss-slate)', textTransform:'uppercase', letterSpacing:'.06em', marginTop:2}}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {bite.length > 0 && (
+        <div className="adm-card" style={{marginBottom:12}}>
+          <div className="adm-card-title" style={{marginBottom:8}}>What's Biting (last 7 days)</div>
+          <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+            {bite.map(s => (
+              <div key={s.name} style={{display:'flex', alignItems:'center', gap:6, background:'var(--ss-clay)', borderRadius:6, padding:'4px 10px', fontSize:12}}>
+                <span style={{width:7, height:7, borderRadius:'50%', background: s.status==='hot'?'#10B981':s.status==='active'?'#FBBF24':'#94A3B8', display:'inline-block'}}/>
+                <span style={{fontWeight:600}}>{s.name}</span>
+                <span style={{color:'var(--ss-slate)'}}>{s.status} · {s.reports} rpt</span>
+                {s.where && <span style={{color:'var(--ss-slate)'}}>· {s.where}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {hotspots.length > 0 && (
+        <div className="adm-card" style={{marginBottom:12}}>
+          <div className="adm-card-title" style={{marginBottom:8}}>Top Hotspots</div>
+          {hotspots.slice(0,5).map((h, i) => (
+            <div key={h.location} style={{display:'flex', alignItems:'center', gap:10, padding:'4px 0', borderBottom: i<4 ? '1px solid var(--ss-border-2)' : 'none'}}>
+              <span style={{width:20, textAlign:'center', fontWeight:700, color:'var(--ss-slate)'}}>{i+1}</span>
+              <span style={{flex:1, fontSize:13, fontWeight:600}}>{h.location}</span>
+              <span style={{fontSize:12, color:'var(--ss-slate)'}}>{h.species?.slice(0,2).join(', ')}</span>
+              <span style={{fontSize:12, color:'var(--ss-slate)'}}>score {h.mentions}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {weekly && (
+        <div className="adm-card" style={{marginBottom:12}}>
+          <div className="adm-card-title" style={{marginBottom:6}}>
+            Weekly Summary — {weekly.week_start} to {weekly.week_end}
+            <span style={{marginLeft:8, fontSize:11, fontWeight:400, color:'var(--ss-slate)'}}>
+              {weekly.report_count} reports · {weekly.mood}
+            </span>
+          </div>
+          <div style={{fontSize:13, color:'var(--tb-ink)', lineHeight:1.6}}>{weekly.text}</div>
+        </div>
+      )}
+
+      {recentPosts.length > 0 && (
+        <div className="adm-card">
+          <div className="adm-card-title" style={{marginBottom:8}}>High-Quality Recent Posts</div>
+          {recentPosts.slice(0,5).map((p, i) => (
+            <div key={i} style={{padding:'6px 0', borderBottom: i<4 ? '1px solid var(--ss-border-2)' : 'none'}}>
+              <div style={{display:'flex', alignItems:'flex-start', gap:8}}>
+                <span style={{fontSize:11, background:'var(--ss-clay)', borderRadius:4, padding:'2px 6px', flexShrink:0, color:'var(--ss-slate)'}}>{p.quality}★</span>
+                <a href={p.url} target="_blank" rel="noopener noreferrer"
+                   style={{fontSize:13, fontWeight:600, color:'var(--tb-accent)', textDecoration:'none', lineHeight:1.4}}>{p.title}</a>
+              </div>
+              {p.summary && <div style={{fontSize:12, color:'var(--ss-slate)', marginTop:3, paddingLeft:36, lineHeight:1.4}}>{p.summary}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Section5() {
   return (
     <div className="adm-section">
@@ -1084,6 +1170,7 @@ function AdminView() {
         <Section3C correlation={admin.consensusCorrelation} />
         <Section4 preds={admin.recentPredictions} />
         <SectionReviews reviews={admin.reviews}/>
+        <SectionCommunity/>
         <Section5 />
         <Section6 />
       </div>

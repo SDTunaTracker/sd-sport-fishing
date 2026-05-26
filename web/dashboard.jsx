@@ -95,6 +95,133 @@ function DualSegmentMini({ navigate }) {
 
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
+// ── Community intelligence widgets ────────────────────────────────────────────
+
+const BITE_STATUS = {
+  hot:    { dots: 5, color: '#10B981', label: 'Hot' },
+  active: { dots: 4, color: '#FBBF24', label: 'Active' },
+  slow:   { dots: 2, color: '#F97316', label: 'Slow' },
+  none:   { dots: 1, color: '#94A3B8', label: 'Quiet' },
+};
+
+function BiteStatusDots({ status }) {
+  const cfg = BITE_STATUS[status] || BITE_STATUS.none;
+  return (
+    <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+      {[0,1,2,3,4].map(i => (
+        <span key={i} style={{
+          width: 7, height: 7, borderRadius: '50%',
+          background: i < cfg.dots ? cfg.color : '#1E293B',
+          display: 'inline-block', flexShrink: 0,
+        }}/>
+      ))}
+      <span style={{ color: cfg.color, fontWeight: 700, fontSize: 11, marginLeft: 4 }}>
+        {cfg.label}
+      </span>
+    </span>
+  );
+}
+
+function BiteReportWidget() {
+  const community = window.SD?.COMMUNITY;
+  const bite = community?.biteReport;
+  if (!bite || !bite.species || bite.species.length === 0) return null;
+  // Filter to trophy + common species the user cares about
+  const display = bite.species.filter(s =>
+    ['Bluefin','Yellowfin','Yellowtail','Dorado','Albacore','Yellowtail','White Sea Bass'].includes(s.name)
+  ).slice(0, 5);
+  if (display.length === 0) return null;
+  return (
+    <div className="cm-widget">
+      <div className="cm-widget-head">
+        <div className="cm-widget-title">🎣 What's Biting</div>
+        <div className="cm-widget-sub">Based on recent community reports</div>
+      </div>
+      <div className="cm-bite-list">
+        {display.map(sp => (
+          <div key={sp.name} className="cm-bite-row">
+            <span className="cm-bite-name">{sp.name}</span>
+            <BiteStatusDots status={sp.status}/>
+            <span className="cm-bite-where">{sp.where || '—'}</span>
+            <span className="cm-bite-reports">{sp.reports} report{sp.reports !== 1 ? 's' : ''}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HotspotsWidget() {
+  const community = window.SD?.COMMUNITY;
+  const spots = community?.hotspots;
+  if (!spots || spots.length === 0) return null;
+  const maxMentions = spots[0]?.mentions || 1;
+  return (
+    <div className="cm-widget">
+      <div className="cm-widget-head">
+        <div className="cm-widget-title">📍 Where They're Biting</div>
+        <div className="cm-widget-sub">Location mentions weighted by report quality</div>
+      </div>
+      <div className="cm-hotspot-list">
+        {spots.slice(0, 5).map((spot, i) => (
+          <div key={spot.location} className="cm-hotspot-row">
+            <span className="cm-hotspot-rank">{i + 1}</span>
+            <span className="cm-hotspot-name">{spot.location}</span>
+            <div className="cm-hotspot-bar-wrap">
+              <div className="cm-hotspot-bar"
+                   style={{ width: `${(spot.mentions / maxMentions) * 100}%` }}/>
+            </div>
+            <span className="cm-hotspot-count">{spot.mentions}</span>
+            {spot.species.length > 0 && (
+              <span className="cm-hotspot-species">{spot.species.slice(0, 2).join(', ')}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WeeklySummaryWidget() {
+  const [collapsed, setCollapsed] = useS(false);
+  const ws = window.SD?.COMMUNITY?.weeklySummary;
+  if (!ws || !ws.text) return null;
+  // Auto-collapse after 3 days
+  const generatedDaysAgo = ws.generated_at
+    ? Math.floor((Date.now() - new Date(ws.generated_at).getTime()) / 86400000)
+    : 0;
+  if (generatedDaysAgo > 7) return null;
+  const moodEmoji = ws.mood === 'optimistic' ? '🟢' : ws.mood === 'pessimistic' ? '🔴' : '🟡';
+  const weekLabel = ws.week_start && ws.week_end
+    ? `${ws.week_start.slice(5).replace('-', '/')} – ${ws.week_end.slice(5).replace('-', '/')}`
+    : 'This week';
+  return (
+    <div className="cm-widget cm-weekly">
+      <div className="cm-widget-head cm-weekly-head" onClick={() => setCollapsed(c => !c)}
+           style={{ cursor: 'pointer' }}>
+        <div>
+          <div className="cm-widget-title">📋 Week in Review — {weekLabel}</div>
+          <div className="cm-widget-sub">
+            {ws.report_count} reports · Community mood: {ws.mood} {moodEmoji}
+          </div>
+        </div>
+        <span className="cm-collapse-btn">{collapsed ? '▼' : '▲'}</span>
+      </div>
+      {!collapsed && (
+        <div className="cm-weekly-body">
+          <p className="cm-weekly-text">{ws.text}</p>
+          {ws.top_species && ws.top_species.length > 0 && (
+            <div className="cm-weekly-meta">
+              Top species: {ws.top_species.join(', ')}
+              {ws.top_location && ` · Top spot: ${ws.top_location}`}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const RATINGS = {
   fire:  { emoji: '🔥', label: 'On Fire',       short: 'On Fire',   color: '#F97316' },
   above: { emoji: '⬆️',  label: 'Above Average', short: 'Above Avg', color: '#22C55E' },
@@ -270,6 +397,9 @@ function TodayView({ navigate, settings }) {
       <DualSegmentMini navigate={navigate}/>
 
       <TodayCatch navigate={navigate} settings={settings}/>
+      <WeeklySummaryWidget/>
+      <BiteReportWidget/>
+      <HotspotsWidget/>
 
       <CommunityReportsWidget/>
 

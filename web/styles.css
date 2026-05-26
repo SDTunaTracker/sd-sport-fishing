@@ -1685,3 +1685,71 @@ body.compact .dt td { padding: 7px 12px; }
 }
 .adm-table th { font-weight: 700; color: var(--tb-slate); background: #F8FAFC; }
 .adm-empty { color: var(--tb-gray-2); font-size: 13px; padding: 12px 0; }
+
+/* ── Community Intelligence widgets ──────────────────────────────────────── */
+.cm-widget {
+  background: var(--ss-panel);
+  border: 1px solid var(--ss-border-2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.cm-widget-head {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--ss-border-2);
+}
+.cm-widget-title {
+  font: 700 13px/16px var(--ss-font-sans);
+  color: var(--tb-ink);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.cm-widget-sub {
+  font: 400 11px/14px var(--ss-font-sans);
+  color: var(--ss-slate);
+}
+
+/* Bite Report */
+.cm-bite-list { display: flex; flex-direction: column; gap: 4px; }
+.cm-bite-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--ss-border-2);
+}
+.cm-bite-row:last-child { border-bottom: none; }
+.cm-bite-name { font: 600 13px/16px var(--ss-font-sans); color: var(--tb-ink); flex: 1; }
+.cm-bite-where { font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); }
+.cm-bite-reports { font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); margin-left: auto; }
+
+/* Hotspots */
+.cm-hotspot-list { display: flex; flex-direction: column; gap: 6px; }
+.cm-hotspot-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center; gap: 8px;
+}
+.cm-hotspot-rank { font: 700 11px/14px var(--ss-font-sans); color: var(--ss-slate); text-align: center; }
+.cm-hotspot-name { font: 600 12px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.cm-hotspot-bar-wrap { display: flex; align-items: center; gap: 6px; }
+.cm-hotspot-bar {
+  height: 6px; border-radius: 3px;
+  background: var(--tb-accent); opacity: .7;
+  transition: width .3s ease;
+}
+.cm-hotspot-count { font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); white-space: nowrap; }
+.cm-hotspot-species { font: 400 10px/12px var(--ss-font-sans); color: var(--ss-slate); margin-top: 1px; }
+
+/* Weekly Summary */
+.cm-weekly { padding-top: 4px; }
+.cm-weekly-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.cm-weekly-body { }
+.cm-weekly-text { font: 400 13px/1.6 var(--ss-font-sans); color: var(--tb-ink); }
+.cm-weekly-meta { font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); margin-top: 6px; }
+.cm-collapse-btn {
+  background: none; border: none; cursor: pointer;
+  font: 600 11px/14px var(--ss-font-sans); color: var(--tb-accent);
+  padding: 0; text-decoration: underline;
+}

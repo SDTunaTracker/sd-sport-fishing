@@ -353,6 +353,21 @@ def _reviews_admin_stats(conn: sqlite3.Connection) -> dict:
         return {'total': 0, 'pending': 0, 'approved': 0, 'rejected': 0, 'pendingReviews': []}
 
 
+def _community_payload(conn: sqlite3.Connection) -> dict:
+    """Build window.SD.COMMUNITY from analyzed Reddit insights."""
+    try:
+        from .reddit_insights import community_payload
+        return community_payload(conn)
+    except Exception:
+        return {
+            'biteReport': {'updated': None, 'species': []},
+            'hotspots': [], 'weeklySummary': None,
+            'recentPosts': [], 'boatMentions': {},
+            'stats': {'totalAnalyzed': 0, 'weekAnalyzed': 0,
+                      'topSpeciesWeek': [], 'topLocsWeek': []},
+        }
+
+
 def _admin_payload(conn: sqlite3.Connection) -> dict:
     """Build window.SD.ADMIN: data for the internal admin dashboard."""
     # Scrape log — last 10 runs per source
@@ -507,6 +522,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "FORECAST": forecast_payload,
         "REDDIT": _reddit_payload(conn),
         "REVIEWS": _reviews_payload(conn),
+        "COMMUNITY": _community_payload(conn),
         "ADMIN": _admin_payload(conn),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,

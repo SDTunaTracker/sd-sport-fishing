@@ -167,6 +167,39 @@ CREATE TABLE IF NOT EXISTS reddit_reports (
     fetched_date TEXT
 );
 
+CREATE TABLE IF NOT EXISTS reddit_insights (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reddit_post_id TEXT UNIQUE,
+    processed_date TEXT,
+    species_mentioned TEXT,
+    species_sentiment TEXT,
+    locations_mentioned TEXT,
+    primary_location TEXT,
+    bait_mentioned TEXT,
+    lures_mentioned TEXT,
+    techniques TEXT,
+    boats_mentioned TEXT,
+    boat_sentiment TEXT,
+    report_quality INTEGER,
+    report_date TEXT,
+    confidence TEXT,
+    summary TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_insights_date ON reddit_insights(processed_date);
+CREATE INDEX IF NOT EXISTS idx_insights_post  ON reddit_insights(reddit_post_id);
+
+CREATE TABLE IF NOT EXISTS weekly_summaries (
+    week_start TEXT PRIMARY KEY,
+    week_end TEXT,
+    summary_text TEXT,
+    top_species TEXT,
+    top_location TEXT,
+    community_mood TEXT,
+    report_count INTEGER,
+    generated_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS boat_reviews (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     boat TEXT NOT NULL,

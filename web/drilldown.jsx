@@ -149,6 +149,45 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
         </Panel>
       </div>
 
+      {/* ── Community Buzz ── */}
+      {(() => {
+        const buzz = window.SD?.COMMUNITY?.boatMentions?.[boat];
+        if (!buzz || buzz.mentions === 0) return null;
+        const sentColor = buzz.sentiment === 'positive' ? '#10B981' : buzz.sentiment === 'negative' ? '#EF4444' : '#94A3B8';
+        const sentLabel = buzz.sentiment === 'positive' ? '👍 Positive' : buzz.sentiment === 'negative' ? '👎 Negative' : '😐 Neutral';
+        return (
+          <div className="cm-widget" style={{marginBottom:12}}>
+            <div className="cm-widget-head">
+              <span className="cm-widget-title">Community Buzz</span>
+              <span className="cm-widget-sub">from Reddit fishing reports · last 7 days</span>
+            </div>
+            <div style={{display:'flex', alignItems:'center', gap:16, padding:'10px 0', borderBottom:'1px solid var(--ss-border-2)', marginBottom:10}}>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:22, fontWeight:700, color:'var(--tb-ink)'}}>{buzz.mentions}</div>
+                <div style={{fontSize:10, color:'var(--ss-slate)', textTransform:'uppercase', letterSpacing:'.06em'}}>Mentions</div>
+              </div>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:16, fontWeight:600, color:sentColor}}>{sentLabel}</div>
+                <div style={{fontSize:10, color:'var(--ss-slate)', textTransform:'uppercase', letterSpacing:'.06em'}}>Sentiment</div>
+              </div>
+              <div style={{display:'flex', gap:8, fontSize:12, color:'var(--ss-slate)'}}>
+                {buzz.positive > 0 && <span style={{color:'#10B981'}}>+{buzz.positive}</span>}
+                {buzz.negative > 0 && <span style={{color:'#EF4444'}}>−{buzz.negative}</span>}
+                {buzz.neutral > 0 && <span>{buzz.neutral} neutral</span>}
+              </div>
+            </div>
+            {(buzz.recent_quotes || []).map((q, i) => (
+              <div key={i} style={{marginBottom:8, paddingBottom:8, borderBottom: i < buzz.recent_quotes.length-1 ? '1px solid var(--ss-border-2)' : 'none'}}>
+                <div style={{fontSize:12, color:'var(--tb-ink)', lineHeight:1.5}}>{q.text}</div>
+                <div style={{fontSize:10, color:'var(--ss-slate)', marginTop:2}}>
+                  {q.date} · <a href={q.url} target="_blank" rel="noreferrer" style={{color:'var(--ss-blue)'}}>source</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* ── Bottom tabs: Overview / Reviews / Reddit ── */}
       <div className="dd-tabs">
         {[['overview','Trip History'],['reviews','Reviews'],['reddit','Reddit Reports']].map(([id,lbl]) => (
