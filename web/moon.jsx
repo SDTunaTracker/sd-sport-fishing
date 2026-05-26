@@ -52,10 +52,10 @@ function MoonView({ filters, setFilters, navigate }) {
 }
 
 // Seasonality & Moon container — sub-tab wrapper
-function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'seasonality' }) {
+function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'moon' }) {
   const SUBTABS = [
-    { id: 'seasonality', label: 'Seasonality' },
     { id: 'moon',        label: 'Moon Phase' },
+    { id: 'seasonality', label: 'Seasonality' },
   ];
   return (
     <Fragment>

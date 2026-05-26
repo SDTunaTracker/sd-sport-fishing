@@ -31,7 +31,7 @@ function routeFromHash() {
     return { view: 'analytics', params: { subtab } };
   }
   if (seg === 'seasonality') {
-    return { view: 'seasonality', params: { subtab: detail === 'moon' ? 'moon' : 'seasonality' } };
+    return { view: 'seasonality', params: { subtab: detail === 'seasonality' ? 'seasonality' : 'moon' } };
   }
 
   // Legacy URL redirects
@@ -124,7 +124,7 @@ function App() {
   } else if (route.view === 'tripplanner') {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
   } else if (route.view === 'seasonality') {
-    content = <SeasonalityMoonView filters={filters} setFilters={setFilters} navigate={navigate} subtab={route.params.subtab || 'seasonality'}/>;
+    content = <SeasonalityMoonView filters={filters} setFilters={setFilters} navigate={navigate} subtab={route.params.subtab || 'moon'}/>;
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'settings') {
