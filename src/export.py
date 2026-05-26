@@ -16,7 +16,7 @@ from .analytics import (
     build_forecast,
 )
 from .conditions import snapshot as conditions_snapshot
-from .forecast import build_forecast_payload
+from .forecast import build_forecast_payload, calculate_consensus
 from .sst import LOCATIONS as SST_LOCATIONS
 
 LANDINGS = (
@@ -232,6 +232,61 @@ def _recent_predictions(conn: sqlite3.Connection, days: int = 14) -> list[dict]:
     return result
 
 
+def _consensus_accuracy_correlation(conn: sqlite3.Connection) -> list[dict]:
+    """Retroactively compute offshore consensus for logged accuracy days and group by label."""
+    try:
+        from .forecast import _wind_direction_score, _sst_gradient_score
+        from .chlorophyll import score_chlorophyll
+
+        rows = conn.execute(
+            """SELECT al.date, al.error, al.correct_direction,
+                      hc.sst_offshore,
+                      hc.wind_is_offshore, hc.wind_is_upwelling,
+                      hc.sst_gradient,
+                      hc.chlorophyll_nearshore, hc.chlorophyll_offshore
+               FROM forecast_accuracy_log al
+               LEFT JOIN historical_conditions hc ON hc.date = al.date
+               WHERE al.error IS NOT NULL AND hc.sst_offshore IS NOT NULL
+               ORDER BY al.date DESC LIMIT 365"""
+        ).fetchall()
+        if not rows:
+            return []
+
+        bw = _load_weights()
+        ob = _breaks_from_weights(bw, "overall_breaks", _OVERALL_BREAKS)
+
+        by_label: dict[str, list] = {"Strong": [], "Moderate": [], "Mixed": [], "Conflicted": []}
+        for r in rows:
+            fs = {
+                "sst":          round(_score(r["sst_offshore"], ob), 1),
+                "wind_dir":     round(_wind_direction_score(r["wind_is_offshore"], r["wind_is_upwelling"], "offshore"), 1),
+                "sst_gradient": round(_sst_gradient_score(r["sst_gradient"], "offshore"), 1),
+                "chlorophyll":  round(score_chlorophyll(r["chlorophyll_nearshore"], r["chlorophyll_offshore"], "offshore"), 1),
+            }
+            lbl = calculate_consensus(fs, "offshore")["consensus_label"]
+            if lbl in by_label:
+                by_label[lbl].append({"error": r["error"], "dir": r["correct_direction"]})
+
+        result = []
+        for lbl in ["Strong", "Moderate", "Mixed", "Conflicted"]:
+            entries = by_label[lbl]
+            if not entries:
+                continue
+            avg_err = sum(e["error"] for e in entries) / len(entries)
+            dir_acc = sum(e["dir"] for e in entries) / len(entries) * 100
+            result.append({
+                "label":        lbl,
+                "n":            len(entries),
+                "avg_error":    round(avg_err, 2),
+                "direction_acc": round(dir_acc, 1),
+            })
+        return result
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).debug("consensus_correlation failed: %s", e)
+        return []
+
+
 def _admin_payload(conn: sqlite3.Connection) -> dict:
     """Build window.SD.ADMIN: data for the internal admin dashboard."""
     # Scrape log — last 10 runs per source
@@ -336,10 +391,11 @@ def _admin_payload(conn: sqlite3.Connection) -> dict:
             "unknownSpecies":    unknowns,
             "newSpeciesThisWeek": new_species_week,
         },
-        "backtestResults":   backtest,
-        "backtestHistory":   backtest_history,
-        "recentPredictions": _recent_predictions(conn),
-        "weights":           weights,
+        "backtestResults":      backtest,
+        "backtestHistory":      backtest_history,
+        "recentPredictions":    _recent_predictions(conn),
+        "weights":              weights,
+        "consensusCorrelation": _consensus_accuracy_correlation(conn),
     }
 
 

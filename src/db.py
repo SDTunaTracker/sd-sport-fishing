@@ -177,13 +177,17 @@ def _migrate(conn: sqlite3.Connection) -> None:
 @contextmanager
 def connect(db_path: Path):
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=60)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")  # concurrent readers don't block writers
     try:
         conn.executescript(SCHEMA)
         _migrate(conn)
         yield conn
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 

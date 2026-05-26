@@ -56,13 +56,12 @@ function DualSegmentMini({ navigate }) {
   const offshore = fc?.offshore?.today;
   if (!inshore && !offshore) return null;
 
-  const Card = ({ title, icon, today }) => {
+  const Card = ({ title, today }) => {
     if (!today) return null;
     const s = today.overall_score;
     return (
       <div className="fc-seg-mini-card">
         <div className="fc-seg-mini-head">
-          <span>{icon}</span>
           <span className="fc-seg-mini-title">{title}</span>
           {today.confidence && (
             <span className="fc-seg-mini-conf">{today.confidence}</span>
@@ -84,8 +83,8 @@ function DualSegmentMini({ navigate }) {
   return (
     <div className="fc-seg-mini-wrap">
       <div className="fc-seg-mini-grid">
-        <Card title="Inshore"  icon="🎣" today={inshore}/>
-        <Card title="Offshore" icon="🐟" today={offshore}/>
+        <Card title="Inshore"  today={inshore}/>
+        <Card title="Offshore" today={offshore}/>
       </div>
       <button className="btn sm ghost fc-seg-mini-btn" onClick={() => navigate('forecast')}>
         Segment Details →

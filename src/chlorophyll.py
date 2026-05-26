@@ -4,7 +4,7 @@ Data source: NOAA CoastWatch ERDDAP — erdMH1chla8day (MODIS Aqua 8-day composi
 - Resolution: 0.025° (~2.5 km)
 - Lag: 1-8 days depending on cloud cover; we use most recent non-null reading.
 - Units: mg/m³ (milligrams per cubic metre)
-- Coverage: 2003-present
+- Coverage: 2003–2022-06-14 (MODIS Aqua decommissioned; dataset ends there)
 
 Chlorophyll interpretation for SD offshore fishing:
   High nearshore + low offshore: classic upwelling — bad for offshore tuna
@@ -30,6 +30,8 @@ log = logging.getLogger(__name__)
 
 # ERDDAP endpoint — MODIS Aqua 8-day composite chlorophyll-a
 _ERDDAP_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day.json"
+# MODIS Aqua decommissioned; dataset has no data past this date
+_ERDDAP_MAX_DATE = date(2022, 6, 14)
 _UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
        "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
 
@@ -73,7 +75,7 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
 
 
 def _fetch_chl(lat: float, lon: float, start: date, end: date,
-               timeout: float = 30.0) -> list[tuple[date, float]]:
+               timeout: float = 45.0) -> list[tuple[date, float]]:
     """Fetch chlorophyll-a from ERDDAP for a single location over a date range.
 
     Returns [(date, chl_mg_m3)] for non-null observations; [] on failure.
@@ -89,9 +91,9 @@ def _fetch_chl(lat: float, lon: float, start: date, end: date,
         f"[({lon - 0.01}):1:({lon + 0.01})]"
     )
     try:
-        r = requests.get(url, headers={"User-Agent": _UA}, timeout=timeout)
+        r = requests.get(url, headers={"User-Agent": _UA}, timeout=(10, timeout))
         if r.status_code == 404:
-            log.debug("Chlorophyll 404 %s–%s (%.2f, %.2f)", start, end, lat, lon)
+            log.debug("Chlorophyll 404 %s-%s (%.2f, %.2f)", start, end, lat, lon)
             return []
         if r.status_code != 200:
             log.warning("Chlorophyll HTTP %s (%.2f, %.2f)", r.status_code, lat, lon)
@@ -110,12 +112,12 @@ def _fetch_chl(lat: float, lon: float, start: date, end: date,
                 continue
             chl = float(row[chl_idx])
             if chl < 0 or chl > 100:
-                continue  # sanity filter (typical ocean: 0.01–10 mg/m³)
+                continue  # sanity filter (typical ocean: 0.01-10 mg/m3)
             d = date.fromisoformat(row[t_idx][:10])
             out.append((d, round(chl, 4)))
         return out
     except Exception as e:
-        log.warning("Chlorophyll fetch error (%.2f, %.2f) %s–%s: %s", lat, lon, start, end, e)
+        log.warning("Chlorophyll fetch error (%.2f, %.2f) %s-%s: %s", lat, lon, start, end, e)
         return []
 
 
@@ -160,7 +162,7 @@ def fetch_chlorophyll(
             )
             chl_by_loc[name] = chl
             total += 1
-            log.info("Chlorophyll %s %s: %.3f mg/m³ (%d days old)",
+            log.info("Chlorophyll %s %s: %.3f mg/m3 (%d days old)",
                      name, obs_date, chl, days_old)
 
         # Update today's historical_conditions row
@@ -186,45 +188,61 @@ def backfill_chlorophyll(
 
     MODIS goes back to 2003; we default to 2015-01-01 to match the backtest window.
     Fetches in 30-day chunks to avoid ERDDAP timeouts.
+    Dataset ends at 2022-06-14 (MODIS Aqua decommissioned).
+
+    Each chunk fetches from ERDDAP outside the DB connection, then opens a
+    short-lived connection just for the insert. This releases the write lock
+    between chunks so hourly scrapes can interleave without timing out.
     """
     from . import db as dbmod
-    from datetime import timedelta
 
     if start is None:
         start = date(2015, 1, 1)
-    end = date.today() - timedelta(days=1)
+    end = min(date.today() - timedelta(days=1), _ERDDAP_MAX_DATE)
 
+    # Ensure schema exists before looping.
     with dbmod.connect(db_path) as conn:
         _ensure_schema(conn)
-        total = 0
-        chunk_start = start
-        chunk_num = 0
-        total_chunks = ((end - start).days // chunk_days) + 1
 
-        while chunk_start <= end:
-            chunk_end = min(chunk_start + timedelta(days=chunk_days - 1), end)
-            chunk_num += 1
-            print(f"  Chl chunk {chunk_num}/{total_chunks}: {chunk_start} to {chunk_end}")
+    total = 0
+    chunk_start = start
+    chunk_num = 0
+    total_chunks = ((end - start).days // chunk_days) + 1
 
-            chl_by_date: dict[str, dict[str, float]] = {}
-            for name, (lat, lon) in LOCATIONS.items():
-                rows = _fetch_chl(lat, lon, chunk_start, chunk_end, timeout=60.0)
-                for obs_date, chl in rows:
-                    d_str = obs_date.isoformat()
-                    days_old = (date.today() - obs_date).days
+    while chunk_start <= end:
+        chunk_end = min(chunk_start + timedelta(days=chunk_days - 1), end)
+        chunk_num += 1
+        print(f"  Chl chunk {chunk_num}/{total_chunks}: {chunk_start} to {chunk_end}")
+
+        # Fetch from ERDDAP *outside* the DB connection so the slow HTTP
+        # requests don't hold the write lock during network I/O.
+        chl_by_date: dict[str, dict[str, tuple[float, int]]] = {}
+        for name, (lat, lon) in LOCATIONS.items():
+            rows = _fetch_chl(lat, lon, chunk_start, chunk_end, timeout=45.0)
+            for obs_date, chl in rows:
+                d_str = obs_date.isoformat()
+                days_old = (date.today() - obs_date).days
+                chl_by_date.setdefault(d_str, {})[name] = (chl, days_old)
+                total += 1
+
+        # One short-lived connection per chunk — commits and releases the write
+        # lock between chunks so hourly scrapes can interleave.
+        with dbmod.connect(db_path) as conn:
+            for d_str, locs in chl_by_date.items():
+                for name, (lat, lon) in LOCATIONS.items():
+                    if name not in locs:
+                        continue
+                    chl, days_old = locs[name]
                     conn.execute(
                         "INSERT OR REPLACE INTO chlorophyll_obs"
                         " (obs_date, location, lat, lon, chlorophyll_mgl, days_old)"
                         " VALUES (?,?,?,?,?,?)",
                         (d_str, name, lat, lon, chl, days_old),
                     )
-                    chl_by_date.setdefault(d_str, {})[name] = chl
-                    total += 1
-
-            # Update historical_conditions for each date in the chunk
-            for d_str, locs in chl_by_date.items():
-                chl_near = locs.get("Nearshore")
-                chl_off  = locs.get("60-Mile Bank")
+                chl_near_v = locs.get("Nearshore")
+                chl_off_v  = locs.get("60-Mile Bank")
+                chl_near = chl_near_v[0] if chl_near_v else None
+                chl_off  = chl_off_v[0]  if chl_off_v  else None
                 ratio    = (round(chl_near / max(chl_off, 0.001), 3)
                             if chl_near is not None and chl_off is not None else None)
                 conn.execute(
@@ -234,10 +252,10 @@ def backfill_chlorophyll(
                     (chl_near, chl_off, ratio, d_str),
                 )
 
-            chunk_start = chunk_end + timedelta(days=1)
+        chunk_start = chunk_end + timedelta(days=1)
 
-        print(f"  Chlorophyll backfill complete: {total} obs stored")
-        return total
+    print(f"  Chlorophyll backfill complete: {total} obs stored")
+    return total
 
 
 def score_chlorophyll(
@@ -245,21 +263,21 @@ def score_chlorophyll(
     chl_offshore: float | None,
     segment: str,
 ) -> float:
-    """Score chlorophyll conditions for inshore or offshore fishing (1–10)."""
+    """Score chlorophyll conditions for inshore or offshore fishing (1-10)."""
     if segment == "offshore":
         if chl_nearshore is None or chl_offshore is None:
             return 5.0
         ratio = chl_nearshore / max(chl_offshore, 0.001)
-        if ratio > 3.0:  return 3.0   # strong upwelling — bad
+        if ratio > 3.0:  return 3.0   # strong upwelling - bad
         if ratio > 2.0:  return 5.0   # marginal
         if ratio > 1.0:  return 7.0   # neutral/good
-        return 9.0                     # blue water — good
+        return 9.0                     # blue water - good
     else:  # inshore
         if chl_nearshore is None:
             return 5.0
-        if chl_nearshore > 2.0:  return 8.0  # productive — good bait
+        if chl_nearshore > 2.0:  return 8.0  # productive - good bait
         if chl_nearshore > 1.0:  return 6.0  # moderate
-        return 4.0                             # low — less bait
+        return 4.0                             # low - less bait
 
 
 if __name__ == "__main__":
@@ -271,5 +289,5 @@ if __name__ == "__main__":
                         format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
     print("Running chlorophyll backfill from 2015-01-01...")
     n = backfill_chlorophyll(DB_PATH)
-    print(f"Done — {n} records stored.")
+    print(f"Done - {n} records stored.")
     sys.exit(0)

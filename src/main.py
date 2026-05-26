@@ -35,7 +35,7 @@ def _setup_logging(verbose: bool) -> None:
     )
 
 
-def run(target_date: date | None, export_only: bool) -> int:
+def run(target_date: date | None, export_only: bool, hourly: bool = False) -> int:
     summary_lines: list[str] = []
     with db.connect(DB_PATH) as conn:
         if not export_only:
@@ -81,70 +81,73 @@ def run(target_date: date | None, export_only: bool) -> int:
         except Exception as e:
             summary_lines.append(f"  Segment stats ERROR (non-fatal): {e}")
 
-        # SST — runs after trip scraping; failure is non-fatal.
-        try:
-            sst_records = fetch_daily_sst(target_date or date.today(), conn)
-            n_sst = insert_sst(conn, sst_records)
-            summary_lines.append(f"  SST fetched: {n_sst} location-days stored")
-        except Exception as e:
-            summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
+        if not hourly:
+            # SST — skip on hourly runs to avoid hammering NOAA 24×/day.
+            try:
+                sst_records = fetch_daily_sst(target_date or date.today(), conn)
+                n_sst = insert_sst(conn, sst_records)
+                summary_lines.append(f"  SST fetched: {n_sst} location-days stored")
+            except Exception as e:
+                summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
 
-        # Chlorophyll-a — MODIS Aqua 8-day composite; failure is non-fatal.
-        try:
-            from .chlorophyll import fetch_chlorophyll
-            n_chl = fetch_chlorophyll(DB_PATH, target_date or date.today())
-            summary_lines.append(f"  Chlorophyll fetched: {n_chl} location-days stored")
-        except Exception as e:
-            summary_lines.append(f"  Chlorophyll fetch ERROR (non-fatal): {e}")
+            # Chlorophyll-a — MODIS Aqua 8-day composite; failure is non-fatal.
+            try:
+                from .chlorophyll import fetch_chlorophyll
+                n_chl = fetch_chlorophyll(DB_PATH, target_date or date.today())
+                summary_lines.append(f"  Chlorophyll fetched: {n_chl} location-days stored")
+            except Exception as e:
+                summary_lines.append(f"  Chlorophyll fetch ERROR (non-fatal): {e}")
 
-        # Daily accuracy check — score yesterday's forecast vs actual catch.
-        try:
-            acc = daily_accuracy_update(conn)
-            if acc:
-                summary_lines.append(
-                    f"  Accuracy {acc['date']}: predicted={acc['predicted']:.1f}"
-                    f"  actual={acc['actual_rating']:.1f}  error={acc['error']:.2f}"
-                    f"  ({acc['n_boats']} boats)"
-                )
-        except Exception as e:
-            summary_lines.append(f"  Accuracy update ERROR (non-fatal): {e}")
+            # Daily accuracy check — score yesterday's forecast vs actual catch.
+            try:
+                acc = daily_accuracy_update(conn)
+                if acc:
+                    summary_lines.append(
+                        f"  Accuracy {acc['date']}: predicted={acc['predicted']:.1f}"
+                        f"  actual={acc['actual_rating']:.1f}  error={acc['error']:.2f}"
+                        f"  ({acc['n_boats']} boats)"
+                    )
+            except Exception as e:
+                summary_lines.append(f"  Accuracy update ERROR (non-fatal): {e}")
 
-        # Forecast accuracy log (new 6-factor scoring)
-        try:
-            fa = forecast_score_yesterday(conn)
-            if fa:
-                summary_lines.append(
-                    f"  Forecast accuracy {fa['date']}: predicted={fa['predicted']:.1f}"
-                    f"  actual={fa['actual_rating']:.1f}  error={fa['error']:.2f}"
-                )
-        except Exception as e:
-            summary_lines.append(f"  Forecast scoring ERROR (non-fatal): {e}")
+            # Forecast accuracy log (new 6-factor scoring)
+            try:
+                fa = forecast_score_yesterday(conn)
+                if fa:
+                    summary_lines.append(
+                        f"  Forecast accuracy {fa['date']}: predicted={fa['predicted']:.1f}"
+                        f"  actual={fa['actual_rating']:.1f}  error={fa['error']:.2f}"
+                    )
+            except Exception as e:
+                summary_lines.append(f"  Forecast scoring ERROR (non-fatal): {e}")
 
         # Weather + swell forecast (for 7-day strip in data.js)
         weather_fc: list = []
-        try:
-            target_dt = target_date or date.today()
-            weather_fc = fetch_marine_forecast(target_dt)
-            summary_lines.append(f"  Weather forecast: {len(weather_fc)} days fetched")
-        except Exception as e:
-            summary_lines.append(f"  Weather fetch ERROR (non-fatal): {e}")
+        if not hourly:
+            try:
+                target_dt = target_date or date.today()
+                weather_fc = fetch_marine_forecast(target_dt)
+                summary_lines.append(f"  Weather forecast: {len(weather_fc)} days fetched")
+            except Exception as e:
+                summary_lines.append(f"  Weather fetch ERROR (non-fatal): {e}")
 
         n = export(conn, DATA_JS_PATH, weather_forecast=weather_fc)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
 
-    # Weekly recalibration — runs after the main connection closes to avoid locking.
-    # Skips itself if a backtest ran < 7 days ago; otherwise re-optimizes weights
-    # on a rolling 3-year window and saves updated backtest_weights.json.
-    try:
-        recap = weekly_recalibrate(DB_PATH)
-        if recap:
-            m = recap.get("metrics", {})
-            summary_lines.append(
-                f"  Recalibration complete: MAE={m.get('mae')}  "
-                f"direction={m.get('direction_accuracy')}%  weights updated"
-            )
-    except Exception as e:
-        summary_lines.append(f"  Recalibration ERROR (non-fatal): {e}")
+    if not hourly:
+        # Weekly recalibration — runs after the main connection closes to avoid locking.
+        # Skips itself if a backtest ran < 7 days ago; otherwise re-optimizes weights
+        # on a rolling 3-year window and saves updated backtest_weights.json.
+        try:
+            recap = weekly_recalibrate(DB_PATH)
+            if recap:
+                m = recap.get("metrics", {})
+                summary_lines.append(
+                    f"  Recalibration complete: MAE={m.get('mae')}  "
+                    f"direction={m.get('direction_accuracy')}%  weights updated"
+                )
+        except Exception as e:
+            summary_lines.append(f"  Recalibration ERROR (non-fatal): {e}")
 
     print("Daily run summary:")
     for line in summary_lines:
@@ -158,6 +161,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="Target ISO date (YYYY-MM-DD). Default: keep whatever the page reports.")
     p.add_argument("--export-only", action="store_true",
                    help="Skip scraping, only regenerate web/data.js.")
+    p.add_argument("--hourly", action="store_true",
+                   help="Light run: scrape trips + export only. Skips SST/weather/chlorophyll/backtest.")
     p.add_argument("--backfill", action="store_true",
                    help="Scrape per-boat history pages to backfill all available historical data.")
     p.add_argument("--backfill-sst", action="store_true",
@@ -184,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         backfill_chlorophyll(DB_PATH)
         return 0
 
-    return run(args.date, args.export_only)
+    return run(args.date, args.export_only, hourly=args.hourly)
 
 
 if __name__ == "__main__":

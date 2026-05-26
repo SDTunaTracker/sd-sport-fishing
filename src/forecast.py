@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+import statistics as _statistics
 from datetime import date, datetime, timedelta, timezone
 
 from .analytics import (
@@ -144,8 +145,61 @@ def _sst_gradient_score(gradient: float | None, segment: str) -> float:
         return 5.0
 
 
+def calculate_consensus(factor_scores: dict, segment: str) -> dict:
+    """Compute how much the key factors agree with each other (0–100%).
+
+    Low std-dev across factors = they all point the same direction = high consensus.
+    High std-dev = conflicting signals = widen the confidence interval.
+    """
+    if segment == "offshore":
+        keys = ["sst", "wind_dir", "sst_gradient", "chlorophyll"]
+    else:  # inshore
+        keys = ["sst", "wind_dir", "chlorophyll"]
+
+    key_val_pairs = [(k, factor_scores[k]) for k in keys
+                     if k in factor_scores and factor_scores[k] is not None]
+    vals = [v for _, v in key_val_pairs]
+
+    if len(vals) < 2:
+        return {
+            "consensus_pct":       50,
+            "consensus_label":     "Moderate",
+            "consensus_color":     "#FBBF24",
+            "interval_multiplier": 1.0,
+            "factors_agreeing":    [],
+            "factors_conflicting": [],
+        }
+
+    avg = _statistics.mean(vals)
+    std = _statistics.stdev(vals)
+    pct = max(0, min(100, round((1 - std / 3.0) * 100)))
+
+    if pct >= 80:
+        label, color, mult = "Strong",     "#10B981", 0.8
+    elif pct >= 60:
+        label, color, mult = "Moderate",   "#FBBF24", 1.0
+    elif pct >= 40:
+        label, color, mult = "Mixed",      "#F97316", 1.3
+    else:
+        label, color, mult = "Conflicted", "#EF4444", 1.6
+
+    return {
+        "consensus_pct":       pct,
+        "consensus_label":     label,
+        "consensus_color":     color,
+        "interval_multiplier": mult,
+        "factors_agreeing":    [{"key": k, "score": round(v, 1)}
+                                for k, v in key_val_pairs if abs(v - avg) < 1.5],
+        "factors_conflicting": [{"key": k, "score": round(v, 1)}
+                                for k, v in key_val_pairs if abs(v - avg) >= 1.5],
+    }
+
+
 def _confidence_band(days_out: int) -> tuple[float, str]:
-    """Return (±width, label) for forecast confidence intervals."""
+    """Return (±base_width, label) for forecast confidence intervals.
+
+    The base width is multiplied by consensus interval_multiplier in score_segment().
+    """
     if days_out <= 1: return 1.5, "High"
     if days_out <= 3: return 2.0, "Medium"
     if days_out <= 5: return 2.5, "Low"
@@ -241,25 +295,30 @@ def score_segment(
     )
     overall = round(min(10.0, max(1.0, total_score)), 1)
 
+    fs = {
+        "sst":          f_sst_adj,
+        "wind_speed":   round(f_wind, 1),
+        "wind_dir":     round(f_wdir, 1),
+        "sst_gradient": round(f_grad, 1),
+        "chlorophyll":  round(f_chl, 1),
+        "moon":         round(f_moon, 1),
+        "swell":        round(f_swe, 1),
+    }
+    consensus        = calculate_consensus(fs, segment)
     ci_width, ci_label = _confidence_band(days_out)
+    adj_width        = round(ci_width * consensus["interval_multiplier"], 1)
+
     return {
         "overall_score":    overall,
         "conditions_label": _conditions_label(overall),
-        "score_low":        round(max(1.0, overall - ci_width), 1),
-        "score_high":       round(min(10.0, overall + ci_width), 1),
+        "score_low":        round(max(1.0, overall - adj_width), 1),
+        "score_high":       round(min(10.0, overall + adj_width), 1),
         "confidence":       ci_label,
+        "consensus":        consensus,
         "season":           season,
         "segment":          segment,
-        "factor_scores": {
-            "sst":          f_sst_adj,
-            "wind_speed":   round(f_wind, 1),
-            "wind_dir":     round(f_wdir, 1),
-            "sst_gradient": round(f_grad, 1),
-            "chlorophyll":  round(f_chl, 1),
-            "moon":         round(f_moon, 1),
-            "swell":        round(f_swe, 1),
-        },
-        "factor_weights": w,
+        "factor_scores":    fs,
+        "factor_weights":   w,
     }
 
 

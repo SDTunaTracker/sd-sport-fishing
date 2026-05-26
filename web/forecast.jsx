@@ -175,21 +175,20 @@ function DayDetail({ day }) {
 function SpeciesGrid({ day }) {
   if (!day) return null;
   const species = [
-    { key: 'bluefin_score',    name: 'Bluefin',    emoji: '🐟', color: SPECIES_COLORS.Bluefin    },
-    { key: 'yellowfin_score',  name: 'Yellowfin',  emoji: '🐠', color: SPECIES_COLORS.Yellowfin  },
-    { key: 'yellowtail_score', name: 'Yellowtail', emoji: '🐡', color: SPECIES_COLORS.Yellowtail },
-    { key: 'dorado_score',     name: 'Dorado',     emoji: '🐬', color: SPECIES_COLORS.Dorado     },
+    { key: 'bluefin_score',    name: 'Bluefin',    color: SPECIES_COLORS.Bluefin    },
+    { key: 'yellowfin_score',  name: 'Yellowfin',  color: SPECIES_COLORS.Yellowfin  },
+    { key: 'yellowtail_score', name: 'Yellowtail', color: SPECIES_COLORS.Yellowtail },
+    { key: 'dorado_score',     name: 'Dorado',     color: SPECIES_COLORS.Dorado     },
   ];
   return (
     <Panel title="Species Forecast">
       <div className="fc-species-grid">
-        {species.map(({ key, name, emoji, color }) => {
+        {species.map(({ key, name, color }) => {
           const s = day[key];
           const pct = s != null ? Math.round(((s - 1) / 9) * 100) : 0;
           return (
             <div key={key} className="fc-species-card">
               <div className="fc-species-head">
-                <span className="fc-species-emoji">{emoji}</span>
                 <span className="fc-species-name" style={{color}}>{name}</span>
                 <span className="fc-species-score" style={{color: scoreColor(s)}}>
                   {s != null ? s.toFixed(1) : '—'}/10
@@ -390,6 +389,106 @@ function AccuracyWidget({ accuracy }) {
   );
 }
 
+// ─── Consensus components ─────────────────────────────────────────────────────
+
+const CONSENSUS_DOTS_MAP = { Strong: 5, Moderate: 4, Mixed: 3, Conflicted: 2 };
+
+const FACTOR_DISPLAY = {
+  sst:          { label: 'SST',            icon: '🌡️' },
+  wind_dir:     { label: 'Wind direction', icon: '🧭' },
+  sst_gradient: { label: 'Temp break',     icon: '📈' },
+  chlorophyll:  { label: 'Chlorophyll',    icon: '🌿' },
+  wind_speed:   { label: 'Wind speed',     icon: '💨' },
+  swell:        { label: 'Swell',          icon: '🌊' },
+  moon:         { label: 'Moon',           icon: '🌙' },
+};
+
+function factorNote(score) {
+  if (score >= 8.5) return 'strongly favorable';
+  if (score >= 7.0) return 'favorable';
+  if (score >= 5.5) return 'neutral';
+  if (score >= 4.0) return 'unfavorable';
+  return 'strongly unfavorable';
+}
+
+function ConsensusDots({ label, color, size = 8 }) {
+  const filled = CONSENSUS_DOTS_MAP[label] ?? 3;
+  return (
+    <span className="fc-consensus-dots">
+      {[0,1,2,3,4].map(i => (
+        <span key={i} className="fc-consensus-dot" style={{
+          width: size, height: size,
+          background: i < filled ? color : 'var(--tb-border)',
+        }}/>
+      ))}
+    </span>
+  );
+}
+
+function ConsensusBreakdown({ today, segment }) {
+  if (!today?.consensus) return null;
+  const c  = today.consensus;
+  const fs = today.factor_scores || {};
+
+  // Determine which factors are in scope for this segment's consensus
+  const consensusKeys = segment === 'offshore'
+    ? ['sst', 'wind_dir', 'sst_gradient', 'chlorophyll']
+    : ['sst', 'wind_dir', 'chlorophyll'];
+  const secondaryKeys = Object.keys(fs).filter(k => !consensusKeys.includes(k));
+
+  const agreeSet    = new Set((c.factors_agreeing    || []).map(f => f.key));
+  const conflictSet = new Set((c.factors_conflicting || []).map(f => f.key));
+
+  // Summary sentence
+  const n     = c.factors_agreeing?.length ?? 0;
+  const total = n + (c.factors_conflicting?.length ?? 0);
+  let summary;
+  if (c.consensus_label === 'Strong') {
+    summary = `All ${total} key factors agree — high forecast confidence.`;
+  } else if (c.consensus_label === 'Moderate') {
+    summary = `${n} of ${total} key factors agree — moderate forecast confidence.`;
+  } else if (c.consensus_label === 'Mixed') {
+    const bad = (c.factors_conflicting || []).map(f => FACTOR_DISPLAY[f.key]?.label || f.key).join(', ');
+    summary = `Factors are mixed${bad ? ` — ${bad} is diverging` : ''} — treat this forecast with some caution.`;
+  } else {
+    const bad = (c.factors_conflicting || []).map(f => FACTOR_DISPLAY[f.key]?.label || f.key).join(', ');
+    summary = `Factors are conflicted${bad ? ` — ${bad} pulling against the tide` : ''} — forecast uncertainty is higher than usual.`;
+  }
+
+  return (
+    <div className="fc-consensus-breakdown">
+      <div className="fc-consensus-bd-title">Why we're {c.consensus_label === 'Strong' || c.consensus_label === 'Moderate' ? 'confident' : 'uncertain'}</div>
+      {consensusKeys.filter(k => fs[k] != null).map(k => {
+        const agrees   = agreeSet.has(k);
+        const conflicts = conflictSet.has(k);
+        const icon = agrees ? '✓' : conflicts ? '✗' : '?';
+        const iconColor = agrees ? '#10B981' : conflicts ? '#EF4444' : '#94A3B8';
+        const fd = FACTOR_DISPLAY[k] || { label: k, icon: '' };
+        return (
+          <div key={k} className="fc-consensus-bd-factor">
+            <span className="fc-consensus-bd-icon" style={{color: iconColor}}>{icon}</span>
+            <span className="fc-consensus-bd-name">{fd.icon} {fd.label}</span>
+            <span className="fc-consensus-bd-score" style={{color: scoreColor(fs[k])}}>{fs[k].toFixed(1)}</span>
+            <span className="fc-consensus-bd-note">— {factorNote(fs[k])}</span>
+          </div>
+        );
+      })}
+      {secondaryKeys.filter(k => fs[k] != null && fs[k] !== 5.0).map(k => {
+        const fd = FACTOR_DISPLAY[k] || { label: k, icon: '' };
+        return (
+          <div key={k} className="fc-consensus-bd-factor" style={{opacity: 0.65}}>
+            <span className="fc-consensus-bd-icon" style={{color: '#94A3B8'}}>·</span>
+            <span className="fc-consensus-bd-name">{fd.icon} {fd.label}</span>
+            <span className="fc-consensus-bd-score" style={{color: scoreColor(fs[k])}}>{fs[k].toFixed(1)}</span>
+            <span className="fc-consensus-bd-note">— {factorNote(fs[k])}</span>
+          </div>
+        );
+      })}
+      <div className="fc-consensus-summary">{summary}</div>
+    </div>
+  );
+}
+
 // ─── Dual segment components ──────────────────────────────────────────────────
 
 function ConfidencePill({ label }) {
@@ -435,12 +534,11 @@ function ScoreRange({ low, score, high }) {
   );
 }
 
-function SegmentCard({ title, today, icon }) {
+function SegmentCard({ title, today }) {
   if (!today || today.overall_score == null) {
     return (
       <div className="fc-segment-card">
         <div className="fc-seg-head">
-          <span className="fc-seg-icon">{icon}</span>
           <span className="fc-seg-title">{title}</span>
         </div>
         <div style={{color: 'var(--tb-slate)', fontSize: 13, padding: '12px 0'}}>No data</div>
@@ -455,7 +553,6 @@ function SegmentCard({ title, today, icon }) {
   return (
     <div className="fc-segment-card">
       <div className="fc-seg-head">
-        <span className="fc-seg-icon">{icon}</span>
         <span className="fc-seg-title">{title}</span>
         {today.confidence && <ConfidencePill label={today.confidence}/>}
       </div>
@@ -465,6 +562,17 @@ function SegmentCard({ title, today, icon }) {
       </div>
       <div className="fc-seg-label">{today.conditions_label}</div>
       <ScoreRange low={today.score_low} score={today.overall_score} high={today.score_high}/>
+      {today.consensus && (
+        <div className="fc-consensus-row">
+          <ConsensusDots label={today.consensus.consensus_label} color={today.consensus.consensus_color}/>
+          <span style={{color: today.consensus.consensus_color, fontWeight: 700, fontSize: 11}}>
+            {today.consensus.consensus_label}
+          </span>
+          <span style={{color: 'var(--tb-slate)', fontSize: 11}}>
+            {today.consensus.consensus_pct}% consensus
+          </span>
+        </div>
+      )}
       {topFactors.length > 0 && (
         <div className="fc-seg-factors">
           {topFactors.map(([k, v]) => (
@@ -489,12 +597,33 @@ function DualSegmentWidget({ fc }) {
   const inshore  = fc?.inshore?.today;
   const offshore = fc?.offshore?.today;
   if (!inshore && !offshore) return null;
+  // Show breakdown for whichever segment has higher confidence need (lower consensus)
+  const [activeBreakdown, setActiveBreakdown] = useS(null);
+  const toggleBreakdown = seg => setActiveBreakdown(prev => prev === seg ? null : seg);
+  const segForBreakdown = activeBreakdown === 'inshore' ? inshore : offshore;
   return (
     <Panel title="Inshore vs Offshore">
       <div className="fc-dual-grid">
-        <SegmentCard title="Inshore"  today={inshore}  icon="🎣"/>
-        <SegmentCard title="Offshore" today={offshore} icon="🐟"/>
+        <div>
+          <SegmentCard title="Inshore"  today={inshore}/>
+          {inshore?.consensus && (
+            <button className="fc-consensus-toggle" onClick={() => toggleBreakdown('inshore')}>
+              {activeBreakdown === 'inshore' ? 'Hide breakdown ↑' : 'Why? Factor breakdown ↓'}
+            </button>
+          )}
+        </div>
+        <div>
+          <SegmentCard title="Offshore" today={offshore}/>
+          {offshore?.consensus && (
+            <button className="fc-consensus-toggle" onClick={() => toggleBreakdown('offshore')}>
+              {activeBreakdown === 'offshore' ? 'Hide breakdown ↑' : 'Why? Factor breakdown ↓'}
+            </button>
+          )}
+        </div>
       </div>
+      {activeBreakdown && segForBreakdown && (
+        <ConsensusBreakdown today={segForBreakdown} segment={activeBreakdown}/>
+      )}
     </Panel>
   );
 }
@@ -521,34 +650,50 @@ function DualSevenDayStrip({ fc }) {
               className={`fc-seg-tab${tab === t ? ' active' : ''}`}
               onClick={() => { setTab(t); setSelectedIdx(0); }}
             >
-              {t === 'offshore' ? '🐟 Offshore' : '🎣 Inshore'}
+              {t === 'offshore' ? 'Offshore' : 'Inshore'}
             </button>
           ))}
         </div>
       </div>
       <div className="fc-strip-wrap">
         <div className="fc-strip">
-          {days.map((d, i) => (
-            <button
-              key={d.date}
-              className={`fc-day-card${i === selectedIdx ? ' active' : ''}`}
-              onClick={() => setSelectedIdx(i)}
-            >
-              <div className="fc-day-name">{d.dayName || '—'}</div>
-              {d.confidence && <ConfidencePill label={d.confidence}/>}
-              <div className="fc-day-score" style={{color: scoreColor(d.overall_score)}}>
-                {d.overall_score != null ? d.overall_score.toFixed(1) : '—'}
-              </div>
-              {d.score_low != null && d.score_high != null && (
-                <div style={{fontSize: 10, color: 'var(--tb-slate)', marginTop: 2}}>
-                  {d.score_low.toFixed(1)}–{d.score_high.toFixed(1)}
+          {days.map((d, i) => {
+            const cn = d.consensus;
+            const tooltipText = cn
+              ? `${cn.consensus_label} consensus (${cn.consensus_pct}%) — ${
+                  cn.factors_agreeing?.length ?? 0} of ${
+                  (cn.factors_agreeing?.length ?? 0) + (cn.factors_conflicting?.length ?? 0)} factors agree`
+              : '';
+            return (
+              <button
+                key={d.date}
+                className={`fc-day-card${i === selectedIdx ? ' active' : ''}`}
+                onClick={() => setSelectedIdx(i)}
+              >
+                <div className="fc-day-name">{d.dayName || '—'}</div>
+                {d.confidence && <ConfidencePill label={d.confidence}/>}
+                <div className="fc-day-score" style={{color: scoreColor(d.overall_score)}}>
+                  {d.overall_score != null ? d.overall_score.toFixed(1) : '—'}
                 </div>
-              )}
-              <div className="fc-day-label">
-                {d.conditions_label?.split(' ').slice(0, 2).join(' ')}
-              </div>
-            </button>
-          ))}
+                {d.score_low != null && d.score_high != null && (
+                  <div style={{fontSize: 10, color: 'var(--tb-slate)', marginTop: 2}}>
+                    {d.score_low.toFixed(1)}–{d.score_high.toFixed(1)}
+                  </div>
+                )}
+                <div className="fc-day-label">
+                  {d.conditions_label?.split(' ').slice(0, 2).join(' ')}
+                </div>
+                {cn && (
+                  <div className="fc-day-consensus" title={tooltipText}>
+                    <span className="fc-day-consensus-dot" style={{background: cn.consensus_color}}/>
+                    <span style={{color: cn.consensus_color, fontSize: 9, fontWeight: 700}}>
+                      {cn.consensus_label}
+                    </span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
       {selDay && (
@@ -564,6 +709,17 @@ function DualSevenDayStrip({ fc }) {
               </div>
               {selDay.confidence && <div style={{marginTop: 6}}><ConfidencePill label={selDay.confidence}/></div>}
               <ScoreRange low={selDay.score_low} score={selDay.overall_score} high={selDay.score_high}/>
+              {selDay.consensus && (
+                <div className="fc-consensus-row" style={{marginTop: 10}}>
+                  <ConsensusDots label={selDay.consensus.consensus_label} color={selDay.consensus.consensus_color}/>
+                  <span style={{color: selDay.consensus.consensus_color, fontWeight: 700, fontSize: 11}}>
+                    {selDay.consensus.consensus_label}
+                  </span>
+                  <span style={{color: 'var(--tb-slate)', fontSize: 11}}>
+                    {selDay.consensus.consensus_pct}%
+                  </span>
+                </div>
+              )}
             </div>
             {selDay.factor_scores && (
               <div className="fc-detail-right">
@@ -574,6 +730,7 @@ function DualSevenDayStrip({ fc }) {
               </div>
             )}
           </div>
+          <ConsensusBreakdown today={selDay} segment={tab}/>
         </Panel>
       )}
     </div>

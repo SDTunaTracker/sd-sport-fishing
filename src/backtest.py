@@ -353,6 +353,18 @@ def build_historical_conditions(
         if row["anomaly"] is not None:
             sst_by_date[d_str]["anomalies"].append(row["anomaly"])
 
+    # Load chlorophyll keyed by obs_date/location (8-day composites; look back up to 10 days)
+    chl_by_date: dict[str, dict[str, float]] = {}
+    try:
+        for row in conn.execute(
+            "SELECT obs_date, location, chlorophyll_mgl FROM chlorophyll_obs "
+            "WHERE obs_date BETWEEN ? AND ?",
+            (sst_window_start, end.isoformat()),
+        ).fetchall():
+            chl_by_date.setdefault(row["obs_date"], {})[row["location"]] = row["chlorophyll_mgl"]
+    except Exception:
+        pass  # table may not exist on first run
+
     n = 0
     for d in _date_range(start, end):
         d_str = d.isoformat()
@@ -378,14 +390,27 @@ def build_historical_conditions(
         window_vals   = [v for v in window_vals if v is not None]
         sst_7day_avg  = round(sum(window_vals) / len(window_vals), 2) if window_vals else None
 
+        # Chlorophyll: find most recent 8-day composite within 10 days
+        chl_near = chl_off = None
+        for lookback in range(10):
+            d_back = (d - timedelta(days=lookback)).isoformat()
+            if d_back in chl_by_date:
+                chl_near = chl_by_date[d_back].get("Nearshore")
+                chl_off  = chl_by_date[d_back].get("60-Mile Bank")
+                if chl_near is not None or chl_off is not None:
+                    break
+        chl_ratio = (round(chl_near / max(chl_off, 0.001), 3)
+                     if chl_near is not None and chl_off is not None else None)
+
         conn.execute(
             """INSERT OR REPLACE INTO historical_conditions
                (date, sst_nearshore, sst_9mile, sst_offshore, sst_cortez,
                 sst_anomaly, wind_speed, wind_direction, swell_height,
                 swell_period, pressure, pressure_trend, moon_illum, moon_phase_name,
                 wind_direction_deg, wind_direction_label, wind_is_offshore, wind_is_upwelling,
-                sst_gradient, sst_warming_trend, sst_7day_avg)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                sst_gradient, sst_warming_trend, sst_7day_avg,
+                chlorophyll_nearshore, chlorophyll_offshore, chlorophyll_ratio)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 d_str,
                 sst_nearshore,
@@ -408,6 +433,9 @@ def build_historical_conditions(
                 sst_gradient,
                 sst_warming,
                 sst_7day_avg,
+                chl_near,
+                chl_off,
+                chl_ratio,
             ),
         )
         n += 1
@@ -1133,9 +1161,9 @@ def run_dual_backtest(
         }
 
         for segment in ("inshore", "offshore"):
-            print(f"\n{'─' * 55}")
+            print(f"\n{'-' * 55}")
             print(f"  {segment.upper()} SEGMENT")
-            print(f"{'─' * 55}")
+            print(f"{'-' * 55}")
             results = backtest_segment(conn, segment, start, end)
             summary[f"{segment}_days"] = len(results)
             print(f"  {len(results)} days with paired conditions + {segment} catch data")
@@ -1151,7 +1179,7 @@ def run_dual_backtest(
 
             all_corrs = correlate_segment_factors(conn, results, segment)
             print(f"\n  {'Factor':35s}  {'r':>8}")
-            print("  " + "─" * 46)
+            print("  " + "-" * 46)
             for fname, vals in sorted(
                 all_corrs.items(),
                 key=lambda x: abs(x[1].get("overall") or 0), reverse=True,

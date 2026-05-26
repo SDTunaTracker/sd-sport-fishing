@@ -518,13 +518,97 @@ function Section3B({ history }) {
     <div className="adm-section">
       <div className="adm-section-title">Dual Segment Model</div>
       <div className="adm-two-col" style={{ gap: 16 }}>
-        <SegmentModelPanel label="🎣 Inshore Model"  history={inshoreHistory}/>
-        <SegmentModelPanel label="🐟 Offshore Model" history={offshoreHistory}/>
+        <SegmentModelPanel label="Inshore Model"  history={inshoreHistory}/>
+        <SegmentModelPanel label="Offshore Model" history={offshoreHistory}/>
       </div>
     </div>
   );
 }
 
+
+// ─── Section 3C — Consensus Accuracy Correlation ─────────────────────────────
+
+const CONSENSUS_COLOR = {
+  Strong: "#10B981", Moderate: "#FBBF24", Mixed: "#F97316", Conflicted: "#EF4444"
+};
+const CONSENSUS_EXPECTED = {
+  Strong:     { avg_error: 1.2, direction_acc: 74 },
+  Moderate:   { avg_error: 1.8, direction_acc: 67 },
+  Mixed:      { avg_error: 2.4, direction_acc: 59 },
+  Conflicted: { avg_error: 3.1, direction_acc: 51 },
+};
+
+function Section3C({ correlation }) {
+  const hasData = correlation && correlation.length > 0;
+  return (
+    <div className="adm-section">
+      <div className="adm-section-title">
+        Consensus Accuracy Correlation
+        <span style={{fontWeight:400, textTransform:"none", letterSpacing:0, color:"#475569", marginLeft:8}}>
+          — does higher consensus actually predict better accuracy?
+        </span>
+      </div>
+      <div className="adm-card">
+        <div className="adm-card-title" style={{marginBottom:10}}>
+          Offshore Model · Observed vs Expected
+          {!hasData && (
+            <span style={{marginLeft:8, fontWeight:400, fontSize:11, color:"#64748B"}}>
+              — no data yet, showing expected model values
+            </span>
+          )}
+        </div>
+        <div style={{overflowX:"auto"}}>
+          <table className="adm-consensus-table">
+            <thead>
+              <tr>
+                <th>Consensus</th>
+                <th>Days</th>
+                <th>Avg Error (obs)</th>
+                <th>Dir. Acc (obs)</th>
+                <th>Avg Error (expected)</th>
+                <th>Dir. Acc (expected)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {["Strong","Moderate","Mixed","Conflicted"].map(lbl => {
+                const obs = (correlation || []).find(r => r.label === lbl);
+                const exp = CONSENSUS_EXPECTED[lbl];
+                const color = CONSENSUS_COLOR[lbl];
+                const errOk  = obs && obs.avg_error    <= exp.avg_error;
+                const dirOk  = obs && obs.direction_acc >= exp.direction_acc;
+                return (
+                  <tr key={lbl}>
+                    <td>
+                      <span style={{
+                        display:"inline-block", width:8, height:8, borderRadius:"50%",
+                        background: color, marginRight:6, verticalAlign:"middle",
+                      }}/>
+                      <span style={{color}}>{lbl}</span>
+                    </td>
+                    <td>{obs ? fmtN(obs.n) : "—"}</td>
+                    <td style={{color: obs ? (errOk ? "#34D399" : "#F87171") : "#475569"}}>
+                      {obs ? obs.avg_error.toFixed(2) : "—"}
+                    </td>
+                    <td style={{color: obs ? (dirOk ? "#34D399" : "#F87171") : "#475569"}}>
+                      {obs ? `${obs.direction_acc.toFixed(1)}%` : "—"}
+                    </td>
+                    <td style={{color:"#475569"}}>{exp.avg_error.toFixed(1)}</td>
+                    <td style={{color:"#475569"}}>{exp.direction_acc}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div style={{marginTop:10, fontSize:11, color:"#475569", lineHeight:1.6}}>
+          Observed values are computed retroactively from <code>forecast_accuracy_log</code> joined
+          with <code>historical_conditions</code>. Green = observed is better than expected.
+          Data accumulates daily as <code>score_yesterday()</code> runs.
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Section 4 — Recent Predictions vs Actuals ───────────────────────────────
 
@@ -712,6 +796,7 @@ function AdminView() {
         <Section2 dbStats={admin.dbStats} />
         <Section3 backtest={admin.backtestResults} weights={admin.weights} history={admin.backtestHistory} />
         <Section3B history={admin.backtestHistory} />
+        <Section3C correlation={admin.consensusCorrelation} />
         <Section4 preds={admin.recentPredictions} />
         <Section5 />
         <Section6 />

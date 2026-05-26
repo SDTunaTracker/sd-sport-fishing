@@ -1,0 +1,10 @@
+{
+  "sst_weight": 1.436,
+  "anomaly_weight": 1.107,
+  "moon_weight": 0.145,
+  "wind_weight": 0.378,
+  "sst_gradient_weight": 0.195,
+  "wind_offshore_weight": 0.052,
+  "chl_weight": 0.106,
+  "segment": "offshore"
+}
