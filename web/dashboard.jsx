@@ -209,8 +209,10 @@ function TodayView({ navigate, settings }) {
       <div className="pagehead">
         <div>
           <h1>The Tuna Tracker</h1>
-          <p style={{fontSize:14, color:'var(--tb-gray-3)', maxWidth:620, marginBottom:16, lineHeight:1.6}}>
-            Stop guessing. Start catching. San Diego's most detailed sportfishing analytics. Daily fish counts, boat leaderboards, and trip stats from H&M, Fisherman's, Seaforth, and Point Loma landings. Compare boats, analyze trends, and plan your next trip with confidence.
+          <p style={{fontSize:13, color:'#94A3B8', maxWidth:500, marginBottom:16, lineHeight:1.6}}>
+            Stop guessing. Start catching.<br/>
+            San Diego's most detailed sportfishing analytics — daily fish counts, boat leaderboards, and trip stats from H&amp;M, Fisherman's, Seaforth, and Point Loma.<br/>
+            Compare boats, spot trends, plan your next trip.
           </p>
         </div>
       </div>
