@@ -1203,7 +1203,10 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-card-landing            { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
 .tp-length-badge            { display: inline-block; margin-top: 6px; padding: 2px 8px; background: #E0F2FE; color: #0284C7; border-radius: 20px; font: 600 11px/16px var(--ss-font-sans); }
 .tp-card-middle             { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
-.tp-card-depart             { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.tp-card-depart             { display: flex; align-items: baseline; }
+.tp-card-depart-date        { font: 600 15px/20px var(--ss-font-sans); color: #0A0A0A; }
+.tp-card-depart-sep         { font: 400 14px/20px var(--ss-font-sans); color: var(--tb-gray-2); margin: 0 3px; }
+.tp-card-depart-time        { font: 500 14px/20px var(--ss-font-sans); color: #1B2B3B; }
 .tp-card-moon               { font: 500 12px/16px var(--ss-font-sans); }
 .tp-card-wr-row             { display: flex; align-items: center; gap: 6px; }
 .tp-card-stat-label         { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-2); }

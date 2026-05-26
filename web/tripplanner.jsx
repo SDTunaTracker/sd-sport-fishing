@@ -114,8 +114,10 @@ function TripCard({ s, avgTpaByKey }) {
 
       <div className="tp-card-middle">
         <div className="tp-card-depart">
-          <i className="fa-regular fa-calendar" style={{marginRight: 5, opacity: 0.5}}></i>
-          {fmtDepDate(dep)} · {fmtTime(dep)}
+          <i className="fa-regular fa-calendar" style={{marginRight: 6, opacity: 0.4, fontSize: 13}}></i>
+          <span className="tp-card-depart-date">{fmtDepDate(dep)}</span>
+          <span className="tp-card-depart-sep"> · </span>
+          <span className="tp-card-depart-time">{fmtTime(dep)}</span>
         </div>
         <div className="tp-card-moon" style={{color: moonC}}>
           {moon.emoji} {moon.phase} · {moon.illum}%
