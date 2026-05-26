@@ -1,7 +1,7 @@
 // Trip Planner — Expedia-style redesign
 const { useState, useMemo, useEffect, Fragment } = React;
 
-// ── Moon helpers (kept from original) ───────────────────────────────────────
+// ── Moon helpers ─────────────────────────────────────────────────────────────
 const _MOON_REF    = Date.UTC(2000, 0, 6, 18, 14, 0);
 const _SYNODIC     = 29.53058867;
 const _MOON_NAMES  = ['New','Waxing Crescent','First Quarter','Waxing Gibbous',
@@ -23,7 +23,7 @@ function moonColor(illum) {
   return '#94A3B8';
 }
 
-// ── Per-landing booking URL (kept from original) ─────────────────────────────
+// ── Per-landing booking URL ───────────────────────────────────────────────────
 function bookingUrl(s) {
   switch (s.landing) {
     case 'Point Loma Sportfishing':
@@ -49,6 +49,10 @@ function fmtTime(d) {
 function shortLanding(name) {
   return (name || '').replace(' Sportfishing', '').replace(' Landing', '');
 }
+
+const MONTH_NAMES_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_NAMES_FULL  = ['January','February','March','April','May','June',
+                            'July','August','September','October','November','December'];
 
 // ── Moon phase options ────────────────────────────────────────────────────────
 const MOON_PHASE_OPTIONS = [
@@ -102,14 +106,12 @@ function TripCard({ s, avgTpaByKey }) {
 
   return (
     <div className="tp-card">
-      {/* LEFT — boat info */}
       <div className="tp-card-left">
         <div className="tp-card-boat">{boatEl}</div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <LengthBadge label={s.tripLength}/>
       </div>
 
-      {/* MIDDLE — trip details */}
       <div className="tp-card-middle">
         <div className="tp-card-depart">
           <i className="fa-regular fa-calendar" style={{marginRight: 5, opacity: 0.5}}></i>
@@ -130,7 +132,6 @@ function TripCard({ s, avgTpaByKey }) {
         )}
       </div>
 
-      {/* RIGHT — price + booking */}
       <div className="tp-card-right">
         {price
           ? <><div className="tp-card-price">{price}</div><div className="tp-card-per">per person</div></>
@@ -144,7 +145,6 @@ function TripCard({ s, avgTpaByKey }) {
         )}
       </div>
 
-      {/* MOBILE bottom row */}
       <div className="tp-card-mobile-footer">
         <div style={{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'}}>
           <WinRateBadge wr={s._winRate}/>
@@ -161,7 +161,49 @@ function TripCard({ s, avgTpaByKey }) {
   );
 }
 
-// ── Top search bar ────────────────────────────────────────────────────────────
+// ── Month popover ─────────────────────────────────────────────────────────────
+function MonthPopover({ selMonth, onSelect, onClose, tripMonths }) {
+  const now = new Date();
+  const curYear  = now.getFullYear();
+  const curMonth = now.getMonth();
+
+  // 12 months starting from current
+  const months = [];
+  for (let i = 0; i < 12; i++) {
+    const totalMonth = curMonth + i;
+    const m = totalMonth % 12;
+    const y = curYear + Math.floor(totalMonth / 12);
+    const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+    months.push({ year: y, month: m, key, hasTrips: tripMonths.has(key) });
+  }
+
+  return (
+    <div className="tp-popover tp-popover-month">
+      <div className="tp-pop-month-grid">
+        {months.map(m => {
+          const isSel = selMonth && selMonth.year === m.year && selMonth.month === m.month;
+          return (
+            <button
+              key={m.key}
+              className={`tp-pop-month-cell${isSel ? ' selected' : ''}${!m.hasTrips ? ' disabled' : ''}`}
+              disabled={!m.hasTrips}
+              onClick={() => { onSelect({ year: m.year, month: m.month }); onClose(); }}
+            >
+              <div className="tp-pop-month-abbr">{MONTH_NAMES_SHORT[m.month]}</div>
+              <div className="tp-pop-month-yr">{m.year !== curYear ? m.year : ''}</div>
+            </button>
+          );
+        })}
+      </div>
+      <div className="tp-pop-footer">
+        <button className="tp-pop-clear" onClick={() => { onSelect(null); onClose(); }}>Any month</button>
+        <button className="tp-pop-done" onClick={onClose}>Done</button>
+      </div>
+    </div>
+  );
+}
+
+// ── SearchInput pill ──────────────────────────────────────────────────────────
 function SearchInput({ icon, label, value, onClick, active }) {
   return (
     <button className={`tp-search-field${active ? ' tp-search-field-active' : ''}`} onClick={onClick}>
@@ -174,29 +216,7 @@ function SearchInput({ icon, label, value, onClick, active }) {
   );
 }
 
-function DatePopover({ start, end, onStart, onEnd, onClose }) {
-  return (
-    <div className="tp-popover tp-popover-date">
-      <div className="tp-pop-row">
-        <div className="tp-pop-field">
-          <label className="tp-pop-label">From</label>
-          <input type="date" className="tp-pop-date-input" value={start}
-                 onChange={e => onStart(e.target.value)}/>
-        </div>
-        <div className="tp-pop-field">
-          <label className="tp-pop-label">To</label>
-          <input type="date" className="tp-pop-date-input" value={end}
-                 onChange={e => onEnd(e.target.value)}/>
-        </div>
-      </div>
-      <div className="tp-pop-footer">
-        <button className="tp-pop-clear" onClick={() => { onStart(''); onEnd(''); }}>Clear</button>
-        <button className="tp-pop-done" onClick={onClose}>Done</button>
-      </div>
-    </div>
-  );
-}
-
+// ── Checklist popover (landing / trip length) ─────────────────────────────────
 function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
   const selected = value === 'all' ? options : (Array.isArray(value) ? value : []);
   const allSelected = value === 'all' || selected.length === options.length;
@@ -211,8 +231,7 @@ function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
   return (
     <div className="tp-popover tp-popover-check">
       <label className="tp-pop-check-row tp-pop-check-all">
-        <input type="checkbox" checked={allSelected}
-               onChange={() => onChange('all')}/>
+        <input type="checkbox" checked={allSelected} onChange={() => onChange('all')}/>
         <span>{allLabel || 'All'}</span>
       </label>
       <div className="tp-pop-divider"/>
@@ -231,29 +250,29 @@ function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
   );
 }
 
-function TopSearchBar({ dateStart, dateEnd, setDateStart, setDateEnd,
-                         selLandings, setSelLandings, selLengths, setSelLengths,
-                         openPop, setOpenPop }) {
-  const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString([], { month: 'short', day: 'numeric' }) : null;
-  const dateLabel = dateStart || dateEnd
-    ? [fmtDate(dateStart) || 'Start', fmtDate(dateEnd) || 'End'].join(' – ')
-    : 'Any dates';
-  const landingLabel = selLandings === 'all' ? 'All landings'
-    : Array.isArray(selLandings) ? `${selLandings.length} selected` : 'All landings';
-  const lengthLabel = selLengths === 'all' ? 'All lengths'
-    : Array.isArray(selLengths) ? `${selLengths.length} selected` : 'All lengths';
+// ── Top search bar ────────────────────────────────────────────────────────────
+function TopSearchBar({ selMonth, setSelMonth, tripMonths,
+                        selLandings, setSelLandings, selLengths, setSelLengths,
+                        openPop, setOpenPop }) {
+  const monthLabel = selMonth
+    ? `${MONTH_NAMES_FULL[selMonth.month]} ${selMonth.year}`
+    : 'Any Month';
+  const landingLabel = selLandings === 'all' ? 'All Landings'
+    : Array.isArray(selLandings) ? `${selLandings.length} selected` : 'All Landings';
+  const lengthLabel = selLengths === 'all' ? 'All Lengths'
+    : Array.isArray(selLengths) ? `${selLengths.length} selected` : 'All Lengths';
 
   const closePop = () => setOpenPop(null);
 
   return (
     <div className="tp-search-bar">
       <div className="tp-search-field-wrap">
-        <SearchInput icon="📅" label="Date Range" value={dateLabel}
-                     active={openPop === 'date'}
-                     onClick={() => setOpenPop(openPop === 'date' ? null : 'date')}/>
-        {openPop === 'date' && (
-          <DatePopover start={dateStart} end={dateEnd}
-                       onStart={setDateStart} onEnd={setDateEnd} onClose={closePop}/>
+        <SearchInput icon="📅" label="When" value={monthLabel}
+                     active={openPop === 'month'}
+                     onClick={() => setOpenPop(openPop === 'month' ? null : 'month')}/>
+        {openPop === 'month' && (
+          <MonthPopover selMonth={selMonth} onSelect={setSelMonth}
+                        onClose={closePop} tripMonths={tripMonths}/>
         )}
       </div>
       <div className="tp-search-divider"/>
@@ -290,11 +309,44 @@ function SidebarSection({ title, children }) {
   );
 }
 
-function SidebarFilters({ moonPhases, setMoonPhases, minWinRate, setMinWinRate,
+function RefineDatesSection({ selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd }) {
+  if (!selMonth) return null;
+
+  const firstDay = `${selMonth.year}-${String(selMonth.month + 1).padStart(2, '0')}-01`;
+  const lastDay  = new Date(selMonth.year, selMonth.month + 1, 0).toISOString().slice(0, 10);
+
+  return (
+    <SidebarSection title="Refine Dates">
+      <div className="tp-sb-refine-hint">Optional — narrow by specific dates</div>
+      <div className="tp-sb-refine-row">
+        <div className="tp-sb-refine-field">
+          <label className="tp-sb-refine-label">From</label>
+          <input type="date" className="tp-sb-refine-input"
+                 value={refineStart} min={firstDay} max={lastDay}
+                 onChange={e => setRefineStart(e.target.value)}/>
+        </div>
+        <div className="tp-sb-refine-field">
+          <label className="tp-sb-refine-label">To</label>
+          <input type="date" className="tp-sb-refine-input"
+                 value={refineEnd} min={firstDay} max={lastDay}
+                 onChange={e => setRefineEnd(e.target.value)}/>
+        </div>
+      </div>
+      {(refineStart || refineEnd) && (
+        <button className="tp-sb-refine-clear"
+                onClick={() => { setRefineStart(''); setRefineEnd(''); }}>
+          Clear dates
+        </button>
+      )}
+    </SidebarSection>
+  );
+}
+
+function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
+                          moonPhases, setMoonPhases, minWinRate, setMinWinRate,
                           minPrice, setMinPrice, maxPrice, setMaxPrice, onReset }) {
   const togglePhase = (phase) => {
-    const all = moonPhases === 'all';
-    const sel = all ? MOON_PHASE_OPTIONS.map(o => o.phase) : [...moonPhases];
+    const sel = moonPhases === 'all' ? MOON_PHASE_OPTIONS.map(o => o.phase) : [...moonPhases];
     const next = sel.includes(phase) ? sel.filter(p => p !== phase) : [...sel, phase];
     setMoonPhases(next.length === 0 || next.length === MOON_PHASE_OPTIONS.length ? 'all' : next);
   };
@@ -305,6 +357,10 @@ function SidebarFilters({ moonPhases, setMoonPhases, minWinRate, setMinWinRate,
         Filter by
         <button className="tp-sb-reset" onClick={onReset}>Reset all</button>
       </div>
+
+      <RefineDatesSection selMonth={selMonth}
+                          refineStart={refineStart} setRefineStart={setRefineStart}
+                          refineEnd={refineEnd} setRefineEnd={setRefineEnd}/>
 
       <SidebarSection title="Moon Phase">
         {MOON_PHASE_OPTIONS.map(opt => {
@@ -383,23 +439,33 @@ function MobileFilterSheet({ open, onClose, ...filterProps }) {
 
 // ── Main TripPlanner ──────────────────────────────────────────────────────────
 function TripPlanner({ navigate }) {
-  // Top bar filter state
-  const [dateStart, setDateStart]   = useState('');
-  const [dateEnd, setDateEnd]       = useState('');
+  const _now = new Date();
+
+  // Top bar filters
+  const [selMonth, setSelMonthRaw] = useState({ year: _now.getFullYear(), month: _now.getMonth() });
   const [selLandings, setSelLandings] = useState('all');
-  const [selLengths, setSelLengths]   = useState('all');
+  const [selLengths,  setSelLengths]  = useState('all');
   const [openPop, setOpenPop]         = useState(null);
 
-  // Sidebar filter state
-  const [moonPhases, setMoonPhases]   = useState('all');
-  const [minWinRate, setMinWinRate]   = useState(0);
-  const [minPrice, setMinPrice]       = useState('');
-  const [maxPrice, setMaxPrice]       = useState('');
+  // Sidebar filters
+  const [refineStart, setRefineStart] = useState('');
+  const [refineEnd,   setRefineEnd]   = useState('');
+  const [moonPhases,  setMoonPhases]  = useState('all');
+  const [minWinRate,  setMinWinRate]  = useState(0);
+  const [minPrice,    setMinPrice]    = useState('');
+  const [maxPrice,    setMaxPrice]    = useState('');
 
   // Display state
-  const [activeTab, setActiveTab]         = useState('best');
-  const [sortBy, setSortBy]               = useState('recommended');
+  const [activeTab,         setActiveTab]         = useState('best');
+  const [sortBy,            setSortBy]            = useState('recommended');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Clear refine dates when month changes
+  const setSelMonth = (m) => {
+    setSelMonthRaw(m);
+    setRefineStart('');
+    setRefineEnd('');
+  };
 
   // Close popovers on outside click
   useEffect(() => {
@@ -411,7 +477,20 @@ function TripPlanner({ navigate }) {
 
   const winRates = useMemo(() => SDA.boatWinRates(), []);
 
-  // Avg TPA per boat+length from historical trip data
+  // Set of 'YYYY-MM' keys that have upcoming trips
+  const tripMonths = useMemo(() => {
+    const now = new Date();
+    const s = new Set();
+    (window.SD.SCHEDULE || []).forEach(t => {
+      const dep = new Date(t.departureAt);
+      if (dep >= now) {
+        s.add(`${dep.getFullYear()}-${String(dep.getMonth() + 1).padStart(2, '0')}`);
+      }
+    });
+    return s;
+  }, []);
+
+  // Avg TPA per boat+length key
   const avgTpaByKey = useMemo(() => {
     const acc = {};
     (window.SD.TRIPS || []).forEach(t => {
@@ -434,7 +513,6 @@ function TripPlanner({ navigate }) {
     return sel.length === 0 || sel.map(String).includes(String(val));
   };
 
-  // Filter schedule
   const filtered = useMemo(() => {
     const now = new Date();
     const DAY_MS = 86400000;
@@ -445,8 +523,15 @@ function TripPlanner({ navigate }) {
     return (window.SD.SCHEDULE || []).filter(s => {
       const dep = new Date(s.departureAt);
       if (dep < now) return false;
-      if (dateStart && dep < new Date(dateStart + 'T00:00:00')) return false;
-      if (dateEnd   && dep > new Date(dateEnd   + 'T23:59:59')) return false;
+
+      // Month filter
+      if (selMonth) {
+        if (dep.getFullYear() !== selMonth.year || dep.getMonth() !== selMonth.month) return false;
+      }
+      // Refine date range within selected month
+      if (refineStart && dep < new Date(refineStart + 'T00:00:00')) return false;
+      if (refineEnd   && dep > new Date(refineEnd   + 'T23:59:59')) return false;
+
       if (!_matches(s.landing,    selLandings)) return false;
       if (!_matches(s.tripLength, selLengths))  return false;
       if (minP != null && s.price != null && s.price < minP) return false;
@@ -465,9 +550,8 @@ function TripPlanner({ navigate }) {
       }
       return true;
     });
-  }, [dateStart, dateEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, winRates]);
+  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, winRates]);
 
-  // Enrich with win rate + sort
   const displayed = useMemo(() => {
     const enriched = filtered.map(s => {
       const wr = winRates[`${s.boat}|${s.tripLength}`];
@@ -506,22 +590,28 @@ function TripPlanner({ navigate }) {
   };
 
   const handleReset = () => {
-    setDateStart(''); setDateEnd('');
+    const n = new Date();
+    setSelMonth({ year: n.getFullYear(), month: n.getMonth() });
     setSelLandings('all'); setSelLengths('all');
     setMoonPhases('all'); setMinWinRate(0);
     setMinPrice(''); setMaxPrice('');
+    // refineStart/End cleared by setSelMonth above
   };
 
   const activeFilterCount =
-    (dateStart || dateEnd ? 1 : 0) +
+    (!selMonth ? 1 : (selMonth.year !== _now.getFullYear() || selMonth.month !== _now.getMonth() ? 1 : 0)) +
+    (refineStart || refineEnd ? 1 : 0) +
     (Array.isArray(selLandings) ? 1 : 0) +
     (Array.isArray(selLengths)  ? 1 : 0) +
     (Array.isArray(moonPhases)  ? 1 : 0) +
     (minWinRate > 0 ? 1 : 0) +
     (minPrice || maxPrice ? 1 : 0);
 
-  const sidebarProps = { moonPhases, setMoonPhases, minWinRate, setMinWinRate,
-                         minPrice, setMinPrice, maxPrice, setMaxPrice, onReset: handleReset };
+  const sidebarProps = {
+    selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
+    moonPhases, setMoonPhases, minWinRate, setMinWinRate,
+    minPrice, setMinPrice, maxPrice, setMaxPrice, onReset: handleReset,
+  };
 
   return (
     <Fragment>
@@ -531,7 +621,6 @@ function TripPlanner({ navigate }) {
         { label: 'Trip Planner' },
       ]}/>
 
-      {/* Page title */}
       <div className="pagehead">
         <div>
           <h1>Trip Planner</h1>
@@ -539,11 +628,10 @@ function TripPlanner({ navigate }) {
         </div>
       </div>
 
-      {/* Top search bar — stop click from propagating to doc (would close popovers) */}
+      {/* Top search bar */}
       <div className="tp-search-wrap" onClick={e => e.stopPropagation()}>
         <TopSearchBar
-          dateStart={dateStart} dateEnd={dateEnd}
-          setDateStart={setDateStart} setDateEnd={setDateEnd}
+          selMonth={selMonth} setSelMonth={setSelMonth} tripMonths={tripMonths}
           selLandings={selLandings} setSelLandings={setSelLandings}
           selLengths={selLengths}   setSelLengths={setSelLengths}
           openPop={openPop} setOpenPop={setOpenPop}
@@ -552,25 +640,21 @@ function TripPlanner({ navigate }) {
 
       {/* Body: sidebar + results */}
       <div className="tp-body">
-        {/* Desktop sidebar */}
         <div className="tp-sidebar-wrap">
           <SidebarFilters {...sidebarProps}/>
         </div>
 
-        {/* Results */}
         <div className="tp-results">
-          {/* Results header */}
           <div className="tp-results-head">
             <div className="tp-results-count">
               <strong>{fmt.n(displayed.length)}</strong> upcoming trip{displayed.length !== 1 ? 's' : ''}
+              {selMonth && <span className="tp-results-month"> in {MONTH_NAMES_FULL[selMonth.month]}</span>}
             </div>
             <div className="tp-results-controls">
-              {/* Mobile filter button */}
               <button className="tp-mobile-filter-btn" onClick={() => setMobileFiltersOpen(true)}>
                 <i className="fa-solid fa-sliders"></i>
                 Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
               </button>
-              {/* Sort dropdown */}
               <div className="tp-sort-wrap">
                 <label className="tp-sort-label">Sort:</label>
                 <select className="tp-sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
@@ -585,7 +669,6 @@ function TripPlanner({ navigate }) {
             </div>
           </div>
 
-          {/* Best / Cheapest tabs */}
           <div className="tp-tabs2">
             <button className={`tp-tab2${activeTab === 'best' ? ' active' : ''}`}
                     onClick={() => handleTabChange('best')}>
@@ -603,7 +686,6 @@ function TripPlanner({ navigate }) {
             </button>
           </div>
 
-          {/* Trip list */}
           {displayed.length === 0 ? (
             <div className="tp-empty">
               <i className="fa-solid fa-fish" style={{fontSize:24, opacity:0.3}}></i>
@@ -620,7 +702,6 @@ function TripPlanner({ navigate }) {
         </div>
       </div>
 
-      {/* Mobile filter sheet */}
       <MobileFilterSheet open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)}
                          {...sidebarProps}/>
     </Fragment>
