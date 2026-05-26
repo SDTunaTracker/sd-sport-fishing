@@ -63,8 +63,6 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
           </div>
         </div>
         <div className="actions">
-          <button className="btn ghost"><i className="fa-regular fa-bookmark"></i> Watchlist</button>
-          <button className="btn secondary"><i className="fa-solid fa-download"></i> Export</button>
           <button className="btn primary"><i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip</button>
         </div>
       </div>
@@ -256,9 +254,6 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
         <div>
           <h1>{landing}</h1>
           <div className="sub">{boats.length} boats · {fmt.n(trips.length)} trips · {fmt.n(anglers)} anglers in scope</div>
-        </div>
-        <div className="actions">
-          <button className="btn secondary"><i className="fa-solid fa-download"></i> Export</button>
         </div>
       </div>
       <FilterBar filters={filters} setFilters={setFilters}/>

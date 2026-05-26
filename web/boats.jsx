@@ -59,10 +59,6 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
             · fleet median {fmt.tpa(fleetMedianTPAPerDay)}
           </div>
         </div>
-        <div className="actions">
-          <button className="btn ghost"><i className="fa-solid fa-bookmark"></i> Save View</button>
-          <button className="btn secondary"><i className="fa-solid fa-download"></i> Export CSV</button>
-        </div>
       </div>
       <FilterBar filters={filters} setFilters={setFilters}/>
 
