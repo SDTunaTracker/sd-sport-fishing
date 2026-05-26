@@ -390,6 +390,197 @@ function AccuracyWidget({ accuracy }) {
   );
 }
 
+// ─── Dual segment components ──────────────────────────────────────────────────
+
+function ConfidencePill({ label }) {
+  const colors = { High: '#22c55e', Medium: '#f59e0b', Low: '#f97316', Outlook: '#94a3b8' };
+  const c = colors[label] || '#94a3b8';
+  return (
+    <span style={{
+      display: 'inline-block', fontSize: 10, fontWeight: 700,
+      padding: '1px 7px', borderRadius: 99,
+      background: c + '22', color: c, letterSpacing: '0.03em',
+    }}>{label}</span>
+  );
+}
+
+function ScoreRange({ low, score, high }) {
+  if (low == null || high == null) return null;
+  const pctLow  = ((low   - 1) / 9) * 100;
+  const pctHigh = ((high  - 1) / 9) * 100;
+  const pctMid  = ((score - 1) / 9) * 100;
+  const rangeW  = pctHigh - pctLow;
+  return (
+    <div style={{margin: '6px 0'}}>
+      <div style={{height: 8, background: 'var(--tb-border)', borderRadius: 4, position: 'relative', overflow: 'hidden'}}>
+        <div style={{
+          position: 'absolute', left: `${pctLow}%`, width: `${rangeW}%`,
+          top: 0, bottom: 0, background: scoreColor(score) + '44', borderRadius: 4,
+        }}/>
+        <div style={{
+          position: 'absolute', left: `${pctMid}%`, width: 3,
+          top: 0, bottom: 0, background: scoreColor(score), borderRadius: 2,
+          transform: 'translateX(-1px)',
+        }}/>
+      </div>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between',
+        fontSize: 10, color: 'var(--tb-slate)', marginTop: 2,
+      }}>
+        <span>{low.toFixed(1)}</span>
+        <span style={{fontWeight: 600, color: scoreColor(score)}}>{score.toFixed(1)}</span>
+        <span>{high.toFixed(1)}</span>
+      </div>
+    </div>
+  );
+}
+
+function SegmentCard({ title, today, icon }) {
+  if (!today || today.overall_score == null) {
+    return (
+      <div className="fc-segment-card">
+        <div className="fc-seg-head">
+          <span className="fc-seg-icon">{icon}</span>
+          <span className="fc-seg-title">{title}</span>
+        </div>
+        <div style={{color: 'var(--tb-slate)', fontSize: 13, padding: '12px 0'}}>No data</div>
+      </div>
+    );
+  }
+  const fs = today.factor_scores || {};
+  const topFactors = Object.entries(fs)
+    .filter(([, v]) => v != null)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
+  return (
+    <div className="fc-segment-card">
+      <div className="fc-seg-head">
+        <span className="fc-seg-icon">{icon}</span>
+        <span className="fc-seg-title">{title}</span>
+        {today.confidence && <ConfidencePill label={today.confidence}/>}
+      </div>
+      <div className="fc-seg-score" style={{color: scoreColor(today.overall_score)}}>
+        {today.overall_score.toFixed(1)}
+        <span className="fc-seg-denom">/10</span>
+      </div>
+      <div className="fc-seg-label">{today.conditions_label}</div>
+      <ScoreRange low={today.score_low} score={today.overall_score} high={today.score_high}/>
+      {topFactors.length > 0 && (
+        <div className="fc-seg-factors">
+          {topFactors.map(([k, v]) => (
+            <div key={k} className="fc-seg-factor-row">
+              <span className="fc-seg-fk">{k.replace('_', ' ')}</span>
+              <div className="fc-seg-fbar">
+                <div style={{
+                  height: '100%', width: `${((v - 1) / 9) * 100}%`,
+                  background: scoreColor(v), borderRadius: 2,
+                }}/>
+              </div>
+              <span className="fc-seg-fv" style={{color: scoreColor(v)}}>{v.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DualSegmentWidget({ fc }) {
+  const inshore  = fc?.inshore?.today;
+  const offshore = fc?.offshore?.today;
+  if (!inshore && !offshore) return null;
+  return (
+    <Panel title="Inshore vs Offshore">
+      <div className="fc-dual-grid">
+        <SegmentCard title="Inshore"  today={inshore}  icon="🎣"/>
+        <SegmentCard title="Offshore" today={offshore} icon="🐟"/>
+      </div>
+    </Panel>
+  );
+}
+
+function DualSevenDayStrip({ fc }) {
+  const [tab, setTab] = useS('offshore');
+  const inDays  = fc?.inshore?.sevenDay  || [];
+  const offDays = fc?.offshore?.sevenDay || [];
+  if (!inDays.length && !offDays.length) return null;
+  const days = tab === 'inshore' ? inDays : offDays;
+  const [selectedIdx, setSelectedIdx] = useS(0);
+  const selDay = days[selectedIdx];
+
+  return (
+    <div>
+      <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:8, marginTop:16}}>
+        <div className="panel-title-inline" style={{marginBottom:0}}>
+          7-Day Segment Forecast
+        </div>
+        <div className="fc-seg-tabs">
+          {['offshore','inshore'].map(t => (
+            <button
+              key={t}
+              className={`fc-seg-tab${tab === t ? ' active' : ''}`}
+              onClick={() => { setTab(t); setSelectedIdx(0); }}
+            >
+              {t === 'offshore' ? '🐟 Offshore' : '🎣 Inshore'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="fc-strip-wrap">
+        <div className="fc-strip">
+          {days.map((d, i) => (
+            <button
+              key={d.date}
+              className={`fc-day-card${i === selectedIdx ? ' active' : ''}`}
+              onClick={() => setSelectedIdx(i)}
+            >
+              <div className="fc-day-name">{d.dayName || '—'}</div>
+              {d.confidence && <ConfidencePill label={d.confidence}/>}
+              <div className="fc-day-score" style={{color: scoreColor(d.overall_score)}}>
+                {d.overall_score != null ? d.overall_score.toFixed(1) : '—'}
+              </div>
+              {d.score_low != null && d.score_high != null && (
+                <div style={{fontSize: 10, color: 'var(--tb-slate)', marginTop: 2}}>
+                  {d.score_low.toFixed(1)}–{d.score_high.toFixed(1)}
+                </div>
+              )}
+              <div className="fc-day-label">
+                {d.conditions_label?.split(' ').slice(0, 2).join(' ')}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {selDay && (
+        <Panel title={`${selDay.dayName || selDay.date} — ${tab.charAt(0).toUpperCase() + tab.slice(1)} Detail`}>
+          <div className="fc-detail-grid">
+            <div className="fc-detail-left">
+              <div className="fc-big-score">
+                <div className="fc-score-num" style={{color: scoreColor(selDay.overall_score)}}>
+                  {selDay.overall_score != null ? selDay.overall_score.toFixed(1) : '—'}
+                </div>
+                <div className="fc-score-denom">/10</div>
+                <div className="fc-score-label">{selDay.conditions_label}</div>
+              </div>
+              {selDay.confidence && <div style={{marginTop: 6}}><ConfidencePill label={selDay.confidence}/></div>}
+              <ScoreRange low={selDay.score_low} score={selDay.overall_score} high={selDay.score_high}/>
+            </div>
+            {selDay.factor_scores && (
+              <div className="fc-detail-right">
+                {Object.entries(selDay.factor_scores).map(([k, v]) => v != null && (
+                  <ScoreBar key={k} score={v}
+                    label={k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}/>
+                ))}
+              </div>
+            )}
+          </div>
+        </Panel>
+      )}
+    </div>
+  );
+}
+
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function NoForecastData() {
   return (
@@ -466,17 +657,23 @@ function ForecastView({ navigate }) {
         </div>
       </Panel>
 
+      {/* Dual inshore / offshore scores */}
+      <DualSegmentWidget fc={fc}/>
+
       {/* 7-day strip + selected day detail */}
       {/* TODO: PRO FEATURE — lock for free users later */}
       {days.length > 0 && (
         <Fragment>
           <div style={{marginTop: 16}}>
-            <div className="panel-title-inline">7-Day Forecast</div>
+            <div className="panel-title-inline">7-Day Forecast (Overall)</div>
           </div>
           <SevenDayStrip days={days} selectedIdx={selectedDay} onSelect={setSelectedDay}/>
           <DayDetail day={selDay}/>
         </Fragment>
       )}
+
+      {/* Dual segment 7-day strips */}
+      <DualSevenDayStrip fc={fc}/>
 
       {/* Species cards */}
       <SpeciesGrid day={selDay}/>

@@ -24,6 +24,8 @@ from .analytics import (
     _BLUEFIN_BREAKS, _OVERALL_BREAKS, _YELLOWFIN_BREAKS,
     _anomaly_boost, _breaks_from_weights, _load_weights, _score,
 )
+from .backtest import _classify_wind, get_season, load_segment_weights
+from .chlorophyll import score_chlorophyll
 from .moon import moon_info
 
 log = logging.getLogger(__name__)
@@ -95,6 +97,169 @@ def _load_factor_weights() -> dict:
         "swell":     round(swell_w / total, 4),
         "pressure":  round(pres_w  / total, 4),
         "historical": round(hist_w  / total, 4),
+    }
+
+
+# ─── Dual segment helpers ────────────────────────────────────────────────────
+
+def _wind_direction_score(
+    is_offshore: int | None,
+    is_upwelling: int | None,
+    segment: str,
+) -> float:
+    """Score wind direction for fishing (1–10).
+
+    Offshore: NW upwelling hurts (cold push), E/S offshore wind helps.
+    Inshore:  NW upwelling boosts bait/productivity; direction matters less.
+    """
+    if is_offshore is None and is_upwelling is None:
+        return 5.0
+    if segment == "offshore":
+        if is_upwelling:  return 3.0   # NW — cold upwelling, hurts offshore tuna
+        if is_offshore:   return 8.5   # E/S/SE — warm offshore flow, fish up
+        return 5.5                     # W neutral
+    else:  # inshore
+        if is_upwelling:  return 7.5   # NW — productive bait upwelling
+        if is_offshore:   return 6.0   # E/SE — decent
+        return 5.0
+
+
+def _sst_gradient_score(gradient: float | None, segment: str) -> float:
+    """Score the nearshore/offshore temperature break (1–10).
+
+    A strong gradient concentrates fish at the edge — good for both segments,
+    but especially important for offshore where pelagics stack at the break.
+    """
+    if gradient is None:
+        return 5.0
+    if segment == "offshore":
+        if gradient >= 5.0: return 9.5
+        if gradient >= 3.0: return 8.0
+        if gradient >= 2.0: return 6.5
+        if gradient >= 1.0: return 5.5
+        return 4.0   # weak gradient — no clear break
+    else:  # inshore
+        if gradient >= 3.0: return 7.0   # productive edge close in
+        if gradient >= 1.5: return 6.0
+        return 5.0
+
+
+def _confidence_band(days_out: int) -> tuple[float, str]:
+    """Return (±width, label) for forecast confidence intervals."""
+    if days_out <= 1: return 1.5, "High"
+    if days_out <= 3: return 2.0, "Medium"
+    if days_out <= 5: return 2.5, "Low"
+    return 3.0, "Outlook"
+
+
+def _load_segment_factor_weights(segment: str, season: str) -> dict[str, float]:
+    """Convert segment+season weight multipliers into normalized weights summing to 1.0."""
+    sw = load_segment_weights(segment, season)
+    if not sw:
+        sw = load_segment_weights(segment, "overall")
+
+    sst_m    = max(0.05, sw.get("sst_weight",          1.0))
+    moon_m   = max(0.01, sw.get("moon_weight",          0.1))
+    wind_m   = max(0.05, sw.get("wind_weight",          0.3))
+    wdir_m   = max(0.05, sw.get("wind_offshore_weight", 0.2))
+    grad_m   = max(0.05, sw.get("sst_gradient_weight",  0.15))
+    chl_m    = max(0.02, sw.get("chl_weight",           0.1))
+    swell_m  = _SWELL_DEFAULT
+
+    total = sst_m + moon_m + wind_m + wdir_m + grad_m + chl_m + swell_m
+    return {
+        "sst":         round(sst_m   / total, 4),
+        "wind_speed":  round(wind_m  / total, 4),
+        "wind_dir":    round(wdir_m  / total, 4),
+        "gradient":    round(grad_m  / total, 4),
+        "chlorophyll": round(chl_m   / total, 4),
+        "moon":        round(moon_m  / total, 4),
+        "swell":       round(swell_m / total, 4),
+    }
+
+
+def score_segment(
+    segment: str,
+    conditions: dict,
+    season: str | None = None,
+    days_out: int = 0,
+) -> dict:
+    """Full weighted score for one segment (inshore or offshore).
+
+    conditions keys (all optional, neutral fallback applied):
+      sst_nearshore, sst_offshore, sst_anomaly, sst_gradient,
+      wind_speed, wind_is_offshore, wind_is_upwelling, wind_direction,
+      swell_height, moon_illum, chlorophyll_nearshore, chlorophyll_offshore.
+
+    days_out: 0=today, …7 — widens confidence interval per day.
+    """
+    month = conditions.get("month", date.today().month)
+    if season is None:
+        season = get_season(month)
+
+    w = _load_segment_factor_weights(segment, season)
+    sw = load_segment_weights(segment, season) or load_segment_weights(segment, "overall") or {}
+
+    # Segment-appropriate primary SST
+    sst_val = (conditions.get("sst_nearshore") if segment == "inshore"
+               else conditions.get("sst_offshore"))
+    anomaly = conditions.get("sst_anomaly")
+
+    bw = _load_weights()
+    overall_breaks = _breaks_from_weights(bw, "overall_breaks", _OVERALL_BREAKS)
+
+    f_sst    = _score(sst_val, overall_breaks) if sst_val is not None else 5.0
+    anom_m   = sw.get("anomaly_weight", bw.get("anomaly_weight", 1.0))
+    anom_mod = _anomaly_boost(anomaly) * (anom_m * 0.4)
+    f_sst_adj = round(min(10.0, max(1.0, f_sst + anom_mod)), 1)
+
+    # Wind direction classification — use pre-computed flags or compute from degrees
+    is_offshore  = conditions.get("wind_is_offshore")
+    is_upwelling = conditions.get("wind_is_upwelling")
+    if is_offshore is None and is_upwelling is None:
+        _, is_offshore, is_upwelling = _classify_wind(conditions.get("wind_direction"))
+
+    f_moon    = _moon_score(conditions.get("moon_illum"))
+    f_wind    = _wind_score(conditions.get("wind_speed"))
+    f_swe     = _swell_score(conditions.get("swell_height"))
+    f_wdir    = _wind_direction_score(is_offshore, is_upwelling, segment)
+    f_grad    = _sst_gradient_score(conditions.get("sst_gradient"), segment)
+    f_chl     = score_chlorophyll(
+                    conditions.get("chlorophyll_nearshore"),
+                    conditions.get("chlorophyll_offshore"),
+                    segment,
+                )
+
+    total_score = (
+        f_sst_adj * w["sst"]  +
+        f_moon    * w["moon"] +
+        f_wind    * w["wind_speed"] +
+        f_swe     * w["swell"] +
+        f_wdir    * w["wind_dir"] +
+        f_grad    * w["gradient"] +
+        f_chl     * w["chlorophyll"]
+    )
+    overall = round(min(10.0, max(1.0, total_score)), 1)
+
+    ci_width, ci_label = _confidence_band(days_out)
+    return {
+        "overall_score":    overall,
+        "conditions_label": _conditions_label(overall),
+        "score_low":        round(max(1.0, overall - ci_width), 1),
+        "score_high":       round(min(10.0, overall + ci_width), 1),
+        "confidence":       ci_label,
+        "season":           season,
+        "segment":          segment,
+        "factor_scores": {
+            "sst":          f_sst_adj,
+            "wind_speed":   round(f_wind, 1),
+            "wind_dir":     round(f_wdir, 1),
+            "sst_gradient": round(f_grad, 1),
+            "chlorophyll":  round(f_chl, 1),
+            "moon":         round(f_moon, 1),
+            "swell":        round(f_swe, 1),
+        },
+        "factor_weights": w,
     }
 
 
@@ -497,18 +662,20 @@ def build_forecast_payload(
     primary_sst  = sst_by_loc.get("60-Mile Bank") or next(iter(sst_by_loc.values()), None)
     primary_anom = anom_by_loc.get("60-Mile Bank")
 
-    # ── Today's weather data ──────────────────────────────────────────────────
+    # ── Today's weather data + extended conditions ────────────────────────────
     today_wx: dict = {}
+    today_hc: dict = {}  # full historical_conditions row for dual model
     if weather_forecast:
         today_wx = next((w for w in weather_forecast if w["date"] == today_str), {})
     # Fall back to historical_conditions for today/yesterday
-    if not today_wx:
-        try:
-            hc = conn.execute(
-                "SELECT * FROM historical_conditions WHERE date IN (?,?) ORDER BY date DESC LIMIT 1",
-                (today_str, (today - timedelta(days=1)).isoformat()),
-            ).fetchone()
-            if hc:
+    try:
+        hc = conn.execute(
+            "SELECT * FROM historical_conditions WHERE date IN (?,?) ORDER BY date DESC LIMIT 1",
+            (today_str, (today - timedelta(days=1)).isoformat()),
+        ).fetchone()
+        if hc:
+            today_hc = dict(hc)
+            if not today_wx:
                 today_wx = {
                     "wind_speed":     hc["wind_speed"],
                     "wind_direction": hc["wind_direction"],
@@ -517,11 +684,10 @@ def build_forecast_payload(
                     "pressure":       hc["pressure"],
                     "pressure_trend": hc["pressure_trend"],
                 }
-                # NDBC swell_height stored in metres — convert for scoring
                 if today_wx.get("swell_height") is not None:
                     today_wx["swell_height"] = round(today_wx["swell_height"] * 3.28084, 1)
-        except Exception:
-            pass
+    except Exception:
+        pass
 
     # ── Moon ─────────────────────────────────────────────────────────────────
     moon = moon_info(datetime(today.year, today.month, today.day, tzinfo=timezone.utc))
@@ -593,11 +759,75 @@ def build_forecast_payload(
     # ── Accuracy ──────────────────────────────────────────────────────────────
     accuracy = _accuracy_stats(conn)
 
+    # ── Dual segment forecast ──────────────────────────────────────────────────
+    # Build a merged conditions dict for segment scoring
+    today_conditions = {
+        "month":               month,
+        "sst_nearshore":       sst_by_loc.get("Nearshore"),
+        "sst_offshore":        primary_sst,
+        "sst_anomaly":         primary_anom,
+        "wind_speed":          today_wx.get("wind_speed"),
+        "wind_direction":      today_wx.get("wind_direction"),
+        "wind_is_offshore":    today_hc.get("wind_is_offshore"),
+        "wind_is_upwelling":   today_hc.get("wind_is_upwelling"),
+        "swell_height":        today_wx.get("swell_height"),
+        "moon_illum":          moon.illum,
+        "sst_gradient":        today_hc.get("sst_gradient"),
+        "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
+        "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
+    }
+
+    segment_today: dict[str, dict] = {}
+    for seg in ("inshore", "offshore"):
+        try:
+            segment_today[seg] = score_segment(seg, today_conditions, days_out=0)
+        except Exception as e:
+            log.debug("score_segment %s failed: %s", seg, e)
+            segment_today[seg] = {}
+
+    # Dual 7-day strip
+    segment_seven_day: dict[str, list] = {"inshore": [], "offshore": []}
+    for i, day_entry in enumerate(seven_day):
+        d     = today + timedelta(days=i)
+        wx    = wx_by_date.get(d.isoformat(), {})
+        dmoon = moon_info(datetime(d.year, d.month, d.day, tzinfo=timezone.utc))
+        day_conditions = {
+            "month":             d.month,
+            "sst_nearshore":     sst_by_loc.get("Nearshore"),
+            "sst_offshore":      primary_sst,
+            "sst_anomaly":       primary_anom,
+            "wind_speed":        wx.get("wind_speed"),
+            "wind_direction":    wx.get("wind_direction"),
+            "swell_height":      wx.get("swell_height"),
+            "moon_illum":        dmoon.illum,
+            "sst_gradient":      today_hc.get("sst_gradient"),  # use today's gradient
+            "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
+            "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
+        }
+        for seg in ("inshore", "offshore"):
+            try:
+                seg_score = score_segment(seg, day_conditions, days_out=i)
+                segment_seven_day[seg].append({
+                    "date":            d.isoformat(),
+                    "dayName":         d.strftime("%a"),
+                    **seg_score,
+                })
+            except Exception as e:
+                log.debug("score_segment %s day %s failed: %s", seg, i, e)
+
     return {
         "today":           today_out,
         "sevenDay":        seven_day,
         "accuracy":        accuracy,
         "historicalMatch": hist_match,
+        "inshore":         {
+            "today":    segment_today.get("inshore", {}),
+            "sevenDay": segment_seven_day["inshore"],
+        },
+        "offshore": {
+            "today":    segment_today.get("offshore", {}),
+            "sevenDay": segment_seven_day["offshore"],
+        },
     }
 
 

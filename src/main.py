@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import db
@@ -73,6 +73,14 @@ def run(target_date: date | None, export_only: bool) -> int:
             db.replace_scheduled_trips(conn, all_scheduled)
             summary_lines.append(f"  scheduled_trips refreshed: {len(all_scheduled)} rows")
 
+        # Segment stats — keep daily_segment_stats current after each scrape.
+        try:
+            yesterday = (date.today() - timedelta(days=1)).isoformat()
+            n_seg = db.update_daily_segment_stats(conn, since_date=yesterday)
+            summary_lines.append(f"  Segment stats updated: {n_seg} rows")
+        except Exception as e:
+            summary_lines.append(f"  Segment stats ERROR (non-fatal): {e}")
+
         # SST — runs after trip scraping; failure is non-fatal.
         try:
             sst_records = fetch_daily_sst(target_date or date.today(), conn)
@@ -80,6 +88,14 @@ def run(target_date: date | None, export_only: bool) -> int:
             summary_lines.append(f"  SST fetched: {n_sst} location-days stored")
         except Exception as e:
             summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
+
+        # Chlorophyll-a — MODIS Aqua 8-day composite; failure is non-fatal.
+        try:
+            from .chlorophyll import fetch_chlorophyll
+            n_chl = fetch_chlorophyll(DB_PATH, target_date or date.today())
+            summary_lines.append(f"  Chlorophyll fetched: {n_chl} location-days stored")
+        except Exception as e:
+            summary_lines.append(f"  Chlorophyll fetch ERROR (non-fatal): {e}")
 
         # Daily accuracy check — score yesterday's forecast vs actual catch.
         try:
@@ -146,6 +162,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="Scrape per-boat history pages to backfill all available historical data.")
     p.add_argument("--backfill-sst", action="store_true",
                    help="Fetch 90 days of SST history from NOAA ERDDAP.")
+    p.add_argument("--backfill-chl", action="store_true",
+                   help="Backfill chlorophyll-a from NASA ERDDAP (2015-present).")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(argv)
 
@@ -159,6 +177,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.backfill_sst:
         from .sst import backfill_sst
         backfill_sst(DB_PATH)
+        return 0
+
+    if args.backfill_chl:
+        from .chlorophyll import backfill_chlorophyll
+        backfill_chlorophyll(DB_PATH)
         return 0
 
     return run(args.date, args.export_only)

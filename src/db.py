@@ -304,3 +304,90 @@ def latest_trip_date(conn: sqlite3.Connection) -> date | None:
     if row and row["d"]:
         return date.fromisoformat(row["d"])
     return None
+
+
+_DAILY_SEGMENT_STATS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS daily_segment_stats (
+  date              TEXT,
+  segment           TEXT,
+  trip_count        INTEGER,
+  avg_tpa           REAL,
+  top_quartile_tpa  REAL,
+  median_tpa        REAL,
+  total_tuna        INTEGER,
+  total_anglers     INTEGER,
+  bluefin_tpa       REAL,
+  yellowfin_tpa     REAL,
+  yellowtail_tpa    REAL,
+  dorado_tpa        REAL,
+  PRIMARY KEY (date, segment)
+);
+"""
+
+
+def _percentile(vals: list[float], pct: float) -> float | None:
+    if not vals:
+        return None
+    s = sorted(vals)
+    idx = (len(s) - 1) * pct / 100.0
+    lo, hi = int(idx), min(int(idx) + 1, len(s) - 1)
+    return s[lo] + (s[hi] - s[lo]) * (idx - lo)
+
+
+def update_daily_segment_stats(
+    conn: sqlite3.Connection,
+    since_date: str | None = None,
+) -> int:
+    """Upsert daily_segment_stats for all dates >= since_date (or all dates if None).
+
+    Uses top-quartile TPA as the primary target variable for the dual forecast model.
+    Returns number of rows written.
+    """
+    conn.executescript(_DAILY_SEGMENT_STATS_SCHEMA)
+
+    where = f"WHERE segment IS NOT NULL AND anglers >= 5"
+    if since_date:
+        where += f" AND date >= '{since_date}'"
+
+    base_rows = conn.execute(f"""
+        SELECT date, segment,
+               COUNT(*) as trip_count,
+               AVG(trophy_per_angler_per_day) as avg_tpa,
+               SUM(trophy_count) as total_tuna,
+               SUM(anglers) as total_anglers,
+               AVG(bluefin   * 1.0 / NULLIF(anglers,0)) as bluefin_tpa,
+               AVG(yellowfin * 1.0 / NULLIF(anglers,0)) as yellowfin_tpa,
+               AVG(yellowtail* 1.0 / NULLIF(anglers,0)) as yellowtail_tpa,
+               AVG(dorado    * 1.0 / NULLIF(anglers,0)) as dorado_tpa
+        FROM trips {where}
+        GROUP BY date, segment
+        HAVING COUNT(*) >= 2
+    """).fetchall()
+
+    from collections import defaultdict
+    tpa_lists: dict[tuple, list] = defaultdict(list)
+    tpa_rows = conn.execute(f"""
+        SELECT date, segment, trophy_per_angler_per_day
+        FROM trips {where} AND trophy_per_angler_per_day IS NOT NULL
+    """).fetchall()
+    for r in tpa_rows:
+        tpa_lists[(r["date"], r["segment"])].append(r["trophy_per_angler_per_day"])
+
+    insert_rows = []
+    for r in base_rows:
+        tpas  = tpa_lists.get((r["date"], r["segment"]), [])
+        top_q = _percentile(tpas, 75)
+        median = _percentile(tpas, 50)
+        insert_rows.append((
+            r["date"], r["segment"], r["trip_count"], r["avg_tpa"],
+            top_q, median, r["total_tuna"], r["total_anglers"],
+            r["bluefin_tpa"], r["yellowfin_tpa"], r["yellowtail_tpa"], r["dorado_tpa"],
+        ))
+
+    conn.executemany("""
+        INSERT OR REPLACE INTO daily_segment_stats
+        (date, segment, trip_count, avg_tpa, top_quartile_tpa, median_tpa,
+         total_tuna, total_anglers, bluefin_tpa, yellowfin_tpa, yellowtail_tpa, dorado_tpa)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+    """, insert_rows)
+    return len(insert_rows)

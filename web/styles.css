@@ -903,6 +903,51 @@ body.compact .dt td { padding: 7px 12px; }
 /* SST chart legend */
 .fc-sst-legend { display: flex; gap: 16px; margin-top: 8px; }
 
+/* Dual segment cards */
+.fc-dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fc-segment-card {
+  background: var(--tb-foam); border-radius: 10px; padding: 14px;
+  border: 1px solid var(--tb-border-2);
+}
+.fc-seg-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.fc-seg-icon  { font-size: 16px; }
+.fc-seg-title { font: 700 13px/18px var(--ss-font-display); flex: 1; }
+.fc-seg-score { font: 800 36px/40px var(--ss-font-display); margin-bottom: 2px; }
+.fc-seg-denom { font: 600 16px/40px var(--ss-font-sans); color: var(--tb-gray-3); }
+.fc-seg-label { font: 500 11px/14px var(--ss-font-sans); color: var(--tb-slate); margin-bottom: 4px; }
+.fc-seg-factors { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.fc-seg-factor-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.fc-seg-fk { width: 80px; color: var(--tb-slate); text-transform: capitalize; flex-shrink: 0; }
+.fc-seg-fbar { flex: 1; height: 5px; background: var(--tb-border-2); border-radius: 2px; overflow: hidden; }
+.fc-seg-fv   { width: 24px; text-align: right; font: 700 11px/14px var(--ss-font-sans); }
+
+/* Segment tab toggle */
+.fc-seg-tabs { display: flex; gap: 4px; margin-left: auto; }
+.fc-seg-tab {
+  padding: 4px 12px; border-radius: 6px; border: 1px solid var(--tb-border);
+  background: transparent; font: 500 12px/16px var(--ss-font-sans); cursor: pointer;
+  color: var(--tb-slate); transition: background .15s, color .15s;
+}
+.fc-seg-tab:hover { background: var(--tb-foam); }
+.fc-seg-tab.active { background: var(--tb-accent); color: #fff; border-color: var(--tb-accent); }
+
+/* Dual segment mini (dashboard) */
+.fc-seg-mini-wrap {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--tb-bg); border: 1px solid var(--tb-border-2);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;
+}
+.fc-seg-mini-grid { display: flex; gap: 20px; flex: 1; }
+.fc-seg-mini-card { display: flex; flex-direction: column; gap: 1px; min-width: 100px; }
+.fc-seg-mini-head { display: flex; align-items: center; gap: 5px; font: 600 11px/14px var(--ss-font-sans); color: var(--tb-slate); }
+.fc-seg-mini-title { flex: 1; }
+.fc-seg-mini-conf { font: 600 9px/12px var(--ss-font-sans); padding: 1px 5px; border-radius: 99px; background: #f1f5f9; color: #64748b; }
+.fc-seg-mini-score { font: 800 22px/26px var(--ss-font-display); }
+.fc-seg-mini-denom { font: 600 12px/26px var(--ss-font-sans); color: var(--tb-gray-3); }
+.fc-seg-mini-label { font: 500 10px/14px var(--ss-font-sans); color: var(--tb-slate); }
+.fc-seg-mini-range { font: 400 10px/14px var(--ss-font-sans); color: var(--tb-gray-3); }
+.fc-seg-mini-btn   { margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
 /* ── Mobile responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .fc-widget { flex-direction: column; align-items: stretch; gap: 12px; }
@@ -910,6 +955,8 @@ body.compact .dt td { padding: 7px 12px; }
   .fc-today-hero { flex-direction: column; gap: 16px; }
   .fc-detail-grid { grid-template-columns: 1fr; }
   .fc-species-grid { grid-template-columns: 1fr 1fr; }
+  .fc-dual-grid { grid-template-columns: 1fr 1fr; }
+  .fc-seg-score { font-size: 28px; }
   .fc-hist-kpis { grid-template-columns: 1fr 1fr; }
   .fc-accuracy-grid { grid-template-columns: 1fr 1fr 1fr; }
   .fc-hist-boat-row { grid-template-columns: 20px 1fr 50px 50px; font-size: 11px; }

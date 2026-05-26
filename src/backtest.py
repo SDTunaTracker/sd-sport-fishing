@@ -42,6 +42,7 @@ log = logging.getLogger(__name__)
 ROOT     = Path(__file__).resolve().parents[1]
 DB_PATH  = ROOT / "tracker.db"
 WEIGHTS_PATH = ROOT / "backtest_weights.json"
+SEGMENT_WEIGHTS_DIR = ROOT / "segment_weights"
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
@@ -338,12 +339,13 @@ def build_historical_conditions(
     Returns number of rows written."""
     _apply_schema(conn)
 
-    # Load SST keyed by date then location
+    # Load SST keyed by date then location (wider window for 7-day avg/trend)
+    sst_window_start = (start - timedelta(days=10)).isoformat()
     sst_by_date: dict[str, dict] = {}
     for row in conn.execute(
         """SELECT date, location, sst_fahrenheit, anomaly
            FROM ocean_temps WHERE date BETWEEN ? AND ?""",
-        (start.isoformat(), end.isoformat()),
+        (sst_window_start, end.isoformat()),
     ).fetchall():
         d_str = row["date"]
         sst_by_date.setdefault(d_str, {"anomalies": []})
@@ -359,31 +361,71 @@ def build_historical_conditions(
         moon  = moon_info(datetime(d.year, d.month, d.day, tzinfo=timezone.utc))
         wd    = (wind_data  or {}).get(d_str, {})
         sw    = (swell_data or {}).get(d_str, {})
+        wind_deg = wd.get("wind_direction")
+        wind_label, wind_is_offshore, wind_is_upwelling = _classify_wind(wind_deg)
+
+        # SST gradient and warming trend
+        sst_offshore  = sst.get("60-Mile Bank")
+        sst_nearshore = sst.get("Nearshore")
+        sst_gradient  = (round(abs(sst_offshore - sst_nearshore), 2)
+                         if sst_offshore is not None and sst_nearshore is not None else None)
+        sst_7ago = (d - timedelta(days=7)).isoformat()
+        sst_7ago_val  = sst_by_date.get(sst_7ago, {}).get("60-Mile Bank")
+        sst_warming   = (round(sst_offshore - sst_7ago_val, 2)
+                         if sst_offshore is not None and sst_7ago_val is not None else None)
+        window_vals   = [sst_by_date.get((d - timedelta(days=i)).isoformat(), {}).get("60-Mile Bank")
+                         for i in range(7)]
+        window_vals   = [v for v in window_vals if v is not None]
+        sst_7day_avg  = round(sum(window_vals) / len(window_vals), 2) if window_vals else None
+
         conn.execute(
             """INSERT OR REPLACE INTO historical_conditions
                (date, sst_nearshore, sst_9mile, sst_offshore, sst_cortez,
                 sst_anomaly, wind_speed, wind_direction, swell_height,
-                swell_period, pressure, pressure_trend, moon_illum, moon_phase_name)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                swell_period, pressure, pressure_trend, moon_illum, moon_phase_name,
+                wind_direction_deg, wind_direction_label, wind_is_offshore, wind_is_upwelling,
+                sst_gradient, sst_warming_trend, sst_7day_avg)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 d_str,
-                sst.get("Nearshore"),
+                sst_nearshore,
                 sst.get("9-Mile Bank"),
-                sst.get("60-Mile Bank"),
+                sst_offshore,
                 sst.get("Cortez Bank"),
                 round(sum(anoms) / len(anoms), 2) if anoms else None,
                 wd.get("wind_speed"),
-                wd.get("wind_direction"),
+                wind_deg,
                 sw.get("swell_height"),
                 sw.get("swell_period"),
                 wd.get("pressure"),
                 wd.get("pressure_trend"),
                 moon.illum,
                 moon.phase,
+                wind_deg,
+                wind_label,
+                wind_is_offshore,
+                wind_is_upwelling,
+                sst_gradient,
+                sst_warming,
+                sst_7day_avg,
             ),
         )
         n += 1
     return n
+
+
+def _classify_wind(deg: float | None) -> tuple[str | None, int, int]:
+    """Classify wind direction for SD fishing: returns (label, is_offshore, is_upwelling)."""
+    if deg is None:
+        return None, 0, 0
+    d = float(deg) % 360
+    if d >= 315 or d < 45:
+        return "NW (Upwelling)", 0, 1
+    if 45 <= d < 135:
+        return "E (Offshore)", 1, 0
+    if 135 <= d < 225:
+        return "S/SE (Baja Push)", 1, 0
+    return "W (Neutral)", 0, 0
 
 
 # ─── Backtest engine ──────────────────────────────────────────────────────────
@@ -392,6 +434,13 @@ _HC_NUMERIC_COLS = (
     "sst_nearshore", "sst_9mile", "sst_offshore", "sst_cortez",
     "sst_anomaly", "wind_speed", "wind_direction",
     "swell_height", "swell_period", "pressure", "pressure_trend", "moon_illum",
+)
+
+# Extended factor set for the dual segment model
+_SEGMENT_HC_FACTORS = _HC_NUMERIC_COLS + (
+    "sst_gradient", "sst_warming_trend", "sst_7day_avg",
+    "wind_is_offshore", "wind_is_upwelling",
+    "chlorophyll_nearshore", "chlorophyll_offshore", "chlorophyll_ratio",
 )
 
 
@@ -710,6 +759,24 @@ def save_weights(weights: dict, path: Path = WEIGHTS_PATH) -> None:
     log.info("Weights saved to %s", path)
 
 
+def load_segment_weights(segment: str, season: str) -> dict:
+    """Load weight file for segment+season combination; returns {} if not found."""
+    p = SEGMENT_WEIGHTS_DIR / f"weights_{segment}_{season}.json"
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+
+def save_segment_weights(weights: dict, segment: str, season: str) -> None:
+    SEGMENT_WEIGHTS_DIR.mkdir(exist_ok=True)
+    p = SEGMENT_WEIGHTS_DIR / f"weights_{segment}_{season}.json"
+    p.write_text(json.dumps(weights, indent=2), encoding="utf-8")
+    log.info("Segment weights saved: %s", p.name)
+
+
 # ─── Accuracy metrics ─────────────────────────────────────────────────────────
 
 def compute_metrics(results: list[dict]) -> dict:
@@ -833,6 +900,300 @@ def _print_summary(report: dict) -> None:
         print("MAE BY SST RANGE")
         for bucket, mae in sorted(sst_mae.items()):
             print(f"  {bucket:10s}: {mae}")
+
+
+# ─── Dual segment backtest engine ────────────────────────────────────────────
+
+def get_season(month: int) -> str:
+    """Map calendar month to fishing season bucket."""
+    if 3 <= month <= 5:  return "early"
+    if 6 <= month <= 8:  return "peak"
+    if 9 <= month <= 11: return "late"
+    return "early"  # Dec–Feb: treat as early (pre-season)
+
+
+def _get_segment_daily_tpa(conn: sqlite3.Connection, segment: str) -> dict[str, dict]:
+    """Top-quartile TPA per date for a given segment from daily_segment_stats."""
+    rows = conn.execute(
+        """SELECT date, top_quartile_tpa, avg_tpa, trip_count,
+                  bluefin_tpa, yellowfin_tpa, yellowtail_tpa, dorado_tpa
+           FROM daily_segment_stats
+           WHERE segment = ?
+           ORDER BY date""",
+        (segment,),
+    ).fetchall()
+    return {r["date"]: dict(r) for r in rows}
+
+
+def _avg_conditions_extended(hc_by_date: dict, dep_date: date, n_days: int = 1) -> dict | None:
+    """Like _avg_conditions but includes all extended dual-model columns."""
+    rows = [hc_by_date.get((dep_date + timedelta(days=i)).isoformat())
+            for i in range(max(n_days, 1))]
+    rows = [r for r in rows if r]
+    if not rows:
+        return None
+    result: dict = {}
+    for col in _SEGMENT_HC_FACTORS:
+        vals = [r[col] for r in rows if r.get(col) is not None]
+        result[col] = round(sum(vals) / len(vals), 4) if vals else None
+    result["moon_phase_name"] = rows[0].get("moon_phase_name")
+    return result
+
+
+def backtest_segment(
+    conn: sqlite3.Connection,
+    segment: str,
+    start: date, end: date,
+) -> list[dict]:
+    """Backtest against top-quartile TPA for one segment.
+
+    Target: top_quartile_tpa from daily_segment_stats (75th-pct TPA across boats).
+    SST: sst_nearshore for inshore, sst_offshore for offshore.
+    New factors included: sst_gradient, wind_is_offshore, wind_is_upwelling, chlorophyll.
+    """
+    _apply_schema(conn)
+    daily_tpa = _get_segment_daily_tpa(conn, segment)
+    if not daily_tpa:
+        return []
+    all_top_q = [v["top_quartile_tpa"] for v in daily_tpa.values()
+                 if v["top_quartile_tpa"] is not None]
+
+    hc_start = (start - timedelta(days=3)).isoformat()
+    hc_end   = (end   + timedelta(days=3)).isoformat()
+    hc_by_date = {
+        r["date"]: dict(r)
+        for r in conn.execute(
+            "SELECT * FROM historical_conditions WHERE date BETWEEN ? AND ?",
+            (hc_start, hc_end),
+        ).fetchall()
+    }
+
+    sst_key = "sst_nearshore" if segment == "inshore" else "sst_offshore"
+
+    results = []
+    for d_str, actual in daily_tpa.items():
+        dep_date = date.fromisoformat(d_str)
+        if not (start <= dep_date <= end):
+            continue
+        top_q = actual.get("top_quartile_tpa")
+        if top_q is None:
+            continue
+        cond = _avg_conditions_extended(hc_by_date, dep_date)
+        if cond is None:
+            continue
+        sst_val = cond.get(sst_key)
+        if sst_val is None:
+            continue
+
+        # Baseline prediction (SST + anomaly) — refined in Part 5 forecast engine
+        boost = _anomaly_boost(cond.get("sst_anomaly"))
+        predicted = round(min(10.0, max(1.0, _score(sst_val, _OVERALL_BREAKS) + boost)), 1)
+        actual_rating = _tpa_to_rating(top_q, all_top_q)
+        error = abs(predicted - actual_rating)
+
+        chl_key = "chlorophyll_nearshore" if segment == "inshore" else "chlorophyll_ratio"
+        results.append({
+            "date":               d_str,
+            "month":              dep_date.month,
+            "season":             get_season(dep_date.month),
+            "segment":            segment,
+            "predicted":          predicted,
+            "actual_tpa_topq":    round(top_q, 4),
+            "actual_tpa_avg":     round(actual.get("avg_tpa") or 0, 4),
+            "actual_rating":      actual_rating,
+            "error":              round(error, 2),
+            "correct_direction":  (predicted >= 5.5) == (actual_rating >= 5.5),
+            # Condition factors for correlation analysis
+            "sst_primary":        sst_val,
+            "sst_anomaly":        cond.get("sst_anomaly"),
+            "sst_gradient":       cond.get("sst_gradient"),
+            "sst_warming_trend":  cond.get("sst_warming_trend"),
+            "wind_speed":         cond.get("wind_speed"),
+            "wind_is_offshore":   cond.get("wind_is_offshore"),
+            "wind_is_upwelling":  cond.get("wind_is_upwelling"),
+            "swell_height":       cond.get("swell_height"),
+            "moon_illum":         cond.get("moon_illum"),
+            "chl_primary":        cond.get(chl_key),
+        })
+    return sorted(results, key=lambda x: x["date"])
+
+
+def correlate_segment_factors(
+    conn: sqlite3.Connection,
+    results: list[dict],
+    segment: str,
+) -> dict[str, dict[str, float | None]]:
+    """Pearson r between each extended factor and top-quartile TPA rating."""
+    factors = {
+        "sst_primary":       [r["sst_primary"]      for r in results],
+        "sst_anomaly":       [r["sst_anomaly"]      for r in results],
+        "sst_gradient":      [r["sst_gradient"]     for r in results],
+        "sst_warming_trend": [r["sst_warming_trend"]for r in results],
+        "wind_speed":        [r["wind_speed"]       for r in results],
+        "wind_is_offshore":  [r["wind_is_offshore"] for r in results],
+        "wind_is_upwelling": [r["wind_is_upwelling"]for r in results],
+        "swell_height":      [r["swell_height"]     for r in results],
+        "moon_illum":        [r["moon_illum"]       for r in results],
+        "chl_primary":       [r["chl_primary"]      for r in results],
+        "month_num":         [float(r["month"])     for r in results],
+    }
+    targets = {"overall": [r["actual_rating"] for r in results]}
+    matrix: dict[str, dict] = {}
+    for fname, fvals in factors.items():
+        matrix[fname] = {}
+        for tname, tvals in targets.items():
+            pairs = [(f, t) for f, t in zip(fvals, tvals) if f is not None and t is not None]
+            matrix[fname][tname] = _pearson_r(*zip(*pairs)) if len(pairs) >= 10 else None
+    return matrix
+
+
+def optimize_segment_weights(
+    correlations: dict,
+    segment: str,
+    existing: dict | None = None,
+) -> dict:
+    """Derive factor weights from correlation analysis for a segment+season."""
+    weights = (existing or {}).copy()
+    weights.setdefault("sst_weight",          1.0)
+    weights.setdefault("anomaly_weight",       1.0)
+    weights.setdefault("moon_weight",          0.0)
+    weights.setdefault("wind_weight",          0.0)
+    weights.setdefault("sst_gradient_weight",  0.0)
+    weights.setdefault("wind_offshore_weight", 0.0)
+    weights.setdefault("chl_weight",           0.0)
+
+    def _adj(r: float | None, center: float = 0.3) -> float:
+        if r is None:
+            return 1.0
+        return round(max(0.4, min(2.0, 1.0 + (abs(r) - center) * 2.0)), 3)
+
+    sst_r  = correlations.get("sst_primary",       {}).get("overall")
+    anom_r = correlations.get("sst_anomaly",        {}).get("overall")
+    moon_r = correlations.get("moon_illum",         {}).get("overall")
+    wind_r = correlations.get("wind_speed",         {}).get("overall")
+    grad_r = correlations.get("sst_gradient",       {}).get("overall")
+    woff_r = correlations.get("wind_is_offshore",   {}).get("overall")
+    wup_r  = correlations.get("wind_is_upwelling",  {}).get("overall")
+    chl_r  = correlations.get("chl_primary",        {}).get("overall")
+
+    if sst_r  is not None: weights["sst_weight"]          = _adj(sst_r,  0.3)
+    if anom_r is not None: weights["anomaly_weight"]       = _adj(anom_r, 0.2)
+    if moon_r is not None: weights["moon_weight"]          = round(min(1.0, abs(moon_r) * 3), 3)
+    if wind_r is not None: weights["wind_weight"]          = round(min(1.0, abs(wind_r) * 3), 3)
+    if grad_r is not None: weights["sst_gradient_weight"]  = round(min(1.0, abs(grad_r) * 3), 3)
+    best_wdir = max(abs(woff_r or 0), abs(wup_r or 0))
+    if best_wdir > 0:      weights["wind_offshore_weight"] = round(min(1.0, best_wdir * 3), 3)
+    if chl_r  is not None: weights["chl_weight"]           = round(min(1.0, abs(chl_r)  * 3), 3)
+
+    weights["segment"] = segment
+    return weights
+
+
+def run_dual_backtest(
+    db_path: Path,
+    start: date, end: date,
+    optimize: bool = False,
+    extend_sst: bool = True,
+    fetch_wind: bool = True,
+    fetch_swell: bool = True,
+) -> dict:
+    """Run inshore + offshore backtests, saving 8 season-specific weight files."""
+    import time
+    t0 = time.time()
+    print(f"Dual segment backtest: {start} to {end}")
+
+    with dbmod.connect(db_path) as conn:
+        _apply_schema(conn)
+
+        if extend_sst:
+            print("Step 1/4: Extending SST history...")
+            n = _extend_sst(conn, start, end)
+            print(f"  {'+' + str(n) + ' new records' if n else 'SST already current'}")
+
+        wind_data: dict = {}
+        if fetch_wind:
+            print("Step 2/4: Fetching wind/pressure (Open-Meteo ERA5)...")
+            wind_data = _fetch_openmeteo_wind(start, end)
+            print(f"  {len(wind_data)} days of wind data")
+
+        swell_data: dict = {}
+        if fetch_swell:
+            print("Step 3/4: Fetching swell (NDBC buoy 46047)...")
+            swell_data = _fetch_ndbc_swell("46047", start, end)
+            print(f"  {len(swell_data)} days of swell data")
+
+        print("Step 4/4: Building historical_conditions table...")
+        n_hc = build_historical_conditions(conn, start, end, wind_data, swell_data)
+        print(f"  {n_hc} rows written")
+
+        summary: dict = {
+            "run_date":         date.today().isoformat(),
+            "date_range_start": start.isoformat(),
+            "date_range_end":   end.isoformat(),
+        }
+
+        for segment in ("inshore", "offshore"):
+            print(f"\n{'─' * 55}")
+            print(f"  {segment.upper()} SEGMENT")
+            print(f"{'─' * 55}")
+            results = backtest_segment(conn, segment, start, end)
+            summary[f"{segment}_days"] = len(results)
+            print(f"  {len(results)} days with paired conditions + {segment} catch data")
+
+            if len(results) < 20:
+                print(f"  Skipping — not enough data")
+                continue
+
+            metrics = compute_metrics(results)
+            summary[f"{segment}_mae"]       = metrics["mae"]
+            summary[f"{segment}_direction"] = metrics["direction_accuracy"]
+            print(f"  MAE: {metrics['mae']}  Direction: {metrics['direction_accuracy']}%")
+
+            all_corrs = correlate_segment_factors(conn, results, segment)
+            print(f"\n  {'Factor':35s}  {'r':>8}")
+            print("  " + "─" * 46)
+            for fname, vals in sorted(
+                all_corrs.items(),
+                key=lambda x: abs(x[1].get("overall") or 0), reverse=True,
+            ):
+                r = vals.get("overall")
+                print(f"  {fname:35s}  {f'{r:+.3f}' if r is not None else 'N/A':>8}")
+
+            if optimize:
+                for season in ("overall", "early", "peak", "late"):
+                    if season == "overall":
+                        season_results = results
+                    else:
+                        season_results = [r for r in results if r["season"] == season]
+                    if len(season_results) < 20:
+                        print(f"  Skipping {season} — only {len(season_results)} days")
+                        continue
+                    season_corrs = correlate_segment_factors(conn, season_results, segment)
+                    existing = load_segment_weights(segment, season)
+                    weights = optimize_segment_weights(season_corrs, segment, existing)
+                    save_segment_weights(weights, segment, season)
+                    print(f"  Saved weights: {segment}/{season}  "
+                          f"sst={weights.get('sst_weight')}  "
+                          f"anomaly={weights.get('anomaly_weight')}  "
+                          f"wind={weights.get('wind_weight')}")
+
+                # Store in backtest_results with a v2 model tag
+                mv = f"2.0-{segment}"
+                conn.execute(
+                    """INSERT OR REPLACE INTO backtest_results
+                       (run_date, model_version, date_range_start, date_range_end,
+                        total_days, mae, rmse, direction_accuracy, by_month, weights)
+                       VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (date.today().isoformat(), mv,
+                     start.isoformat(), end.isoformat(),
+                     metrics["total_days"], metrics["mae"], metrics["rmse"],
+                     metrics["direction_accuracy"],
+                     json.dumps(metrics.get("by_month", {})),
+                     json.dumps(load_segment_weights(segment, "overall"))),
+                )
+
+        summary["run_duration_seconds"] = round(time.time() - t0, 1)
+        return summary
 
 
 # ─── Weekly recalibration (called from main.py) ──────────────────────────────
@@ -1065,6 +1426,9 @@ def main(argv=None) -> int:
                    help="Save optimized weights to backtest_weights.json")
     p.add_argument("--output",    type=Path,
                    help="Write full JSON report to this file")
+    p.add_argument("--segment", choices=["inshore", "offshore", "both"],
+                   default=None,
+                   help="Run dual segment backtest (both = inshore + offshore).")
     p.add_argument("--no-wind",   action="store_true", help="Skip Open-Meteo fetch")
     p.add_argument("--no-swell",  action="store_true", help="Skip NDBC fetch")
     p.add_argument("--no-extend-sst", action="store_true", help="Skip SST extension")
@@ -1074,14 +1438,24 @@ def main(argv=None) -> int:
         level=logging.DEBUG if args.verbose else logging.WARNING,
         format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
     )
-    report = run_backtest(
-        DB_PATH, args.start, args.end,
-        optimize=args.optimize,
+    kwargs = dict(
         extend_sst=not args.no_extend_sst,
         fetch_wind=not args.no_wind,
         fetch_swell=not args.no_swell,
-        output_path=args.output,
     )
+    if args.segment in ("inshore", "offshore", "both"):
+        report = run_dual_backtest(
+            DB_PATH, args.start, args.end,
+            optimize=args.optimize,
+            **kwargs,
+        )
+    else:
+        report = run_backtest(
+            DB_PATH, args.start, args.end,
+            optimize=args.optimize,
+            output_path=args.output,
+            **kwargs,
+        )
     return 0 if "error" not in report else 1
 
 

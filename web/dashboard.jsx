@@ -50,6 +50,50 @@ function ForecastWidget({ navigate }) {
   );
 }
 
+function DualSegmentMini({ navigate }) {
+  const fc = window.SD?.FORECAST;
+  const inshore  = fc?.inshore?.today;
+  const offshore = fc?.offshore?.today;
+  if (!inshore && !offshore) return null;
+
+  const Card = ({ title, icon, today }) => {
+    if (!today) return null;
+    const s = today.overall_score;
+    return (
+      <div className="fc-seg-mini-card">
+        <div className="fc-seg-mini-head">
+          <span>{icon}</span>
+          <span className="fc-seg-mini-title">{title}</span>
+          {today.confidence && (
+            <span className="fc-seg-mini-conf">{today.confidence}</span>
+          )}
+        </div>
+        <div className="fc-seg-mini-score" style={{color: _fcScoreColor(s)}}>
+          {s != null ? s.toFixed(1) : '—'}<span className="fc-seg-mini-denom">/10</span>
+        </div>
+        <div className="fc-seg-mini-label">{today.conditions_label}</div>
+        {today.score_low != null && (
+          <div className="fc-seg-mini-range">
+            {today.score_low.toFixed(1)}–{today.score_high.toFixed(1)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="fc-seg-mini-wrap">
+      <div className="fc-seg-mini-grid">
+        <Card title="Inshore"  icon="🎣" today={inshore}/>
+        <Card title="Offshore" icon="🐟" today={offshore}/>
+      </div>
+      <button className="btn sm ghost fc-seg-mini-btn" onClick={() => navigate('forecast')}>
+        Segment Details →
+      </button>
+    </div>
+  );
+}
+
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 const RATINGS = {
@@ -224,6 +268,7 @@ function TodayView({ navigate, settings }) {
       </div>
 
       <ForecastWidget navigate={navigate}/>
+      <DualSegmentMini navigate={navigate}/>
 
       <TodayCatch navigate={navigate} settings={settings}/>
 

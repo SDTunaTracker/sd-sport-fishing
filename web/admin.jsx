@@ -433,6 +433,99 @@ function Section3({ backtest, weights, history }) {
   );
 }
 
+// ─── Section 3B — Dual Segment Model ────────────────────────────────────────
+
+const SEGMENT_WEIGHT_KEYS = [
+  { key: "sst_weight",          label: "SST"       },
+  { key: "anomaly_weight",      label: "Anomaly"   },
+  { key: "wind_weight",         label: "Wind spd"  },
+  { key: "wind_offshore_weight",label: "Wind dir"  },
+  { key: "sst_gradient_weight", label: "Gradient"  },
+  { key: "chl_weight",          label: "Chlorophyll"},
+  { key: "moon_weight",         label: "Moon"      },
+];
+
+function SegmentModelPanel({ label, history }) {
+  // history: filtered backtestHistory for this segment (model_version "2.0-inshore" etc.)
+  const latest = history?.[0];
+  if (!latest) {
+    return (
+      <div className="adm-card">
+        <div className="adm-card-title">{label}</div>
+        <div style={{ color: "#64748B", fontSize: 12, marginTop: 8 }}>
+          No calibration run yet.
+          <br/><code style={{ fontSize: 11 }}>python -m src.backtest --optimize --segment both</code>
+        </div>
+      </div>
+    );
+  }
+  const w = latest.weights || {};
+  return (
+    <div className="adm-card">
+      <div className="adm-card-title" style={{ marginBottom: 10 }}>{label}</div>
+      <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+        <div className="adm-kpi" style={{ minWidth: 90 }}>
+          <div className="k">Dir. Acc.</div>
+          <div className="v" style={{ fontSize: 18, color: latest.direction_accuracy >= 65 ? "#34D399" : "#FBBF24" }}>
+            {latest.direction_accuracy?.toFixed(1) ?? "—"}%
+          </div>
+        </div>
+        <div className="adm-kpi" style={{ minWidth: 90 }}>
+          <div className="k">MAE</div>
+          <div className="v" style={{ fontSize: 18, color: latest.mae < 1.5 ? "#34D399" : "#FBBF24" }}>
+            {latest.mae?.toFixed(3) ?? "—"}
+          </div>
+        </div>
+        <div className="adm-kpi" style={{ minWidth: 90 }}>
+          <div className="k">Days</div>
+          <div className="v" style={{ fontSize: 18 }}>{latest.total_days ?? "—"}</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 11, color: "#64748B", marginBottom: 8 }}>
+        Last calibrated: {latest.run_date || "—"}
+        {" · "}
+        {latest.date_range_start?.slice(0, 7)} → {latest.date_range_end?.slice(0, 7)}
+      </div>
+      {Object.keys(w).length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", marginBottom: 6 }}>
+            Overall weights
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+            {SEGMENT_WEIGHT_KEYS.map(wk => {
+              const v = w[wk.key];
+              if (v == null) return null;
+              return (
+                <div key={wk.key} style={{ fontSize: 11 }}>
+                  <div style={{ color: "#64748B" }}>{wk.label}</div>
+                  <div style={{ fontWeight: 700, color: "#E2E8F0" }}>{v.toFixed(3)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Section3B({ history }) {
+  if (!history || history.length === 0) return null;
+  const inshoreHistory  = history.filter(r => r.model_version === "2.0-inshore");
+  const offshoreHistory = history.filter(r => r.model_version === "2.0-offshore");
+  if (!inshoreHistory.length && !offshoreHistory.length) return null;
+  return (
+    <div className="adm-section">
+      <div className="adm-section-title">Dual Segment Model</div>
+      <div className="adm-two-col" style={{ gap: 16 }}>
+        <SegmentModelPanel label="🎣 Inshore Model"  history={inshoreHistory}/>
+        <SegmentModelPanel label="🐟 Offshore Model" history={offshoreHistory}/>
+      </div>
+    </div>
+  );
+}
+
+
 // ─── Section 4 — Recent Predictions vs Actuals ───────────────────────────────
 
 function PredRow({ p }) {
@@ -618,6 +711,7 @@ function AdminView() {
         <Section1 scrapeLog={admin.scrapeLog || {}} sstLog={admin.sstLog || []} />
         <Section2 dbStats={admin.dbStats} />
         <Section3 backtest={admin.backtestResults} weights={admin.weights} history={admin.backtestHistory} />
+        <Section3B history={admin.backtestHistory} />
         <Section4 preds={admin.recentPredictions} />
         <Section5 />
         <Section6 />
