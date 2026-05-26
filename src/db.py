@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS scheduled_trips (
     open_spots INTEGER,
     reserved_spots INTEGER,
     note TEXT,
+    trip_status TEXT,
+    target_species TEXT,
+    whats_included TEXT,
     source_id TEXT NOT NULL,
     source_url TEXT NOT NULL,
     scraped_at TEXT NOT NULL,
@@ -167,11 +170,22 @@ _NEW_TRIP_COLUMNS = [
 ]
 
 
+_NEW_SCHED_COLUMNS = [
+    ("trip_status",    "TEXT"),
+    ("target_species", "TEXT"),
+    ("whats_included", "TEXT"),
+]
+
+
 def _migrate(conn: sqlite3.Connection) -> None:
     existing = {row[1] for row in conn.execute("PRAGMA table_info(trips)").fetchall()}
     for col, defn in _NEW_TRIP_COLUMNS:
         if col not in existing:
             conn.execute(f"ALTER TABLE trips ADD COLUMN {col} {defn}")
+    sched_existing = {row[1] for row in conn.execute("PRAGMA table_info(scheduled_trips)").fetchall()}
+    for col, defn in _NEW_SCHED_COLUMNS:
+        if col not in sched_existing:
+            conn.execute(f"ALTER TABLE scheduled_trips ADD COLUMN {col} {defn}")
 
 
 @contextmanager
@@ -288,6 +302,7 @@ SCHEDULED_FIELDS = (
     "landing", "boat", "trip_type_raw", "trip_length", "trip_length_days",
     "departure_at", "return_at", "price", "capacity",
     "open_spots", "reserved_spots", "note",
+    "trip_status", "target_species", "whats_included",
     "source_id", "source_url", "scraped_at",
 )
 

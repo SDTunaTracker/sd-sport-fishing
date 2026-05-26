@@ -96,6 +96,40 @@ def _parse_datetime(text: str) -> datetime | None:
     return datetime(yr, int(month), int(day), hh, int(mm))
 
 
+_STATUS_RE = re.compile(
+    r'DEFINITE\s+GO|DEF(?:INITE)?\.?\s+GO|WILL\s+RUN\s+WITH\s+\d+|GOING\s+FOR\s+SURE|CANCEL(?:LED|ED)',
+    re.I,
+)
+_TARGET_RE = re.compile(r'[Tt]argeting\s+([^.!]{3,80})', re.I)
+_INCLUDED_RE = re.compile(r'[Pp]rice\s+includes?\s+([^.!]{3,120})', re.I)
+
+
+def _parse_trip_status(text: str) -> str | None:
+    if not text:
+        return None
+    m = _STATUS_RE.search(text)
+    if not m:
+        return None
+    t = m.group(0).upper()
+    if re.search(r'CANCEL', t):
+        return 'Cancelled'
+    return 'Definite Go'
+
+
+def _parse_target_species(text: str) -> str | None:
+    m = _TARGET_RE.search(text or '')
+    if not m:
+        return None
+    return m.group(1).strip().rstrip('.,;').strip()
+
+
+def _parse_whats_included(text: str) -> str | None:
+    m = _INCLUDED_RE.search(text or '')
+    if not m:
+        return None
+    return m.group(1).strip().rstrip('.,;').strip()
+
+
 def _parse_money(text: str) -> float | None:
     m = re.search(r"\$([\d,]+\.?\d*)", text or "")
     return float(m.group(1).replace(",", "")) if m else None
@@ -126,6 +160,17 @@ def parse_fishingreservations(html: str, landing: str, source_url: str) -> list[
     scraped_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     out: list[dict] = []
     seen: set[str] = set()
+
+    # Pre-pass: collect trip-comments text keyed by trip_id.
+    # The comments row shares the same data-trip-id as the main trip row,
+    # so we scan all td[data-trip-id] for a .trip-comments child.
+    comments_by_id: dict[str, str] = {}
+    for td in soup.find_all("td", attrs={"data-trip-id": True}):
+        c = td.find("div", class_=re.compile(r"\btrip-comments\b"))
+        if c:
+            txt = " ".join(c.get_text(" ", strip=True).split())
+            if txt:
+                comments_by_id[td["data-trip-id"]] = txt
 
     # Walk every row; first occurrence of each trip-id wins.
     for tr in soup.find_all("tr"):
@@ -186,6 +231,7 @@ def parse_fishingreservations(html: str, landing: str, source_url: str) -> list[
             continue
 
         seen.add(trip_id)
+        raw_note = comments_by_id.get(str(trip_id), "")
         out.append({
             "landing": landing,
             "boat": boat,
@@ -198,7 +244,10 @@ def parse_fishingreservations(html: str, landing: str, source_url: str) -> list[
             "capacity": _parse_int_or_none(load_txt),
             "open_spots": open_spots,
             "reserved_spots": None,
-            "note": None,
+            "note": raw_note or None,
+            "trip_status": _parse_trip_status(raw_note),
+            "target_species": _parse_target_species(raw_note),
+            "whats_included": _parse_whats_included(raw_note),
             "source_id": str(trip_id),
             "source_url": source_url,
             "scraped_at": scraped_at,
@@ -262,6 +311,7 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
             continue  # past trip; H&M's endpoint returns 12 months of history+future
         return_at = (dep + timedelta(days=length_days)).isoformat() if length_days else None
         # exp.catalog.items can carry max-load info; not always reliable, so leave null.
+        raw_note = t.get("note") or ""
         out.append({
             "landing": landing,
             "boat": boat,
@@ -274,7 +324,10 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
             "capacity": None,
             "open_spots": int(open_spots),
             "reserved_spots": int(t["reserved_spots"]) if t.get("reserved_spots") is not None else None,
-            "note": t.get("note") or None,
+            "note": raw_note or None,
+            "trip_status": _parse_trip_status(raw_note),
+            "target_species": _parse_target_species(raw_note),
+            "whats_included": _parse_whats_included(raw_note),
             "source_id": str(exp_id) + "@" + dep.isoformat(),
             "source_url": source_url,
             "scraped_at": scraped_at,

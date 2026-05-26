@@ -1243,6 +1243,46 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-spots-yellow { background: #FEF3C7; color: #92400E; }
 .tp-spots-green  { background: #D1FAE5; color: #065F46; }
 
+/* ── Status badge ────────────────────────────────────────────── */
+.tp-status-badge      { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font: 600 11px/16px var(--ss-font-sans); white-space: nowrap; }
+.tp-status-go         { background: #D1FAE5; color: #065F46; }
+.tp-status-cancelled  { background: #FEE2E2; color: #991B1B; }
+.tp-status-scheduled  { background: #F1F5F9; color: var(--tb-slate); }
+
+/* ── Keyword highlights ───────────────────────────────────────── */
+.tp-hl            { background: none; font-style: inherit; font-weight: 600; padding: 0; }
+.tp-hl-bluefin    { color: #1F4E8F; }
+.tp-hl-yellowfin  { color: #B45309; }
+.tp-hl-yellowtail { color: #065F46; }
+.tp-hl-dorado     { color: #0E7490; }
+.tp-hl-albacore   { color: #6D28D9; }
+.tp-hl-ok         { color: #065F46; }
+.tp-hl-warn       { color: #92400E; }
+
+/* ── Notes strip (full-width collapsible row) ─────────────────── */
+.tp-card-notes-strip {
+  grid-column: 1 / -1;
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+.tp-card-notes-toggle {
+  display: flex; align-items: center; gap: 6px;
+  width: 100%; padding: 8px 14px;
+  font: 600 11px/16px var(--ss-font-sans); color: #475569;
+  background: none; text-align: left;
+}
+.tp-card-notes-toggle:hover  { color: #1E3A5F; }
+.tp-card-notes-chevron       { font-size: 9px; color: #94A3B8; }
+.tp-card-notes-body {
+  padding: 4px 14px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.tp-card-notes-status        { margin-bottom: 2px; }
+.tp-card-notes-row           { display: flex; align-items: baseline; gap: 6px; }
+.tp-card-notes-key           { font: 700 10px/16px var(--ss-font-sans); color: var(--tb-gray-2); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; min-width: 52px; }
+.tp-card-notes-val           { font: 500 12px/16px var(--ss-font-sans); color: #1E3A5F; }
+.tp-card-notes-text          { font: 400 13px/1.6 var(--ss-font-sans); color: #4A4A4A; }
+
 /* ── Empty state ─────────────────────────────────────────────── */
 .tp-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1300,4 +1340,7 @@ body.compact .dt td { padding: 7px 12px; }
   .tp-tabs2  { border-radius: 8px; }
   .tp-tab2   { padding: 10px 12px; }
   .tp-tab2-main { font-size: 13px; }
+
+  .tp-card-notes-strip { grid-column: 1 / -1; }
+  .tp-card-notes-text  { font-size: 12px; }
 }

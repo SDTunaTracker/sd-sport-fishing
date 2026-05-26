@@ -95,11 +95,49 @@ function LengthBadge({ label }) {
   return <span className="tp-length-badge">{label}</span>;
 }
 
+function StatusBadge({ status }) {
+  if (!status) return null;
+  const cls = status === 'Definite Go' ? 'tp-status-go'
+            : status === 'Cancelled'   ? 'tp-status-cancelled'
+            : 'tp-status-scheduled';
+  const icon = status === 'Definite Go' ? '✓' : status === 'Cancelled' ? '✕' : '•';
+  return <span className={`tp-status-badge ${cls}`}>{icon} {status}</span>;
+}
+
+// Highlights species, included, additional, required keywords inline
+const _HL_RE = /\b(NOT\s+required|tuna|bluefin|yellowfin|yellowtail|dorado|albacore|skipjack|includes?|included|additional|extra|required)\b/gi;
+
+function HighlightedNote({ text }) {
+  if (!text) return null;
+  const parts = [];
+  let last = 0;
+  _HL_RE.lastIndex = 0;
+  let m;
+  while ((m = _HL_RE.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const w = m[0].toLowerCase();
+    const cls = /tuna|bluefin/.test(w)     ? 'tp-hl-bluefin'
+              : /yellowfin/.test(w)         ? 'tp-hl-yellowfin'
+              : /yellowtail/.test(w)        ? 'tp-hl-yellowtail'
+              : /dorado/.test(w)            ? 'tp-hl-dorado'
+              : /albacore|skipjack/.test(w) ? 'tp-hl-albacore'
+              : /not\s+required/.test(w)    ? 'tp-hl-ok'
+              : /includes?|included/.test(w)? 'tp-hl-ok'
+              : /additional|extra/.test(w)  ? 'tp-hl-warn'
+              : /required/.test(w)          ? 'tp-hl-warn'
+              : '';
+    parts.push(<mark key={m.index} className={`tp-hl ${cls}`}>{m[0]}</mark>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
 // ── Trip card ─────────────────────────────────────────────────────────────────
-const NOTE_MAX = 90;
+const NOTE_LINES = 2; // lines visible when collapsed
 
 function TripCard({ s, avgTpaByKey }) {
-  const [noteExpanded, setNoteExpanded] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   const dep    = new Date(s.departureAt);
   const ret    = s.returnAt ? new Date(s.returnAt) : null;
@@ -110,12 +148,9 @@ function TripCard({ s, avgTpaByKey }) {
   const tpaKey = `${s.boat}|${s.tripLength}`;
   const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
 
-  const noteLong     = s.note && s.note.length > NOTE_MAX;
-  const noteText     = noteLong && !noteExpanded ? s.note.slice(0, NOTE_MAX).trimEnd() + '…' : s.note;
-
-  // Capacity bar fill % (only when capacity known)
-  const capPct = s.capacity ? Math.round((s.openSpots / s.capacity) * 100) : null;
+  const capPct      = s.capacity ? Math.round((s.openSpots / s.capacity) * 100) : null;
   const capBarColor = capPct >= 30 ? '#34D399' : capPct >= 15 ? '#FBBF24' : '#F87171';
+  const hasNote     = !!(s.note || s.tripStatus || s.targetSpecies || s.whatsIncluded);
 
   const boatEl = url ? (
     <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-boat-link">
@@ -141,57 +176,36 @@ function TripCard({ s, avgTpaByKey }) {
         <LengthBadge label={s.tripLength}/>
       </div>
 
-      {/* MIDDLE — trip details */}
+      {/* MIDDLE — times + stats */}
       <div className="tp-card-middle">
-        {/* Departure + Return */}
         <div className="tp-card-times">
           <TimeRow label="Dep" dt={dep}/>
           {ret && <TimeRow label="Ret" dt={ret}/>}
         </div>
-
         <div className="tp-card-moon" style={{color: moonC}}>
           {moon.emoji} {moon.phase} · {moon.illum}%
         </div>
-
         <div className="tp-card-wr-row">
           <span className="tp-card-stat-label">Win Rate</span>
           <WinRateBadge wr={s._winRate}/>
           {s._trips > 0 && <span className="tp-card-trips-hint">{s._trips} trips</span>}
         </div>
-
         {avgTpa != null && (
-          <div className="tp-card-tpa">
-            Avg TPA: <strong>{avgTpa.toFixed(2)}</strong>/day
-          </div>
+          <div className="tp-card-tpa">Avg TPA: <strong>{avgTpa.toFixed(2)}</strong>/day</div>
         )}
-
-        {/* Capacity bar (desktop only; mobile shows X/Y badge) */}
         {s.capacity != null && (
           <div className="tp-card-cap-row">
             <div className="tp-card-cap-bar-wrap">
-              <div className="tp-card-cap-bar-fill"
-                   style={{width: `${capPct}%`, background: capBarColor}}/>
+              <div className="tp-card-cap-bar-fill" style={{width:`${capPct}%`, background:capBarColor}}/>
             </div>
             <span className="tp-card-cap-label">{s.openSpots} of {s.capacity} open</span>
-          </div>
-        )}
-
-        {/* Trip note */}
-        {s.note && (
-          <div className="tp-card-note">
-            {noteText}
-            {noteLong && (
-              <button className="tp-card-note-toggle"
-                      onClick={() => setNoteExpanded(e => !e)}>
-                {noteExpanded ? ' less' : ' more'}
-              </button>
-            )}
           </div>
         )}
       </div>
 
       {/* RIGHT — price + booking */}
       <div className="tp-card-right">
+        {s.tripStatus && <StatusBadge status={s.tripStatus}/>}
         {price
           ? <><div className="tp-card-price">{price}</div><div className="tp-card-per">per person</div></>
           : <div className="tp-card-price tp-card-price-na">—</div>
@@ -204,9 +218,44 @@ function TripCard({ s, avgTpaByKey }) {
         )}
       </div>
 
-      {/* MOBILE bottom row */}
+      {/* NOTES STRIP — full width, collapsible */}
+      {hasNote && (
+        <div className={`tp-card-notes-strip${noteOpen ? ' open' : ''}`}>
+          <button className="tp-card-notes-toggle" onClick={() => setNoteOpen(o => !o)}>
+            <i className={`fa-solid fa-chevron-${noteOpen ? 'up' : 'down'} tp-card-notes-chevron`}/>
+            {noteOpen ? 'Hide details' : 'Trip details'}
+          </button>
+          {noteOpen && (
+            <div className="tp-card-notes-body">
+              {s.tripStatus && (
+                <div className="tp-card-notes-status"><StatusBadge status={s.tripStatus}/></div>
+              )}
+              {s.targetSpecies && (
+                <div className="tp-card-notes-row">
+                  <span className="tp-card-notes-key">Targeting</span>
+                  <span className="tp-card-notes-val">{s.targetSpecies}</span>
+                </div>
+              )}
+              {s.whatsIncluded && (
+                <div className="tp-card-notes-row">
+                  <span className="tp-card-notes-key">Includes</span>
+                  <span className="tp-card-notes-val tp-hl-ok">{s.whatsIncluded}</span>
+                </div>
+              )}
+              {s.note && (
+                <div className="tp-card-notes-text">
+                  <HighlightedNote text={s.note}/>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MOBILE footer row */}
       <div className="tp-card-mobile-footer">
         <div style={{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'}}>
+          {s.tripStatus && <StatusBadge status={s.tripStatus}/>}
           <WinRateBadge wr={s._winRate}/>
           <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
           {price && <span className="tp-card-price-mobile">{price}</span>}

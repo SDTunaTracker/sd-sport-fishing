@@ -104,6 +104,9 @@ def _scheduled_to_js(row: sqlite3.Row) -> dict:
         "openSpots": row["open_spots"],
         "reservedSpots": row["reserved_spots"],
         "note": row["note"],
+        "tripStatus": row["trip_status"],
+        "targetSpecies": row["target_species"],
+        "whatsIncluded": row["whats_included"],
         "sourceId": row["source_id"],
     }
 
