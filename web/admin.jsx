@@ -989,6 +989,58 @@ function Section6() {
   );
 }
 
+function SectionReviews({ reviews }) {
+  if (!reviews) return null;
+  const { total, pending, approved, rejected, pendingReviews = [] } = reviews;
+  return (
+    <div className="adm-section">
+      <div className="adm-section-title">Reviews</div>
+      <div className="adm-kpi-row" style={{display:'flex', gap:16, flexWrap:'wrap', marginBottom:16}}>
+        {[['Total', total], ['Pending', pending, '#F59E0B'], ['Approved', approved, '#10B981'], ['Rejected', rejected, '#EF4444']].map(([lbl, n, color]) => (
+          <div key={lbl} className="adm-kpi-mini" style={{textAlign:'center'}}>
+            <div style={{fontSize:22, fontWeight:700, color: color || 'inherit'}}>{fmtN(n)}</div>
+            <div style={{fontSize:11, color:'#64748B'}}>{lbl}</div>
+          </div>
+        ))}
+      </div>
+      {pendingReviews.length > 0 ? (
+        <>
+          <div style={{fontWeight:600, marginBottom:8, fontSize:13}}>Pending Reviews</div>
+          <div style={{overflowX:'auto'}}>
+            <table className="adm-table" style={{width:'100%', fontSize:12}}>
+              <thead><tr>
+                <th>ID</th><th>Boat</th><th>Rating</th><th>Reviewer</th><th>Title</th><th>Date</th><th>Approve</th>
+              </tr></thead>
+              <tbody>
+                {pendingReviews.map(r => (
+                  <tr key={r.id}>
+                    <td>{r.id}</td>
+                    <td>{r.boat}</td>
+                    <td>{'★'.repeat(r.overall_rating || 0)}</td>
+                    <td>{r.reviewer_name || '—'}</td>
+                    <td style={{maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{r.title || '—'}</td>
+                    <td>{(r.submitted_at || '').slice(0,10)}</td>
+                    <td>
+                      <code style={{fontSize:10, background:'#F1F5F9', padding:'2px 4px', borderRadius:3}}>
+                        python -m src.reviews approve {r.id}
+                      </code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{marginTop:10, fontSize:11, color:'#64748B'}}>
+            To approve: <code>python -m src.reviews approve &lt;id&gt;</code> · To reject: <code>python -m src.reviews reject &lt;id&gt;</code> · Then re-run <code>--export-only</code>
+          </div>
+        </>
+      ) : (
+        <div className="adm-empty">No pending reviews.</div>
+      )}
+    </div>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 function AdminView() {
@@ -1031,6 +1083,7 @@ function AdminView() {
         <Section3B history={admin.backtestHistory} />
         <Section3C correlation={admin.consensusCorrelation} />
         <Section4 preds={admin.recentPredictions} />
+        <SectionReviews reviews={admin.reviews}/>
         <Section5 />
         <Section6 />
       </div>

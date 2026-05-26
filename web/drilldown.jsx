@@ -1,5 +1,6 @@
 // Boat detail drill-down
 function BoatDetail({ filters, setFilters, navigate, boat }) {
+  const [detailTab, setDetailTab] = React.useState('overview');
   const allTrips = useMemo(() => SDA.filterTrips({ ...filters, boat: 'all' }).filter(t => t.boat === boat), [filters, boat]);
   const fleetTrips = useMemo(() => SDA.filterTrips({ ...filters, boat: 'all' }), [filters]);
   const meta = window.SD.BOATS.find(b => b.name === boat);
@@ -56,10 +57,11 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
       ]}/>
       <div className="pagehead">
         <div>
-          <div style={{display:'flex', alignItems:'center', gap: 12}}>
+          <div style={{display:'flex', alignItems:'center', gap: 12, flexWrap:'wrap'}}>
             <h1 style={{margin:0}}>{boat}</h1>
             {label === 'Consistent' && <span className="tag consistent">Consistent Outperformer</span>}
             {label === 'Spike' && <span className="tag spike">One-Off Spike</span>}
+            <ReviewBadge boat={boat}/>
           </div>
           <div className="sub">
             {meta.landing} · {meta.lengths.join(', ')} · {allTrips.length} trips in scope
@@ -147,7 +149,37 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
         </Panel>
       </div>
 
-      <Panel title="Trip History" meta={`All ${sortedTrips.length} past trips for ${boat} · newest first`} padding={false}>
+      {/* ── Bottom tabs: Overview / Reviews / Reddit ── */}
+      <div className="dd-tabs">
+        {[['overview','Trip History'],['reviews','Reviews'],['reddit','Reddit Reports']].map(([id,lbl]) => (
+          <button key={id}
+            className={`dd-tab${detailTab === id ? ' active' : ''}`}
+            onClick={() => setDetailTab(id)}>
+            {lbl}
+            {id === 'reviews' && (() => {
+              const n = window.SD.REVIEWS?.summary?.[boat]?.total_reviews;
+              return n ? <span className="dd-tab-count">{n}</span> : null;
+            })()}
+            {id === 'reddit' && (() => {
+              const n = (window.SD.REDDIT?.reports || []).filter(p =>
+                p.boat_mentioned === boat ||
+                (p.title || '').toLowerCase().includes(boat.toLowerCase())
+              ).length;
+              return n ? <span className="dd-tab-count">{n}</span> : null;
+            })()}
+          </button>
+        ))}
+      </div>
+
+      {detailTab === 'reviews' && (
+        <ReviewsSection boat={boat} landing={meta.landing}/>
+      )}
+
+      {detailTab === 'reddit' && (
+        <BoatRedditPanel boat={boat}/>
+      )}
+
+      {detailTab === 'overview' && <Panel title="Trip History" meta={`All ${sortedTrips.length} past trips for ${boat} · newest first`} padding={false}>
         {(() => {
           // 4 trophy-species columns replace the single Trophy total.
           // Grid: Date | Species Mix bar | Trip Length | Anglers | BF | YF | YT | D | T/A | Moon
@@ -223,7 +255,7 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
             </Fragment>
           );
         })()}
-      </Panel>
+      </Panel>}
     </Fragment>
   );
 }

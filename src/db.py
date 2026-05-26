@@ -150,6 +150,45 @@ CREATE TABLE IF NOT EXISTS forecast_accuracy_log (
     error REAL,
     correct_direction INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS reddit_reports (
+    id TEXT PRIMARY KEY,
+    title TEXT,
+    url TEXT,
+    subreddit TEXT,
+    score INTEGER,
+    num_comments INTEGER,
+    created_utc INTEGER,
+    author TEXT,
+    snippet TEXT,
+    search_term TEXT,
+    boat_mentioned TEXT,
+    fetched_date TEXT
+);
+
+CREATE TABLE IF NOT EXISTS boat_reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    boat TEXT NOT NULL,
+    landing TEXT NOT NULL,
+    reviewer_name TEXT,
+    trip_date TEXT,
+    trip_length TEXT,
+    overall_rating INTEGER,
+    captain_rating INTEGER,
+    crew_rating INTEGER,
+    fish_finding_rating INTEGER,
+    galley_rating INTEGER,
+    bunks_rating INTEGER,
+    title TEXT,
+    body TEXT,
+    species_caught TEXT,
+    tuna_count INTEGER,
+    would_rebook INTEGER,
+    verified INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'pending',
+    submitted_at TEXT,
+    ip_hash TEXT
+);
 """
 
 

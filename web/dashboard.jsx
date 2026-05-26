@@ -271,6 +271,8 @@ function TodayView({ navigate, settings }) {
 
       <TodayCatch navigate={navigate} settings={settings}/>
 
+      <CommunityReportsWidget/>
+
       <div style={{marginTop: 20}}>
         <Panel title={`Top Boats — ${currentYear} Season`}
                meta="Ranked by avg tuna/angler/day · min 5 trips"

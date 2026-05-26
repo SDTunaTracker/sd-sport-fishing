@@ -290,6 +290,58 @@ def _consensus_accuracy_correlation(conn: sqlite3.Connection) -> list[dict]:
         return []
 
 
+def _reddit_payload(conn: sqlite3.Connection) -> dict:
+    """Recent Reddit posts sorted by date, top 20."""
+    from datetime import datetime
+    rows = conn.execute(
+        """SELECT id, title, url, subreddit, score, num_comments,
+                  created_utc, author, snippet, boat_mentioned
+           FROM reddit_reports
+           ORDER BY created_utc DESC LIMIT 20"""
+    ).fetchall()
+    reports = []
+    for r in rows:
+        try:
+            d = datetime.utcfromtimestamp(r['created_utc']).strftime('%Y-%m-%d')
+        except Exception:
+            d = None
+        reports.append({
+            'id':            r['id'],
+            'title':         r['title'],
+            'url':           r['url'],
+            'subreddit':     r['subreddit'],
+            'score':         r['score'],
+            'num_comments':  r['num_comments'],
+            'date':          d,
+            'author':        r['author'],
+            'snippet':       r['snippet'],
+            'boat_mentioned': r['boat_mentioned'],
+        })
+    last_row = conn.execute(
+        "SELECT MAX(fetched_date) AS d FROM reddit_reports"
+    ).fetchone()
+    return {
+        'reports':      reports,
+        'last_updated': last_row['d'] if last_row else None,
+    }
+
+
+def _reviews_payload(conn: sqlite3.Connection) -> dict:
+    try:
+        from .reviews import reviews_for_export
+        return reviews_for_export(conn)
+    except Exception:
+        return {'byBoat': {}, 'summary': {}}
+
+
+def _reviews_admin_stats(conn: sqlite3.Connection) -> dict:
+    try:
+        from .reviews import reviews_admin_stats
+        return reviews_admin_stats(conn)
+    except Exception:
+        return {'total': 0, 'pending': 0, 'approved': 0, 'rejected': 0, 'pendingReviews': []}
+
+
 def _admin_payload(conn: sqlite3.Connection) -> dict:
     """Build window.SD.ADMIN: data for the internal admin dashboard."""
     # Scrape log — last 10 runs per source
@@ -399,6 +451,7 @@ def _admin_payload(conn: sqlite3.Connection) -> dict:
         "recentPredictions":    _recent_predictions(conn),
         "weights":              weights,
         "consensusCorrelation": _consensus_accuracy_correlation(conn),
+        "reviews": _reviews_admin_stats(conn),
     }
 
 
@@ -441,6 +494,8 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
         "FORECAST": forecast_payload,
+        "REDDIT": _reddit_payload(conn),
+        "REVIEWS": _reviews_payload(conn),
         "ADMIN": _admin_payload(conn),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,

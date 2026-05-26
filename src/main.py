@@ -121,6 +121,15 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  Forecast scoring ERROR (non-fatal): {e}")
 
+        if not hourly:
+            # Reddit fishing reports — once per day, rate-limited inside fetch.
+            try:
+                from .reddit import fetch_reddit_reports
+                n_reddit = fetch_reddit_reports(conn)
+                summary_lines.append(f"  Reddit: {n_reddit} posts fetched/updated")
+            except Exception as e:
+                summary_lines.append(f"  Reddit fetch ERROR (non-fatal): {e}")
+
         # Weather + swell forecast (for 7-day strip in data.js)
         weather_fc: list = []
         if not hourly:

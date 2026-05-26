@@ -172,6 +172,7 @@ function TripCard({ s, avgTpaByKey, context }) {
       {s.boat}
     </a>
   ) : <span className="tp-card-boat-name">{s.boat}</span>;
+  const reviewSummary = window.SD.REVIEWS?.summary?.[s.boat];
 
   const TimeRow = ({ label, dt, isReturn }) => (
     <div className={`tp-card-time-row${isReturn ? ' tp-card-time-row-ret' : ''}`}>
@@ -186,7 +187,15 @@ function TripCard({ s, avgTpaByKey, context }) {
     <div className="tp-card">
       {/* LEFT — boat info */}
       <div className="tp-card-left">
-        <div className="tp-card-boat">{boatEl}</div>
+        <div className="tp-card-boat" style={{display:'flex', alignItems:'center', gap:6, flexWrap:'wrap'}}>
+          {boatEl}
+          {reviewSummary && reviewSummary.total_reviews > 0 && (
+            <span className="rv-badge">
+              ★ {reviewSummary.avg_overall.toFixed(1)}
+              <span className="rv-badge-count">({reviewSummary.total_reviews})</span>
+            </span>
+          )}
+        </div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <LengthBadge label={s.tripLength}/>
         <div className="tp-card-moon" style={{color: moonC}}>
