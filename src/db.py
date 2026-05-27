@@ -293,6 +293,9 @@ _NEW_SCHED_COLUMNS = [
     ("trip_status",    "TEXT"),
     ("target_species", "TEXT"),
     ("whats_included", "TEXT"),
+    ("meals_included", "INTEGER DEFAULT 0"),
+    ("meals_value",    "INTEGER DEFAULT 0"),
+    ("effective_price", "REAL"),
 ]
 
 
@@ -441,6 +444,7 @@ SCHEDULED_FIELDS = (
     "departure_at", "return_at", "price", "capacity",
     "open_spots", "reserved_spots", "note",
     "trip_status", "target_species", "whats_included",
+    "meals_included", "meals_value", "effective_price",
     "source_id", "source_url", "scraped_at",
 )
 

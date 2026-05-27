@@ -118,6 +118,9 @@ def _scheduled_to_js(row: sqlite3.Row) -> dict:
         "tripStatus": row["trip_status"],
         "targetSpecies": row["target_species"],
         "whatsIncluded": row["whats_included"],
+        "mealsIncluded": bool(row["meals_included"]) if row["meals_included"] is not None else False,
+        "mealValue": row["meals_value"] or 0,
+        "effectivePrice": row["effective_price"],
         "sourceId": row["source_id"],
     }
 

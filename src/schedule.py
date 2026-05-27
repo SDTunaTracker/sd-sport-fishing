@@ -96,6 +96,41 @@ def _parse_datetime(text: str) -> datetime | None:
     return datetime(yr, int(month), int(day), hh, int(mm))
 
 
+_MEALS_RE = re.compile(
+    r'meals?\s+included|meal\s+plan|galley\s+included|food\s+included',
+    re.I,
+)
+
+_MEAL_VALUES: dict[str, int] = {
+    'Overnight':  40,
+    '1.5 Day':    65,
+    '2 Day':      100,
+    '2.5 Day':    130,
+    '3 Day':      160,
+    '4 Day':      210,
+    '5 Day':      260,
+    '6 Day':      310,
+    '7 Day':      360,
+    'Full Day':   0,
+    '3/4 Day':    0,
+}
+
+
+def _detect_meals(
+    note: str | None,
+    whats_included: str | None,
+    trip_length: str,
+    price: float | None,
+) -> tuple[int, int, float | None]:
+    """Return (meals_included, meals_value, effective_price)."""
+    combined = f"{note or ''} {whats_included or ''}".strip()
+    if _MEALS_RE.search(combined):
+        val = _MEAL_VALUES.get(trip_length, 0)
+        eff = (price - val) if price is not None else None
+        return 1, val, eff
+    return 0, 0, price
+
+
 _STATUS_RE = re.compile(
     r'DEFINITE\s+GO|DEF(?:INITE)?\.?\s+GO|WILL\s+RUN\s+WITH\s+\d+|GOING\s+FOR\s+SURE|CANCEL(?:LED|ED)',
     re.I,
@@ -231,7 +266,10 @@ def parse_fishingreservations(html: str, landing: str, source_url: str) -> list[
             continue
 
         seen.add(trip_id)
-        raw_note = comments_by_id.get(str(trip_id), "")
+        raw_note      = comments_by_id.get(str(trip_id), "")
+        price         = _parse_money(price_txt)
+        whats_inc     = _parse_whats_included(raw_note)
+        meals_inc, meals_val, eff_price = _detect_meals(raw_note, whats_inc, length_bucket, price)
         out.append({
             "landing": landing,
             "boat": boat,
@@ -240,14 +278,17 @@ def parse_fishingreservations(html: str, landing: str, source_url: str) -> list[
             "trip_length_days": length_days,
             "departure_at": depart_at.isoformat(),
             "return_at": return_at.isoformat() if return_at else None,
-            "price": _parse_money(price_txt),
+            "price": price,
             "capacity": _parse_int_or_none(load_txt),
             "open_spots": open_spots,
             "reserved_spots": None,
             "note": raw_note or None,
             "trip_status": _parse_trip_status(raw_note),
             "target_species": _parse_target_species(raw_note),
-            "whats_included": _parse_whats_included(raw_note),
+            "whats_included": whats_inc,
+            "meals_included": meals_inc,
+            "meals_value": meals_val,
+            "effective_price": eff_price,
             "source_id": str(trip_id),
             "source_url": source_url,
             "scraped_at": scraped_at,
@@ -311,7 +352,10 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
             continue  # past trip; H&M's endpoint returns 12 months of history+future
         return_at = (dep + timedelta(days=length_days)).isoformat() if length_days else None
         # exp.catalog.items can carry max-load info; not always reliable, so leave null.
-        raw_note = t.get("note") or ""
+        raw_note  = t.get("note") or ""
+        price     = float(t["price"]) if t.get("price") is not None else None
+        whats_inc = _parse_whats_included(raw_note)
+        meals_inc, meals_val, eff_price = _detect_meals(raw_note, whats_inc, length_bucket, price)
         out.append({
             "landing": landing,
             "boat": boat,
@@ -320,14 +364,17 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
             "trip_length_days": length_days,
             "departure_at": dep.isoformat(),
             "return_at": return_at,
-            "price": float(t["price"]) if t.get("price") is not None else None,
+            "price": price,
             "capacity": None,
             "open_spots": int(open_spots),
             "reserved_spots": int(t["reserved_spots"]) if t.get("reserved_spots") is not None else None,
             "note": raw_note or None,
             "trip_status": _parse_trip_status(raw_note),
             "target_species": _parse_target_species(raw_note),
-            "whats_included": _parse_whats_included(raw_note),
+            "whats_included": whats_inc,
+            "meals_included": meals_inc,
+            "meals_value": meals_val,
+            "effective_price": eff_price,
             "source_id": str(exp_id) + "@" + dep.isoformat(),
             "source_url": source_url,
             "scraped_at": scraped_at,

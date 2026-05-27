@@ -16,6 +16,12 @@ function moonInfo(date) {
   return { phase: _MOON_NAMES[idx], emoji: _MOON_EMOJIS[idx], illum };
 }
 
+function moonDisplayName(phase) {
+  if (phase === 'New')  return 'New Moon';
+  if (phase === 'Full') return 'Full Moon';
+  return phase;
+}
+
 function moonColor(illum) {
   if (illum >= 90) return '#FBBF24';
   if (illum <= 10) return '#38BDF8';
@@ -64,6 +70,29 @@ function shortLanding(name) {
 const MONTH_NAMES_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_NAMES_FULL  = ['January','February','March','April','May','June',
                             'July','August','September','October','November','December'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ── Meals helpers ─────────────────────────────────────────────────────────────
+const _MEALS_RE = /meals?\s+included|meal\s+plan|galley\s+included|food\s+included/i;
+const MEAL_VALUES = {
+  'Overnight':  40,  '1.5 Day': 65, '2 Day': 100,
+  '2.5 Day':   130,  '3 Day':  160, '4 Day': 210,
+  '5 Day':     260,  '6 Day':  310, '7 Day': 360,
+  'Full Day':    0,  '3/4 Day':  0,
+};
+function hasMeals(s) {
+  if (s.mealsIncluded != null) return !!s.mealsIncluded;
+  return _MEALS_RE.test(s.note || '') || _MEALS_RE.test(s.whatsIncluded || '');
+}
+function mealValue(s) {
+  if (s.mealValue) return s.mealValue;
+  return hasMeals(s) ? (MEAL_VALUES[s.tripLength] || 0) : 0;
+}
+function effectivePrice(s) {
+  if (s.effectivePrice != null) return s.effectivePrice;
+  if (s.price == null) return null;
+  return s.price - mealValue(s);
+}
 
 // ── Moon phase options ────────────────────────────────────────────────────────
 const MOON_PHASE_OPTIONS = [
@@ -188,7 +217,7 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
   const TimeRow = ({ label, dt, isReturn }) => (
     <div className={`tp-card-time-row${isReturn ? ' tp-card-time-row-ret' : ''}`}>
       <span className="tp-card-time-label">{label}</span>
-      <span className="tp-card-depart-date">{fmtDepDate(dt)}</span>
+      <span className="tp-card-depart-date">{DAYS[dt.getDay()]} {fmtDepDate(dt)}</span>
       <span className="tp-card-depart-sep"> · </span>
       <span className="tp-card-depart-time">{fmtTime(dt)}</span>
     </div>
@@ -221,7 +250,7 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <LengthBadge label={s.tripLength}/>
         <div className="tp-card-moon" style={{color: moonC}}>
-          {moon.emoji} {moon.phase} · {moon.illum}%
+          {moon.emoji} {moonDisplayName(moon.phase)}
         </div>
       </div>
 
@@ -249,6 +278,10 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
           ? <><div className="tp-card-price">{price}</div><div className="tp-card-per">per person</div></>
           : <div className="tp-card-price tp-card-price-na">—</div>
         }
+        {hasMeals(s) && <div className="tp-meals-badge">🍽️ Meals incl.</div>}
+        {hasMeals(s) && mealValue(s) > 0 && context?.tab === 'cheapest' && (
+          <div className="tp-card-effective-price">~${Math.round(effectivePrice(s)).toLocaleString()} eff.</div>
+        )}
         {s.capacity != null ? (
           <div className="tp-card-cap-row">
             <div className="tp-card-cap-bar-wrap">
@@ -315,6 +348,7 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
           <WinRateBadge wr={s._winRate}/>
           <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
           {price && <span className="tp-card-price-mobile">{price}</span>}
+          {hasMeals(s) && <div className="tp-meals-badge">🍽️ Meals</div>}
         </div>
         {isPast ? (
           <button className="tp-card-review-btn tp-card-book-full" onClick={() => onReview && onReview(s)}>
@@ -747,12 +781,17 @@ function TripPlanner({ navigate }) {
   const displayed = useMemo(() => {
     const enriched = filtered.map(s => {
       const wr = winRates[`${s.boat}|${s.tripLength}`];
-      return { ...s, _winRate: wr ? wr.winRate : null, _trips: wr ? wr.total : 0 };
+      const ep = effectivePrice(s);
+      return { ...s, _winRate: wr ? wr.winRate : null, _trips: wr ? wr.total : 0, _effectivePrice: ep };
     });
     const copy = [...enriched];
     switch (sortBy) {
       case 'price-asc':
-        return copy.sort((a, b) => a.price == null ? 1 : b.price == null ? -1 : a.price - b.price);
+        return copy.sort((a, b) => {
+          const ea = a._effectivePrice ?? a.price;
+          const eb = b._effectivePrice ?? b.price;
+          return ea == null ? 1 : eb == null ? -1 : ea - eb;
+        });
       case 'price-desc':
         return copy.sort((a, b) => a.price == null ? 1 : b.price == null ? -1 : b.price - a.price);
       case 'date':
@@ -763,16 +802,24 @@ function TripPlanner({ navigate }) {
       case 'recommended':
       default:
         return copy.sort((a, b) => {
-          if (a._winRate == null && b._winRate == null) return a.price == null ? 1 : b.price == null ? -1 : a.price - b.price;
+          if (a._winRate == null && b._winRate == null) {
+            const ea = a._effectivePrice ?? a.price;
+            const eb = b._effectivePrice ?? b.price;
+            return ea == null ? 1 : eb == null ? -1 : ea - eb;
+          }
           if (a._winRate == null) return 1;
           if (b._winRate == null) return -1;
-          return b._winRate - a._winRate;
+          const diff = b._winRate - a._winRate;
+          if (Math.abs(diff) > 0.001) return diff;
+          const ea = a._effectivePrice ?? a.price;
+          const eb = b._effectivePrice ?? b.price;
+          return ea == null ? 1 : eb == null ? -1 : ea - eb;
         });
     }
   }, [filtered, sortBy, winRates]);
 
   const minPriceVal = useMemo(() => {
-    const prices = filtered.map(s => s.price).filter(p => p != null);
+    const prices = filtered.map(s => effectivePrice(s) ?? s.price).filter(p => p != null);
     return prices.length ? Math.min(...prices) : null;
   }, [filtered]);
 
@@ -879,6 +926,12 @@ function TripPlanner({ navigate }) {
               <span className="tp-tab2-sub">Sorted by price</span>
             </button>
           </div>
+
+          {activeTab === 'cheapest' && displayed.some(s => hasMeals(s) && mealValue(s) > 0) && (
+            <div className="tp-cheapest-note">
+              🍽️ Effective prices shown adjust for included meals — meals save $40–$360 depending on trip length.
+            </div>
+          )}
 
           {displayed.length === 0 ? (
             <div className="tp-empty">
