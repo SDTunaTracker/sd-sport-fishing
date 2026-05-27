@@ -17,6 +17,7 @@ Produces:
 from __future__ import annotations
 
 import logging
+import math as _math
 import sqlite3
 import statistics as _statistics
 from datetime import date, datetime, timedelta, timezone
@@ -84,7 +85,7 @@ def _load_factor_weights() -> dict:
         return _FALLBACK_WEIGHTS.copy()
 
     sst_w  = max(0.05, bw.get("sst_weight",  1.0))
-    moon_w = max(0.01, bw.get("moon_weight", 0.0))
+    moon_w = min(0.02, max(0.005, bw.get("moon_weight", 0.0)))  # cap at 2%
     wind_w = max(0.05, bw.get("wind_weight", 0.5))
     # swell / pressure / historical not in backtest — keep fixed
     swell_w = _SWELL_DEFAULT
@@ -233,36 +234,67 @@ def _upwelling_score(upwelling_index: float | None, segment: str) -> float:
 
 # ─── Ensemble model ───────────────────────────────────────────────────────────
 
-def _model_a_score(conditions: dict, segment: str) -> float | None:
-    """Model A: SST + wind only — the two strongest backtested correlates.
+def _monthly_score(conn: sqlite3.Connection, month: int, segment: str) -> float:
+    """Historical average top-quartile TPA for this month → 1-10.
 
-    Weights are proportional to their Pearson r values from the backtest:
-      offshore: SST r=0.456, wind r=0.164 → 73.5% / 26.5%
-      inshore:  SST r=0.317, wind r=0.148 → 68.2% / 31.8%
+    Normalises against the best and worst months in the historical record so
+    the model knows "June is historically harder than October."  Weighted at
+    15% in score_segment — it's consistently one of the stronger signals.
     """
-    sst_val = (conditions.get("sst_nearshore") if segment == "inshore"
-               else conditions.get("sst_offshore"))
-    wind    = conditions.get("wind_speed")
+    try:
+        month_str = f"{month:02d}"
+        this_m = conn.execute(
+            """SELECT AVG(top_quartile_tpa) FROM daily_segment_stats
+               WHERE segment=? AND strftime('%m', date)=? AND trip_count>=2""",
+            (segment, month_str),
+        ).fetchone()[0]
+        if this_m is None:
+            return 5.0
+
+        all_months = conn.execute(
+            """SELECT AVG(top_quartile_tpa) AS avg_tq
+               FROM daily_segment_stats
+               WHERE segment=? AND trip_count>=2
+               GROUP BY strftime('%m', date)""",
+            (segment,),
+        ).fetchall()
+        vals = [r[0] for r in all_months if r[0] is not None]
+        if not vals or max(vals) == min(vals):
+            return 5.0
+
+        mn, mx = min(vals), max(vals)
+        pct = (this_m - mn) / (mx - mn)
+        return round(max(1.0, min(10.0, 1.0 + pct * 9.0)), 1)
+    except Exception as e:
+        log.debug("_monthly_score failed: %s", e)
+        return 5.0
+
+
+def _model_a_score(conditions: dict, segment: str) -> float:
+    """Model A — SST Core: SST (57%) + wind direction (24%) + upwelling (19%).
+
+    Uses the three highest-correlation factors from the backtest.
+    SST anomaly modifies the SST score as in the full model.
+    """
+    sst_val     = (conditions.get("sst_nearshore") if segment == "inshore"
+                   else conditions.get("sst_offshore"))
+    anomaly     = conditions.get("sst_anomaly")
+    is_offshore = conditions.get("wind_is_offshore")
+    is_upwelling = conditions.get("wind_is_upwelling")
+    upwelling_ix = conditions.get("upwelling_index")
 
     bw             = _load_weights()
     overall_breaks = _breaks_from_weights(bw, "overall_breaks", _OVERALL_BREAKS)
-    anomaly        = conditions.get("sst_anomaly")
 
-    f_sst = _score(sst_val, overall_breaks) if sst_val is not None else None
-    if f_sst is not None and anomaly is not None:
+    f_sst = _score(sst_val, overall_breaks) if sst_val is not None else 5.0
+    if sst_val is not None and anomaly is not None:
         anom_m = bw.get("anomaly_weight", 1.0)
         f_sst  = float(min(10.0, max(1.0, f_sst + _anomaly_boost(anomaly) * anom_m * 0.4)))
-    f_wind = _wind_score(wind) if wind is not None else None
 
-    if f_sst is None and f_wind is None:
-        return None
-    if f_sst is None:
-        return round(f_wind, 1)
-    if f_wind is None:
-        return round(f_sst, 1)
+    f_wdir = _wind_direction_score(is_offshore, is_upwelling, segment)
+    f_upw  = _upwelling_score(upwelling_ix, segment)
 
-    sst_w, wind_w = (0.735, 0.265) if segment == "offshore" else (0.682, 0.318)
-    return round(min(10.0, max(1.0, f_sst * sst_w + f_wind * wind_w)), 1)
+    return round(min(10.0, max(1.0, f_sst * 0.57 + f_wdir * 0.24 + f_upw * 0.19)), 1)
 
 
 def _model_b_score(
@@ -270,52 +302,73 @@ def _model_b_score(
     conditions: dict,
     segment: str,
 ) -> dict | None:
-    """Model B: historical pattern matching.
+    """Model B — Historical Pattern: 20 most similar past days, recency-weighted.
 
-    Finds days in daily_segment_stats with the same month + similar SST (±3°F)
-    + similar wind (±7 kn if available).  Computes median TPA of matched days,
-    then ranks it as a percentile against all historical segment days → 1-10.
-    Falls back to ±5°F / no wind constraint when fewer than 5 days match.
+    Matches on: same month (±1) + SST ±2°F + same wind direction regime.
+    Falls back to ±4°F / drops wind direction when fewer than 5 days match.
+    Recency weighting: exp(-days_ago / 365) so recent regime changes matter more.
+    Returns percentile-rank of weighted-avg TPA against all segment days → 1-10.
     """
-    month   = conditions.get("month", date.today().month)
-    sst_val = (conditions.get("sst_nearshore") if segment == "inshore"
-               else conditions.get("sst_offshore"))
-    wind    = conditions.get("wind_speed")
+    month      = conditions.get("month", date.today().month)
+    sst_val    = (conditions.get("sst_nearshore") if segment == "inshore"
+                  else conditions.get("sst_offshore"))
+    is_upwelling = conditions.get("wind_is_upwelling")
 
     if sst_val is None:
         return None
 
-    sst_col   = "sst_nearshore" if segment == "inshore" else "sst_offshore"
-    month_str = f"{month:02d}"
+    sst_col = "sst_nearshore" if segment == "inshore" else "sst_offshore"
+    adj_months = sorted({
+        (month - 2) % 12 + 1, (month - 1) % 12 + 1,
+        month,
+        month % 12 + 1, (month + 1) % 12 + 1,
+    })
+    month_ph  = ",".join("?" * len(adj_months))
+    month_fmt = [f"{m:02d}" for m in adj_months]
 
     try:
-        def _fetch(sst_lo: float, sst_hi: float, with_wind: bool) -> list[float]:
+        def _fetch(sst_lo: float, sst_hi: float, with_wind_dir: bool) -> list[tuple]:
             where = [
                 "dss.segment = ?",
                 f"hc.{sst_col} BETWEEN ? AND ?",
-                "strftime('%m', dss.date) = ?",
+                f"strftime('%m', dss.date) IN ({month_ph})",
                 "dss.trip_count >= 2",
             ]
-            params: list = [segment, sst_lo, sst_hi, month_str]
-            if with_wind and wind is not None:
-                where.append("hc.wind_speed BETWEEN ? AND ?")
-                params.extend([max(0.0, wind - 7.0), wind + 7.0])
-            rows = conn.execute(
-                f"SELECT dss.avg_tpa FROM daily_segment_stats dss"
+            params: list = [segment, sst_lo, sst_hi, *month_fmt]
+            if with_wind_dir and is_upwelling is not None:
+                where.append("hc.wind_is_upwelling = ?")
+                params.append(1 if is_upwelling else 0)
+            return conn.execute(
+                f"SELECT dss.date, dss.avg_tpa FROM daily_segment_stats dss"
                 f" JOIN historical_conditions hc ON hc.date = dss.date"
-                f" WHERE {' AND '.join(where)}",
-                params,
+                f" WHERE {' AND '.join(where)}"
+                f" ORDER BY ABS(hc.{sst_col} - ?) LIMIT 20",
+                [*params, sst_val],
             ).fetchall()
-            return [r[0] for r in rows if r[0] is not None]
 
-        tpas = _fetch(sst_val - 3.0, sst_val + 3.0, with_wind=True)
-        if len(tpas) < 5:
-            tpas = _fetch(sst_val - 5.0, sst_val + 5.0, with_wind=False)
-        if not tpas:
+        rows = _fetch(sst_val - 2.0, sst_val + 2.0, with_wind_dir=True)
+        if len(rows) < 5:
+            rows = _fetch(sst_val - 4.0, sst_val + 4.0, with_wind_dir=False)
+        if not rows:
             return None
 
-        matched_median = sorted(tpas)[len(tpas) // 2]
+        today_d = date.today()
+        w_sum, w_tot = 0.0, 0.0
+        for row_date_str, tpa in rows:
+            if tpa is None:
+                continue
+            try:
+                days_ago = max(0, (today_d - date.fromisoformat(row_date_str)).days)
+            except Exception:
+                days_ago = 365
+            w = _math.exp(-days_ago / 365.0)
+            w_sum += tpa * w
+            w_tot += w
 
+        if w_tot == 0:
+            return None
+
+        weighted_tpa = w_sum / w_tot
         all_tpas = sorted(
             r[0] for r in conn.execute(
                 "SELECT avg_tpa FROM daily_segment_stats WHERE segment=? AND trip_count>=2",
@@ -326,9 +379,9 @@ def _model_b_score(
         if not all_tpas:
             return None
 
-        pct   = sum(1 for v in all_tpas if v <= matched_median) / len(all_tpas)
+        pct   = sum(1 for v in all_tpas if v <= weighted_tpa) / len(all_tpas)
         score = round(max(1.0, min(10.0, 1.0 + pct * 9.0)), 1)
-        return {"score": score, "n_days": len(tpas)}
+        return {"score": score, "n_days": len(rows)}
 
     except Exception as e:
         log.debug("_model_b_score failed: %s", e)
@@ -341,16 +394,18 @@ def score_ensemble(
     segment: str,
     days_out: int = 0,
 ) -> dict:
-    """Run three independent models and compute ensemble agreement + confidence.
+    """Three-model weighted ensemble with std-dev confidence.
 
-    Model A: SST + wind only (strongest backtested factors, simple)
-    Model B: Historical pattern match (actual catch on similar-condition days)
-    Model C: Full 8-factor weighted segment score
+    Model A — SST Core (40%): SST + wind direction + upwelling
+    Model B — Historical Pattern (35%): 20 similar past days, recency-weighted
+    Model C — Full Model (25%): all 9 weighted factors via score_segment()
 
-    Confidence bands:
-      High     — all models agree within 1.5 pts AND same good/slow side
-      Moderate — spread ≤ 2.5 pts OR all agree on direction
-      Uncertain — models conflict meaningfully
+    Weights are fixed per spec — A highest because SST/wind direction are the
+    strongest correlating factors; B high because historical reality anchors
+    the score; C lowest because additional factors add noise.
+
+    When B is unavailable, A/C weights are rescaled proportionally.
+    Confidence is the std dev of [A, B, C]: low std → High, high std → Uncertain.
     """
     a_score = _model_a_score(conditions, segment)
 
@@ -361,51 +416,63 @@ def score_ensemble(
     c_result = score_segment(segment, conditions, days_out=days_out)
     c_score  = c_result.get("overall_score")
 
-    avail       = [(s, k) for s, k in [(a_score, "A"), (b_score, "B"), (c_score, "C")] if s is not None]
-    scores_only = [s for s, _ in avail]
-    if not scores_only:
-        return {}
+    # Weighted average — redistribute B weight when unavailable
+    if b_score is not None:
+        ensemble = a_score * 0.40 + b_score * 0.35 + c_score * 0.25
+    else:
+        ensemble = a_score * (0.40 / 0.65) + c_score * (0.25 / 0.65)
+    ensemble = round(min(10.0, max(1.0, ensemble)), 1)
 
-    ensemble = round(sum(scores_only) / len(scores_only), 1)
-    spread   = round(max(scores_only) - min(scores_only), 1)
-    good_n   = sum(1 for s in scores_only if s >= 5.5)
-    all_same_dir = good_n == len(scores_only) or good_n == 0
+    # Std dev confidence
+    scores_for_std = [s for s in [a_score, b_score, c_score] if s is not None]
+    if len(scores_for_std) >= 2:
+        mean = sum(scores_for_std) / len(scores_for_std)
+        std  = _math.sqrt(sum((s - mean) ** 2 for s in scores_for_std) / len(scores_for_std))
+    else:
+        std = 0.0
+    std = round(std, 2)
 
-    if spread <= 1.5 and all_same_dir:
+    good_n       = sum(1 for s in scores_for_std if s >= 5.5)
+    all_same_dir = good_n == len(scores_for_std) or good_n == 0
+
+    if std <= 0.7 and all_same_dir:
         conf, conf_color = "High",      "#10B981"
         note = "All models agree — strong signal."
-    elif spread <= 2.5 or all_same_dir:
+    elif std <= 1.5 or all_same_dir:
         conf, conf_color = "Moderate",  "#FBBF24"
         note = ("Models mostly agree." if all_same_dir
                 else "Some model disagreement — moderate confidence.")
     else:
         conf, conf_color = "Uncertain", "#EF4444"
-        note = "Models conflict — conditions are ambiguous. Take this forecast with caution."
+        note = "Models conflict — treat this forecast with caution."
 
     return {
         "ensemble_score":   ensemble,
-        "spread":           spread,
+        "std_dev":          std,
         "confidence":       conf,
         "confidence_color": conf_color,
         "note":             note,
         "direction":        "good" if ensemble >= 5.5 else "slow",
-        "all_agree":        all_same_dir and spread <= 1.5,
+        "all_agree":        std <= 0.7 and all_same_dir,
         "models": {
             "A": {
                 "score":       a_score,
-                "label":       "SST + Wind",
-                "description": "Strongest correlated factors only",
+                "weight":      0.40,
+                "label":       "SST Core",
+                "description": "SST + wind direction + upwelling",
             },
             "B": {
                 "score":       b_score,
+                "weight":      0.35,
                 "n_days":      b_n_days,
                 "label":       "Historical Match",
                 "description": f"{b_n_days} similar past days" if b_n_days else "insufficient data",
             },
             "C": {
                 "score":       c_score,
+                "weight":      0.25,
                 "label":       "Full Model",
-                "description": "All 8 weighted factors",
+                "description": "All 9 weighted factors",
             },
         },
         "segment_detail": c_result,
@@ -418,26 +485,29 @@ def _load_segment_factor_weights(segment: str, season: str) -> dict[str, float]:
     if not sw:
         sw = load_segment_weights(segment, "overall")
 
-    sst_m    = max(0.05, sw.get("sst_weight",          1.0))
-    moon_m   = max(0.01, sw.get("moon_weight",          0.1))
-    wind_m   = max(0.05, sw.get("wind_weight",          0.3))
-    wdir_m   = max(0.05, sw.get("wind_offshore_weight", 0.2))
-    grad_m   = max(0.05, sw.get("sst_gradient_weight",  0.15))
-    chl_m    = max(0.02, sw.get("chl_weight",           0.1))
-    swell_m  = _SWELL_DEFAULT
-    # Upwelling weight from backtest correlation (weak signal, capped at 0.15)
-    upw_m    = min(0.15, max(0.02, sw.get("upwelling_weight", 0.05)))
+    sst_m     = max(0.05, sw.get("sst_weight",          1.0))
+    # Moon backtested at r=0.019 offshore / r=0.053 inshore — near noise.
+    # Cap at 2% so it stays visible in the UI but doesn't move the score.
+    moon_m    = min(0.02, max(0.005, sw.get("moon_weight", 0.02)))
+    wind_m    = max(0.05, sw.get("wind_weight",          0.3))
+    wdir_m    = max(0.05, sw.get("wind_offshore_weight", 0.2))
+    grad_m    = max(0.05, sw.get("sst_gradient_weight",  0.15))
+    chl_m     = max(0.02, sw.get("chl_weight",           0.1))
+    swell_m   = _SWELL_DEFAULT
+    upw_m     = min(0.15, max(0.02, sw.get("upwelling_weight", 0.05)))
+    monthly_m = 0.15   # fixed 15% — historical monthly baseline is a strong signal
 
-    total = sst_m + moon_m + wind_m + wdir_m + grad_m + chl_m + swell_m + upw_m
+    total = sst_m + moon_m + wind_m + wdir_m + grad_m + chl_m + swell_m + upw_m + monthly_m
     return {
-        "sst":         round(sst_m   / total, 4),
-        "wind_speed":  round(wind_m  / total, 4),
-        "wind_dir":    round(wdir_m  / total, 4),
-        "gradient":    round(grad_m  / total, 4),
-        "chlorophyll": round(chl_m   / total, 4),
-        "moon":        round(moon_m  / total, 4),
-        "swell":       round(swell_m / total, 4),
-        "upwelling":   round(upw_m   / total, 4),
+        "sst":         round(sst_m     / total, 4),
+        "wind_speed":  round(wind_m    / total, 4),
+        "wind_dir":    round(wdir_m    / total, 4),
+        "gradient":    round(grad_m    / total, 4),
+        "chlorophyll": round(chl_m     / total, 4),
+        "moon":        round(moon_m    / total, 4),
+        "swell":       round(swell_m   / total, 4),
+        "upwelling":   round(upw_m     / total, 4),
+        "monthly":     round(monthly_m / total, 4),
     }
 
 
@@ -493,16 +563,20 @@ def score_segment(
                     segment,
                 )
     f_upw     = _upwelling_score(conditions.get("upwelling_index"), segment)
+    # Monthly baseline: pre-computed from daily_segment_stats and passed in conditions.
+    # Defaults to 5.0 (neutral) when not present — callers should pass monthly_score.
+    f_monthly = float(conditions.get("monthly_score", 5.0))
 
     total_score = (
-        f_sst_adj * w["sst"]  +
-        f_moon    * w["moon"] +
+        f_sst_adj * w["sst"]     +
+        f_moon    * w["moon"]    +
         f_wind    * w["wind_speed"] +
-        f_swe     * w["swell"] +
+        f_swe     * w["swell"]   +
         f_wdir    * w["wind_dir"] +
         f_grad    * w["gradient"] +
         f_chl     * w["chlorophyll"] +
-        f_upw     * w["upwelling"]
+        f_upw     * w["upwelling"] +
+        f_monthly * w["monthly"]
     )
     overall = round(min(10.0, max(1.0, total_score)), 1)
 
@@ -515,6 +589,7 @@ def score_segment(
         "moon":         round(f_moon, 1),
         "swell":        round(f_swe, 1),
         "upwelling":    round(f_upw, 1),
+        "monthly":      round(f_monthly, 1),
     }
     consensus        = calculate_consensus(fs, segment)
     ci_width, ci_label = _confidence_band(days_out)
@@ -963,6 +1038,33 @@ def build_forecast_payload(
     # ── Moon ─────────────────────────────────────────────────────────────────
     moon = moon_info(datetime(today.year, today.month, today.day, tzinfo=timezone.utc))
 
+    # ── Live SST gradient (fallback when historical_conditions has no value) ──
+    live_gradient: float | None = None
+    sst_60   = sst_by_loc.get("60-Mile Bank") or sst_by_loc.get("9-Mile Bank")
+    sst_near = sst_by_loc.get("Nearshore")
+    if sst_60 is not None and sst_near is not None:
+        live_gradient = round(abs(sst_60 - sst_near), 2)
+    sst_gradient_val = today_hc.get("sst_gradient") or live_gradient
+
+    # ── 7-day rolling avg SST — for projecting future days ───────────────────
+    rolling_sst: dict[str, float | None] = {}
+    for loc in ["Nearshore", "9-Mile Bank", "60-Mile Bank"]:
+        row = conn.execute(
+            "SELECT AVG(sst_fahrenheit) FROM ocean_temps"
+            " WHERE location=? AND date >= date('now', '-7 days')",
+            (loc,),
+        ).fetchone()
+        rolling_sst[loc] = (row[0] if row and row[0] else sst_by_loc.get(loc))
+
+    # ── Monthly baseline scores (pre-computed; passed per-segment) ────────────
+    monthly_cache: dict[tuple, float] = {}
+    for d_offset in range(7):
+        d_m = (today + timedelta(days=d_offset)).month
+        for seg in ("inshore", "offshore"):
+            key = (d_m, seg)
+            if key not in monthly_cache:
+                monthly_cache[key] = _monthly_score(conn, d_m, seg)
+
     # ── Historical factor ────────────────────────────────────────────────────
     hist_val = _historical_score_for_sst(conn, primary_sst, month) if primary_sst else 5.5
 
@@ -996,7 +1098,17 @@ def build_forecast_payload(
         "moon_phase_name": moon.phase,
     }
 
-    # ── 7-day strip ───────────────────────────────────────────────────────────
+    # ── Upwelling — fetch before 7-day strip (used in segment conditions) ──────
+    upwelling_row: dict = {}
+    try:
+        upwelling_row = fetch_recent_upwelling(conn) or {}
+    except Exception:
+        pass
+
+    # ── 7-day strip (offshore score_segment + legacy species scores) ─────────
+    # Uses score_segment(offshore) instead of score_day for richer factor set.
+    # Days 0-1: actual SST. Days 2+: 7-day rolling avg SST (flagged in payload).
+    # Species scores from legacy score_day for backward-compat with SpeciesGrid.
     wx_by_date = {w["date"]: w for w in (weather_forecast or [])}
     seven_day: list[dict] = []
     for i in range(7):
@@ -1004,20 +1116,47 @@ def build_forecast_payload(
         d_str = d.isoformat()
         wx    = wx_by_date.get(d_str, {})
         dmoon = moon_info(datetime(d.year, d.month, d.day, tzinfo=timezone.utc))
-        ds = score_day(
-            sst_f=primary_sst,
+        use_actual = i <= 1
+        day_sst_off  = primary_sst if use_actual else rolling_sst.get("60-Mile Bank")
+        day_sst_near = sst_by_loc.get("Nearshore") if use_actual else rolling_sst.get("Nearshore")
+        day_grad = (round(abs((day_sst_off or 0) - (day_sst_near or 0)), 2)
+                    if day_sst_off and day_sst_near else sst_gradient_val)
+        day_cond = {
+            "month":               d.month,
+            "sst_nearshore":       day_sst_near,
+            "sst_offshore":        day_sst_off,
+            "sst_anomaly":         primary_anom if use_actual else None,
+            "sst_gradient":        day_grad,
+            "wind_speed":          wx.get("wind_speed"),
+            "wind_direction":      wx.get("wind_direction"),
+            "swell_height":        wx.get("swell_height"),
+            "moon_illum":          dmoon.illum,
+            "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
+            "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
+            "upwelling_index":     upwelling_row.get("upwelling_index"),
+            "monthly_score":       monthly_cache.get((d.month, "offshore"), 5.0),
+        }
+        ds = score_segment("offshore", day_cond, days_out=i)
+        # Species scores — legacy score_day (for SpeciesGrid backward compat)
+        sp = score_day(
+            sst_f=day_sst_off or day_sst_near,
             moon_illum=dmoon.illum,
             wind_speed=wx.get("wind_speed"),
             swell_height_ft=wx.get("swell_height"),
             pressure_trend=wx.get("pressure_trend"),
-            anomaly=primary_anom,
+            anomaly=primary_anom if use_actual else None,
             historical_val=hist_val,
         )
         seven_day.append({
             "date":            d_str,
             "dayName":         d.strftime("%a"),
             **ds,
-            "sst":             primary_sst,
+            "bluefin_score":   sp.get("bluefin_score"),
+            "yellowfin_score": sp.get("yellowfin_score"),
+            "yellowtail_score":sp.get("yellowtail_score"),
+            "dorado_score":    sp.get("dorado_score"),
+            "sst":             day_sst_off,
+            "sst_source":      "actual" if use_actual else "rolling_avg",
             "wind_speed":      wx.get("wind_speed"),
             "swell_height":    wx.get("swell_height"),
             "moon_phase":      dmoon.illum,
@@ -1030,16 +1169,8 @@ def build_forecast_payload(
     # ── Accuracy ──────────────────────────────────────────────────────────────
     accuracy = _accuracy_stats(conn)
 
-    # ── Upwelling (NOAA, 2-day lag) ──────────────────────────────────────────
-    upwelling_row: dict = {}
-    try:
-        upwelling_row = fetch_recent_upwelling(conn) or {}
-    except Exception:
-        pass
-
     # ── Dual segment forecast ──────────────────────────────────────────────────
-    # Build a merged conditions dict for segment scoring
-    today_conditions = {
+    base_conditions = {
         "month":               month,
         "sst_nearshore":       sst_by_loc.get("Nearshore"),
         "sst_offshore":        primary_sst,
@@ -1050,7 +1181,7 @@ def build_forecast_payload(
         "wind_is_upwelling":   today_hc.get("wind_is_upwelling"),
         "swell_height":        today_wx.get("swell_height"),
         "moon_illum":          moon.illum,
-        "sst_gradient":        today_hc.get("sst_gradient"),
+        "sst_gradient":        sst_gradient_val,
         "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
         "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
         "upwelling_index":     upwelling_row.get("upwelling_index"),
@@ -1060,7 +1191,8 @@ def build_forecast_payload(
     ensemble_by_seg: dict[str, dict] = {}
     for seg in ("inshore", "offshore"):
         try:
-            ens = score_ensemble(conn, today_conditions, seg, days_out=0)
+            seg_cond = {**base_conditions, "monthly_score": monthly_cache.get((month, seg), 5.0)}
+            ens = score_ensemble(conn, seg_cond, seg, days_out=0)
             ensemble_by_seg[seg] = ens
             segment_today[seg]   = ens.get("segment_detail", {})
         except Exception as e:
@@ -1068,32 +1200,66 @@ def build_forecast_payload(
             segment_today[seg]   = {}
             ensemble_by_seg[seg] = {}
 
-    # Dual 7-day strip
+    # Store today's ensemble scores for monitoring
+    try:
+        now_str = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        for seg, ens in ensemble_by_seg.items():
+            if ens and ens.get("ensemble_score") is not None:
+                m = ens.get("models", {})
+                conn.execute(
+                    """INSERT OR REPLACE INTO forecast_scores
+                       (date, segment, model_a, model_b, model_c, ensemble,
+                        std_dev, confidence, n_days_b, created_at)
+                       VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (
+                        today_str, seg,
+                        m.get("A", {}).get("score"),
+                        m.get("B", {}).get("score"),
+                        m.get("C", {}).get("score"),
+                        ens["ensemble_score"],
+                        ens.get("std_dev"),
+                        ens.get("confidence"),
+                        m.get("B", {}).get("n_days", 0),
+                        now_str,
+                    ),
+                )
+    except Exception as e:
+        log.debug("forecast_scores insert failed: %s", e)
+
+    # Dual 7-day strip — rolling SST + per-segment monthly baseline
     segment_seven_day: dict[str, list] = {"inshore": [], "offshore": []}
-    for i, day_entry in enumerate(seven_day):
-        d     = today + timedelta(days=i)
-        wx    = wx_by_date.get(d.isoformat(), {})
-        dmoon = moon_info(datetime(d.year, d.month, d.day, tzinfo=timezone.utc))
-        day_conditions = {
-            "month":             d.month,
-            "sst_nearshore":     sst_by_loc.get("Nearshore"),
-            "sst_offshore":      primary_sst,
-            "sst_anomaly":       primary_anom,
-            "wind_speed":        wx.get("wind_speed"),
-            "wind_direction":    wx.get("wind_direction"),
-            "swell_height":      wx.get("swell_height"),
-            "moon_illum":        dmoon.illum,
-            "sst_gradient":      today_hc.get("sst_gradient"),  # use today's gradient
-            "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
-            "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
-        }
+    for i in range(7):
+        d          = today + timedelta(days=i)
+        wx         = wx_by_date.get(d.isoformat(), {})
+        dmoon      = moon_info(datetime(d.year, d.month, d.day, tzinfo=timezone.utc))
+        use_actual = i <= 1
+        d_sst_off  = primary_sst if use_actual else rolling_sst.get("60-Mile Bank")
+        d_sst_near = sst_by_loc.get("Nearshore") if use_actual else rolling_sst.get("Nearshore")
+        d_grad     = (round(abs((d_sst_off or 0) - (d_sst_near or 0)), 2)
+                      if d_sst_off and d_sst_near else sst_gradient_val)
         for seg in ("inshore", "offshore"):
             try:
-                seg_score = score_segment(seg, day_conditions, days_out=i)
+                seg_cond = {
+                    "month":               d.month,
+                    "sst_nearshore":       d_sst_near,
+                    "sst_offshore":        d_sst_off,
+                    "sst_anomaly":         primary_anom if use_actual else None,
+                    "sst_gradient":        d_grad,
+                    "wind_speed":          wx.get("wind_speed"),
+                    "wind_direction":      wx.get("wind_direction"),
+                    "swell_height":        wx.get("swell_height"),
+                    "moon_illum":          dmoon.illum,
+                    "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
+                    "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
+                    "upwelling_index":     upwelling_row.get("upwelling_index"),
+                    "monthly_score":       monthly_cache.get((d.month, seg), 5.0),
+                }
+                seg_score = score_segment(seg, seg_cond, days_out=i)
                 segment_seven_day[seg].append({
-                    "date":            d.isoformat(),
-                    "dayName":         d.strftime("%a"),
+                    "date":       d.isoformat(),
+                    "dayName":    d.strftime("%a"),
                     **seg_score,
+                    "sst_source": "actual" if use_actual else "rolling_avg",
                 })
             except Exception as e:
                 log.debug("score_segment %s day %s failed: %s", seg, i, e)

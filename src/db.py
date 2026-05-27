@@ -273,6 +273,20 @@ CREATE TABLE IF NOT EXISTS upwelling_obs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_upwelling_date ON upwelling_obs(date);
+
+CREATE TABLE IF NOT EXISTS forecast_scores (
+    date       TEXT NOT NULL,
+    segment    TEXT NOT NULL,
+    model_a    REAL,
+    model_b    REAL,
+    model_c    REAL,
+    ensemble   REAL,
+    std_dev    REAL,
+    confidence TEXT,
+    n_days_b   INTEGER,
+    created_at TEXT,
+    PRIMARY KEY (date, segment)
+);
 """
 
 

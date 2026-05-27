@@ -1075,6 +1075,57 @@ function Section6() {
   );
 }
 
+function SectionForecastScores({ scores }) {
+  if (!scores || scores.length === 0) return null;
+  const confColor = { High: '#10B981', Moderate: '#FBBF24', Uncertain: '#EF4444' };
+  const byDate = {};
+  for (const r of scores) {
+    if (!byDate[r.date]) byDate[r.date] = {};
+    byDate[r.date][r.segment] = r;
+  }
+  const dates = Object.keys(byDate).sort().reverse().slice(0, 14);
+  return (
+    <div className="adm-section">
+      <h2>Ensemble Model Scores (last 14 days)</h2>
+      <table className="adm-pred-table" style={{fontSize:11}}>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Seg</th>
+            <th>A (SST Core)</th>
+            <th>B (History)</th>
+            <th>C (Full)</th>
+            <th>Ensemble</th>
+            <th>Std Dev</th>
+            <th>Confidence</th>
+            <th>B Days</th>
+          </tr>
+        </thead>
+        <tbody>
+          {dates.flatMap(d => ['inshore','offshore'].map(seg => {
+            const r = byDate[d]?.[seg];
+            if (!r) return null;
+            const cc = confColor[r.confidence] || '#94a3b8';
+            return (
+              <tr key={`${d}-${seg}`}>
+                <td>{d}</td>
+                <td>{seg}</td>
+                <td style={{color: r.model_a != null ? '#3b82f6' : '#94a3b8'}}>{r.model_a?.toFixed(1) ?? '—'}</td>
+                <td style={{color: r.model_b != null ? '#8b5cf6' : '#94a3b8'}}>{r.model_b?.toFixed(1) ?? '—'}</td>
+                <td style={{color: r.model_c != null ? '#f97316' : '#94a3b8'}}>{r.model_c?.toFixed(1) ?? '—'}</td>
+                <td style={{fontWeight:700}}>{r.ensemble?.toFixed(1) ?? '—'}</td>
+                <td>{r.std_dev?.toFixed(2) ?? '—'}</td>
+                <td><span style={{color:cc, fontWeight:600}}>{r.confidence}</span></td>
+                <td>{r.n_days_b ?? '—'}</td>
+              </tr>
+            );
+          }))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function SectionReviews({ reviews }) {
   if (!reviews) return null;
   const { total, pending, approved, rejected, pendingReviews = [] } = reviews;
@@ -1238,6 +1289,7 @@ function AdminView() {
         <Section3B history={admin.backtestHistory} />
         <Section3C correlation={admin.consensusCorrelation} />
         <Section4 preds={admin.recentPredictions} />
+        <SectionForecastScores scores={admin.forecastScores || []} />
         <SectionReviews reviews={admin.reviews}/>
         <SectionQRCodes/>
         <SectionCommunity/>

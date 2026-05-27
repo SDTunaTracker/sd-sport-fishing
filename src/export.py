@@ -508,8 +508,23 @@ def _admin_payload(conn: sqlite3.Connection) -> dict:
         "recentPredictions":    _recent_predictions(conn),
         "weights":              weights,
         "consensusCorrelation": _consensus_accuracy_correlation(conn),
-        "reviews": _reviews_admin_stats(conn),
+        "reviews":              _reviews_admin_stats(conn),
+        "forecastScores":       _forecast_scores_history(conn),
     }
+
+
+def _forecast_scores_history(conn: sqlite3.Connection) -> list:
+    """Last 30 days of ensemble model scores per segment for admin monitoring."""
+    try:
+        rows = conn.execute(
+            """SELECT date, segment, model_a, model_b, model_c, ensemble, std_dev, confidence, n_days_b
+               FROM forecast_scores
+               ORDER BY date DESC, segment
+               LIMIT 60"""
+        ).fetchall()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
 
 
 def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | None = None) -> int:

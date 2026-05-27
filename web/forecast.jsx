@@ -776,13 +776,15 @@ function DualSevenDayStrip({ fc }) {
 
 
 // ─── Ensemble model widget ────────────────────────────────────────────────────
+const MODEL_WEIGHTS = { A: 40, B: 35, C: 25 };
+
 function EnsembleWidget({ ensemble }) {
   if (!ensemble || (!ensemble.inshore && !ensemble.offshore)) return null;
   const [seg, setSeg] = useS('offshore');
   const data = ensemble[seg];
   if (!data || data.ensemble_score == null) return null;
 
-  const { models, ensemble_score, confidence, confidence_color, note, spread, all_agree, direction } = data;
+  const { models, ensemble_score, confidence, confidence_color, note, std_dev, all_agree, direction } = data;
   const modelList = ['A', 'B', 'C'].map(k => ({ key: k, ...(models?.[k] || {}) })).filter(m => m.score != null);
 
   const directionNote = all_agree
@@ -821,29 +823,31 @@ function EnsembleWidget({ ensemble }) {
           }}/>
           <div>
             <div style={{fontWeight:700, fontSize:12, color:confidence_color}}>{confidence} Confidence</div>
-            <div style={{fontSize:10, color:'var(--tb-slate)'}}>Model spread: {spread.toFixed(1)} pts</div>
+            <div style={{fontSize:10, color:'var(--tb-slate)'}}>
+              Std dev: {std_dev != null ? std_dev.toFixed(2) : '—'}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3 model score bars */}
+      {/* 3 model score bars with weights */}
       <div style={{display:'flex', flexDirection:'column', gap:10, marginBottom:14}}>
         {modelList.map(m => {
           const pct = ((m.score - 1) / 9) * 100;
+          const wt  = MODEL_WEIGHTS[m.key] || m.weight * 100;
           return (
-            <div key={m.key} style={{display:'grid', gridTemplateColumns:'96px 1fr 36px', gap:10, alignItems:'center'}}>
+            <div key={m.key} style={{display:'grid', gridTemplateColumns:'108px 1fr 36px', gap:10, alignItems:'center'}}>
               <div>
-                <div style={{fontSize:12, fontWeight:700, color:'var(--tb-ink)'}}>Model {m.key}</div>
-                <div style={{fontSize:10, color:'var(--tb-slate)', lineHeight:1.3}}>{m.description}</div>
+                <div style={{display:'flex', alignItems:'baseline', gap:5}}>
+                  <span style={{fontSize:12, fontWeight:700, color:'var(--tb-ink)'}}>{m.label}</span>
+                  <span style={{fontSize:10, color:'var(--tb-slate)'}}>{wt}%</span>
+                </div>
+                <div style={{fontSize:10, color:'var(--tb-slate)', lineHeight:1.3, marginTop:1}}>{m.description}</div>
               </div>
               <div>
                 <div style={{height:8, background:'var(--tb-border)', borderRadius:4, overflow:'hidden'}}>
-                  <div style={{
-                    width:`${pct}%`, height:'100%',
-                    background:scoreColor(m.score), borderRadius:4,
-                  }}/>
+                  <div style={{width:`${pct}%`, height:'100%', background:scoreColor(m.score), borderRadius:4}}/>
                 </div>
-                <div style={{fontSize:10, color:'var(--tb-slate)', marginTop:2}}>{m.label}</div>
               </div>
               <div style={{fontSize:14, fontWeight:700, color:scoreColor(m.score), textAlign:'right'}}>
                 {m.score.toFixed(1)}
