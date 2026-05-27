@@ -51,20 +51,36 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 
 BACKTEST_SCHEMA = """
 CREATE TABLE IF NOT EXISTS historical_conditions (
-    date             TEXT PRIMARY KEY,
-    sst_nearshore    REAL,
-    sst_9mile        REAL,
-    sst_offshore     REAL,
-    sst_cortez       REAL,
-    sst_anomaly      REAL,
-    wind_speed       REAL,
-    wind_direction   REAL,
-    swell_height     REAL,
-    swell_period     REAL,
-    pressure         REAL,
-    pressure_trend   REAL,
-    moon_illum       REAL,
-    moon_phase_name  TEXT
+    date                   TEXT PRIMARY KEY,
+    sst_nearshore          REAL,
+    sst_9mile              REAL,
+    sst_offshore           REAL,
+    sst_cortez             REAL,
+    sst_anomaly            REAL,
+    wind_speed             REAL,
+    wind_direction         REAL,
+    swell_height           REAL,
+    swell_period           REAL,
+    pressure               REAL,
+    pressure_trend         REAL,
+    moon_illum             REAL,
+    moon_phase_name        TEXT,
+    wind_direction_deg     REAL,
+    wind_direction_label   TEXT,
+    wind_is_offshore       INTEGER,
+    wind_is_upwelling      INTEGER,
+    sst_gradient           REAL,
+    sst_warming_trend      REAL,
+    sst_7day_avg           REAL,
+    chlorophyll_nearshore  REAL,
+    chlorophyll_offshore   REAL,
+    chlorophyll_ratio      REAL,
+    current_speed_knots    REAL,
+    current_direction_deg  REAL,
+    current_is_favorable   INTEGER,
+    eddy_detected          INTEGER,
+    upwelling_index        REAL,
+    upwelling_is_favorable INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS backtest_results (
@@ -84,8 +100,34 @@ CREATE TABLE IF NOT EXISTS backtest_results (
 """
 
 
+_NEW_HISTORICAL_COLS = [
+    ("wind_direction_deg",   "REAL"),
+    ("wind_direction_label", "TEXT"),
+    ("wind_is_offshore",     "INTEGER"),
+    ("wind_is_upwelling",    "INTEGER"),
+    ("sst_gradient",         "REAL"),
+    ("sst_warming_trend",    "REAL"),
+    ("sst_7day_avg",         "REAL"),
+    ("chlorophyll_nearshore","REAL"),
+    ("chlorophyll_offshore", "REAL"),
+    ("chlorophyll_ratio",    "REAL"),
+    ("current_speed_knots",  "REAL"),
+    ("current_direction_deg","REAL"),
+    ("current_is_favorable", "INTEGER"),
+    ("eddy_detected",        "INTEGER"),
+    ("upwelling_index",      "REAL"),
+    ("upwelling_is_favorable","INTEGER"),
+]
+
+
 def _apply_schema(conn: sqlite3.Connection) -> None:
     conn.executescript(BACKTEST_SCHEMA)
+    existing = {r[1] for r in conn.execute(
+        "PRAGMA table_info(historical_conditions)"
+    ).fetchall()}
+    for col, defn in _NEW_HISTORICAL_COLS:
+        if col not in existing:
+            conn.execute(f"ALTER TABLE historical_conditions ADD COLUMN {col} {defn}")
 
 
 # ─── Utilities ───────────────────────────────────────────────────────────────
@@ -365,6 +407,32 @@ def build_historical_conditions(
     except Exception:
         pass  # table may not exist on first run
 
+    # Load ocean currents (HYCOM 2014-2018) keyed by date, using 60-Mile Bank
+    curr_by_date: dict[str, dict] = {}
+    try:
+        for row in conn.execute(
+            "SELECT date, current_speed_knots, current_direction_deg,"
+            "       current_is_favorable, eddy_detected"
+            " FROM ocean_currents WHERE location='60-Mile Bank'"
+            " AND date BETWEEN ? AND ?",
+            (start.isoformat(), end.isoformat()),
+        ).fetchall():
+            curr_by_date[row["date"]] = dict(row)
+    except Exception:
+        pass  # table may not exist on first run
+
+    # Load upwelling index (2015-present) keyed by date
+    upw_by_date: dict[str, dict] = {}
+    try:
+        for row in conn.execute(
+            "SELECT date, upwelling_index, upwelling_is_favorable"
+            " FROM upwelling_obs WHERE date BETWEEN ? AND ?",
+            (start.isoformat(), end.isoformat()),
+        ).fetchall():
+            upw_by_date[row["date"]] = dict(row)
+    except Exception:
+        pass  # table may not exist on first run
+
     n = 0
     for d in _date_range(start, end):
         d_str = d.isoformat()
@@ -402,6 +470,11 @@ def build_historical_conditions(
         chl_ratio = (round(chl_near / max(chl_off, 0.001), 3)
                      if chl_near is not None and chl_off is not None else None)
 
+        # Ocean currents (HYCOM, available 2014-2018 only)
+        curr = curr_by_date.get(d_str, {})
+        # Upwelling index (available 2015-present)
+        upw  = upw_by_date.get(d_str, {})
+
         conn.execute(
             """INSERT OR REPLACE INTO historical_conditions
                (date, sst_nearshore, sst_9mile, sst_offshore, sst_cortez,
@@ -409,8 +482,11 @@ def build_historical_conditions(
                 swell_period, pressure, pressure_trend, moon_illum, moon_phase_name,
                 wind_direction_deg, wind_direction_label, wind_is_offshore, wind_is_upwelling,
                 sst_gradient, sst_warming_trend, sst_7day_avg,
-                chlorophyll_nearshore, chlorophyll_offshore, chlorophyll_ratio)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                chlorophyll_nearshore, chlorophyll_offshore, chlorophyll_ratio,
+                current_speed_knots, current_direction_deg,
+                current_is_favorable, eddy_detected,
+                upwelling_index, upwelling_is_favorable)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 d_str,
                 sst_nearshore,
@@ -436,6 +512,12 @@ def build_historical_conditions(
                 chl_near,
                 chl_off,
                 chl_ratio,
+                curr.get("current_speed_knots"),
+                curr.get("current_direction_deg"),
+                curr.get("current_is_favorable"),
+                curr.get("eddy_detected"),
+                upw.get("upwelling_index"),
+                upw.get("upwelling_is_favorable"),
             ),
         )
         n += 1
@@ -469,6 +551,8 @@ _SEGMENT_HC_FACTORS = _HC_NUMERIC_COLS + (
     "sst_gradient", "sst_warming_trend", "sst_7day_avg",
     "wind_is_offshore", "wind_is_upwelling",
     "chlorophyll_nearshore", "chlorophyll_offshore", "chlorophyll_ratio",
+    "current_speed_knots", "current_is_favorable", "eddy_detected",
+    "upwelling_index", "upwelling_is_favorable",
 )
 
 
@@ -1021,27 +1105,32 @@ def backtest_segment(
 
         chl_key = "chlorophyll_nearshore" if segment == "inshore" else "chlorophyll_ratio"
         results.append({
-            "date":               d_str,
-            "month":              dep_date.month,
-            "season":             get_season(dep_date.month),
-            "segment":            segment,
-            "predicted":          predicted,
-            "actual_tpa_topq":    round(top_q, 4),
-            "actual_tpa_avg":     round(actual.get("avg_tpa") or 0, 4),
-            "actual_rating":      actual_rating,
-            "error":              round(error, 2),
-            "correct_direction":  (predicted >= 5.5) == (actual_rating >= 5.5),
+            "date":                  d_str,
+            "month":                 dep_date.month,
+            "season":                get_season(dep_date.month),
+            "segment":               segment,
+            "predicted":             predicted,
+            "actual_tpa_topq":       round(top_q, 4),
+            "actual_tpa_avg":        round(actual.get("avg_tpa") or 0, 4),
+            "actual_rating":         actual_rating,
+            "error":                 round(error, 2),
+            "correct_direction":     (predicted >= 5.5) == (actual_rating >= 5.5),
             # Condition factors for correlation analysis
-            "sst_primary":        sst_val,
-            "sst_anomaly":        cond.get("sst_anomaly"),
-            "sst_gradient":       cond.get("sst_gradient"),
-            "sst_warming_trend":  cond.get("sst_warming_trend"),
-            "wind_speed":         cond.get("wind_speed"),
-            "wind_is_offshore":   cond.get("wind_is_offshore"),
-            "wind_is_upwelling":  cond.get("wind_is_upwelling"),
-            "swell_height":       cond.get("swell_height"),
-            "moon_illum":         cond.get("moon_illum"),
-            "chl_primary":        cond.get(chl_key),
+            "sst_primary":           sst_val,
+            "sst_anomaly":           cond.get("sst_anomaly"),
+            "sst_gradient":          cond.get("sst_gradient"),
+            "sst_warming_trend":     cond.get("sst_warming_trend"),
+            "wind_speed":            cond.get("wind_speed"),
+            "wind_is_offshore":      cond.get("wind_is_offshore"),
+            "wind_is_upwelling":     cond.get("wind_is_upwelling"),
+            "swell_height":          cond.get("swell_height"),
+            "moon_illum":            cond.get("moon_illum"),
+            "chl_primary":           cond.get(chl_key),
+            "current_speed_knots":   cond.get("current_speed_knots"),
+            "current_is_favorable":  cond.get("current_is_favorable"),
+            "eddy_detected":         cond.get("eddy_detected"),
+            "upwelling_index":       cond.get("upwelling_index"),
+            "upwelling_is_favorable":cond.get("upwelling_is_favorable"),
         })
     return sorted(results, key=lambda x: x["date"])
 
@@ -1053,17 +1142,22 @@ def correlate_segment_factors(
 ) -> dict[str, dict[str, float | None]]:
     """Pearson r between each extended factor and top-quartile TPA rating."""
     factors = {
-        "sst_primary":       [r["sst_primary"]      for r in results],
-        "sst_anomaly":       [r["sst_anomaly"]      for r in results],
-        "sst_gradient":      [r["sst_gradient"]     for r in results],
-        "sst_warming_trend": [r["sst_warming_trend"]for r in results],
-        "wind_speed":        [r["wind_speed"]       for r in results],
-        "wind_is_offshore":  [r["wind_is_offshore"] for r in results],
-        "wind_is_upwelling": [r["wind_is_upwelling"]for r in results],
-        "swell_height":      [r["swell_height"]     for r in results],
-        "moon_illum":        [r["moon_illum"]       for r in results],
-        "chl_primary":       [r["chl_primary"]      for r in results],
-        "month_num":         [float(r["month"])     for r in results],
+        "sst_primary":           [r["sst_primary"]           for r in results],
+        "sst_anomaly":           [r["sst_anomaly"]           for r in results],
+        "sst_gradient":          [r["sst_gradient"]          for r in results],
+        "sst_warming_trend":     [r["sst_warming_trend"]     for r in results],
+        "wind_speed":            [r["wind_speed"]            for r in results],
+        "wind_is_offshore":      [r["wind_is_offshore"]      for r in results],
+        "wind_is_upwelling":     [r["wind_is_upwelling"]     for r in results],
+        "swell_height":          [r["swell_height"]          for r in results],
+        "moon_illum":            [r["moon_illum"]            for r in results],
+        "chl_primary":           [r["chl_primary"]           for r in results],
+        "current_speed_knots":   [r["current_speed_knots"]   for r in results],
+        "current_is_favorable":  [r["current_is_favorable"]  for r in results],
+        "eddy_detected":         [r["eddy_detected"]         for r in results],
+        "upwelling_index":       [r["upwelling_index"]       for r in results],
+        "upwelling_is_favorable":[r["upwelling_is_favorable"]for r in results],
+        "month_num":             [float(r["month"])          for r in results],
     }
     targets = {"overall": [r["actual_rating"] for r in results]}
     matrix: dict[str, dict] = {}
@@ -1089,20 +1183,25 @@ def optimize_segment_weights(
     weights.setdefault("sst_gradient_weight",  0.0)
     weights.setdefault("wind_offshore_weight", 0.0)
     weights.setdefault("chl_weight",           0.0)
+    weights.setdefault("current_weight",       0.0)
+    weights.setdefault("upwelling_weight",     0.0)
 
     def _adj(r: float | None, center: float = 0.3) -> float:
         if r is None:
             return 1.0
         return round(max(0.4, min(2.0, 1.0 + (abs(r) - center) * 2.0)), 3)
 
-    sst_r  = correlations.get("sst_primary",       {}).get("overall")
-    anom_r = correlations.get("sst_anomaly",        {}).get("overall")
-    moon_r = correlations.get("moon_illum",         {}).get("overall")
-    wind_r = correlations.get("wind_speed",         {}).get("overall")
-    grad_r = correlations.get("sst_gradient",       {}).get("overall")
-    woff_r = correlations.get("wind_is_offshore",   {}).get("overall")
-    wup_r  = correlations.get("wind_is_upwelling",  {}).get("overall")
-    chl_r  = correlations.get("chl_primary",        {}).get("overall")
+    sst_r  = correlations.get("sst_primary",         {}).get("overall")
+    anom_r = correlations.get("sst_anomaly",          {}).get("overall")
+    moon_r = correlations.get("moon_illum",           {}).get("overall")
+    wind_r = correlations.get("wind_speed",           {}).get("overall")
+    grad_r = correlations.get("sst_gradient",         {}).get("overall")
+    woff_r = correlations.get("wind_is_offshore",     {}).get("overall")
+    wup_r  = correlations.get("wind_is_upwelling",    {}).get("overall")
+    chl_r  = correlations.get("chl_primary",          {}).get("overall")
+    curr_r = correlations.get("current_speed_knots",  {}).get("overall")
+    cfav_r = correlations.get("current_is_favorable", {}).get("overall")
+    upw_r  = correlations.get("upwelling_index",      {}).get("overall")
 
     if sst_r  is not None: weights["sst_weight"]          = _adj(sst_r,  0.3)
     if anom_r is not None: weights["anomaly_weight"]       = _adj(anom_r, 0.2)
@@ -1112,6 +1211,9 @@ def optimize_segment_weights(
     best_wdir = max(abs(woff_r or 0), abs(wup_r or 0))
     if best_wdir > 0:      weights["wind_offshore_weight"] = round(min(1.0, best_wdir * 3), 3)
     if chl_r  is not None: weights["chl_weight"]           = round(min(1.0, abs(chl_r)  * 3), 3)
+    best_curr = max(abs(curr_r or 0), abs(cfav_r or 0))
+    if best_curr > 0:      weights["current_weight"]       = round(min(1.0, best_curr * 3), 3)
+    if upw_r  is not None: weights["upwelling_weight"]     = round(min(1.0, abs(upw_r)  * 3), 3)
 
     weights["segment"] = segment
     return weights

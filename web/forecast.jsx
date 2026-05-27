@@ -401,7 +401,44 @@ const FACTOR_DISPLAY = {
   wind_speed:   { label: 'Wind speed',     icon: '💨' },
   swell:        { label: 'Swell',          icon: '🌊' },
   moon:         { label: 'Moon',           icon: '🌙' },
+  upwelling:    { label: 'Upwelling',      icon: '🌀' },
 };
+
+// ─── Upwelling indicator ──────────────────────────────────────────────────────
+function UpwellingWidget({ upwelling }) {
+  if (!upwelling || upwelling.index == null) return null;
+  const ix    = upwelling.index;
+  const label = upwelling.label || '—';
+  const fav   = upwelling.is_favorable;
+  const color = fav ? '#10B981' : ix >= 150 ? '#EF4444' : '#F97316';
+  const bg    = color + '15';
+  const note  = fav
+    ? 'Weak/downwelling conditions retain warm water — favorable for offshore tuna.'
+    : ix >= 150
+      ? 'Strong upwelling is pushing cold water inshore — expect fish to hold deeper or farther out.'
+      : 'Moderate upwelling is active — nearshore conditions may be cooler than usual.';
+  return (
+    <Panel>
+      <div style={{display:'flex', alignItems:'center', gap:12, flexWrap:'wrap'}}>
+        <div style={{
+          display:'flex', alignItems:'center', gap:8,
+          background: bg, borderRadius:8, padding:'8px 14px', flexShrink:0,
+        }}>
+          <span style={{fontSize:20}}>🌀</span>
+          <div>
+            <div style={{fontWeight:700, fontSize:13, color}}>{label}</div>
+            <div style={{fontSize:11, color:'var(--tb-slate)'}}>
+              Index: {ix > 0 ? '+' : ''}{Math.round(ix)} · {upwelling.date || ''}
+            </div>
+          </div>
+        </div>
+        <div style={{fontSize:12, color:'var(--tb-slate)', lineHeight:1.6, flex:1, minWidth:180}}>
+          {note}
+        </div>
+      </div>
+    </Panel>
+  );
+}
 
 function factorNote(score) {
   if (score >= 8.5) return 'strongly favorable';
@@ -822,6 +859,9 @@ function ForecastView({ navigate }) {
 
       {/* Dual inshore / offshore scores */}
       <DualSegmentWidget fc={fc}/>
+
+      {/* Upwelling indicator */}
+      <UpwellingWidget upwelling={fc.upwelling}/>
 
       {/* 7-day strip + selected day detail */}
       {/* TODO: PRO FEATURE — lock for free users later */}

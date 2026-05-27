@@ -90,6 +90,17 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
 
+            # Upwelling index (NOAA ERDDAP erdUI456hr, 33N117W, ~30-day lag in practice)
+            try:
+                from .upwelling import fetch_upwelling_range, insert_upwelling
+                upw_lag_end = date.today() - timedelta(days=30)
+                upw_start   = upw_lag_end - timedelta(days=14)
+                upw_records = fetch_upwelling_range(upw_start, upw_lag_end)
+                n_upw       = insert_upwelling(conn, upw_records)
+                summary_lines.append(f"  Upwelling fetched: {n_upw} days stored")
+            except Exception as e:
+                summary_lines.append(f"  Upwelling fetch ERROR (non-fatal): {e}")
+
             # Chlorophyll-a — MODIS Aqua 8-day composite; failure is non-fatal.
             try:
                 from .chlorophyll import fetch_chlorophyll
@@ -195,6 +206,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="Fetch 90 days of SST history from NOAA ERDDAP.")
     p.add_argument("--backfill-chl", action="store_true",
                    help="Backfill chlorophyll-a from NASA ERDDAP (2015-present).")
+    p.add_argument("--backfill-upwelling", action="store_true",
+                   help="Backfill NOAA upwelling index from ERDDAP (2015-present).")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(argv)
 
@@ -213,6 +226,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.backfill_chl:
         from .chlorophyll import backfill_chlorophyll
         backfill_chlorophyll(DB_PATH)
+        return 0
+
+    if args.backfill_upwelling:
+        from .upwelling import backfill_upwelling
+        backfill_upwelling(DB_PATH)
         return 0
 
     return run(args.date, args.export_only, hourly=args.hourly)

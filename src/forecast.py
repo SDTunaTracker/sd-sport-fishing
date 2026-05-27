@@ -28,6 +28,7 @@ from .analytics import (
 from .backtest import _classify_wind, get_season, load_segment_weights
 from .chlorophyll import score_chlorophyll
 from .moon import moon_info
+from .upwelling import fetch_recent_upwelling
 
 log = logging.getLogger(__name__)
 
@@ -206,6 +207,30 @@ def _confidence_band(days_out: int) -> tuple[float, str]:
     return 3.0, "Outlook"
 
 
+def _upwelling_score(upwelling_index: float | None, segment: str) -> float:
+    """1-10 score from NOAA upwelling index (m³/s/100m, station 33N117W).
+
+    Positive = upwelling (cold water rises nearshore) → unfavorable for pelagic tuna.
+    Negative = downwelling (warm water retained)       → favorable for tuna.
+    Effect is stronger inshore (upwelling zone) than offshore.
+    """
+    if upwelling_index is None:
+        return 5.0
+    ix = upwelling_index
+    if segment == "inshore":
+        if ix < -100: return 9.5   # strong downwelling — warm, productive
+        if ix <    0: return 7.5   # mild downwelling
+        if ix <   50: return 5.5   # near-neutral
+        if ix <  150: return 3.5   # moderate upwelling — colder nearshore
+        return 2.0                  # strong upwelling — cold, poor for tuna
+    else:  # offshore — weaker effect (banks are beyond the upwelling zone)
+        if ix < -100: return 7.0
+        if ix <    0: return 6.0
+        if ix <   50: return 5.0
+        if ix <  150: return 4.0
+        return 3.0
+
+
 def _load_segment_factor_weights(segment: str, season: str) -> dict[str, float]:
     """Convert segment+season weight multipliers into normalized weights summing to 1.0."""
     sw = load_segment_weights(segment, season)
@@ -219,8 +244,10 @@ def _load_segment_factor_weights(segment: str, season: str) -> dict[str, float]:
     grad_m   = max(0.05, sw.get("sst_gradient_weight",  0.15))
     chl_m    = max(0.02, sw.get("chl_weight",           0.1))
     swell_m  = _SWELL_DEFAULT
+    # Upwelling weight from backtest correlation (weak signal, capped at 0.15)
+    upw_m    = min(0.15, max(0.02, sw.get("upwelling_weight", 0.05)))
 
-    total = sst_m + moon_m + wind_m + wdir_m + grad_m + chl_m + swell_m
+    total = sst_m + moon_m + wind_m + wdir_m + grad_m + chl_m + swell_m + upw_m
     return {
         "sst":         round(sst_m   / total, 4),
         "wind_speed":  round(wind_m  / total, 4),
@@ -229,6 +256,7 @@ def _load_segment_factor_weights(segment: str, season: str) -> dict[str, float]:
         "chlorophyll": round(chl_m   / total, 4),
         "moon":        round(moon_m  / total, 4),
         "swell":       round(swell_m / total, 4),
+        "upwelling":   round(upw_m   / total, 4),
     }
 
 
@@ -283,6 +311,7 @@ def score_segment(
                     conditions.get("chlorophyll_offshore"),
                     segment,
                 )
+    f_upw     = _upwelling_score(conditions.get("upwelling_index"), segment)
 
     total_score = (
         f_sst_adj * w["sst"]  +
@@ -291,7 +320,8 @@ def score_segment(
         f_swe     * w["swell"] +
         f_wdir    * w["wind_dir"] +
         f_grad    * w["gradient"] +
-        f_chl     * w["chlorophyll"]
+        f_chl     * w["chlorophyll"] +
+        f_upw     * w["upwelling"]
     )
     overall = round(min(10.0, max(1.0, total_score)), 1)
 
@@ -303,6 +333,7 @@ def score_segment(
         "chlorophyll":  round(f_chl, 1),
         "moon":         round(f_moon, 1),
         "swell":        round(f_swe, 1),
+        "upwelling":    round(f_upw, 1),
     }
     consensus        = calculate_consensus(fs, segment)
     ci_width, ci_label = _confidence_band(days_out)
@@ -818,6 +849,13 @@ def build_forecast_payload(
     # ── Accuracy ──────────────────────────────────────────────────────────────
     accuracy = _accuracy_stats(conn)
 
+    # ── Upwelling (NOAA, 2-day lag) ──────────────────────────────────────────
+    upwelling_row: dict = {}
+    try:
+        upwelling_row = fetch_recent_upwelling(conn) or {}
+    except Exception:
+        pass
+
     # ── Dual segment forecast ──────────────────────────────────────────────────
     # Build a merged conditions dict for segment scoring
     today_conditions = {
@@ -834,6 +872,7 @@ def build_forecast_payload(
         "sst_gradient":        today_hc.get("sst_gradient"),
         "chlorophyll_nearshore": today_hc.get("chlorophyll_nearshore"),
         "chlorophyll_offshore":  today_hc.get("chlorophyll_offshore"),
+        "upwelling_index":     upwelling_row.get("upwelling_index"),
     }
 
     segment_today: dict[str, dict] = {}
@@ -874,11 +913,32 @@ def build_forecast_payload(
             except Exception as e:
                 log.debug("score_segment %s day %s failed: %s", seg, i, e)
 
+    # Upwelling label for frontend display
+    upw_ix = upwelling_row.get("upwelling_index")
+    if upw_ix is None:
+        upwelling_label = None
+    elif upw_ix < -100:
+        upwelling_label = "Strong Downwelling"
+    elif upw_ix < 0:
+        upwelling_label = "Mild Downwelling"
+    elif upw_ix < 50:
+        upwelling_label = "Near Neutral"
+    elif upw_ix < 150:
+        upwelling_label = "Moderate Upwelling"
+    else:
+        upwelling_label = "Strong Upwelling"
+
     return {
         "today":           today_out,
         "sevenDay":        seven_day,
         "accuracy":        accuracy,
         "historicalMatch": hist_match,
+        "upwelling": {
+            "index":       upw_ix,
+            "label":       upwelling_label,
+            "is_favorable": upwelling_row.get("upwelling_is_favorable"),
+            "date":        upwelling_row.get("date"),
+        },
         "inshore":         {
             "today":    segment_today.get("inshore", {}),
             "sevenDay": segment_seven_day["inshore"],

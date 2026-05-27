@@ -243,6 +243,36 @@ CREATE TABLE IF NOT EXISTS boat_profiles (
 );
 
 CREATE INDEX IF NOT EXISTS idx_boat_profiles_landing ON boat_profiles(landing);
+
+CREATE TABLE IF NOT EXISTS ocean_currents (
+    date                  TEXT NOT NULL,
+    location              TEXT NOT NULL,
+    lat                   REAL,
+    lon                   REAL,
+    water_u_ms            REAL,
+    water_v_ms            REAL,
+    current_speed_ms      REAL,
+    current_speed_knots   REAL,
+    current_direction_deg REAL,
+    current_is_favorable  INTEGER,
+    eddy_detected         INTEGER,
+    source_dataset        TEXT,
+    fetched_at            TEXT,
+    PRIMARY KEY (date, location)
+);
+
+CREATE INDEX IF NOT EXISTS idx_currents_date ON ocean_currents(date);
+
+CREATE TABLE IF NOT EXISTS upwelling_obs (
+    date                   TEXT NOT NULL,
+    station                TEXT NOT NULL DEFAULT '33N117W',
+    upwelling_index        REAL,
+    upwelling_is_favorable INTEGER,
+    fetched_at             TEXT,
+    PRIMARY KEY (date, station)
+);
+
+CREATE INDEX IF NOT EXISTS idx_upwelling_date ON upwelling_obs(date);
 """
 
 
@@ -454,17 +484,21 @@ def update_daily_segment_stats(
 ) -> int:
     """Upsert daily_segment_stats for all dates >= since_date (or all dates if None).
 
+    Segment is derived from trip_length_days:
+      inshore  — trip_length_days <= 1.0  (day trips, local waters)
+      offshore — trip_length_days  > 1.0  (overnight+ trips, distant banks)
+
     Uses top-quartile TPA as the primary target variable for the dual forecast model.
     Returns number of rows written.
     """
     conn.executescript(_DAILY_SEGMENT_STATS_SCHEMA)
 
-    where = f"WHERE segment IS NOT NULL AND anglers >= 5"
-    if since_date:
-        where += f" AND date >= '{since_date}'"
+    # Derive segment from trip_length_days; filter to eligible trips only.
+    date_filter = f" AND date >= '{since_date}'" if since_date else ""
+    seg_expr = "CASE WHEN trip_length_days <= 1.0 THEN 'inshore' ELSE 'offshore' END"
 
     base_rows = conn.execute(f"""
-        SELECT date, segment,
+        SELECT date, {seg_expr} AS segment,
                COUNT(*) as trip_count,
                AVG(trophy_per_angler_per_day) as avg_tpa,
                SUM(trophy_count) as total_tuna,
@@ -473,7 +507,8 @@ def update_daily_segment_stats(
                AVG(yellowfin * 1.0 / NULLIF(anglers,0)) as yellowfin_tpa,
                AVG(yellowtail* 1.0 / NULLIF(anglers,0)) as yellowtail_tpa,
                AVG(dorado    * 1.0 / NULLIF(anglers,0)) as dorado_tpa
-        FROM trips {where}
+        FROM trips
+        WHERE is_half_day = 0 AND anglers >= 5{date_filter}
         GROUP BY date, segment
         HAVING COUNT(*) >= 2
     """).fetchall()
@@ -481,8 +516,10 @@ def update_daily_segment_stats(
     from collections import defaultdict
     tpa_lists: dict[tuple, list] = defaultdict(list)
     tpa_rows = conn.execute(f"""
-        SELECT date, segment, trophy_per_angler_per_day
-        FROM trips {where} AND trophy_per_angler_per_day IS NOT NULL
+        SELECT date, {seg_expr} AS segment, trophy_per_angler_per_day
+        FROM trips
+        WHERE is_half_day = 0 AND anglers >= 5
+          AND trophy_per_angler_per_day IS NOT NULL{date_filter}
     """).fetchall()
     for r in tpa_rows:
         tpa_lists[(r["date"], r["segment"])].append(r["trophy_per_angler_per_day"])
