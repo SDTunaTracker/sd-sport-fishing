@@ -1,10 +1,10 @@
 // Boat detail drill-down
-function BoatDetail({ filters, setFilters, navigate, boat }) {
+function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
   const [detailTab, setDetailTab] = React.useState('overview');
   // Boat detail shows all history — no global filters applied here.
   const _ALL = { year: 'all', species: 'all', landing: 'all', month: 'all', minTrips: 0, includeZero: true, boat: 'all' };
   const allTrips = useMemo(() => SDA.filterTrips(_ALL).filter(t => t.boat === boat), [boat]);
-  const fleetTrips = useMemo(() => SDA.filterTrips(_ALL), []);
+  const fleetTrips = useMemo(() => SDA.filterTrips(_ALL, regions), [regions]);
   const meta = window.SD.BOATS.find(b => b.name === boat);
   useEffect(() => {
     if (meta && window.TTTrack) TTTrack.boatView(boat, meta.landing || '');
@@ -330,7 +330,7 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
 }
 
 // Landing detail drill-down
-function LandingDetail({ filters, setFilters, navigate, landing }) {
+function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
   const trips = useMemo(() => SDA.filterTrips({ ...filters, landing }), [filters, landing]);
   const { rows: boats } = useMemo(
     () => SDA.boatLeaderboard(trips, filters.species, Math.min(filters.minTrips, 3)),
@@ -360,7 +360,7 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
           <div className="sub">{boats.length} boats · {fmt.n(trips.length)} trips · {fmt.n(anglers)} anglers in scope</div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters}/>
+      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
 
       <div className="kpis">
         <KPI label="Tuna / Angler" value={fmt.tpa(tpa)}/>
