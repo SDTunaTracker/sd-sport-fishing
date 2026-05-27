@@ -6,3 +6,4 @@ venv/
 tracker.db-journal
 logs/
 .vscode/
+.env

@@ -426,6 +426,59 @@
     return { boats: todayBoats, fleetRatingKey };
   }
 
+  // For each boat, compute "recent form" from its last 10 trips vs fleet median.
+  // Uses the full unfiltered trip dataset so "last 10" is always chronological.
+  function boatStreaks(allTrips) {
+    // Fleet median trophyPerAnglerPerDay per trip length (all-time)
+    const byLen = {};
+    allTrips.forEach(t => {
+      (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t.trophyPerAnglerPerDay || 0);
+    });
+    const fleetMed = {};
+    Object.entries(byLen).forEach(([len, vals]) => { fleetMed[len] = median(vals); });
+
+    // Group by boat (landing comes from first occurrence)
+    const byBoat = {};
+    allTrips.forEach(t => {
+      if (!byBoat[t.boat]) byBoat[t.boat] = { trips: [], landing: t.landing };
+      byBoat[t.boat].trips.push(t);
+    });
+
+    const result = [];
+    Object.entries(byBoat).forEach(([boat, d]) => {
+      if (d.trips.length < 10) return; // minimum 10 historical trips
+      const sorted = [...d.trips].sort((a, b) => b.date.localeCompare(a.date));
+      const last10 = sorted.slice(0, 10);
+      const dots = last10.map(t => ({
+        good: (t.trophyPerAnglerPerDay || 0) > (fleetMed[t.tripLength] ?? 0),
+        date: t.date,
+        tpa: t.trophyPerAnglerPerDay || 0,
+      }));
+      const goodCount = dots.filter(x => x.good).length;
+
+      // Consecutive same-result streak from most recent
+      let streakLen = dots.length > 0 ? 1 : 0;
+      for (let i = 1; i < dots.length; i++) {
+        if (dots[i].good === dots[0].good) streakLen++;
+        else break;
+      }
+      const streakType = dots.length > 0 ? (dots[0].good ? 'hot' : 'cold') : 'mixed';
+
+      result.push({
+        boat,
+        landing: d.landing,
+        last10: dots,
+        goodCount,
+        hotPct: Math.round((goodCount / dots.length) * 100),
+        streakLen,
+        streakType,
+        totalTrips: d.trips.length,
+      });
+    });
+    result.sort((a, b) => b.hotPct - a.hotPct);
+    return result;
+  }
+
   window.SDA = {
     preprocessTrips,
     filterTrips,
@@ -441,6 +494,7 @@
     peerLeaderboard,
     fishingRating,
     boatWinRates,
+    boatStreaks,
     median, mean, stddev, speciesField,
   };
 })();

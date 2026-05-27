@@ -3,11 +3,20 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sqlite3
 import time
 from datetime import date, datetime, timedelta
 
 log = logging.getLogger(__name__)
+
+# Load .env from project root if present (no-op if python-dotenv not installed)
+try:
+    from dotenv import load_dotenv
+    from pathlib import Path as _Path
+    load_dotenv(_Path(__file__).resolve().parents[1] / '.env')
+except ImportError:
+    pass
 
 KNOWN_LOCATIONS = [
     '60-Mile Bank', '9-Mile Bank', 'Tanner Bank',
@@ -31,7 +40,7 @@ def _get_client():
     global _client
     if _client is None:
         import anthropic
-        _client = anthropic.Anthropic()
+        _client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
     return _client
 
 

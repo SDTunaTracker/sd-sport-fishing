@@ -79,6 +79,79 @@ function AnalyticsMobileFilterModal({ open, onClose, filters, onApply }) {
   );
 }
 
+// ── Streak Tracker ────────────────────────────────────────────────────────────
+function _streakCfg(goodCount) {
+  if (goodCount >= 9) return { emoji: '🔥', label: 'On Fire',     color: '#22C55E', bg: 'rgba(34,197,94,0.12)' };
+  if (goodCount >= 7) return { emoji: '🔥', label: 'Hot',         color: '#10B981', bg: 'rgba(16,185,129,0.12)' };
+  if (goodCount >= 5) return { emoji: '➡️', label: 'Steady',      color: '#94A3B8', bg: 'rgba(148,163,184,0.12)' };
+  if (goodCount >= 3) return { emoji: '❄️', label: 'Cold',        color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' };
+  return                     { emoji: '❄️', label: 'Struggling',  color: '#EF4444', bg: 'rgba(239,68,68,0.12)' };
+}
+
+function StreakTracker({ navigate }) {
+  const { useMemo, useState } = React;
+  const [tabFilter, setTabFilter] = useState('all');
+
+  const streaks = useMemo(() => {
+    const _ALL = { year:'all', species:'all', landing:'all', month:'all', minTrips:0, includeZero:true, boat:'all' };
+    return SDA.boatStreaks(SDA.filterTrips(_ALL));
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (tabFilter === 'hot')  return streaks.filter(b => b.goodCount >= 7);
+    if (tabFilter === 'cold') return streaks.filter(b => b.goodCount <= 4);
+    return streaks;
+  }, [streaks, tabFilter]);
+
+  const tabs = [['all','All'],['hot','🔥 Hot'],['cold','❄️ Cold']];
+
+  return (
+    <Panel title="Recent Form"
+           meta="Last 10 trips per boat — above (✅) or below (❌) fleet median for that trip length · min 10 trips"
+           actions={
+             <div className="row" style={{gap:4}}>
+               {tabs.map(([val, lbl]) => (
+                 <span key={val} className={`filter-pill ${tabFilter===val?'on':''}`}
+                       onClick={() => setTabFilter(val)}>{lbl}</span>
+               ))}
+             </div>
+           }>
+      {filtered.length === 0 ? (
+        <div className="muted-block">No boats with 10+ trips match this filter.</div>
+      ) : (
+        <div className="streak-list">
+          {filtered.map(b => {
+            const cfg = _streakCfg(b.goodCount);
+            return (
+              <div key={b.boat} className="streak-row" style={{cursor:'pointer'}}
+                   onClick={() => navigate('boat', { boat: b.boat })}>
+                <div className="streak-name" title={`${b.landing} · ${b.totalTrips} trips total`}>
+                  {b.boat}
+                </div>
+                <div className="streak-dots">
+                  {b.last10.map((d, i) => {
+                    const mo = d.date ? new Date(d.date + 'T12:00:00').toLocaleString('en-US',{month:'short',day:'numeric'}) : d.date;
+                    return (
+                      <span key={i}
+                            title={`${mo} · ${d.tpa.toFixed(2)} tpa`}
+                            className="streak-dot"
+                            style={{background: d.good ? '#10B981' : '#EF4444'}}/>
+                    );
+                  })}
+                </div>
+                <div className="streak-score">{b.goodCount}/10</div>
+                <span className="streak-badge" style={{color: cfg.color, background: cfg.bg}}>
+                  {cfg.emoji} {cfg.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab = 'overview' }) {
   const { useMemo, useState } = React;
 
@@ -301,6 +374,9 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
           );
         })}
       </Panel>
+
+      <StreakTracker navigate={navigate}/>
+
       </Fragment>}
 
       {/* Boats sub-tab */}

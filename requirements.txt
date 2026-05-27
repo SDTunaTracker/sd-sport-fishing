@@ -2,6 +2,7 @@ requests>=2.32
 anthropic>=0.40
 beautifulsoup4>=4.12
 lxml>=5.2
+python-dotenv>=1.0
 # Makes requests use the Windows system cert store so corporate-MITM SSL
 # inspection doesn't break HTTPS. No-op on non-Windows.
 pip-system-certs>=4.0; sys_platform == "win32"
