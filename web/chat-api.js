@@ -115,7 +115,7 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
   } catch (error) {
     console.error('Chat error:', error);
     return {
-      text: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
+      text: "Debug: " + (error.message || String(error)),
       usage: null,
       dataUsed: null
     };
