@@ -15,7 +15,7 @@ const HASH_VIEWS = {
   settings: 'settings', admin: 'admin', forecast: 'forecast',
 };
 
-const ANALYTICS_SUBTABS = ['overview', 'boats', 'landings', 'headtohead'];
+const ANALYTICS_SUBTABS = ['overview', 'boats', 'landings', 'headtohead', 'seasonality', 'moon'];
 
 function routeFromHash() {
   const raw = window.location.hash.replace(/^#/, '');
@@ -30,15 +30,15 @@ function routeFromHash() {
     const subtab = ANALYTICS_SUBTABS.includes(detail) ? detail : 'overview';
     return { view: 'analytics', params: { subtab } };
   }
-  if (seg === 'seasonality') {
-    return { view: 'seasonality', params: { subtab: detail === 'seasonality' ? 'seasonality' : 'moon' } };
-  }
-
   // Legacy URL redirects
-  if (seg === 'boats')      return { view: 'analytics',   params: { subtab: 'boats' } };
-  if (seg === 'landings')   return { view: 'analytics',   params: { subtab: 'landings' } };
-  if (seg === 'headtohead') return { view: 'analytics',   params: { subtab: 'headtohead' } };
-  if (seg === 'moon')       return { view: 'seasonality', params: { subtab: 'moon' } };
+  if (seg === 'seasonality') {
+    const sub = detail === 'moon' ? 'moon' : 'seasonality';
+    return { view: 'analytics', params: { subtab: sub } };
+  }
+  if (seg === 'boats')      return { view: 'analytics', params: { subtab: 'boats' } };
+  if (seg === 'landings')   return { view: 'analytics', params: { subtab: 'landings' } };
+  if (seg === 'headtohead') return { view: 'analytics', params: { subtab: 'headtohead' } };
+  if (seg === 'moon')       return { view: 'analytics', params: { subtab: 'moon' } };
 
   if (HASH_VIEWS[seg]) return { view: HASH_VIEWS[seg], params: {} };
   return { view: 'today', params: {} };
@@ -48,10 +48,6 @@ function hashFromRoute(view, params = {}) {
   if (view === 'boat' && params.boat) return 'boat/' + encodeURIComponent(params.boat);
   if (view === 'landing' && params.landing) return 'landing/' + encodeURIComponent(params.landing);
   if (view === 'analytics') return 'analytics/' + (params.subtab || 'overview');
-  if (view === 'seasonality') {
-    const sub = params.subtab || 'seasonality';
-    return sub === 'moon' ? 'seasonality/moon' : 'seasonality';
-  }
   return view;
 }
 
@@ -114,7 +110,7 @@ function App() {
   // Map nav tab id -> navigate() view
   const navMap = {
     today: 'today', forecast: 'forecast', analytics: 'analytics',
-    tripplanner: 'tripplanner', seasonality: 'seasonality', settings: 'settings',
+    tripplanner: 'tripplanner', settings: 'settings',
   };
 
   let content;
@@ -128,8 +124,6 @@ function App() {
     content = <LandingDetail filters={filters} setFilters={setFilters} navigate={navigate} landing={route.params.landing}/>;
   } else if (route.view === 'tripplanner') {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
-  } else if (route.view === 'seasonality') {
-    content = <SeasonalityMoonView filters={filters} setFilters={setFilters} navigate={navigate} subtab={route.params.subtab || 'moon'}/>;
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'settings') {

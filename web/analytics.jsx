@@ -156,10 +156,12 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
   const { useMemo, useState } = React;
 
   const SUBTABS = [
-    { id: 'overview',   label: 'Overview' },
-    { id: 'boats',      label: 'Boats' },
-    { id: 'landings',   label: 'Landings' },
-    { id: 'headtohead', label: 'Head-to-Head' },
+    { id: 'overview',    label: 'Overview' },
+    { id: 'boats',       label: 'Boats' },
+    { id: 'landings',    label: 'Landings' },
+    { id: 'headtohead',  label: 'Head-to-Head' },
+    { id: 'seasonality', label: 'Seasonality' },
+    { id: 'moon',        label: 'Moon Phase' },
   ];
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -387,6 +389,12 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
 
       {/* Head-to-Head sub-tab */}
       {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate}/>}
+
+      {/* Seasonality sub-tab */}
+      {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>}
+
+      {/* Moon Phase sub-tab */}
+      {subtab === 'moon' && <MoonView filters={filters} setFilters={setFilters} navigate={navigate}/>}
     </Fragment>
   );
 }

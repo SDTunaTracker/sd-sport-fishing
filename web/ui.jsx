@@ -27,11 +27,10 @@ function AppHeader({ active, onNavigate }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
 
   const NAV = [
-    { id: 'today',       label: 'Today',              icon: 'fa-chart-column' },
-    { id: 'forecast',    label: 'Forecast',           icon: 'fa-cloud-sun-rain' },
-    { id: 'analytics',   label: 'Analytics',          icon: 'fa-magnifying-glass-chart' },
-    { id: 'tripplanner', label: 'Trip Planner',       icon: 'fa-calendar-check' },
-    { id: 'seasonality', label: 'Seasonality & Moon', icon: 'fa-calendar-days' },
+    { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
+    { id: 'forecast',    label: 'Forecast',     icon: 'fa-cloud-sun-rain' },
+    { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
+    { id: 'tripplanner', label: 'Trip Planner', icon: 'fa-calendar-check' },
   ];
 
   function openMenu() { setMenuState('open'); }

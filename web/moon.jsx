@@ -10,7 +10,7 @@ function MoonView({ filters, setFilters, navigate }) {
   return (
     <Fragment>
       <Crumbs items={[
-        { label: 'Seasonality & Moon', onClick: () => navigate('seasonality', { subtab: 'seasonality' }) },
+        { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'moon' }) },
         { label: 'Moon Phase' },
       ]}/>
       <div className="pagehead">
