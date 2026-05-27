@@ -775,6 +775,92 @@ function DualSevenDayStrip({ fc }) {
 }
 
 
+// ─── Ensemble model widget ────────────────────────────────────────────────────
+function EnsembleWidget({ ensemble }) {
+  if (!ensemble || (!ensemble.inshore && !ensemble.offshore)) return null;
+  const [seg, setSeg] = useS('offshore');
+  const data = ensemble[seg];
+  if (!data || data.ensemble_score == null) return null;
+
+  const { models, ensemble_score, confidence, confidence_color, note, spread, all_agree, direction } = data;
+  const modelList = ['A', 'B', 'C'].map(k => ({ key: k, ...(models?.[k] || {}) })).filter(m => m.score != null);
+
+  const directionNote = all_agree
+    ? (direction === 'good'
+        ? <span style={{color:'#10B981', fontWeight:600}}> All models agree: favorable conditions.</span>
+        : <span style={{color:'#EF4444', fontWeight:600}}> All models agree: slow day expected.</span>)
+    : null;
+
+  return (
+    <Panel title="Model Ensemble">
+      {/* Segment tabs */}
+      <div className="fc-seg-tabs" style={{marginBottom:14}}>
+        {['offshore','inshore'].map(t => (
+          <button key={t} className={`fc-seg-tab${seg===t?' active':''}`} onClick={() => setSeg(t)}>
+            {t.charAt(0).toUpperCase()+t.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Headline row */}
+      <div style={{display:'flex', alignItems:'center', gap:16, marginBottom:16, flexWrap:'wrap'}}>
+        <div>
+          <div style={{fontSize:11, color:'var(--tb-slate)', marginBottom:2, textTransform:'uppercase', letterSpacing:'0.05em'}}>Ensemble</div>
+          <div style={{fontSize:30, fontWeight:800, color:scoreColor(ensemble_score), lineHeight:1}}>
+            {ensemble_score.toFixed(1)}
+            <span style={{fontSize:14, fontWeight:400, color:'var(--tb-slate)'}}>/10</span>
+          </div>
+        </div>
+        <div style={{
+          display:'flex', alignItems:'center', gap:8,
+          background: confidence_color+'18', borderRadius:8, padding:'7px 13px',
+        }}>
+          <span style={{
+            width:9, height:9, borderRadius:'50%',
+            background:confidence_color, display:'inline-block', flexShrink:0,
+          }}/>
+          <div>
+            <div style={{fontWeight:700, fontSize:12, color:confidence_color}}>{confidence} Confidence</div>
+            <div style={{fontSize:10, color:'var(--tb-slate)'}}>Model spread: {spread.toFixed(1)} pts</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3 model score bars */}
+      <div style={{display:'flex', flexDirection:'column', gap:10, marginBottom:14}}>
+        {modelList.map(m => {
+          const pct = ((m.score - 1) / 9) * 100;
+          return (
+            <div key={m.key} style={{display:'grid', gridTemplateColumns:'96px 1fr 36px', gap:10, alignItems:'center'}}>
+              <div>
+                <div style={{fontSize:12, fontWeight:700, color:'var(--tb-ink)'}}>Model {m.key}</div>
+                <div style={{fontSize:10, color:'var(--tb-slate)', lineHeight:1.3}}>{m.description}</div>
+              </div>
+              <div>
+                <div style={{height:8, background:'var(--tb-border)', borderRadius:4, overflow:'hidden'}}>
+                  <div style={{
+                    width:`${pct}%`, height:'100%',
+                    background:scoreColor(m.score), borderRadius:4,
+                  }}/>
+                </div>
+                <div style={{fontSize:10, color:'var(--tb-slate)', marginTop:2}}>{m.label}</div>
+              </div>
+              <div style={{fontSize:14, fontWeight:700, color:scoreColor(m.score), textAlign:'right'}}>
+                {m.score.toFixed(1)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Confidence note */}
+      <div style={{fontSize:12, color:'var(--tb-slate)', lineHeight:1.6, borderTop:'1px solid var(--tb-border)', paddingTop:10}}>
+        {note}{directionNote}
+      </div>
+    </Panel>
+  );
+}
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function NoForecastData() {
   return (
@@ -859,6 +945,9 @@ function ForecastView({ navigate }) {
 
       {/* Dual inshore / offshore scores */}
       <DualSegmentWidget fc={fc}/>
+
+      {/* Ensemble model comparison */}
+      <EnsembleWidget ensemble={fc.ensemble}/>
 
       {/* Upwelling indicator */}
       <UpwellingWidget upwelling={fc.upwelling}/>

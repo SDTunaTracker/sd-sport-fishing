@@ -231,6 +231,187 @@ def _upwelling_score(upwelling_index: float | None, segment: str) -> float:
         return 3.0
 
 
+# ─── Ensemble model ───────────────────────────────────────────────────────────
+
+def _model_a_score(conditions: dict, segment: str) -> float | None:
+    """Model A: SST + wind only — the two strongest backtested correlates.
+
+    Weights are proportional to their Pearson r values from the backtest:
+      offshore: SST r=0.456, wind r=0.164 → 73.5% / 26.5%
+      inshore:  SST r=0.317, wind r=0.148 → 68.2% / 31.8%
+    """
+    sst_val = (conditions.get("sst_nearshore") if segment == "inshore"
+               else conditions.get("sst_offshore"))
+    wind    = conditions.get("wind_speed")
+
+    bw             = _load_weights()
+    overall_breaks = _breaks_from_weights(bw, "overall_breaks", _OVERALL_BREAKS)
+    anomaly        = conditions.get("sst_anomaly")
+
+    f_sst = _score(sst_val, overall_breaks) if sst_val is not None else None
+    if f_sst is not None and anomaly is not None:
+        anom_m = bw.get("anomaly_weight", 1.0)
+        f_sst  = float(min(10.0, max(1.0, f_sst + _anomaly_boost(anomaly) * anom_m * 0.4)))
+    f_wind = _wind_score(wind) if wind is not None else None
+
+    if f_sst is None and f_wind is None:
+        return None
+    if f_sst is None:
+        return round(f_wind, 1)
+    if f_wind is None:
+        return round(f_sst, 1)
+
+    sst_w, wind_w = (0.735, 0.265) if segment == "offshore" else (0.682, 0.318)
+    return round(min(10.0, max(1.0, f_sst * sst_w + f_wind * wind_w)), 1)
+
+
+def _model_b_score(
+    conn: sqlite3.Connection,
+    conditions: dict,
+    segment: str,
+) -> dict | None:
+    """Model B: historical pattern matching.
+
+    Finds days in daily_segment_stats with the same month + similar SST (±3°F)
+    + similar wind (±7 kn if available).  Computes median TPA of matched days,
+    then ranks it as a percentile against all historical segment days → 1-10.
+    Falls back to ±5°F / no wind constraint when fewer than 5 days match.
+    """
+    month   = conditions.get("month", date.today().month)
+    sst_val = (conditions.get("sst_nearshore") if segment == "inshore"
+               else conditions.get("sst_offshore"))
+    wind    = conditions.get("wind_speed")
+
+    if sst_val is None:
+        return None
+
+    sst_col   = "sst_nearshore" if segment == "inshore" else "sst_offshore"
+    month_str = f"{month:02d}"
+
+    try:
+        def _fetch(sst_lo: float, sst_hi: float, with_wind: bool) -> list[float]:
+            where = [
+                "dss.segment = ?",
+                f"hc.{sst_col} BETWEEN ? AND ?",
+                "strftime('%m', dss.date) = ?",
+                "dss.trip_count >= 2",
+            ]
+            params: list = [segment, sst_lo, sst_hi, month_str]
+            if with_wind and wind is not None:
+                where.append("hc.wind_speed BETWEEN ? AND ?")
+                params.extend([max(0.0, wind - 7.0), wind + 7.0])
+            rows = conn.execute(
+                f"SELECT dss.avg_tpa FROM daily_segment_stats dss"
+                f" JOIN historical_conditions hc ON hc.date = dss.date"
+                f" WHERE {' AND '.join(where)}",
+                params,
+            ).fetchall()
+            return [r[0] for r in rows if r[0] is not None]
+
+        tpas = _fetch(sst_val - 3.0, sst_val + 3.0, with_wind=True)
+        if len(tpas) < 5:
+            tpas = _fetch(sst_val - 5.0, sst_val + 5.0, with_wind=False)
+        if not tpas:
+            return None
+
+        matched_median = sorted(tpas)[len(tpas) // 2]
+
+        all_tpas = sorted(
+            r[0] for r in conn.execute(
+                "SELECT avg_tpa FROM daily_segment_stats WHERE segment=? AND trip_count>=2",
+                (segment,),
+            ).fetchall()
+            if r[0] is not None
+        )
+        if not all_tpas:
+            return None
+
+        pct   = sum(1 for v in all_tpas if v <= matched_median) / len(all_tpas)
+        score = round(max(1.0, min(10.0, 1.0 + pct * 9.0)), 1)
+        return {"score": score, "n_days": len(tpas)}
+
+    except Exception as e:
+        log.debug("_model_b_score failed: %s", e)
+        return None
+
+
+def score_ensemble(
+    conn: sqlite3.Connection,
+    conditions: dict,
+    segment: str,
+    days_out: int = 0,
+) -> dict:
+    """Run three independent models and compute ensemble agreement + confidence.
+
+    Model A: SST + wind only (strongest backtested factors, simple)
+    Model B: Historical pattern match (actual catch on similar-condition days)
+    Model C: Full 8-factor weighted segment score
+
+    Confidence bands:
+      High     — all models agree within 1.5 pts AND same good/slow side
+      Moderate — spread ≤ 2.5 pts OR all agree on direction
+      Uncertain — models conflict meaningfully
+    """
+    a_score = _model_a_score(conditions, segment)
+
+    b_result = _model_b_score(conn, conditions, segment)
+    b_score  = b_result["score"]  if b_result else None
+    b_n_days = b_result["n_days"] if b_result else 0
+
+    c_result = score_segment(segment, conditions, days_out=days_out)
+    c_score  = c_result.get("overall_score")
+
+    avail       = [(s, k) for s, k in [(a_score, "A"), (b_score, "B"), (c_score, "C")] if s is not None]
+    scores_only = [s for s, _ in avail]
+    if not scores_only:
+        return {}
+
+    ensemble = round(sum(scores_only) / len(scores_only), 1)
+    spread   = round(max(scores_only) - min(scores_only), 1)
+    good_n   = sum(1 for s in scores_only if s >= 5.5)
+    all_same_dir = good_n == len(scores_only) or good_n == 0
+
+    if spread <= 1.5 and all_same_dir:
+        conf, conf_color = "High",      "#10B981"
+        note = "All models agree — strong signal."
+    elif spread <= 2.5 or all_same_dir:
+        conf, conf_color = "Moderate",  "#FBBF24"
+        note = ("Models mostly agree." if all_same_dir
+                else "Some model disagreement — moderate confidence.")
+    else:
+        conf, conf_color = "Uncertain", "#EF4444"
+        note = "Models conflict — conditions are ambiguous. Take this forecast with caution."
+
+    return {
+        "ensemble_score":   ensemble,
+        "spread":           spread,
+        "confidence":       conf,
+        "confidence_color": conf_color,
+        "note":             note,
+        "direction":        "good" if ensemble >= 5.5 else "slow",
+        "all_agree":        all_same_dir and spread <= 1.5,
+        "models": {
+            "A": {
+                "score":       a_score,
+                "label":       "SST + Wind",
+                "description": "Strongest correlated factors only",
+            },
+            "B": {
+                "score":       b_score,
+                "n_days":      b_n_days,
+                "label":       "Historical Match",
+                "description": f"{b_n_days} similar past days" if b_n_days else "insufficient data",
+            },
+            "C": {
+                "score":       c_score,
+                "label":       "Full Model",
+                "description": "All 8 weighted factors",
+            },
+        },
+        "segment_detail": c_result,
+    }
+
+
 def _load_segment_factor_weights(segment: str, season: str) -> dict[str, float]:
     """Convert segment+season weight multipliers into normalized weights summing to 1.0."""
     sw = load_segment_weights(segment, season)
@@ -876,12 +1057,16 @@ def build_forecast_payload(
     }
 
     segment_today: dict[str, dict] = {}
+    ensemble_by_seg: dict[str, dict] = {}
     for seg in ("inshore", "offshore"):
         try:
-            segment_today[seg] = score_segment(seg, today_conditions, days_out=0)
+            ens = score_ensemble(conn, today_conditions, seg, days_out=0)
+            ensemble_by_seg[seg] = ens
+            segment_today[seg]   = ens.get("segment_detail", {})
         except Exception as e:
-            log.debug("score_segment %s failed: %s", seg, e)
-            segment_today[seg] = {}
+            log.debug("score_ensemble %s failed: %s", seg, e)
+            segment_today[seg]   = {}
+            ensemble_by_seg[seg] = {}
 
     # Dual 7-day strip
     segment_seven_day: dict[str, list] = {"inshore": [], "offshore": []}
@@ -933,6 +1118,7 @@ def build_forecast_payload(
         "sevenDay":        seven_day,
         "accuracy":        accuracy,
         "historicalMatch": hist_match,
+        "ensemble":        ensemble_by_seg,
         "upwelling": {
             "index":       upw_ix,
             "label":       upwelling_label,
