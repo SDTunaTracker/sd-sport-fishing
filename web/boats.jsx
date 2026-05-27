@@ -1,5 +1,5 @@
 // Boats leaderboard view — full sortable ranked table with consistency labels
-function BoatsView({ filters, setFilters, navigate, tweaks }) {
+function BoatsView({ filters, setFilters, navigate, tweaks, settings }) {
   const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
   const { rows } = useMemo(
     () => SDA.boatLeaderboard(trips, filters.species, filters.minTrips),
@@ -40,6 +40,13 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
   const speciesActive = filters.species && filters.species !== 'all';
   const speciesLabel = speciesActive ? filters.species : 'Tuna';
 
+  const defaultTrophySp = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
+  const customSp = settings && settings.trophySpecies;
+  const isCustomSp = customSp && (
+    customSp.length !== defaultTrophySp.length ||
+    !defaultTrophySp.every(sp => customSp.includes(sp))
+  );
+
   const labelPills = (
     <div className="row" style={{gap:4}}>
       <span className={`filter-pill ${labelFilter==='all'?'on':''}`} onClick={() => setLabelFilter('all')}>All</span>
@@ -63,6 +70,12 @@ function BoatsView({ filters, setFilters, navigate, tweaks }) {
         </div>
       </div>
       <FilterBar filters={filters} setFilters={setFilters}/>
+
+      {isCustomSp && (
+        <div className="custom-species-banner" title={`Counting: ${customSp.join(', ')}`}>
+          <i className="fa-solid fa-chart-bar"/> Custom species: <b>{customSp.join(', ')}</b>
+        </div>
+      )}
 
       <Panel title="Label Definitions" meta="How boats earn a performance label" style={{marginBottom: 12}}>
         <div style={{display:'flex', gap:24, flexWrap:'wrap', font:'400 12px/18px var(--ss-font-sans)', color:'var(--ss-slate)'}}>

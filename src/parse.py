@@ -139,19 +139,30 @@ _EXTENDED_ALIASES: dict[str, str] = {
     "barracuda": "Barracuda",
     "california barracuda": "Barracuda",
     "pacific barracuda": "Barracuda",
+    # White Sea Bass
+    "white sea bass": "White Sea Bass",
+    "white seabass": "White Sea Bass",
+    "wsb": "White Sea Bass",
+    "california white seabass": "White Sea Bass",
+    # Sculpin and Cabezon map to Rockfish (same bottom ecosystem)
+    "sculpin": "Rockfish",
+    "california scorpionfish": "Rockfish",
+    "scorpionfish": "Rockfish",
+    "cabezon": "Rockfish",
 }
 
 # Maps canonical extended-species name -> DB column name.
 EXTENDED_SPECIES_COLUMNS: dict[str, str] = {
-    "Rockfish":    "rockfish",
-    "Sheephead":   "sheephead",
-    "Calico Bass": "calico_bass",
-    "Sand Bass":   "sand_bass",
-    "Halibut":     "halibut",
-    "Lingcod":     "lingcod",
-    "Whitefish":   "whitefish",
-    "Bonito":      "bonito",
-    "Barracuda":   "barracuda",
+    "Rockfish":      "rockfish",
+    "Sheephead":     "sheephead",
+    "Calico Bass":   "calico_bass",
+    "Sand Bass":     "sand_bass",
+    "Halibut":       "halibut",
+    "Lingcod":       "lingcod",
+    "Whitefish":     "whitefish",
+    "Bonito":        "bonito",
+    "Barracuda":     "barracuda",
+    "White Sea Bass": "white_sea_bass",
 }
 
 

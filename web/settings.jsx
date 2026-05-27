@@ -1,6 +1,25 @@
 // Settings view — trophy species + trip length methodology
-const ALL_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Skipjack', 'Bigeye', 'Albacore'];
 const DEFAULT_TROPHY_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
+
+const SPECIES_GROUPS = [
+  {
+    label: 'Offshore / Pelagic',
+    species: ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Skipjack', 'Bigeye', 'Albacore', 'Bonito', 'Barracuda'],
+  },
+  {
+    label: 'Inshore / Bottom',
+    species: ['White Sea Bass', 'Halibut', 'Calico Bass', 'Sand Bass', 'Rockfish', 'Lingcod', 'Sheephead', 'Whitefish'],
+  },
+];
+
+const ALL_SPECIES = SPECIES_GROUPS.flatMap(g => g.species);
+
+const PRESETS = [
+  { label: 'Tuna Only',   species: ['Bluefin', 'Yellowfin', 'Skipjack', 'Bigeye', 'Albacore'] },
+  { label: 'All Pelagic', species: SPECIES_GROUPS[0].species },
+  { label: 'Inshore Mix', species: ['White Sea Bass', 'Halibut', 'Calico Bass', 'Yellowtail'] },
+  { label: 'All Species', species: ALL_SPECIES },
+];
 
 const SETTINGS_KEY = 'sd_user_settings';
 
@@ -23,6 +42,11 @@ function saveSettings(s) {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
 }
 
+function isDefaultSpecies(selected) {
+  if (selected.length !== DEFAULT_TROPHY_SPECIES.length) return false;
+  return DEFAULT_TROPHY_SPECIES.every(sp => selected.includes(sp));
+}
+
 function SettingsView({ settings, onSettingsChange }) {
   const { trophySpecies, tripLengthMethod } = settings;
 
@@ -30,8 +54,12 @@ function SettingsView({ settings, onSettingsChange }) {
     const next = trophySpecies.includes(sp)
       ? trophySpecies.filter(s => s !== sp)
       : [...trophySpecies, sp];
-    if (next.length === 0) return; // require at least one
+    if (next.length === 0) return;
     onSettingsChange({ ...settings, trophySpecies: next });
+  }
+
+  function applyPreset(preset) {
+    onSettingsChange({ ...settings, trophySpecies: [...preset.species] });
   }
 
   function setMethod(m) {
@@ -41,6 +69,8 @@ function SettingsView({ settings, onSettingsChange }) {
   function resetDefaults() {
     onSettingsChange(defaultSettings());
   }
+
+  const isDefault = isDefaultSpecies(trophySpecies);
 
   const sectionStyle = {
     background: 'var(--ss-surface)',
@@ -52,16 +82,22 @@ function SettingsView({ settings, onSettingsChange }) {
   const labelStyle = {
     font: '600 13px/20px var(--ss-font-sans)',
     color: 'var(--ss-ink)',
-    marginBottom: 12,
+    marginBottom: 8,
+    display: 'block',
+  };
+  const groupLabelStyle = {
+    font: '500 11px/16px var(--ss-font-sans)',
+    color: 'var(--ss-gray-3)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: 8,
+    marginTop: 16,
     display: 'block',
   };
   const descStyle = {
     font: '400 12px/18px var(--ss-font-sans)',
     color: 'var(--ss-slate)',
-    marginBottom: 16,
-  };
-  const checkRowStyle = {
-    display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginBottom: 4,
+    marginBottom: 12,
   };
   const chipBase = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -101,31 +137,73 @@ function SettingsView({ settings, onSettingsChange }) {
       <div style={sectionStyle}>
         <span style={labelStyle}>Trophy Species</span>
         <p style={descStyle}>
-          Choose which species count toward the "tuna per angler per day" metric.
+          Choose which species count toward the "per angler per day" metric.
           All charts and leaderboards update instantly.
         </p>
-        <div style={checkRowStyle}>
-          {ALL_SPECIES.map(sp => {
-            const on = trophySpecies.includes(sp);
+
+        {/* Quick-select presets */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: 16 }}>
+          {PRESETS.map(p => {
+            const active = p.species.length === trophySpecies.length &&
+              p.species.every(sp => trophySpecies.includes(sp));
             return (
-              <div key={sp}
-                   onClick={() => toggleSpecies(sp)}
-                   style={{
-                     ...chipBase,
-                     background: on ? 'var(--ss-darkseagreen-500)' : 'var(--ss-bg)',
-                     borderColor: on ? 'var(--ss-darkseagreen-500)' : 'var(--ss-border)',
-                     color: on ? '#fff' : 'var(--ss-ink)',
-                   }}>
-                {on && <i className="fa-solid fa-check" style={{ fontSize: 10 }}/>}
-                {sp}
-              </div>
+              <button key={p.label} onClick={() => applyPreset(p)}
+                      style={{
+                        padding: '4px 12px', borderRadius: 20, cursor: 'pointer',
+                        font: '500 11px/16px var(--ss-font-sans)',
+                        border: `1px solid ${active ? 'var(--ss-darkseagreen-500)' : 'var(--ss-border)'}`,
+                        background: active ? 'var(--ss-darkseagreen-500)' : 'var(--ss-bg)',
+                        color: active ? '#fff' : 'var(--ss-slate)',
+                      }}>
+                {p.label}
+              </button>
             );
           })}
         </div>
-        {trophySpecies.length !== DEFAULT_TROPHY_SPECIES.length && (
-          <p style={{ ...descStyle, marginTop: 10, marginBottom: 0, color: 'var(--ss-orange-500)' }}>
-            Default: Bluefin, Yellowfin, Yellowtail, Dorado
-          </p>
+
+        {/* Species chips by group */}
+        {SPECIES_GROUPS.map(group => (
+          <div key={group.label}>
+            <span style={groupLabelStyle}>{group.label}</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 10px', marginBottom: 4 }}>
+              {group.species.map(sp => {
+                const on = trophySpecies.includes(sp);
+                return (
+                  <div key={sp}
+                       onClick={() => toggleSpecies(sp)}
+                       style={{
+                         ...chipBase,
+                         background: on ? 'var(--ss-darkseagreen-500)' : 'var(--ss-bg)',
+                         borderColor: on ? 'var(--ss-darkseagreen-500)' : 'var(--ss-border)',
+                         color: on ? '#fff' : 'var(--ss-ink)',
+                       }}>
+                    {on && <i className="fa-solid fa-check" style={{ fontSize: 10 }}/>}
+                    {sp}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Non-default warning banner */}
+        {!isDefault && (
+          <div style={{
+            marginTop: 16,
+            padding: '10px 14px',
+            borderRadius: 8,
+            background: 'var(--ss-orange-50, #fff7ed)',
+            border: '1px solid var(--ss-orange-200, #fed7aa)',
+            font: '400 12px/18px var(--ss-font-sans)',
+            color: 'var(--ss-orange-700, #c2410c)',
+            display: 'flex', alignItems: 'flex-start', gap: 8,
+          }}>
+            <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: 2, flexShrink: 0 }}/>
+            <span>
+              Custom species active — metrics show <b>{trophySpecies.join(', ')}</b>.
+              Default is Bluefin, Yellowfin, Yellowtail, Dorado.
+            </span>
+          </div>
         )}
       </div>
 
@@ -133,7 +211,7 @@ function SettingsView({ settings, onSettingsChange }) {
       <div style={sectionStyle}>
         <span style={labelStyle}>Per-Day Metric Calculation</span>
         <p style={descStyle}>
-          Controls the denominator used when calculating tuna per angler per day.
+          Controls the denominator used when calculating fish per angler per day.
         </p>
         <div style={radioRowStyle}>
           {methods.map(m => (

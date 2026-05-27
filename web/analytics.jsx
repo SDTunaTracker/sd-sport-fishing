@@ -209,6 +209,12 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
   const speciesActive = filters.species && filters.species !== 'all';
   const speciesLabel  = speciesActive ? filters.species : 'Tuna';
 
+  const _defSp = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
+  const _selSp = settings && settings.trophySpecies;
+  const isCustomSpecies = _selSp && (
+    _selSp.length !== _defSp.length || !_defSp.every(s => _selSp.includes(s))
+  );
+
   return (
     <Fragment>
       {/* Sub-tab bar — always visible */}
@@ -247,6 +253,12 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
       <div className="analytics-filterbar-desktop">
         <FilterBar filters={filters} setFilters={setFilters}/>
       </div>
+
+      {isCustomSpecies && (
+        <div className="custom-species-banner" title={`Counting: ${_selSp.join(', ')}`}>
+          <i className="fa-solid fa-chart-bar"/> Custom species: <b>{_selSp.join(', ')}</b>
+        </div>
+      )}
 
       <div className="kpis">
         <KPI label={`Fleet ${speciesLabel} / Angler`}
@@ -382,7 +394,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
       </Fragment>}
 
       {/* Boats sub-tab */}
-      {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>}
+      {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings}/>}
 
       {/* Landings sub-tab */}
       {subtab === 'landings' && <LandingsView filters={filters} setFilters={setFilters} navigate={navigate}/>}
