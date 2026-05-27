@@ -1341,14 +1341,13 @@ body.compact .dt td { padding: 7px 12px; }
   .tp-mobile-filter-btn { display: flex !important; }
 
   .tp-card {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
   }
-  .tp-card-left   { border-right: 1px solid #E2E8F0; }
-  .tp-card-middle { grid-column: 1 / -1; border-top: 1px solid #E2E8F0; }
+  .tp-card-left   { border-right: none; border-bottom: 1px solid #E2E8F0; }
+  .tp-card-middle { border-top: none; }
   .tp-card-right  { display: none; }
   .tp-card-mobile-footer {
-    display: flex; grid-column: 1 / -1;
+    display: flex;
     align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
     padding: 10px 14px; border-top: 1px solid #E2E8F0; background: #FAFCFF;
   }
