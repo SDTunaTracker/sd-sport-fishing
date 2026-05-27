@@ -103,6 +103,28 @@ window.TTTrack = {
     } catch(e) {}
   },
 
+  chatOpen: function() {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_open');
+    }
+  },
+
+  chatMessage: function(question, pageContext) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_message', {
+        page:             pageContext?.page || 'unknown',
+        has_boat_context: !!pageContext?.boat,
+        question_length:  question.length,
+      });
+    }
+  },
+
+  chatLimitHit: function() {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_limit_hit');
+    }
+  },
+
   getClickStats: function() {
     try {
       var clicks = JSON.parse(localStorage.getItem('tt_clicks') || '[]');

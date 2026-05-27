@@ -55,6 +55,7 @@ function App() {
   const [route, setRoute] = useS(() => routeFromHash());
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
+  const [pageContext, setPageContext] = useS({ page: 'today', boat: null, date: null });
 
   // Settings: trophy species + trip length methodology, persisted to localStorage.
   const [settings, setSettingsState] = useS(() => loadSettings());
@@ -92,6 +93,15 @@ function App() {
   useE(() => {
     if (window.TTTrack) TTTrack.pageView(route.view);
   }, [route.view]);
+
+  // Keep pageContext in sync with route for the chatbot.
+  useE(() => {
+    setPageContext({
+      page: route.view,
+      boat: route.params?.boat || null,
+      date: null,
+    });
+  }, [route]);
 
   // Admin is a fully standalone page — no header, no nav, no shared state used.
   // Must be after all hooks (React rules: no conditional hooks).
@@ -136,6 +146,8 @@ function App() {
     <Fragment>
       <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
+
+      <ChatBot pageContext={pageContext}/>
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">
