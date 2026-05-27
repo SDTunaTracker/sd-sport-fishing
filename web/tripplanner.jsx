@@ -248,9 +248,12 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
           })()}
         </div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
-        <LengthBadge label={s.tripLength}/>
-        <div className="tp-card-moon" style={{color: moonC}}>
-          {moon.emoji} {moonDisplayName(moon.phase)}
+        <div className="tp-card-left-meta">
+          <LengthBadge label={s.tripLength}/>
+          <div className="tp-card-moon" style={{color: moonC}}>
+            <span className="tp-moon-long">{moon.emoji} {moonDisplayName(moon.phase)}</span>
+            <span className="tp-moon-short">{moon.emoji} {moon.phase.split(' ')[0]}</span>
+          </div>
         </div>
       </div>
 

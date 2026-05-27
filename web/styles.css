@@ -1222,6 +1222,8 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-card-time-row-ret .tp-card-depart-date { font-size: 13px; color: var(--tb-gray-3); }
 .tp-card-time-row-ret .tp-card-depart-time { font-size: 12px; color: var(--tb-gray-3); }
 .tp-card-moon               { font: 500 12px/16px var(--ss-font-sans); }
+.tp-card-left-meta          { display: flex; flex-direction: column; gap: 4px; }
+.tp-moon-short              { display: none; }
 .tp-card-wr-row             { display: flex; align-items: center; gap: 6px; }
 .tp-card-stat-label         { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
 .tp-card-stats-sep          { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
@@ -1343,7 +1345,21 @@ body.compact .dt td { padding: 7px 12px; }
   .tp-card {
     grid-template-columns: 1fr;
   }
-  .tp-card-left   { border-right: none; border-bottom: 1px solid #E2E8F0; }
+  .tp-card-left {
+    border-right: none; border-bottom: 1px solid #E2E8F0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "boat meta" "landing landing";
+    column-gap: 8px; row-gap: 2px;
+    align-items: start;
+  }
+  .tp-card-boat         { grid-area: boat; }
+  .tp-card-landing      { grid-area: landing; }
+  .tp-card-left-meta    { grid-area: meta; flex-direction: row; align-items: center; gap: 6px; }
+  .tp-card-left-meta .tp-length-badge { font-size: 10px; padding: 1px 6px; }
+  .tp-card-left-meta .tp-card-moon    { font-size: 11px; color: var(--tb-gray-3) !important; }
+  .tp-moon-long { display: none; }
+  .tp-moon-short { display: inline; }
   .tp-card-middle { border-top: none; }
   .tp-card-right  { display: none; }
   .tp-card-mobile-footer {
