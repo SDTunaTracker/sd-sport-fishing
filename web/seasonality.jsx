@@ -1,6 +1,6 @@
 // Seasonality view — species catch patterns by month
-function SeasonalityView({ filters, setFilters, navigate }) {
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
+function SeasonalityView({ filters, setFilters, navigate, regions }) {
+  const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const monthly = useMemo(() => SDA.monthlyTrend(trips, filters.species), [trips, filters.species]);
 
   return (
@@ -11,11 +11,11 @@ function SeasonalityView({ filters, setFilters, navigate }) {
       ]}/>
       <div className="pagehead">
         <div>
-          <h1>Species Seasonality</h1>
+          <h1>Species Seasonality <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
           <div className="sub">Monthly catch patterns across {fmt.n(trips.length)} trips</div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters}/>
+      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       <Panel title="Species Seasonality" meta="Total catch by month, all approved boats">
         <div className="chart-legend" style={{marginBottom: 8}}>
           {Object.entries(SPECIES_COLORS).map(([sp, c]) => (

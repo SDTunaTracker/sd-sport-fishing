@@ -435,8 +435,8 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
 }
 
 // Landings overview
-function LandingsView({ filters, setFilters, navigate }) {
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
+function LandingsView({ filters, setFilters, navigate, regions }) {
+  const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const landings = useMemo(() => SDA.landingSummary(trips, filters.species), [trips, filters.species]);
   const sf = SDA.speciesField(filters.species);
   const speciesActive = filters.species && filters.species !== 'all';
@@ -450,11 +450,11 @@ function LandingsView({ filters, setFilters, navigate }) {
       ]}/>
       <div className="pagehead">
         <div>
-          <h1>Landings Comparison</h1>
-          <div className="sub">All four approved San Diego sportfishing landings</div>
+          <h1>Landings Comparison <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
+          <div className="sub">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'} sportfishing landings</div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters}/>
+      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
 
       <div className="landings-grid" style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12, marginBottom: 12}}>
         {landings.map(l => {

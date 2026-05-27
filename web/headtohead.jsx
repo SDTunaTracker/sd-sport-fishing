@@ -1,8 +1,8 @@
 // Head-to-Head — leaderboard restricted to "apples-to-apples" matchups
 // (same date + same trip length + ≥2 boats), so the ranking isolates skill
 // from external factors like weather, moon, or whether the fish were biting.
-function HeadToHead({ filters, setFilters, navigate }) {
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
+function HeadToHead({ filters, setFilters, navigate, regions }) {
+  const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const matchups = useMemo(() => SDA.peerMatchups(trips, filters.species), [trips, filters.species]);
   const rows = useMemo(() => SDA.peerLeaderboard(trips, filters.species), [trips, filters.species]);
   const eligible = rows.filter((r) => r.matchupCount >= (filters.minTrips || 1));
@@ -49,14 +49,14 @@ function HeadToHead({ filters, setFilters, navigate }) {
       ]}/>
       <div className="pagehead">
         <div>
-          <h1>Head-to-Head</h1>
+          <h1>Head-to-Head <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
           <div className="sub">
             Apples-to-apples ranking: only trips where 2+ boats ran the same trip length on the same date.
           </div>
         </div>
       </div>
 
-      <FilterBar filters={filters} setFilters={setFilters}/>
+      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
 
       <div className="kpis">
         <KPI label="Matchups" value={fmt.n(totalMatchups)}

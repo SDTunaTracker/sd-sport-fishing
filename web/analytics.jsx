@@ -1,8 +1,8 @@
 // Analytics view — full filter controls, KPIs, charts, leaderboard
 
 // Mobile-only filter modal — local state, syncs to real filters on Apply
-function AnalyticsMobileFilterModal({ open, onClose, filters, onApply }) {
-  const { useState, useEffect } = React;
+function AnalyticsMobileFilterModal({ open, onClose, filters, onApply, regions }) {
+  const { useState, useEffect, useMemo } = React;
   const df = window.DEFAULT_FILTERS;
 
   const [year,       setYear]       = useState(filters.year);
@@ -43,6 +43,13 @@ function AnalyticsMobileFilterModal({ open, onClose, filters, onApply }) {
 
   const SL = { font: '600 11px/14px var(--ss-font-sans)', textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--tb-slate)', marginBottom: 8 };
   const YEARS = [...new Set(window.SD.TRIPS.map(t => t.year))].sort((a, b) => b - a).map(y => ({ value: String(y), label: String(y) }));
+  const _rl = (() => {
+    if (!regions || !window.getEffectiveRegion) return null;
+    const eff = window.getEffectiveRegion(regions);
+    return window.getLandingsForRegion ? window.getLandingsForRegion(eff) : null;
+  })();
+  const landingOptions = window.SD.LANDINGS.filter(l => !_rl || _rl.includes(l));
+  const boatOptions = [...window.SD.BOATS].filter(b => !_rl || _rl.includes(b.landing)).sort((a, b) => a.name.localeCompare(b.name)).map(b => b.name);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -58,10 +65,9 @@ function AnalyticsMobileFilterModal({ open, onClose, filters, onApply }) {
             <MultiSelect options={MONTH_NAMES.map((m, i) => ({ value: String(i + 1), label: m }))}
                          value={month} onChange={setMonth} allLabel="All Months"/></div>
           <div><div style={SL}>Landing</div>
-            <MultiSelect options={window.SD.LANDINGS} value={landing} onChange={setLanding} allLabel="All Landings"/></div>
+            <MultiSelect options={landingOptions} value={landing} onChange={setLanding} allLabel="All Landings"/></div>
           <div><div style={SL}>Boat</div>
-            <MultiSelect options={[...window.SD.BOATS].sort((a, b) => a.name.localeCompare(b.name)).map(b => b.name)}
-                         value={boat} onChange={setBoat} allLabel="All Boats"/></div>
+            <MultiSelect options={boatOptions} value={boat} onChange={setBoat} allLabel="All Boats"/></div>
           <div><div style={SL}>Trip Length</div>
             <MultiSelect options={window.SD.TRIP_LENGTHS} value={tripLength} onChange={setTripLength} allLabel="All Lengths"/></div>
           <div><div style={SL}>Species</div>
@@ -88,14 +94,14 @@ function _streakCfg(goodCount) {
   return                     { emoji: '❄️', label: 'Struggling',  color: '#EF4444', bg: 'rgba(239,68,68,0.12)' };
 }
 
-function StreakTracker({ navigate }) {
+function StreakTracker({ navigate, regions }) {
   const { useMemo, useState } = React;
   const [tabFilter, setTabFilter] = useState('all');
 
   const streaks = useMemo(() => {
     const _ALL = { year:'all', species:'all', landing:'all', month:'all', minTrips:0, includeZero:true, boat:'all' };
-    return SDA.boatStreaks(SDA.filterTrips(_ALL));
-  }, []);
+    return SDA.boatStreaks(SDA.filterTrips(_ALL, regions));
+  }, [regions]);
 
   const filtered = useMemo(() => {
     if (tabFilter === 'hot')  return streaks.filter(b => b.goodCount >= 7);
@@ -231,7 +237,8 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
         open={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
         filters={filters}
-        onApply={setFilters}/>
+        onApply={setFilters}
+        regions={regions}/>
 
       <Crumbs items={[{ label: 'Analytics' }, { label: 'Overview' }]}/>
       <div className="pagehead">
@@ -389,7 +396,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
         })}
       </Panel>
 
-      <StreakTracker navigate={navigate}/>
+      <StreakTracker navigate={navigate} regions={regions}/>
 
       </Fragment>}
 
@@ -397,16 +404,16 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
       {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions}/>}
 
       {/* Landings sub-tab */}
-      {subtab === 'landings' && <LandingsView filters={filters} setFilters={setFilters} navigate={navigate}/>}
+      {subtab === 'landings' && <LandingsView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
 
       {/* Head-to-Head sub-tab */}
-      {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate}/>}
+      {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
 
       {/* Seasonality sub-tab */}
-      {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>}
+      {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
 
       {/* Moon Phase sub-tab */}
-      {subtab === 'moon' && <MoonView filters={filters} setFilters={setFilters} navigate={navigate}/>}
+      {subtab === 'moon' && <MoonView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
     </Fragment>
   );
 }

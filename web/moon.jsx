@@ -1,6 +1,6 @@
 // Moon Phase view — lunar phase correlation with catch rates
-function MoonView({ filters, setFilters, navigate }) {
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
+function MoonView({ filters, setFilters, navigate, regions }) {
+  const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const moonData = useMemo(() => SDA.moonAnalysis(trips, filters.species), [trips, filters.species]);
   const bestMoon = [...moonData].sort((a, b) => b.tpa - a.tpa)[0];
 
@@ -15,11 +15,11 @@ function MoonView({ filters, setFilters, navigate }) {
       ]}/>
       <div className="pagehead">
         <div>
-          <h1>Moon Phase</h1>
+          <h1>Moon Phase <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
           <div className="sub">Lunar phase correlation with catch rates across {fmt.n(trips.length)} trips</div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters}/>
+      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       <Panel title="Moon Phase Correlation"
              meta={`Avg ${speciesLabel.toLowerCase()}/angler by lunar phase`}
              className="moon-panel"
@@ -52,7 +52,7 @@ function MoonView({ filters, setFilters, navigate }) {
 }
 
 // Seasonality & Moon container — sub-tab wrapper
-function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'moon' }) {
+function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'moon', regions }) {
   const SUBTABS = [
     { id: 'moon',        label: 'Moon Phase' },
     { id: 'seasonality', label: 'Seasonality' },
@@ -65,8 +65,8 @@ function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'moon' })
              onClick={() => navigate('seasonality', { subtab: t.id })}>{t.label}</a>
         ))}
       </div>
-      {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate}/>}
-      {subtab === 'moon'        && <MoonView        filters={filters} setFilters={setFilters} navigate={navigate}/>}
+      {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
+      {subtab === 'moon'        && <MoonView        filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
     </Fragment>
   );
 }

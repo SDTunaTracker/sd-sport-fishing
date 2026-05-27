@@ -491,7 +491,12 @@ function TopSearchBar({ selMonth, setSelMonth, tripMonths,
                      active={openPop === 'landing'}
                      onClick={() => setOpenPop(openPop === 'landing' ? null : 'landing')}/>
         {openPop === 'landing' && (
-          <ChecklistPopover options={window.SD.LANDINGS} value={selLandings}
+          <ChecklistPopover options={(() => {
+            if (!regions || !window.getEffectiveRegion) return window.SD.LANDINGS;
+            const eff = window.getEffectiveRegion(regions);
+            const rl = window.getLandingsForRegion ? window.getLandingsForRegion(eff) : null;
+            return rl ? window.SD.LANDINGS.filter(l => rl.includes(l)) : window.SD.LANDINGS;
+          })()} value={selLandings}
                             onChange={setSelLandings} allLabel="All landings" onClose={closePop}/>
         )}
       </div>
@@ -664,7 +669,7 @@ function MobileFilterSheet({ open, onClose, ...filterProps }) {
 }
 
 // ── Main TripPlanner ──────────────────────────────────────────────────────────
-function TripPlanner({ navigate }) {
+function TripPlanner({ navigate, regions }) {
   const _now = new Date();
 
   // Review modal state

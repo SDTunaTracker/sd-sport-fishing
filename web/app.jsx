@@ -210,7 +210,7 @@ function App() {
   } else if (route.view === 'landing') {
     content = <LandingDetail filters={filters} setFilters={setFilters} navigate={navigate} landing={route.params.landing} regions={regions}/>;
   } else if (route.view === 'tripplanner') {
-    content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
+    content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} regions={regions}/>;
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'settings') {
