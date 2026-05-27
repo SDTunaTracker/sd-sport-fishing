@@ -124,25 +124,6 @@ CREATE TABLE IF NOT EXISTS scrape_log (
     error TEXT
 );
 
-CREATE TABLE IF NOT EXISTS forecast_scores (
-    date TEXT PRIMARY KEY,
-    overall_score REAL,
-    bluefin_score REAL,
-    yellowfin_score REAL,
-    yellowtail_score REAL,
-    dorado_score REAL,
-    conditions_label TEXT,
-    summary TEXT,
-    sst_nearshore REAL,
-    sst_offshore REAL,
-    anomaly REAL,
-    wind_speed REAL,
-    swell_height REAL,
-    moon_phase REAL,
-    moon_phase_name TEXT,
-    weights_used TEXT
-);
-
 CREATE TABLE IF NOT EXISTS forecast_accuracy_log (
     date TEXT PRIMARY KEY,
     predicted_score REAL,
@@ -324,6 +305,24 @@ def _migrate(conn: sqlite3.Connection) -> None:
     for col, defn in _NEW_SCHED_COLUMNS:
         if col not in sched_existing:
             conn.execute(f"ALTER TABLE scheduled_trips ADD COLUMN {col} {defn}")
+    # forecast_scores was redesigned to track per-segment A/B/C ensemble scores.
+    # Drop+recreate when the old single-row-per-date schema is detected.
+    fs_cols = {row[1] for row in conn.execute("PRAGMA table_info(forecast_scores)").fetchall()}
+    if fs_cols and "segment" not in fs_cols:
+        conn.execute("DROP TABLE forecast_scores")
+        conn.execute("""CREATE TABLE forecast_scores (
+            date       TEXT NOT NULL,
+            segment    TEXT NOT NULL,
+            model_a    REAL,
+            model_b    REAL,
+            model_c    REAL,
+            ensemble   REAL,
+            std_dev    REAL,
+            confidence TEXT,
+            n_days_b   INTEGER,
+            created_at TEXT,
+            PRIMARY KEY (date, segment)
+        )""")
 
 
 @contextmanager
