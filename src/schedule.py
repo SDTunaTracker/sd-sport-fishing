@@ -351,11 +351,12 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
         if dep.date() < today:
             continue  # past trip; H&M's endpoint returns 12 months of history+future
         return_at = (dep + timedelta(days=length_days)).isoformat() if length_days else None
-        # exp.catalog.items can carry max-load info; not always reliable, so leave null.
         raw_note  = t.get("note") or ""
         price     = float(t["price"]) if t.get("price") is not None else None
         whats_inc = _parse_whats_included(raw_note)
         meals_inc, meals_val, eff_price = _detect_meals(raw_note, whats_inc, length_bucket, price)
+        rsv = int(t["reserved_spots"]) if t.get("reserved_spots") is not None else None
+        cap = (int(open_spots) + rsv) if rsv is not None else None
         out.append({
             "landing": landing,
             "boat": boat,
@@ -365,9 +366,9 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
             "departure_at": dep.isoformat(),
             "return_at": return_at,
             "price": price,
-            "capacity": None,
+            "capacity": cap,
             "open_spots": int(open_spots),
-            "reserved_spots": int(t["reserved_spots"]) if t.get("reserved_spots") is not None else None,
+            "reserved_spots": rsv,
             "note": raw_note or None,
             "trip_status": _parse_trip_status(raw_note),
             "target_species": _parse_target_species(raw_note),
