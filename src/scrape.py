@@ -57,8 +57,19 @@ SOURCES: tuple[LandingSource, ...] = (
         url="https://www.pointlomasportfishing.com/fishcounts.php",
         referer=None,
     ),
-    # Oceanside Sea Center: daily scrape handled by src.scrape_ocla (976-tuna.com).
-    # OC/LA landings — socalfishreports.com (today only; history via src.scrape_ocla)
+    # OC/LA landings — socalfishreports.com / fishcounts.com
+    LandingSource(
+        name="Channel Islands Sportfishing",
+        url="https://socalfishreports.com/landings/channel_islands_sportfishing.php",
+        referer=None,
+        region="oc_la",
+    ),
+    LandingSource(
+        name="Ventura Harbor Sportfishing",
+        url="https://socalfishreports.com/landings/ventura_harbor_sportfishing.php",
+        referer=None,
+        region="oc_la",
+    ),
     LandingSource(
         name="22nd Street Landing",
         url="https://socalfishreports.com/landings/22nd_street_landing.php",
