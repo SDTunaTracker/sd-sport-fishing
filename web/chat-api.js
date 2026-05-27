@@ -1,5 +1,5 @@
 // Replace with your Cloudflare Worker URL after deploying
-const CHAT_PROXY_URL = 'REPLACE_WITH_WORKER_URL';
+const CHAT_PROXY_URL = 'https://chatbot.tylerjchristian.workers.dev';
 
 function buildSystemPrompt(pageContext) {
   const today    = window.SD?.TODAY;
