@@ -1229,6 +1229,7 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-card-stats-sep          { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
 .tp-card-tpa                { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
 .tp-card-trip-count         { font: 400 11px/16px var(--ss-font-sans); color: #94A3B8; }
+.tp-card-capacity-hint      { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-2); }
 /* Capacity bar */
 .tp-card-cap-row            { display: flex; align-items: center; gap: 8px; }
 .tp-card-cap-bar-wrap       { display: none; }

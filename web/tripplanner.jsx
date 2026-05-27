@@ -272,6 +272,9 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
               <span className="tp-card-tpa">Avg TPA <strong>{avgTpa.toFixed(2)}</strong>/day</span></>
           )}
         </div>
+        {s.capacity != null && (
+          <div className="tp-card-capacity-hint">Max {s.capacity} anglers</div>
+        )}
       </div>
 
       {/* RIGHT — price + booking */}
@@ -551,7 +554,8 @@ function RefineDatesSection({ selMonth, refineStart, setRefineStart, refineEnd, 
 
 function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
                           moonPhases, setMoonPhases, minWinRate, setMinWinRate,
-                          minPrice, setMinPrice, maxPrice, setMaxPrice, onReset }) {
+                          minPrice, setMinPrice, maxPrice, setMaxPrice,
+                          boatSize, setBoatSize, onReset }) {
   const togglePhase = (phase) => {
     const sel = moonPhases === 'all' ? MOON_PHASE_OPTIONS.map(o => o.phase) : [...moonPhases];
     const next = sel.includes(phase) ? sel.filter(p => p !== phase) : [...sel, phase];
@@ -584,6 +588,23 @@ function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setR
           );
         })}
         <div className="tp-sb-hint">★ New and full moons historically produce better fishing</div>
+      </SidebarSection>
+
+      <SidebarSection title="Boat Size (Max Load)">
+        {[
+          ['any',   'Any size',              null],
+          ['small', 'Small (under 25)',       'More personal experience'],
+          ['med',   'Medium (25–40)',         null],
+          ['large', 'Large (40+)',            'More stable offshore'],
+        ].map(([val, label, note]) => (
+          <label key={val} className="tp-sb-radio-row">
+            <input type="radio" name="boatSize" checked={boatSize === val}
+                   onChange={() => setBoatSize(val)}/>
+            <span>{label}</span>
+            {note && <span className="tp-sb-check-note">{note}</span>}
+          </label>
+        ))}
+        <div className="tp-sb-hint">Smaller boats = personal. Larger boats = stable offshore ride.</div>
       </SidebarSection>
 
       <SidebarSection title="Min Win Rate">
@@ -664,6 +685,7 @@ function TripPlanner({ navigate }) {
   const [minWinRate,  setMinWinRate]  = useState(0);
   const [minPrice,    setMinPrice]    = useState('');
   const [maxPrice,    setMaxPrice]    = useState('');
+  const [boatSize,    setBoatSize]    = useState('any');
 
   // Display state
   const [activeTab,         setActiveTab]         = useState('best');
@@ -694,6 +716,10 @@ function TripPlanner({ navigate }) {
   const setMinWinRateTracked = (v) => {
     setMinWinRate(v);
     if (window.TTTrack && v > 0) TTTrack.filterApplied('win_rate', `${Math.round(v * 100)}%+`);
+  };
+  const setBoatSizeTracked = (v) => {
+    setBoatSize(v);
+    if (window.TTTrack && v !== 'any') TTTrack.filterApplied('boat_size', v);
   };
 
   // Close popovers on outside click
@@ -777,9 +803,15 @@ function TripPlanner({ navigate }) {
         const wr = winRates[`${s.boat}|${s.tripLength}`];
         if (!wr || wr.winRate < minWinRate) return false;
       }
+      if (boatSize !== 'any') {
+        if (s.capacity == null) return false;
+        if (boatSize === 'small'  && s.capacity >= 25) return false;
+        if (boatSize === 'med'    && (s.capacity < 25 || s.capacity > 40)) return false;
+        if (boatSize === 'large'  && s.capacity <= 40) return false;
+      }
       return true;
     });
-  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, winRates]);
+  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, winRates]);
 
   const displayed = useMemo(() => {
     const enriched = filtered.map(s => {
@@ -801,6 +833,10 @@ function TripPlanner({ navigate }) {
         return copy.sort((a, b) => new Date(a.departureAt) - new Date(b.departureAt));
       case 'spots':
         return copy.sort((a, b) => (b.openSpots ?? 0) - (a.openSpots ?? 0));
+      case 'capacity-asc':
+        return copy.sort((a, b) => a.capacity == null ? 1 : b.capacity == null ? -1 : a.capacity - b.capacity);
+      case 'capacity-desc':
+        return copy.sort((a, b) => a.capacity == null ? 1 : b.capacity == null ? -1 : b.capacity - a.capacity);
       case 'win-rate':
       case 'recommended':
       default:
@@ -838,6 +874,7 @@ function TripPlanner({ navigate }) {
     setSelLandings('all'); setSelLengths('all');
     setMoonPhases('all'); setMinWinRate(0);
     setMinPrice(''); setMaxPrice('');
+    setBoatSize('any');
     // refineStart/End cleared by setSelMonth above
   };
 
@@ -848,13 +885,16 @@ function TripPlanner({ navigate }) {
     (Array.isArray(selLengths)  ? 1 : 0) +
     (Array.isArray(moonPhases)  ? 1 : 0) +
     (minWinRate > 0 ? 1 : 0) +
-    (minPrice || maxPrice ? 1 : 0);
+    (minPrice || maxPrice ? 1 : 0) +
+    (boatSize !== 'any' ? 1 : 0);
 
   const sidebarProps = {
     selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
     moonPhases, setMoonPhases: setMoonPhasesTracked,
     minWinRate, setMinWinRate: setMinWinRateTracked,
-    minPrice, setMinPrice, maxPrice, setMaxPrice, onReset: handleReset,
+    minPrice, setMinPrice, maxPrice, setMaxPrice,
+    boatSize, setBoatSize: setBoatSizeTracked,
+    onReset: handleReset,
   };
 
   return (
@@ -908,6 +948,8 @@ function TripPlanner({ navigate }) {
                   <option value="date">Departure Date</option>
                   <option value="win-rate">Win Rate</option>
                   <option value="spots">Open Spots</option>
+                  <option value="capacity-asc">Boat Size: Smallest first</option>
+                  <option value="capacity-desc">Boat Size: Largest first</option>
                 </select>
               </div>
             </div>
