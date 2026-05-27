@@ -108,7 +108,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
     return SDA.filterTrips(f);
   }, [filters, settings]);
 
-  const { rows: leaderboard, fleetMedianTPA, fleetMedianTPAPerDay } = useMemo(
+  const { rows: leaderboard } = useMemo(
     () => SDA.boatLeaderboard(trips, filters.species, filters.minTrips),
     [trips, filters.species, filters.minTrips]
   );
@@ -178,7 +178,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
              value={fmt.tpa(fleetTPA)}
              delta={tpaDelta}
              deltaLabel="vs prior year"
-             ctx={`Median across boats: ${fmt.tpa(fleetMedianTPA)}`}/>
+             ctx={`${eligibleBoats.length} boats · ${fmt.n(trips.length)} trips`}/>
         <KPI label={`Total ${speciesLabel}`}
              value={fmt.n(totalTuna)}
              ctx={`${fmt.n(totalAnglers)} anglers fished`}/>
@@ -201,12 +201,10 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
               <div className="chart-legend" style={{marginBottom: 8}}>
                 <span className="ll"><span className="sw" style={{background:'var(--ss-darkseagreen-500)'}}></span>Consistent</span>
                 <span className="ll"><span className="sw" style={{background:'var(--ss-orange-500)'}}></span>Spike</span>
-                <span className="median-mark"><span className="line"></span>Fleet median ({fmt.tpa(fleetMedianTPAPerDay)})</span>
               </div>
               <div style={{position:'relative'}}>
                 {topBoats.map((b, i) => {
                   const wpct = (b.avgTPAPerDay / maxTPAPerDay) * 100;
-                  const medLinePct = (fleetMedianTPAPerDay / maxTPAPerDay) * 100;
                   return (
                     <div key={b.boat} className={`bar-row ${b.label === 'Spike' ? 'spike' : 'consistent'}`}
                          style={{cursor:'pointer'}}
@@ -220,7 +218,6 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
                       </div>
                       <div className="track" style={{position:'relative'}}>
                         <div className="fill" style={{width:`${wpct}%`}}></div>
-                        <div style={{position:'absolute', left:`${medLinePct}%`, top:-2, bottom:-2, width:0, borderLeft:'1.5px dashed #445460'}}></div>
                         {b.label && (
                           <span className={`tag ${b.label === 'Consistent' ? 'consistent' : 'spike'}`}
                                 style={{position:'absolute', right:6, top:-2, fontSize:9}}>

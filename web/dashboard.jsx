@@ -423,7 +423,7 @@ function TodayView({ navigate, settings }) {
     [settings]
   );
 
-  const { rows: leaderboard, fleetMedianTPAPerDay } = useMemo(
+  const { rows: leaderboard } = useMemo(
     () => SDA.boatLeaderboard(yearTrips, 'all', 5),
     [yearTrips]
   );
@@ -463,13 +463,9 @@ function TodayView({ navigate, settings }) {
             <div className="muted-block">No data yet for {currentYear}.</div>
           ) : (
             <Fragment>
-              <div className="chart-legend" style={{marginBottom: 8}}>
-                <span className="median-mark"><span className="line"></span>Fleet median ({fmt.tpa(fleetMedianTPAPerDay)})</span>
-              </div>
               <div style={{position: 'relative'}}>
                 {topBoats.map((b, i) => {
                   const wpct = (b.avgTPAPerDay / maxTPAPerDay) * 100;
-                  const medLinePct = (fleetMedianTPAPerDay / maxTPAPerDay) * 100;
                   return (
                     <div key={b.boat} className={`bar-row ${b.label === 'Spike' ? 'spike' : 'consistent'}`}
                          style={{cursor:'pointer'}}
@@ -481,9 +477,8 @@ function TodayView({ navigate, settings }) {
                           <div className="lan">{b.landing.replace(' Sportfishing','').replace(' Landing','')} · {b.tripCount} trips</div>
                         </div>
                       </div>
-                      <div className="track" style={{position: 'relative'}}>
+                      <div className="track">
                         <div className="fill" style={{width: `${wpct}%`}}></div>
-                        <div style={{position:'absolute', left:`${medLinePct}%`, top:-2, bottom:-2, width:0, borderLeft:'1.5px dashed #445460'}}></div>
                       </div>
                       <div className="num">{fmt.tpa(b.avgTPAPerDay)}</div>
                     </div>

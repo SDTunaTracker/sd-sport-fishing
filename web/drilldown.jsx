@@ -18,7 +18,6 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
   const tpas = allTrips.map(t => (t[sf]||0)/Math.max(1,t.anglers));
   const medTPA = SDA.median(tpas);
   const successRate = allTrips.length ? allTrips.filter(t => (t[sf]||0)>0).length/allTrips.length : 0;
-  const cv = SDA.mean(tpas) > 0 ? SDA.stddev(tpas)/SDA.mean(tpas) : 0;
 
   const fleetMedTPA = SDA.median(fleetTrips.map(t => (t[sf]||0)/Math.max(1,t.anglers)));
 
@@ -110,12 +109,8 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
         <div className="boat-profile-desc">{profile.description}</div>
       )}
       <div className="kpis">
-        <KPI label="Tuna / Angler" value={fmt.tpa(tpa)} ctx={`Fleet median ${fmt.tpa(fleetMedTPA)} · ${tpa > fleetMedTPA ? 'Above' : 'Below'}`}
-             accent={tpa > fleetMedTPA ? 'var(--ss-darkseagreen-500)' : null}/>
-        <KPI label="Median / Angler" value={fmt.tpa(medTPA)} ctx="Trip-by-trip median"/>
-        <KPI label="Success Rate" value={fmt.pct(successRate, 0)} ctx={`${allTrips.filter(t=>(t[sf]||0)>0).length} of ${allTrips.length} trips`}/>
-        <KPI label="Variance (CV)" value={cv.toFixed(2)} ctx={cv < 0.6 ? 'Tight, predictable' : cv < 1 ? 'Moderate variance' : 'High variance'}
-             accent={cv < 0.6 ? 'var(--ss-darkseagreen-500)' : cv > 1 ? 'var(--ss-orange-500)' : null}/>
+        <KPI label="Tuna / Angler" value={fmt.tpa(tpa)} ctx={`${fmt.n(totalAnglers)} anglers · ${allTrips.length} trips`}/>
+        <KPI label="Total Fish" value={fmt.n(totalTuna)} ctx={`All tracked species`}/>
       </div>
 
       <div className="detail-grid" style={{marginBottom: 12}}>
@@ -337,7 +332,7 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
 // Landing detail drill-down
 function LandingDetail({ filters, setFilters, navigate, landing }) {
   const trips = useMemo(() => SDA.filterTrips({ ...filters, landing }), [filters, landing]);
-  const { rows: boats, fleetMedianTPA } = useMemo(
+  const { rows: boats } = useMemo(
     () => SDA.boatLeaderboard(trips, filters.species, Math.min(filters.minTrips, 3)),
     [trips, filters.species, filters.minTrips]
   );
@@ -380,7 +375,7 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
             <table className="dt">
               <thead><tr>
                 <th style={{width: 36}}>#</th><th>Boat</th><th className="num">Trips</th>
-                <th className="num">Tuna/Angler</th><th className="num">Median</th><th className="num">Success</th><th>Label</th>
+                <th className="num">Tuna/Angler</th><th>Label</th>
               </tr></thead>
               <tbody>
                 {boats.map((b, i) => (
@@ -388,9 +383,7 @@ function LandingDetail({ filters, setFilters, navigate, landing }) {
                     <td><span className="rank" style={{color: i<3?'var(--ss-orange-500)':null, fontWeight: i<3?700:500}}>{i+1}</span></td>
                     <td><b>{b.boat}</b></td>
                     <td className="num">{b.tripCount}</td>
-                    <td className={`num ${b.avgTPA > fleetMedianTPA ? 'hi' : ''}`}>{fmt.tpa(b.avgTPA)}</td>
-                    <td className="num">{fmt.tpa(b.medTPA)}</td>
-                    <td className="num">{fmt.pct(b.successRate, 0)}</td>
+                    <td className="num">{fmt.tpa(b.avgTPA)}</td>
                     <td>
                       {b.label === 'Consistent' && <span className="tag consistent">Consistent</span>}
                       {b.label === 'Spike' && <span className="tag spike">Spike</span>}
@@ -487,7 +480,7 @@ function LandingsView({ filters, setFilters, navigate }) {
           <thead><tr>
             <th>Landing</th><th className="num">Boats</th><th className="num">Trips</th>
             <th className="num">Anglers</th><th className="num">Total {speciesLabel}</th>
-            <th className="num">{speciesLabel}/Angler</th><th className="num">Success Rate</th>
+            <th className="num">{speciesLabel}/Angler</th>
             <th>Species Mix</th>
           </tr></thead>
           <tbody>
@@ -501,7 +494,6 @@ function LandingsView({ filters, setFilters, navigate }) {
                   <td className="num">{fmt.n(l.anglers)}</td>
                   <td className="num">{fmt.n(l.tuna)}</td>
                   <td className={`num ${i === 0 ? 'hi' : ''}`}>{fmt.tpa(l.tpa)}</td>
-                  <td className="num">{fmt.pct(l.successRate, 0)}</td>
                   <td>
                     <div style={{display:'flex', height: 12, width: 200, borderRadius: 2, overflow:'hidden'}}>
                       {window.SD.SPECIES.map(sp => {
