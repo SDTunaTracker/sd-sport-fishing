@@ -16,6 +16,7 @@ from pathlib import Path
 from . import db
 from .export import export
 from .scrape import SOURCES, scrape_all
+from . import scrape_ocla
 from .schedule import scrape_all_schedules
 from .backtest import daily_accuracy_update, weekly_recalibrate
 from .sst import fetch_daily_sst, insert_sst
@@ -60,6 +61,24 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 summary_lines.append(
                     f"  {src.name:30s} page_date={page_date}  parsed={len(trips):3d}  inserted={kept:3d}"
                 )
+
+            # 976-tuna.com top-up: Oceanside + Ventura landings not on socalfishreports.com.
+            _scrape_src_names = {s.name for s in SOURCES}
+            _today = date.today()
+            import requests as _requests
+            _ocla_session = _requests.Session()
+            for _name, _lid, _slug, _r in scrape_ocla.LANDINGS:
+                if _name in _scrape_src_names:
+                    continue
+                _trips, _err = scrape_ocla.scrape_landing_month(
+                    _name, _lid, _slug, _today.year, _today.month, _ocla_session)
+                if _err:
+                    summary_lines.append(f"  {_name:30s} 976-tuna ERROR  {_err}")
+                    continue
+                if _trips:
+                    _kept = db.insert_trips(conn, _trips, upsert=True)
+                    summary_lines.append(
+                        f"  {_name:30s} 976-tuna parsed={len(_trips):3d}  inserted={_kept:3d}")
 
             # Schedules: forward-looking, snapshot semantics (delete + reinsert).
             summary_lines.append("Schedule scrape:")

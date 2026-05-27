@@ -35,6 +35,9 @@ LANDINGS = (
     "Newport Landing",
     "Davey's Locker",
     "Dana Wharf Sportfishing",
+    # Ventura
+    "Channel Islands Sportfishing",
+    "Ventura Harbor Sportfishing",
 )
 
 TRIP_LENGTHS = (
