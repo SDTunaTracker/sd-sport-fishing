@@ -286,6 +286,7 @@ _NEW_TRIP_COLUMNS = [
     ("other_fish",  "INTEGER DEFAULT 0"),
     ("is_half_day", "INTEGER DEFAULT 0"),
     ("region",      "TEXT DEFAULT 'san_diego'"),
+    ("full_catch",  "TEXT DEFAULT NULL"),
 ]
 
 
@@ -356,7 +357,7 @@ TRIP_FIELDS = (
     "days_from_new", "days_from_full", "scraped_at", "source_url",
     "rockfish", "sheephead", "calico_bass", "sand_bass", "halibut",
     "lingcod", "whitefish", "bonito", "barracuda", "other_fish", "is_half_day",
-    "region",
+    "region", "full_catch",
 )
 
 

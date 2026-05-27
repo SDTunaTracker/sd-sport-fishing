@@ -266,6 +266,7 @@ def parse_page(html: str, landing: str, source_url: str,
             "other_fish": other_fish,
             "is_half_day": is_half_day,
             "region": region,
+            "full_catch": P.build_full_catch(tracked, other),
             "_unknowns": unknowns,
         })
     return out
@@ -292,3 +293,40 @@ def scrape_all(sources: Iterable[LandingSource] = SOURCES,
             log.exception("scrape failed: %s", src.name)
             results.append((src, [], None, f"{type(e).__name__}: {e}"))
     return results
+
+
+def backfill_full_catch(db_path: str = "tracker.db", batch: int = 500) -> int:
+    """Populate full_catch for all rows that have NULL full_catch.
+
+    Reconstructs the value from the existing tracked-species columns and
+    other_species_json — no re-scraping required.
+    Returns the number of rows updated.
+    """
+    import sqlite3 as _sqlite3
+    conn = _sqlite3.connect(db_path)
+    conn.row_factory = _sqlite3.Row
+    rows = conn.execute("""
+        SELECT id, bluefin, yellowfin, yellowtail, dorado, skipjack, bigeye, albacore,
+               other_species_json
+        FROM trips WHERE full_catch IS NULL
+    """).fetchall()
+    updated = 0
+    for i in range(0, len(rows), batch):
+        chunk = rows[i:i + batch]
+        params = []
+        for row in chunk:
+            tracked = {
+                "Bluefin":    row["bluefin"],    "Yellowfin": row["yellowfin"],
+                "Yellowtail": row["yellowtail"], "Dorado":    row["dorado"],
+                "Skipjack":   row["skipjack"],   "Bigeye":    row["bigeye"],
+                "Albacore":   row["albacore"],
+            }
+            fc = P.build_full_catch_from_db(tracked, row["other_species_json"])
+            params.append((fc, row["id"]))
+        conn.executemany("UPDATE trips SET full_catch=? WHERE id=?", params)
+        conn.commit()
+        updated += len(chunk)
+        print(f"  backfill_full_catch: {updated}/{len(rows)} rows done")
+    conn.close()
+    print(f"backfill_full_catch: complete — {updated} rows updated")
+    return updated

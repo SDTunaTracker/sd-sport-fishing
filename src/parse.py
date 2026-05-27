@@ -4,6 +4,7 @@ Kept dependency-free so it's trivially unit-testable.
 """
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from datetime import date
@@ -292,3 +293,44 @@ def trophy_metrics(species: dict[str, int], anglers: int, trip_days: float) -> T
     per_angler = (total / anglers) if anglers > 0 else 0.0
     per_apd = (per_angler / metric_days(trip_days)) if trip_days > 0 else 0.0
     return TrophyMetrics(total, per_angler, per_apd)
+
+
+# --- Full catch summary --------------------------------------------------
+
+def build_full_catch(tracked: dict[str, int], other: dict[str, int]) -> str | None:
+    """Build a compact JSON string of all landed species for the full_catch column.
+
+    Includes the 7 tracked species (landed only) plus other species with
+    canonical names. Released-only variants in `other` are excluded.
+    Returns None if no species were caught.
+    """
+    result: dict[str, int] = {}
+    for sp, cnt in tracked.items():
+        if cnt > 0:
+            result[sp] = cnt
+    for raw, cnt in other.items():
+        if cnt <= 0:
+            continue
+        if re.search(r"\bReleased\b", raw, re.I):
+            continue
+        canon = normalize_species(raw)
+        result[canon] = result.get(canon, 0) + cnt
+    return json.dumps(result, separators=(',', ':')) if result else None
+
+
+def build_full_catch_from_db(
+    tracked_cols: dict[str, int],
+    other_species_json: str | None,
+) -> str | None:
+    """Reconstruct full_catch from already-stored DB columns (for backfill).
+
+    `tracked_cols` is a dict keyed by canonical species name (Bluefin, etc.).
+    `other_species_json` is the raw JSON string from the DB column.
+    """
+    other: dict[str, int] = {}
+    if other_species_json:
+        try:
+            other = json.loads(other_species_json)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return build_full_catch(tracked_cols, other)

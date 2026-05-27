@@ -55,10 +55,13 @@ MOON_PHASES = ("New", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
                "Full", "Waning Gibbous", "Last Quarter", "Waning Crescent")
 
 
-def _trip_to_js(row: sqlite3.Row) -> dict:
+_FULL_CATCH_CUTOFF: str = (date.today() - timedelta(days=30)).isoformat()
+
+
+def _trip_to_js(row: sqlite3.Row, include_full_catch: bool = False) -> dict:
     d = row["date"]
     year, month, day = (int(x) for x in d.split("-"))
-    return {
+    t = {
         "id": row["id"],
         "date": d,
         "year": year,
@@ -89,6 +92,11 @@ def _trip_to_js(row: sqlite3.Row) -> dict:
         "daysFromFull": row["days_from_full"],
         "region": row["region"] or "san_diego",
     }
+    if include_full_catch or d >= _FULL_CATCH_CUTOFF:
+        fc = row["full_catch"] if "full_catch" in row.keys() else None
+        if fc:
+            t["fullCatch"] = json.loads(fc)
+    return t
 
 
 def _boats_from_trips(trips: list[dict]) -> list[dict]:
@@ -169,6 +177,7 @@ def _today_summary(trips: list[dict]) -> dict | None:
                 "Yellowtail": t["Yellowtail"],
                 "Dorado": t["Dorado"],
                 "trophyPerAnglerPerDay": t["trophyPerAnglerPerDay"],
+                **({"fullCatch": t["fullCatch"]} if "fullCatch" in t else {}),
             }
             for t in boats
         ],

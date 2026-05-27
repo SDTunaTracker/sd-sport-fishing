@@ -171,9 +171,11 @@ a { color: inherit; text-decoration: none; }
 /* ───── App Header — single unified bar ───── */
 .app-header { position: sticky; top: 0; z-index: 50; }
 .header-top { display: flex; align-items: center; background: #fff; color: var(--tb-ink); padding: 0 16px; height: 48px; gap: 0; border-bottom: 1px solid #E2E8F0; }
-.logo { display: flex; align-items: center; gap: 9px; padding-right: 20px; border-right: 1px solid #E2E8F0; flex-shrink: 0; height: 100%; }
-.logo .logo-fish { color: var(--tb-lime); font-size: 18px; }
-.logo .logo-wordmark { font: 700 17px/1 var(--ss-font-sans); color: var(--tb-deep); white-space: nowrap; letter-spacing: -0.02em; }
+.logo { display: flex; align-items: center; gap: 9px; padding-right: 16px; border-right: 1px solid #E2E8F0; flex-shrink: 0; height: 100%; }
+.logo .logo-fish { color: var(--tb-lime); font-size: 18px; flex-shrink: 0; }
+.logo-text { display: flex; flex-direction: column; gap: 0; }
+.logo .logo-wordmark { font: 700 16px/1 var(--ss-font-sans); color: var(--tb-deep); white-space: nowrap; letter-spacing: -0.02em; }
+.logo .logo-subtitle { font: 500 10px/1 var(--ss-font-sans); color: var(--tb-slate); white-space: nowrap; margin-top: 2px; }
 .header-nav { display: flex; align-items: center; flex: 1; padding: 0 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .header-nav::-webkit-scrollbar { display: none; }
 .header-nav .tab { font: 600 14px/16px var(--ss-font-sans); color: var(--tb-gray-3); height: 48px; display: inline-flex; align-items: center; cursor: pointer; border-bottom: 2px solid transparent; padding: 0 10px; gap: 6px; white-space: nowrap; flex-shrink: 0; }
@@ -184,35 +186,34 @@ a { color: inherit; text-decoration: none; }
 .iconbtn { color: var(--tb-slate); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.85; }
 .iconbtn:hover { opacity: 1; }
 
-/* Region selector — segmented pill control in desktop header */
+/* Region toggle pills — two independently-togglable buttons */
 .header-region-selector {
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: #F1F5F9;
-  border-radius: 20px;
-  padding: 3px;
+  gap: 5px;
   flex-shrink: 0;
-  margin: 0 8px;
+  margin: 0 10px;
 }
 .region-pill {
   font: 600 11px/14px var(--ss-font-sans);
-  padding: 3px 11px;
-  border-radius: 16px;
-  border: none;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1.5px solid var(--tb-border-2);
   background: transparent;
   color: var(--tb-slate);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
 .region-pill.sel {
-  background: #fff;
-  color: var(--tb-ink);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+  background: var(--tb-deep);
+  border-color: var(--tb-deep);
+  color: #fff;
 }
-.region-pill.coming-soon { color: var(--tb-gray-2); cursor: default; }
-.region-pill:not(.coming-soon):not(.sel):hover { background: rgba(255,255,255,0.6); color: var(--tb-ink); }
+.region-pill:not(.sel):hover {
+  border-color: var(--tb-gray-2);
+  color: var(--tb-ink);
+}
 
 /* Coming Soon page */
 .coming-soon-page {
@@ -450,10 +451,20 @@ body.compact .dt td { padding: 7px 12px; }
 .frb-label { font: 700 15px/18px var(--ss-font-sans); color: var(--tb-ink); }
 .frb-sub { font: 400 10px/13px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
 .rating-col { display: block; }
-.today-boat-row { display: grid; grid-template-columns: 1.2fr 1fr 80px 55px 65px 68px 52px 52px 70px 80px; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--tb-border-2); align-items: center; font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); font-variant-numeric: tabular-nums; }
-.today-boat-row:hover:not(.today-boat-hd) { background: var(--tb-foam); }
-.today-boat-row:last-child { border-bottom: 0; }
-.today-boat-hd { font: 600 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 4px; }
+.today-boat-row { display: grid; grid-template-columns: 1.2fr 1fr 80px 55px 65px 68px 52px 52px 70px 80px; gap: 8px; padding: 7px 12px; align-items: center; font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); font-variant-numeric: tabular-nums; }
+.today-boat-hd { font: 600 10px/12px var(--ss-font-sans); color: var(--tb-gray-3); text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 4px; border-bottom: 1px solid var(--tb-border-2); }
+.today-boat-wrap { border-bottom: 1px solid var(--tb-border-2); }
+.today-boat-wrap:hover .today-boat-row:not(.today-boat-hd) { background: var(--tb-foam); }
+.today-boat-wrap:last-child { border-bottom: 0; }
+/* Full catch expand button */
+.catch-expand-btn { font-size: 9px; color: var(--tb-gray-2); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 3px; transition: color 0.1s; }
+.catch-expand-btn:hover { color: var(--tb-slate); }
+/* Full catch detail row */
+.catch-detail-row { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 6px 12px 8px 12px; background: var(--tb-foam); border-top: 1px solid var(--tb-border-2); }
+.catch-species { font: 400 11px/16px var(--ss-font-sans); white-space: nowrap; }
+.catch-count { font-weight: 600; }
+.catch-species-trophy { }
+.catch-species-other { color: var(--tb-gray-3); }
 .spacer { flex: 1; }
 /* Desktop: show species cols, hide trophy total col */
 .trophy-col { display: none; }
@@ -518,14 +529,16 @@ body.compact .dt td { padding: 7px 12px; }
   /* Header: not sticky on mobile */
   .app-header { position: static; }
   .header-top { padding: 0 14px; height: 48px; }
-  .logo { border-right: none; padding-right: 0; gap: 7px; }
+  .logo { border-right: none; padding-right: 0; gap: 6px; }
   .logo .logo-fish { font-size: 14px; }
   .logo .logo-wordmark { font-size: 13px; letter-spacing: -0.01em; }
+  .logo .logo-subtitle { display: none; }
   .header-gear { display: none; }
   .header-nav { display: none; }
 
-  /* Region selector: hidden on mobile (moved into hamburger menu) */
-  .header-region-selector { display: none; }
+  /* Region toggle pills: visible on mobile, slightly smaller */
+  .header-region-selector { display: flex; margin: 0 6px; gap: 4px; }
+  .region-pill { font-size: 10px; padding: 3px 8px; }
 
   /* Hamburger: visible on mobile, pushed to far right */
   .header-hamburger { display: inline-flex !important; font-size: 18px; padding: 0 6px; margin-left: auto; }
@@ -700,6 +713,8 @@ body.compact .dt td { padding: 7px 12px; }
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* Hide catch expand button on mobile (full count only on desktop) */
+  .catch-expand-btn { display: none; }
   /* Trip planner — hide Landing col, show as boat sub-line; keep Trip+WinRate; date only; moon emoji+% only */
   .tp-best-row { grid-template-columns: 1fr 54px 56px 36px 40px 46px 30px; }
   .tp-cheapest-row { grid-template-columns: 1fr 54px 56px 36px 46px 30px; }

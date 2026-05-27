@@ -23,7 +23,7 @@ const fmt = {
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function AppHeader({ active, onNavigate, region, onRegionChange }) {
+function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
 
   const NAV = [
@@ -47,29 +47,36 @@ function AppHeader({ active, onNavigate, region, onRegionChange }) {
 
   const menuVisible = menuState !== 'closed';
   const menuClosing = menuState === 'closing';
+  const subtitle = window.getRegionSubtitle && regions ? window.getRegionSubtitle(regions) : 'San Diego';
 
   return (
     <React.Fragment>
       <div className="app-header">
         <div className="header-top">
-          {/* Logo: fish icon + wordmark */}
+          {/* Logo: fish icon + wordmark + subtitle */}
           <div className="logo" onClick={() => handleNavItem('today')} style={{cursor:'pointer'}}>
             <i className="fa-solid fa-fish-fins logo-fish"></i>
-            <span className="logo-wordmark">The Tuna Tracker</span>
+            <div className="logo-text">
+              <span className="logo-wordmark">The Tuna Tracker</span>
+              <span className="logo-subtitle">{subtitle}</span>
+            </div>
           </div>
-          {/* Region selector — desktop, between logo and nav */}
+          {/* Region toggle pills — desktop and mobile */}
           {window.REGIONS && (
             <div className="header-region-selector">
-              {window.REGIONS.map(reg => (
-                <button
-                  key={reg.id}
-                  className={`region-pill${region === reg.id ? ' sel' : ''}${reg.comingSoon ? ' coming-soon' : ''}`}
-                  onClick={() => onRegionChange && onRegionChange(reg.id)}
-                  title={reg.comingSoon ? `${reg.label} — Coming Soon` : reg.label}
-                >
-                  {reg.short}
-                </button>
-              ))}
+              {window.REGIONS.map(reg => {
+                const isActive = regions && regions.includes(reg.id);
+                return (
+                  <button
+                    key={reg.id}
+                    className={`region-pill${isActive ? ' sel' : ''}`}
+                    onClick={() => onRegionToggle && onRegionToggle(reg.id)}
+                    title={reg.label}
+                  >
+                    {reg.short}
+                  </button>
+                );
+              })}
             </div>
           )}
           {/* Nav tabs — desktop only */}
@@ -122,17 +129,20 @@ function AppHeader({ active, onNavigate, region, onRegionChange }) {
               <React.Fragment>
                 <div className="mobile-menu-divider"></div>
                 <div className="mm-section-label">Region</div>
-                {window.REGIONS.map(reg => (
-                  <div
-                    key={reg.id}
-                    className={`mobile-menu-item${region === reg.id ? ' sel' : ''}${reg.comingSoon ? ' coming-soon-item' : ''}`}
-                    onClick={() => { onRegionChange && onRegionChange(reg.id); closeMenu(); }}
-                  >
-                    <i className="fa-solid fa-location-dot"></i>
-                    <span>{reg.label}{reg.comingSoon ? <span className="mm-soon-tag"> — Soon</span> : ''}</span>
-                    {region === reg.id && <i className="fa-solid fa-check mm-check"></i>}
-                  </div>
-                ))}
+                {window.REGIONS.map(reg => {
+                  const isActive = regions && regions.includes(reg.id);
+                  return (
+                    <div
+                      key={reg.id}
+                      className={`mobile-menu-item${isActive ? ' sel' : ''}`}
+                      onClick={() => onRegionToggle && onRegionToggle(reg.id)}
+                    >
+                      <i className="fa-solid fa-location-dot"></i>
+                      <span>{reg.label}</span>
+                      {isActive && <i className="fa-solid fa-check mm-check"></i>}
+                    </div>
+                  );
+                })}
               </React.Fragment>
             )}
             <div className="mobile-menu-divider"></div>
@@ -417,5 +427,4 @@ Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
   AppHeader, SideNav, Crumbs, KPI, Panel,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
-  OcLaComingSoon,
 });

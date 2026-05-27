@@ -183,6 +183,7 @@ def parse_page(html: str, landing: str, source_url: str) -> list[dict]:
                 "other_fish": other_fish,
                 "is_half_day": is_half_day,
                 "region": region,
+                "full_catch": P.build_full_catch(tracked, other),
                 "_unknowns": unknowns,
             })
     return out

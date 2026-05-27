@@ -202,7 +202,32 @@ function fmtDate(iso) {
   return `${+m}/${+d}/${String(+y).slice(-2)}`;
 }
 
+const TROPHY_SET = new Set(['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado']);
+
+function CatchDetail({ fullCatch }) {
+  if (!fullCatch || typeof fullCatch !== 'object') return null;
+  const entries = Object.entries(fullCatch).filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return null;
+  return (
+    <div className="catch-detail-row">
+      {entries.map(([sp, n]) => (
+        <span key={sp} className={`catch-species ${TROPHY_SET.has(sp) ? 'catch-species-trophy' : 'catch-species-other'}`}
+              style={TROPHY_SET.has(sp) ? {color: SPECIES_COLORS[sp] || 'var(--tb-ink)'} : {}}>
+          <span className="catch-count">{n}</span> {sp}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function TodayCatch({ navigate, settings }) {
+  const [expanded, setExpanded] = useS({});
+
+  function toggleCatch(key) {
+    setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
+  }
+
   // All dates with trip data, newest first.
   const dates = useMemo(() => {
     const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
@@ -299,34 +324,48 @@ function TodayCatch({ navigate, settings }) {
             <span>TPA/Day</span>
             <span className="rating-col">Rating</span>
           </div>
-          {ratingData.boats.map((b, i) => (
-            <div key={i} className="today-boat-row" style={{cursor:'pointer'}}
-                 onClick={() => navigate('boat', { boat: b.boat })}>
-              <span className="boat-name" style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
-              <span>{b.landing.replace(' Sportfishing','').replace(' Landing','')}</span>
-              <span>{b.tripLength}</span>
-              <span className="sp-col" style={{fontWeight: b.Bluefin > 0 ? 600 : 400, color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)'}}>{fmt.n(b.Bluefin)}</span>
-              <span className="sp-col" style={{fontWeight: b.Yellowfin > 0 ? 600 : 400, color: b.Yellowfin > 0 ? SPECIES_COLORS.Yellowfin : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowfin)}</span>
-              <span className="sp-col" style={{fontWeight: b.Yellowtail > 0 ? 600 : 400, color: b.Yellowtail > 0 ? SPECIES_COLORS.Yellowtail : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowtail)}</span>
-              <span className="sp-col" style={{fontWeight: b.Dorado > 0 ? 600 : 400, color: b.Dorado > 0 ? SPECIES_COLORS.Dorado : 'var(--tb-gray-3)'}}>{fmt.n(b.Dorado)}</span>
-              <span className="trophy-col" style={{fontWeight:600, color:'var(--tb-ink)'}}>{fmt.n(b.totalTuna)}</span>
-              <span className="anglers-col">{fmt.n(b.anglers)}</span>
-              <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
-              <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
-              {selectedDate < TODAY_ISO && (
-                <span className="today-review-star" title="Review this trip"
-                      onClick={e => {
-                        e.stopPropagation();
-                        const params = new URLSearchParams();
-                        params.set('openReview', '1');
-                        params.set('date', selectedDate);
-                        params.set('length', b.tripLength || '');
-                        history.replaceState(null, '', `?${params.toString()}`);
-                        navigate('boat', { boat: b.boat });
-                      }}>⭐</span>
-              )}
-            </div>
-          ))}
+          {ratingData.boats.map((b, i) => {
+            const hasFc = b.fullCatch && Object.keys(b.fullCatch).length > 0;
+            const expandKey = `${b.boat}|${b.landing}`;
+            const isExpanded = expanded[expandKey];
+            return (
+              <div key={i} className="today-boat-wrap">
+                <div className="today-boat-row" style={{cursor:'pointer'}}
+                     onClick={() => navigate('boat', { boat: b.boat })}>
+                  <span className="boat-name" style={{font:'600 12px/16px var(--ss-font-sans)', color:'var(--tb-ink)'}}>{b.boat}</span>
+                  <span>{b.landing.replace(' Sportfishing','').replace(' Landing','')}</span>
+                  <span>{b.tripLength}</span>
+                  <span className="sp-col" style={{fontWeight: b.Bluefin > 0 ? 600 : 400, color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)'}}>{fmt.n(b.Bluefin)}</span>
+                  <span className="sp-col" style={{fontWeight: b.Yellowfin > 0 ? 600 : 400, color: b.Yellowfin > 0 ? SPECIES_COLORS.Yellowfin : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowfin)}</span>
+                  <span className="sp-col" style={{fontWeight: b.Yellowtail > 0 ? 600 : 400, color: b.Yellowtail > 0 ? SPECIES_COLORS.Yellowtail : 'var(--tb-gray-3)'}}>{fmt.n(b.Yellowtail)}</span>
+                  <span className="sp-col" style={{fontWeight: b.Dorado > 0 ? 600 : 400, color: b.Dorado > 0 ? SPECIES_COLORS.Dorado : 'var(--tb-gray-3)'}}>{fmt.n(b.Dorado)}</span>
+                  <span className="trophy-col" style={{fontWeight:600, color:'var(--tb-ink)'}}>{fmt.n(b.totalTuna)}</span>
+                  <span className="anglers-col">{fmt.n(b.anglers)}</span>
+                  <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
+                  <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
+                  {hasFc && (
+                    <span className="catch-expand-btn" title="Full catch"
+                          onClick={e => { e.stopPropagation(); toggleCatch(expandKey); }}>
+                      {isExpanded ? '▲' : '▼'}
+                    </span>
+                  )}
+                  {selectedDate < TODAY_ISO && (
+                    <span className="today-review-star" title="Review this trip"
+                          onClick={e => {
+                            e.stopPropagation();
+                            const params = new URLSearchParams();
+                            params.set('openReview', '1');
+                            params.set('date', selectedDate);
+                            params.set('length', b.tripLength || '');
+                            history.replaceState(null, '', `?${params.toString()}`);
+                            navigate('boat', { boat: b.boat });
+                          }}>⭐</span>
+                  )}
+                </div>
+                {isExpanded && hasFc && <CatchDetail fullCatch={b.fullCatch}/>}
+              </div>
+            );
+          })}
         </Panel>
       )}
     </Fragment>
