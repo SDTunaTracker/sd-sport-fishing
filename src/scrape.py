@@ -57,6 +57,11 @@ SOURCES: tuple[LandingSource, ...] = (
         url="https://www.pointlomasportfishing.com/fishcounts.php",
         referer=None,
     ),
+    LandingSource(
+        name="Oceanside Sea Center",
+        url="https://www.fishcounts.com/oceanside/fishcounts.php",
+        referer=None,
+    ),
     # OC/LA landings — socalfishreports.com / fishcounts.com
     LandingSource(
         name="Channel Islands Sportfishing",
@@ -167,6 +172,50 @@ def _row_is_data(cells: list[str]) -> bool:
     return any(ch.isdigit() for ch in anglers_text)
 
 
+def _is_osc_table(table: Tag) -> bool:
+    """Oceanside Sea Center uses OSCFishCountHeader class instead of standard headers."""
+    return bool(table.find("tr", class_="OSCFishCountHeader"))
+
+
+def _extract_osc_rows(table: Tag) -> tuple[list[dict], date | None]:
+    """Parse Oceanside Sea Center's table: Date | Vessel+TripType | Anglers | Fish Count.
+
+    OSC embeds the date per-row as m/d/yyyy and combines boat+trip_type in one cell
+    separated by a <br> tag — different from the standard fishcounts.com format."""
+    rows_out: list[dict] = []
+    page_date: date | None = None
+    for tr in table.find_all("tr"):
+        if tr.get("class") and "OSCFishCountHeader" in tr.get("class", []):
+            continue
+        tds = tr.find_all("td")
+        if len(tds) != 4:
+            continue
+        date_text = tds[0].get_text(strip=True)
+        try:
+            d = datetime.strptime(date_text, "%m/%d/%Y").date()
+        except ValueError:
+            continue
+        # Vessel cell: <b>Boat Name</b><br>Trip Type — use separator to split around <br>
+        b_tag = tds[1].find("b")
+        boat = b_tag.get_text(strip=True) if b_tag else tds[1].get_text(" ", strip=True)
+        full_cell = tds[1].get_text(" ", strip=True)
+        trip_type_raw = full_cell.replace(boat, "", 1).strip()
+        anglers_text = tds[2].get_text(strip=True)
+        fish_count_text = tds[3].get_text(" ", strip=True)
+        if not any(ch.isdigit() for ch in anglers_text):
+            continue
+        if page_date is None or d > page_date:
+            page_date = d
+        rows_out.append({
+            "date": d,
+            "boat": boat,
+            "trip_type_raw": trip_type_raw,
+            "anglers_text": anglers_text,
+            "fish_count_text": fish_count_text,
+        })
+    return rows_out, page_date
+
+
 def _extract_rows(html: str) -> tuple[list[dict], date | None]:
     """Pull (date, boat, trip_type, anglers, fish_count) rows out of any
     fish-count tables on the page.
@@ -181,6 +230,14 @@ def _extract_rows(html: str) -> tuple[list[dict], date | None]:
     current_date: date | None = None
 
     for table in soup.find_all("table"):
+        # Oceanside Sea Center uses a different table format.
+        if _is_osc_table(table):
+            osc_rows, osc_date = _extract_osc_rows(table)
+            rows_out.extend(osc_rows)
+            if osc_date and (page_date is None or osc_date > page_date):
+                page_date = osc_date
+            continue
+
         if not _is_fishcount_table(table):
             continue
         for tr in table.find_all("tr"):
