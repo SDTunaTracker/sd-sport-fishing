@@ -592,19 +592,17 @@ function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setR
 
       <SidebarSection title="Max Load">
         {[
-          ['any',   'Any size',                                                              null],
-          ['small', `Small (≤${capThresholds.p33})`,                                        'More personal experience'],
-          ['med',   `Medium (${capThresholds.p33 + 1}–${capThresholds.p67})`,               null],
-          ['large', `Large (${capThresholds.p67 + 1}+)`,                                    'More stable offshore'],
-        ].map(([val, label, note]) => (
+          ['any',   'Any size'],
+          ['small', `Small (≤${capThresholds.p33})`],
+          ['med',   `Medium (${capThresholds.p33 + 1}–${capThresholds.p67})`],
+          ['large', `Large (${capThresholds.p67 + 1}+)`],
+        ].map(([val, label]) => (
           <label key={val} className="tp-sb-radio-row">
             <input type="radio" name="boatSize" checked={boatSize === val}
                    onChange={() => setBoatSize(val)}/>
             <span>{label}</span>
-            {note && <span className="tp-sb-check-note">{note}</span>}
           </label>
         ))}
-        <div className="tp-sb-hint">Smaller boats = personal. Larger boats = stable offshore ride.</div>
       </SidebarSection>
 
       <SidebarSection title="Min Win Rate">
