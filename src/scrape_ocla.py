@@ -204,25 +204,29 @@ def scrape_landing_month(
     return trips, None
 
 
-def _sb_wait_stable(sb, min_stable_secs: int = 3, max_wait: int = 45) -> str:
-    """Wait for page HTML to stabilise (stop changing) then return it.
+def _sb_wait_stable(sb, max_wait: int = 15) -> str:
+    """Wait for page to load then return HTML.
 
-    Empty months load in ~5s (just the Livewire shell, 4KB).
-    Months with data take ~20-25s (Livewire fetches content).
-    Waiting for size stability avoids both over-waiting on empty months
-    and under-waiting on data months.
+    Two exit conditions:
+    1. Date header found in HTML — content is ready, return immediately.
+    2. Page is small (<10KB) and stable for 3s — genuinely empty month.
+    Falls back to whatever is in the DOM after max_wait seconds.
     """
     prev_len = 0
-    stable_count = 0
+    small_stable = 0
     for _ in range(max_wait):
         html = sb.execute_script("return document.documentElement.outerHTML")
+        # Fast path: real trip data has day-of-week date headers
+        if _DATE_RE.search(html):
+            return html
         curr_len = len(html)
-        if curr_len > 1000 and curr_len == prev_len:
-            stable_count += 1
-            if stable_count >= min_stable_secs:
+        # Small stable page = Livewire loaded but found no data for this month
+        if 0 < curr_len < 10_000 and curr_len == prev_len:
+            small_stable += 1
+            if small_stable >= 3:
                 return html
         else:
-            stable_count = 0
+            small_stable = 0
         prev_len = curr_len
         time.sleep(1)
     return sb.execute_script("return document.documentElement.outerHTML")
