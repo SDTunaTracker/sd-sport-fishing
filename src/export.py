@@ -368,6 +368,37 @@ def _community_payload(conn: sqlite3.Connection) -> dict:
         }
 
 
+def _boat_profiles_payload(conn: sqlite3.Connection) -> dict:
+    """Build window.SD.BOAT_PROFILES: keyed by boat name for O(1) lookup."""
+    try:
+        rows = conn.execute(
+            "SELECT boat, landing, photo_url, description, captains,"
+            "       year_built, length_ft, passenger_capacity, source_url"
+            " FROM boat_profiles"
+        ).fetchall()
+    except Exception:
+        return {}
+    result = {}
+    for r in rows:
+        captains = []
+        if r["captains"]:
+            try:
+                captains = json.loads(r["captains"])
+            except Exception:
+                captains = [r["captains"]]
+        result[r["boat"]] = {
+            "landing":           r["landing"],
+            "photoUrl":          r["photo_url"],
+            "description":       r["description"],
+            "captains":          captains,
+            "yearBuilt":         r["year_built"],
+            "lengthFt":          r["length_ft"],
+            "passengerCapacity": r["passenger_capacity"],
+            "sourceUrl":         r["source_url"],
+        }
+    return result
+
+
 def _admin_payload(conn: sqlite3.Connection) -> dict:
     """Build window.SD.ADMIN: data for the internal admin dashboard."""
     # Scrape log — last 10 runs per source
@@ -523,6 +554,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "REDDIT": _reddit_payload(conn),
         "REVIEWS": _reviews_payload(conn),
         "COMMUNITY": _community_payload(conn),
+        "BOAT_PROFILES": _boat_profiles_payload(conn),
         "ADMIN": _admin_payload(conn),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,

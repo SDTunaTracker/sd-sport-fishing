@@ -1,15 +1,17 @@
 // Boat detail drill-down
 function BoatDetail({ filters, setFilters, navigate, boat }) {
   const [detailTab, setDetailTab] = React.useState('overview');
-  const allTrips = useMemo(() => SDA.filterTrips({ ...filters, boat: 'all' }).filter(t => t.boat === boat), [filters, boat]);
-  const fleetTrips = useMemo(() => SDA.filterTrips({ ...filters, boat: 'all' }), [filters]);
+  // Boat detail shows all history — no global filters applied here.
+  const _ALL = { year: 'all', species: 'all', landing: 'all', month: 'all', minTrips: 0, includeZero: true, boat: 'all' };
+  const allTrips = useMemo(() => SDA.filterTrips(_ALL).filter(t => t.boat === boat), [boat]);
+  const fleetTrips = useMemo(() => SDA.filterTrips(_ALL), []);
   const meta = window.SD.BOATS.find(b => b.name === boat);
   useEffect(() => {
     if (meta && window.TTTrack) TTTrack.boatView(boat, meta.landing || '');
   }, [boat]);
   if (!meta) return <div className="muted-block">Boat not found.</div>;
 
-  const sf = SDA.speciesField(filters.species);
+  const sf = SDA.speciesField('all');
   const totalTuna = allTrips.reduce((s,t) => s + (t[sf]||0), 0);
   const totalAnglers = allTrips.reduce((s,t) => s + t.anglers, 0);
   const tpa = totalAnglers ? totalTuna/totalAnglers : 0;
@@ -28,7 +30,7 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
   }).sort((a,b)=>b.tpa-a.tpa);
 
   // Monthly
-  const monthly = SDA.monthlyTrend(allTrips, filters.species);
+  const monthly = SDA.monthlyTrend(allTrips, 'all');
   // All this boat's trips, newest first. (Was previously "top 12 by TPA"; now
   // we show the full history so anglers can scan past performance.)
   const sortedTrips = [...allTrips].sort((a, b) => {
@@ -37,16 +39,18 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
   });
 
   // Trip length mix
-  const lengthMix = SDA.tripLengthBreakdown(allTrips, filters.species);
+  const lengthMix = SDA.tripLengthBreakdown(allTrips, 'all');
 
   // Determine label
   const bestTripCatch = Math.max(0, ...allTrips.map(t => t[sf]||0));
   const bestPct = totalTuna ? bestTripCatch/totalTuna : 0;
   let label = null;
-  if (allTrips.length >= filters.minTrips) {
+  if (allTrips.length >= 3) {
     if (tpa > fleetMedTPA && medTPA > fleetMedTPA && successRate > 0.6) label = 'Consistent';
     else if (bestPct > 0.4 && allTrips.length < 25) label = 'Spike';
   }
+
+  const profile = window.SD?.BOAT_PROFILES?.[boat];
 
   return (
     <Fragment>
@@ -55,16 +59,41 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
         { label: 'Boats', onClick: () => navigate('analytics', { subtab: 'boats' }) },
         { label: boat },
       ]}/>
+
+      {/* ── Hero photo (when profile data exists) ── */}
+      {profile?.photoUrl && (
+        <div className="boat-hero">
+          <img src={profile.photoUrl} alt={boat} className="boat-hero-img"/>
+          <div className="boat-hero-overlay">
+            <div className="boat-hero-name">
+              {boat}
+              {label === 'Consistent' && <span className="tag consistent" style={{marginLeft:8, verticalAlign:'middle'}}>Consistent</span>}
+              {label === 'Spike' && <span className="tag spike" style={{marginLeft:8, verticalAlign:'middle'}}>One-Off Spike</span>}
+            </div>
+            {profile.captains?.length > 0 && (
+              <div className="boat-hero-captains">
+                Captains: {profile.captains.join(' · ')}
+              </div>
+            )}
+            <div className="boat-hero-badges">
+              <ReviewBadge boat={boat}/>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="pagehead">
         <div>
           <div style={{display:'flex', alignItems:'center', gap: 12, flexWrap:'wrap'}}>
             <h1 style={{margin:0}}>{boat}</h1>
-            {label === 'Consistent' && <span className="tag consistent">Consistent Outperformer</span>}
-            {label === 'Spike' && <span className="tag spike">One-Off Spike</span>}
-            <ReviewBadge boat={boat}/>
+            {!profile?.photoUrl && label === 'Consistent' && <span className="tag consistent">Consistent Outperformer</span>}
+            {!profile?.photoUrl && label === 'Spike' && <span className="tag spike">One-Off Spike</span>}
+            {!profile?.photoUrl && <ReviewBadge boat={boat}/>}
           </div>
           <div className="sub">
             {meta.landing} · {meta.lengths.join(', ')} · {allTrips.length} trips in scope
+            {profile?.lengthFt && ` · ${profile.lengthFt} ft`}
+            {profile?.yearBuilt && ` · Built ${profile.yearBuilt}`}
           </div>
         </div>
         <div className="actions">
@@ -75,8 +104,11 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
           <button className="btn primary"><i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip</button>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters} hideBoat={true}/>
 
+      {/* ── Boat description (when available) ── */}
+      {profile?.description && (
+        <div className="boat-profile-desc">{profile.description}</div>
+      )}
       <div className="kpis">
         <KPI label="Tuna / Angler" value={fmt.tpa(tpa)} ctx={`Fleet median ${fmt.tpa(fleetMedTPA)} · ${tpa > fleetMedTPA ? 'Above' : 'Below'}`}
              accent={tpa > fleetMedTPA ? 'var(--ss-darkseagreen-500)' : null}/>
@@ -90,9 +122,8 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
         <Panel title="Catch Rate Through the Year" meta="Tuna/angler by month, this boat vs landing average">
           {/* Combined bar+line: this boat vs landing avg */}
           {(() => {
-            const landingAvg = window.SD.TRIPS
-              .filter(t => t.landing === meta.landing && (filters.year === 'all' || t.year === +filters.year));
-            const landingMonthly = SDA.monthlyTrend(landingAvg, filters.species);
+            const landingAvg = window.SD.TRIPS.filter(t => t.landing === meta.landing);
+            const landingMonthly = SDA.monthlyTrend(landingAvg, 'all');
             const max = Math.max(...monthly.map(m=>m.tpa), ...landingMonthly.map(m=>m.tpa), 0.001);
             return (
               <Fragment>

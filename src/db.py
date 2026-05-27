@@ -223,6 +223,26 @@ CREATE TABLE IF NOT EXISTS boat_reviews (
     submitted_at TEXT,
     ip_hash TEXT
 );
+
+CREATE TABLE IF NOT EXISTS boat_profiles (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    boat        TEXT NOT NULL,
+    landing     TEXT NOT NULL,
+    photo_url   TEXT,
+    description TEXT,
+    captains    TEXT,
+    year_built  INTEGER,
+    length_ft   INTEGER,
+    passenger_capacity INTEGER,
+    fishing_areas TEXT,
+    tackle_notes  TEXT,
+    amenities     TEXT,
+    source_url    TEXT,
+    scraped_at    TEXT,
+    UNIQUE(boat, landing)
+);
+
+CREATE INDEX IF NOT EXISTS idx_boat_profiles_landing ON boat_profiles(landing);
 """
 
 
