@@ -24,6 +24,7 @@ LANDINGS = (
     "Fisherman's Landing",
     "Point Loma Sportfishing",
     "Seaforth Sportfishing",
+    "Oceanside Sea Center",
     # OC/LA
     "22nd Street Landing",
     "Long Beach Sportfishing",

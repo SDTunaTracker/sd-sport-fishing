@@ -5,7 +5,8 @@
     "H&M Landing",
     "Fisherman's Landing",
     "Seaforth Sportfishing",
-    "Point Loma Sportfishing"
+    "Point Loma Sportfishing",
+    "Oceanside Sea Center"
   ];
 
   window.REGIONS = [

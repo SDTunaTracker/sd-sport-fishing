@@ -57,6 +57,12 @@ SOURCES: tuple[LandingSource, ...] = (
         url="https://www.pointlomasportfishing.com/fishcounts.php",
         referer=None,
     ),
+    LandingSource(
+        name="Oceanside Sea Center",
+        url="https://socalfishreports.com/landings/oceanside_sea_center.php",
+        referer=None,
+        region="san_diego",
+    ),
     # OC/LA landings — socalfishreports.com
     LandingSource(
         name="22nd Street Landing",
