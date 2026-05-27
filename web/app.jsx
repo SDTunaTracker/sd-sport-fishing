@@ -56,6 +56,7 @@ function App() {
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
   const [pageContext, setPageContext] = useS({ page: 'today', boat: null, date: null });
+  const [region, setRegion] = useS(() => localStorage.getItem('tt_region') || 'san_diego');
 
   // Settings: trophy species + trip length methodology, persisted to localStorage.
   const [settings, setSettingsState] = useS(() => loadSettings());
@@ -66,6 +67,15 @@ function App() {
   }
   // Initialize processed trips on first render.
   useE(() => { SDA.preprocessTrips(settings); }, []);
+
+  // Sync region to global so filterTrips picks it up automatically.
+  useE(() => { window.CURRENT_REGION = region; }, [region]);
+
+  function handleRegionChange(regionId) {
+    localStorage.setItem('tt_region', regionId);
+    setRegion(regionId);
+    setFilters(f => ({ ...f, landing: 'all' }));
+  }
 
   // expose tweak setter for inline buttons in dashboard
   window.__setTweak = (patch) => setTweaksState(patch);
@@ -94,18 +104,22 @@ function App() {
     if (window.TTTrack) TTTrack.pageView(route.view);
   }, [route.view]);
 
-  // Keep pageContext in sync with route for the chatbot.
+  // Keep pageContext in sync with route and region for the chatbot.
   useE(() => {
     setPageContext({
       page: route.view,
       boat: route.params?.boat || null,
       date: null,
+      region,
     });
-  }, [route]);
+  }, [route, region]);
 
   // Admin is a fully standalone page — no header, no nav, no shared state used.
   // Must be after all hooks (React rules: no conditional hooks).
   if (route.view === 'admin') return <AdminView />;
+
+  // OC/LA has no data yet — show a placeholder for any view in that region.
+  const showComingSoon = region === 'oc_la';
 
   const navigate = (view, params = {}) => {
     const nextHash = hashFromRoute(view, params);
@@ -124,7 +138,9 @@ function App() {
   };
 
   let content;
-  if (route.view === 'today') {
+  if (showComingSoon) {
+    content = <OcLaComingSoon onSwitchRegion={handleRegionChange}/>;
+  } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings}/>;
   } else if (route.view === 'analytics') {
     content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} subtab={route.params.subtab || 'overview'}/>;
@@ -144,7 +160,8 @@ function App() {
 
   return (
     <Fragment>
-      <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}/>
+      <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
+                 region={region} onRegionChange={handleRegionChange}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
 
       <ChatBot pageContext={pageContext}/>

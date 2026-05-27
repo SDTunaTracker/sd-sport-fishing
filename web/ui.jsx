@@ -23,7 +23,7 @@ const fmt = {
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function AppHeader({ active, onNavigate }) {
+function AppHeader({ active, onNavigate, region, onRegionChange }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
 
   const NAV = [
@@ -57,6 +57,21 @@ function AppHeader({ active, onNavigate }) {
             <i className="fa-solid fa-fish-fins logo-fish"></i>
             <span className="logo-wordmark">The Tuna Tracker</span>
           </div>
+          {/* Region selector — desktop, between logo and nav */}
+          {window.REGIONS && (
+            <div className="header-region-selector">
+              {window.REGIONS.map(reg => (
+                <button
+                  key={reg.id}
+                  className={`region-pill${region === reg.id ? ' sel' : ''}${reg.comingSoon ? ' coming-soon' : ''}`}
+                  onClick={() => onRegionChange && onRegionChange(reg.id)}
+                  title={reg.comingSoon ? `${reg.label} — Coming Soon` : reg.label}
+                >
+                  {reg.short}
+                </button>
+              ))}
+            </div>
+          )}
           {/* Nav tabs — desktop only */}
           <div className="header-nav">
             {NAV.map(t => (
@@ -103,6 +118,23 @@ function AppHeader({ active, onNavigate }) {
                 <span>{t.label}</span>
               </div>
             ))}
+            {window.REGIONS && (
+              <React.Fragment>
+                <div className="mobile-menu-divider"></div>
+                <div className="mm-section-label">Region</div>
+                {window.REGIONS.map(reg => (
+                  <div
+                    key={reg.id}
+                    className={`mobile-menu-item${region === reg.id ? ' sel' : ''}${reg.comingSoon ? ' coming-soon-item' : ''}`}
+                    onClick={() => { onRegionChange && onRegionChange(reg.id); closeMenu(); }}
+                  >
+                    <i className="fa-solid fa-location-dot"></i>
+                    <span>{reg.label}{reg.comingSoon ? <span className="mm-soon-tag"> — Soon</span> : ''}</span>
+                    {region === reg.id && <i className="fa-solid fa-check mm-check"></i>}
+                  </div>
+                ))}
+              </React.Fragment>
+            )}
             <div className="mobile-menu-divider"></div>
             <div className={`mobile-menu-item${active === 'settings' ? ' sel' : ''}`}
                  onClick={() => handleNavItem('settings')}>
@@ -363,8 +395,27 @@ function MoonGlyph({ phase, size = 36 }) {
   );
 }
 
+function OcLaComingSoon({ onSwitchRegion }) {
+  return (
+    <div className="coming-soon-page">
+      <div className="coming-soon-content">
+        <div className="coming-soon-icon"><i className="fa-solid fa-map-location-dot"></i></div>
+        <h2>OC / LA — Coming Soon</h2>
+        <p>We're expanding north. Orange County and LA sportfishing data will be live soon.</p>
+        {onSwitchRegion && (
+          <button className="btn primary" style={{marginTop: 20}}
+                  onClick={() => onSwitchRegion('san_diego')}>
+            Back to San Diego
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
   AppHeader, SideNav, Crumbs, KPI, Panel,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
+  OcLaComingSoon,
 });

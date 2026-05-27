@@ -69,6 +69,7 @@ ${community?.biteReport?.species?.slice(0, 3)?.map(s => `${s.name}: ${s.status}`
 
 ${pageContext?.boat ? `USER IS VIEWING: ${pageContext.boat} boat page` : ''}
 ${pageContext?.page ? `CURRENT PAGE: ${pageContext.page}` : ''}
+${pageContext?.region && pageContext.region !== 'san_diego' ? `REGION CONTEXT: User is viewing ${pageContext.region === 'all_socal' ? 'All SoCal' : pageContext.region} data` : ''}
 
 GUIDELINES:
 - Be friendly, conversational, helpful

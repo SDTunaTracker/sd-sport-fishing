@@ -27,8 +27,12 @@
   }
 
   function filterTrips(filters) {
+    var regionLandings = (window.CURRENT_REGION && window.getLandingsForRegion)
+      ? window.getLandingsForRegion(window.CURRENT_REGION)
+      : null;
     const t = window.SD_PROC_TRIPS || window.SD.TRIPS;
     return t.filter((r) => {
+      if (regionLandings && regionLandings.length > 0 && !regionLandings.includes(r.landing)) return false;
       if (!_passes(r.year, filters.year, { toNumber: true })) return false;
       if (!_passes(r.month, filters.month, { toNumber: true })) return false;
       if (!_passes(r.landing, filters.landing)) return false;
