@@ -590,7 +590,7 @@ function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setR
         <div className="tp-sb-hint">★ New and full moons historically produce better fishing</div>
       </SidebarSection>
 
-      <SidebarSection title="Boat Size (Max Load)">
+      <SidebarSection title="Max Load">
         {[
           ['any',   'Any size',              null],
           ['small', 'Small (under 25)',       'More personal experience'],
@@ -948,8 +948,8 @@ function TripPlanner({ navigate }) {
                   <option value="date">Departure Date</option>
                   <option value="win-rate">Win Rate</option>
                   <option value="spots">Open Spots</option>
-                  <option value="capacity-asc">Boat Size: Smallest first</option>
-                  <option value="capacity-desc">Boat Size: Largest first</option>
+                  <option value="capacity-asc">Max Load: Smallest first</option>
+                  <option value="capacity-desc">Max Load: Largest first</option>
                 </select>
               </div>
             </div>
