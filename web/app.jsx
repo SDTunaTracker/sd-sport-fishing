@@ -128,7 +128,7 @@ function App() {
       localStorage.setItem('tt_regions', JSON.stringify(next));
       return next;
     });
-    setFilters(f => ({ ...f, landing: 'all' }));
+    setFilters(f => ({ ...f, landing: 'all', boat: 'all' }));
   }
 
   // expose tweak setter for inline buttons in dashboard
@@ -202,13 +202,13 @@ function App() {
 
   let content;
   if (route.view === 'today') {
-    content = <TodayView navigate={navigate} settings={settings}/>;
+    content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'analytics') {
-    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} subtab={route.params.subtab || 'overview'}/>;
+    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions} subtab={route.params.subtab || 'overview'}/>;
   } else if (route.view === 'boat') {
-    content = <BoatDetail filters={filters} setFilters={setFilters} navigate={navigate} boat={route.params.boat}/>;
+    content = <BoatDetail filters={filters} setFilters={setFilters} navigate={navigate} boat={route.params.boat} regions={regions}/>;
   } else if (route.view === 'landing') {
-    content = <LandingDetail filters={filters} setFilters={setFilters} navigate={navigate} landing={route.params.landing}/>;
+    content = <LandingDetail filters={filters} setFilters={setFilters} navigate={navigate} landing={route.params.landing} regions={regions}/>;
   } else if (route.view === 'tripplanner') {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks}/>;
   } else if (route.view === 'forecast') {

@@ -1,6 +1,6 @@
 // Boats leaderboard view — full sortable ranked table with consistency labels
-function BoatsView({ filters, setFilters, navigate, tweaks, settings }) {
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters]);
+function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions }) {
+  const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const { rows } = useMemo(
     () => SDA.boatLeaderboard(trips, filters.species, filters.minTrips),
     [trips, filters.species, filters.minTrips]
@@ -63,13 +63,13 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings }) {
       ]}/>
       <div className="pagehead">
         <div>
-          <h1>Boat Leaderboard</h1>
+          <h1>Boat Leaderboard <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
           <div className="sub">
             Ranked by {speciesLabel.toLowerCase()}/angler/day · {sorted.length} eligible boats
           </div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters}/>
+      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
 
       {isCustomSp && (
         <div className="custom-species-banner" title={`Counting: ${customSp.join(', ')}`}>

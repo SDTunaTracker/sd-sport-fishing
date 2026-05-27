@@ -43,17 +43,17 @@ BASE = "https://www.976-tuna.com"
 # (canonical_name, id, slug, region)
 LANDINGS: list[tuple[str, int, str, str]] = [
     ("Oceanside Sea Center",         40, "oceanside-sea-center",                "san_diego"),
-    ("22nd Street Landing",          14, "san-pedro-22nd-street-sportfishing",  "los_angeles"),
-    ("Long Beach Sportfishing",      12, "long-beach-sportfishing",             "los_angeles"),
-    ("LA Waterfront Sportfishing",   13, "la-waterfront-sportfishing",          "los_angeles"),
-    ("Marina Del Rey Sportfishing",  16, "marina-del-rey",                      "los_angeles"),
-    ("Redondo Beach Sportfishing",   15, "redondo-beach-sportfishing",          "los_angeles"),
-    ("Pierpoint Landing",            10, "pierpoint-landing",                   "los_angeles"),
-    ("Channel Islands Sportfishing", 18, "channel-islands-sportfishing",        "ventura"),
-    ("Ventura Harbor Sportfishing",  36, "ventura-sportfishing",                "ventura"),
-    ("Newport Landing",               9, "newport-landing",                     "orange_county"),
-    ("Davey's Locker",                8, "daveys-locker",                       "orange_county"),
-    ("Dana Wharf Sportfishing",       7, "dana-wharf",                          "orange_county"),
+    ("22nd Street Landing",          14, "san-pedro-22nd-street-sportfishing",  "oc_la"),
+    ("Long Beach Sportfishing",      12, "long-beach-sportfishing",             "oc_la"),
+    ("LA Waterfront Sportfishing",   13, "la-waterfront-sportfishing",          "oc_la"),
+    ("Marina Del Rey Sportfishing",  16, "marina-del-rey",                      "oc_la"),
+    ("Redondo Beach Sportfishing",   15, "redondo-beach-sportfishing",          "oc_la"),
+    ("Pierpoint Landing",            10, "pierpoint-landing",                   "oc_la"),
+    ("Channel Islands Sportfishing", 18, "channel-islands-sportfishing",        "oc_la"),
+    ("Ventura Harbor Sportfishing",  36, "ventura-sportfishing",                "oc_la"),
+    ("Newport Landing",               9, "newport-landing",                     "oc_la"),
+    ("Davey's Locker",                8, "daveys-locker",                       "oc_la"),
+    ("Dana Wharf Sportfishing",       7, "dana-wharf",                          "oc_la"),
 ]
 
 _LANDING_REGION = {l[0]: l[3] for l in LANDINGS}

@@ -65,8 +65,28 @@ function MultiSelect({ options, value, onChange, allLabel = 'All' }) {
   );
 }
 
-function FilterBar({ filters, setFilters, hideBoat }) {
+function FilterBar({ filters, setFilters, hideBoat, regions }) {
   const update = (k, v) => setFilters({ ...filters, [k]: v });
+
+  // Compute region-scoped landing and boat options
+  const regionLandings = useMemo(() => {
+    if (!regions || !window.getEffectiveRegion) return null;
+    const eff = window.getEffectiveRegion(regions);
+    return window.getLandingsForRegion ? window.getLandingsForRegion(eff) : null;
+  }, [regions]);
+
+  const landingOptions = useMemo(() => {
+    const all = window.SD.LANDINGS;
+    return regionLandings ? all.filter(l => regionLandings.includes(l)) : all;
+  }, [regionLandings]);
+
+  const boatOptions = useMemo(() => {
+    return [...window.SD.BOATS]
+      .filter(b => !regionLandings || regionLandings.includes(b.landing))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(b => b.name);
+  }, [regionLandings]);
+
   return (
     <div className="filterbar">
       <div className="filter">
@@ -90,7 +110,7 @@ function FilterBar({ filters, setFilters, hideBoat }) {
       <div className="filter">
         <label>Landing</label>
         <MultiSelect
-          options={window.SD.LANDINGS}
+          options={landingOptions}
           value={filters.landing}
           onChange={v => update('landing', v)}
           allLabel="All Landings"/>
@@ -99,7 +119,7 @@ function FilterBar({ filters, setFilters, hideBoat }) {
         <div className="filter">
           <label>Boat</label>
           <MultiSelect
-            options={[...window.SD.BOATS].sort((a,b) => a.name.localeCompare(b.name)).map(b => b.name)}
+            options={boatOptions}
             value={filters.boat}
             onChange={v => update('boat', v)}
             allLabel="All Boats"/>

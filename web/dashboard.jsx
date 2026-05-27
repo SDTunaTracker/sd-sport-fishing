@@ -221,26 +221,29 @@ function CatchDetail({ fullCatch }) {
   );
 }
 
-function TodayCatch({ navigate, settings }) {
+function TodayCatch({ navigate, settings, regions }) {
   const [expanded, setExpanded] = useS({});
 
   function toggleCatch(key) {
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
   }
 
-  // All dates with trip data, newest first.
+  // All dates with trip data for selected region, newest first.
   const dates = useMemo(() => {
     const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
-    const set = [...new Set(raw.map(t => t.date))];
+    const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : null;
+    const rl = (eff && window.getLandingsForRegion) ? window.getLandingsForRegion(eff) : null;
+    const filtered = rl ? raw.filter(t => rl.includes(t.landing)) : raw;
+    const set = [...new Set(filtered.map(t => t.date))];
     return set.sort().reverse();
-  }, [settings]);
+  }, [settings, regions]);
 
   const [selectedDate, setSelectedDate] = useS(
     () => dates.includes(TODAY_ISO) ? TODAY_ISO : (dates[0] || TODAY_ISO)
   );
 
   // Rating data for selected date (includes sorted boat rows + fleet rating key).
-  const ratingData = useMemo(() => SDA.fishingRating(selectedDate), [selectedDate, settings]);
+  const ratingData = useMemo(() => SDA.fishingRating(selectedDate, regions), [selectedDate, settings, regions]);
 
   const summary = useMemo(() => {
     const boats = ratingData.boats;
@@ -411,12 +414,12 @@ function ReturnVisitToast({ navigate }) {
   );
 }
 
-function TodayView({ navigate, settings }) {
+function TodayView({ navigate, settings, regions }) {
   const currentYear = String(new Date().getFullYear());
 
   const yearTrips = useMemo(
-    () => SDA.filterTrips({ ...DEFAULT_FILTERS, year: currentYear }),
-    [settings]
+    () => SDA.filterTrips({ ...DEFAULT_FILTERS, year: currentYear }, regions),
+    [settings, regions]
   );
 
   const { rows: leaderboard } = useMemo(
@@ -427,15 +430,16 @@ function TodayView({ navigate, settings }) {
   const topBoats = leaderboard.slice(0, 10);
   const maxTPAPerDay = topBoats[0]?.avgTPAPerDay || 1;
 
+  const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
+
   return (
     <Fragment>
       <ReturnVisitToast navigate={navigate}/>
       <div className="pagehead">
         <div>
-          <h1>The Tuna Tracker</h1>
+          <h1>The Tuna Tracker <span className="region-subtitle-badge">{regionLabel}</span></h1>
           <p style={{fontSize:13, color:'#94A3B8', maxWidth:500, marginBottom:16, lineHeight:1.6}}>
-            Stop guessing. Start catching.<br/>
-            San Diego's most detailed sportfishing analytics — daily fish counts, boat leaderboards, and trip stats from H&amp;M, Fisherman's, Seaforth, and Point Loma.<br/>
+            Real-time sportfishing analytics for {regionLabel} — daily fish counts, boat leaderboards, and trip stats.
             Compare boats, spot trends, plan your next trip.
           </p>
         </div>
@@ -443,7 +447,7 @@ function TodayView({ navigate, settings }) {
 
       <ForecastWidget navigate={navigate}/>
 
-      <TodayCatch navigate={navigate} settings={settings}/>
+      <TodayCatch navigate={navigate} settings={settings} regions={regions}/>
       <WeeklySummaryWidget/>
       <BiteReportWidget/>
       <HotspotsWidget/>

@@ -26,9 +26,12 @@
     return sel.map(String).includes(String(value));
   }
 
-  function filterTrips(filters) {
-    var regionLandings = (window.CURRENT_REGION && window.getLandingsForRegion)
-      ? window.getLandingsForRegion(window.CURRENT_REGION)
+  function filterTrips(filters, regions) {
+    var effectiveRegion = (regions && window.getEffectiveRegion)
+      ? window.getEffectiveRegion(regions)
+      : window.CURRENT_REGION;
+    var regionLandings = (effectiveRegion && window.getLandingsForRegion)
+      ? window.getLandingsForRegion(effectiveRegion)
       : null;
     const t = window.SD_PROC_TRIPS || window.SD.TRIPS;
     return t.filter((r) => {
@@ -394,8 +397,13 @@
     return out;
   }
 
-  function fishingRating(selectedDate) {
-    const allTrips = window.SD_PROC_TRIPS || window.SD.TRIPS;
+  function fishingRating(selectedDate, regions) {
+    const _eff = (regions && window.getEffectiveRegion)
+      ? window.getEffectiveRegion(regions) : window.CURRENT_REGION;
+    const _rl = (_eff && window.getLandingsForRegion)
+      ? window.getLandingsForRegion(_eff) : null;
+    const allTripsRaw = window.SD_PROC_TRIPS || window.SD.TRIPS;
+    const allTrips = _rl ? allTripsRaw.filter(t => _rl.includes(t.landing)) : allTripsRaw;
     const cutoff = _isoMinus(selectedDate, 30);
 
     const histByLength = {};

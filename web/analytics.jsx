@@ -152,7 +152,7 @@ function StreakTracker({ navigate }) {
   );
 }
 
-function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab = 'overview' }) {
+function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
   const { useMemo, useState } = React;
 
   const SUBTABS = [
@@ -176,12 +176,12 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
     filters.minTrips !== df.minTrips,
   ].filter(Boolean).length;
 
-  const trips = useMemo(() => SDA.filterTrips(filters), [filters, settings]);
+  const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, settings, regions]);
   const prevTrips = useMemo(() => {
     const f = { ...filters };
     if (f.year !== 'all') f.year = String(+f.year - 1);
-    return SDA.filterTrips(f);
-  }, [filters, settings]);
+    return SDA.filterTrips(f, regions);
+  }, [filters, settings, regions]);
 
   const { rows: leaderboard } = useMemo(
     () => SDA.boatLeaderboard(trips, filters.species, filters.minTrips),
@@ -236,7 +236,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
       <Crumbs items={[{ label: 'Analytics' }, { label: 'Overview' }]}/>
       <div className="pagehead">
         <div>
-          <h1>Overview</h1>
+          <h1>Overview <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
           <div className="sub analytics-sub">
             {fmt.n(trips.length)} trips · {eligibleBoats.length} boats · {landings.length} landings
             {' · '}{filters.year === 'all' ? 'All years' : filters.year}
@@ -251,7 +251,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
       </div>
 
       <div className="analytics-filterbar-desktop">
-        <FilterBar filters={filters} setFilters={setFilters}/>
+        <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       </div>
 
       {isCustomSpecies && (
@@ -394,7 +394,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, subtab
       </Fragment>}
 
       {/* Boats sub-tab */}
-      {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings}/>}
+      {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions}/>}
 
       {/* Landings sub-tab */}
       {subtab === 'landings' && <LandingsView filters={filters} setFilters={setFilters} navigate={navigate}/>}
