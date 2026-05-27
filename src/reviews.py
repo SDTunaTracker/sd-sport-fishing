@@ -80,8 +80,6 @@ def reviews_for_export(conn) -> dict:
             'bunks_rating': r['bunks_rating'] if is_overnight else None,
             'title': r['title'],
             'body': r['body'],
-            'species_caught': r['species_caught'],
-            'tuna_count': r['tuna_count'],
             'would_rebook': bool(r['would_rebook']),
             'submitted_at': (r['submitted_at'] or '')[:10],
         }
@@ -95,7 +93,6 @@ def reviews_for_export(conn) -> dict:
 
         overnight_reviews = [rv for rv in reviews if rv.get('bunks_rating') is not None]
         rebook = [rv for rv in reviews if rv.get('would_rebook')]
-        catches = [rv['tuna_count'] for rv in reviews if rv.get('tuna_count')]
 
         avg_bunks = None
         if overnight_reviews:
@@ -112,7 +109,6 @@ def reviews_for_export(conn) -> dict:
             'avg_bunks':        avg_bunks,
             'total_reviews':    len(reviews),
             'would_rebook_pct': round(len(rebook) / len(reviews) * 100) if reviews else None,
-            'recent_catch_avg': round(sum(catches) / len(catches), 1) if catches else None,
         }
 
     return {'byBoat': by_boat, 'summary': summary}
@@ -124,7 +120,9 @@ def reviews_admin_stats(conn) -> dict:
         "SELECT status, COUNT(*) AS n FROM boat_reviews GROUP BY status"
     ).fetchall()}
     pending = [dict(r) for r in conn.execute(
-        "SELECT id, boat, landing, reviewer_name, overall_rating, title, submitted_at"
+        "SELECT id, boat, landing, reviewer_name, overall_rating, captain_rating,"
+        " crew_rating, fish_finding_rating, galley_rating, trip_length, trip_date,"
+        " title, body, would_rebook, submitted_at"
         " FROM boat_reviews WHERE status='pending' ORDER BY submitted_at DESC LIMIT 50"
     ).fetchall()]
     return {

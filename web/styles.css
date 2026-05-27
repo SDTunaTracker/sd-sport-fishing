@@ -1753,3 +1753,252 @@ body.compact .dt td { padding: 7px 12px; }
   font: 600 11px/14px var(--ss-font-sans); color: var(--tb-accent);
   padding: 0; text-decoration: underline;
 }
+
+/* ── 3-step Review Modal ─────────────────────────────────────────────────────── */
+.rv-modal-stepped { max-width: 520px; display: flex; flex-direction: column; max-height: 92vh; }
+.rv-modal-stepped-body { flex: 1; overflow-y: auto; padding: 0 24px 8px; }
+
+/* Progress bar */
+.rv-progress-bar {
+  position: relative;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 12px 24px 8px;
+  border-bottom: 1px solid var(--ss-border-2);
+}
+.rv-progress-track {
+  position: absolute; top: 22px; left: calc(24px + 20px); right: calc(24px + 20px);
+  height: 2px; background: var(--ss-border-2); z-index: 0;
+}
+.rv-progress-fill {
+  height: 2px; background: #0F4C81; border-radius: 1px;
+  transition: width .3s ease;
+}
+.rv-progress-step {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: default; z-index: 1; position: relative;
+}
+.rv-progress-step.done { cursor: pointer; }
+.rv-progress-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--ss-border-2); border: 2px solid var(--ss-border-2);
+  transition: all .2s;
+}
+.rv-progress-step.active .rv-progress-dot { background: #0F4C81; border-color: #0F4C81; }
+.rv-progress-step.done   .rv-progress-dot { background: #10B981; border-color: #10B981; }
+.rv-progress-label {
+  font: 500 10px/12px var(--ss-font-sans); color: var(--ss-slate);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.rv-progress-step.active .rv-progress-label { color: #0F4C81; }
+
+/* Step content */
+.rv-step { padding: 8px 0; }
+.rv-step-head { margin-bottom: 14px; }
+.rv-step-num { font: 500 11px/14px var(--ss-font-sans); color: var(--ss-slate); display: block; margin-bottom: 3px; }
+.rv-step-title { font: 700 18px/22px var(--ss-font-sans); color: var(--tb-ink); margin: 0; }
+.rv-step-note { font: 400 11px/16px var(--ss-font-sans); color: var(--ss-slate); margin: -8px 0 10px; }
+.rv-optional-head { font: 400 13px/18px var(--ss-font-sans); color: var(--ss-slate); }
+.rv-modal-label-sub { display: block; font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); margin-top: 2px; font-weight: 400; }
+
+/* Rebook buttons */
+.rv-rebook-btns { display: flex; gap: 8px; }
+.rv-rebook-btn {
+  flex: 1; padding: 10px; border-radius: 8px; border: 1.5px solid var(--ss-border-2);
+  font: 600 14px/18px var(--ss-font-sans); cursor: pointer;
+  background: var(--ss-panel); color: var(--tb-ink); transition: all .15s;
+}
+.rv-rebook-btn:hover { border-color: #0F4C81; }
+.rv-rebook-btn.sel-yes { background: #D1FAE5; border-color: #10B981; color: #065F46; }
+.rv-rebook-btn.sel-no  { background: #FEE2E2; border-color: #EF4444; color: #991B1B; }
+
+/* Modal footer nav */
+.rv-modal-footer {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-top: 1px solid var(--ss-border-2);
+}
+.rv-back-btn {
+  padding: 9px 16px; border: 1.5px solid var(--ss-border-2); border-radius: 8px;
+  background: none; color: var(--ss-slate); font: 600 13px/18px var(--ss-font-sans); cursor: pointer;
+}
+.rv-back-btn:hover { border-color: #94A3B8; }
+.rv-next-btn {
+  padding: 9px 18px; background: #0F4C81; color: #fff; border: none; border-radius: 8px;
+  font: 600 13px/18px var(--ss-font-sans); cursor: pointer;
+}
+.rv-next-btn:hover { background: #1d5fa3; }
+.rv-submit-btn {
+  padding: 10px 22px; background: #10B981; color: #fff; border: none; border-radius: 8px;
+  font: 700 14px/18px var(--ss-font-sans); cursor: pointer;
+}
+.rv-submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+.rv-submit-btn:not(:disabled):hover { background: #059669; }
+.rv-submit-quick {
+  padding: 9px 14px; background: none; border: 1.5px solid #10B981; color: #10B981;
+  border-radius: 8px; font: 600 12px/16px var(--ss-font-sans); cursor: pointer;
+  white-space: nowrap;
+}
+.rv-submit-quick:disabled { opacity: .4; cursor: not-allowed; }
+.rv-submit-quick:not(:disabled):hover { background: #D1FAE5; }
+
+/* Share after submit */
+.rv-success-share { margin: 16px 0; padding: 12px; background: var(--ss-clay); border-radius: 8px; }
+.rv-success-share-label { font: 500 12px/16px var(--ss-font-sans); color: var(--ss-slate); margin-bottom: 8px; }
+.rv-success-share-btns { display: flex; gap: 8px; }
+.rv-share-btn {
+  flex: 1; padding: 9px; border-radius: 8px; font: 600 12px/16px var(--ss-font-sans);
+  cursor: pointer; border: none; transition: opacity .15s;
+}
+.rv-share-btn:hover { opacity: .85; }
+.rv-share-fb   { background: #1877F2; color: #fff; }
+.rv-share-copy { background: var(--ss-panel); color: var(--tb-ink); border: 1px solid var(--ss-border-2); }
+
+/* ── Review highlights ───────────────────────────────────────────────────────── */
+.rv-highlights { margin: 14px 0; padding: 12px 14px; background: var(--ss-clay); border-radius: 8px; }
+.rv-highlights-title { font: 700 11px/14px var(--ss-font-sans); text-transform: uppercase; letter-spacing: .06em; color: var(--ss-slate); margin-bottom: 8px; }
+.rv-hl-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font: 400 12px/16px var(--ss-font-sans); }
+.rv-hl-icon { font-size: 14px; width: 18px; text-align: center; }
+.rv-hl-text { flex: 1; color: var(--tb-ink); }
+.rv-hl-count { color: var(--ss-slate); font-size: 11px; }
+.rv-hl-pos .rv-hl-icon { color: #10B981; }
+.rv-hl-neg .rv-hl-icon { color: #F59E0B; }
+
+/* ── Expedia-style review summary (bars) ─────────────────────────────────────── */
+.rv-summary { padding: 16px; background: var(--ss-clay); border-radius: 10px; margin-bottom: 14px; }
+.rv-summary-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--ss-border-2); }
+.rv-summary-big-score { font: 900 48px/1 var(--ss-font-sans); color: #0F4C81; }
+.rv-summary-info { display: flex; flex-direction: column; gap: 4px; }
+.rv-summary-label { font: 700 16px/20px var(--ss-font-sans); }
+.rv-summary-count { font: 400 12px/16px var(--ss-font-sans); color: var(--ss-slate); }
+.rv-bar-rows { display: flex; flex-direction: column; gap: 6px; }
+.rv-bar-row { display: grid; grid-template-columns: 100px 1fr 36px; align-items: center; gap: 8px; }
+.rv-bar-label { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.rv-bar-track { height: 8px; background: var(--ss-border-2); border-radius: 4px; overflow: hidden; }
+.rv-bar-fill  { height: 8px; background: #0F4C81; border-radius: 4px; transition: width .4s ease; }
+.rv-bar-val   { font: 700 12px/16px var(--ss-font-sans); color: var(--tb-ink); text-align: right; }
+.rv-summary-rebook { margin-top: 12px; font: 500 12px/16px var(--ss-font-sans); color: #10B981; }
+.rv-rebook-check { margin-right: 4px; }
+
+/* ── Review card (individual) updates ───────────────────────────────────────── */
+.rv-read-more { background: none; border: none; padding: 0; color: var(--tb-accent); font: 600 12px/16px var(--ss-font-sans); cursor: pointer; }
+
+/* ── Write Review buttons (boat detail) ─────────────────────────────────────── */
+.rv-write-btn-primary {
+  padding: 10px 18px; background: #0F4C81; color: #fff; border: none; border-radius: 8px;
+  font: 700 13px/18px var(--ss-font-sans); cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.rv-write-btn-primary:hover { background: #1d5fa3; }
+.rv-section-footer {
+  margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--ss-border-2);
+  display: flex; align-items: center; justify-content: space-between;
+  font: 400 13px/18px var(--ss-font-sans); color: var(--ss-slate);
+  gap: 12px; flex-wrap: wrap;
+}
+.rv-write-btn-secondary {
+  padding: 8px 16px; background: none; border: 1.5px solid #0F4C81; color: #0F4C81;
+  border-radius: 8px; font: 600 12px/16px var(--ss-font-sans); cursor: pointer;
+  white-space: nowrap;
+}
+.rv-write-btn-secondary:hover { background: rgba(15,76,129,.06); }
+
+/* ── Expedia-style card badge (trip planner) ─────────────────────────────────── */
+.rv-card-badge {
+  border: 1px solid #E2E8F0; border-radius: 8px; padding: 7px 10px;
+  background: #FAFBFC; margin-top: 6px;
+}
+.rv-card-badge-top { display: flex; align-items: center; gap: 6px; }
+.rv-card-badge-score { font: 800 15px/18px var(--ss-font-sans); color: #0F4C81; }
+.rv-card-badge-label { font: 700 12px/16px var(--ss-font-sans); }
+.rv-card-badge-count { font: 400 11px/14px var(--ss-font-sans); color: #64748B; }
+.rv-card-badge-quote {
+  font: 400 11px/15px var(--ss-font-sans); color: #475569; margin-top: 4px;
+  font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Compact inline star badge ───────────────────────────────────────────────── */
+.rv-badge { display: inline-flex; align-items: center; gap: 4px; font: 400 12px/16px var(--ss-font-sans); }
+.rv-badge-star { color: #FBBF24; }
+.rv-badge-score { font-weight: 700; color: #0F4C81; }
+.rv-badge-label { font-weight: 600; }
+.rv-badge-count { color: #64748B; }
+
+/* ── Trip planner review button ─────────────────────────────────────────────── */
+.tp-card-review-btn {
+  display: inline-block; padding: 8px 14px;
+  border: 1.5px solid #0F4C81; border-radius: 7px;
+  font: 600 12px/16px var(--ss-font-sans); color: #0F4C81;
+  background: none; cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+}
+.tp-card-review-btn:hover { background: rgba(15,76,129,.06); }
+
+/* ── Today's Report review star ─────────────────────────────────────────────── */
+.today-review-star {
+  cursor: pointer; font-size: 14px; opacity: .55; padding: 0 2px;
+  transition: opacity .15s; flex-shrink: 0;
+}
+.today-review-star:hover { opacity: 1; }
+
+/* ── Return visit toast ─────────────────────────────────────────────────────── */
+.rv-toast {
+  position: fixed; bottom: 20px; right: 20px; z-index: 900;
+  background: #1E293B; color: #fff; border-radius: 10px;
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  animation: toast-in .3s ease;
+}
+@keyframes toast-in { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+.rv-toast-text { font: 400 13px/18px var(--ss-font-sans); flex: 1; }
+.rv-toast-review {
+  padding: 7px 12px; background: #FBBF24; color: #1E293B;
+  border: none; border-radius: 6px; font: 700 12px/16px var(--ss-font-sans); cursor: pointer;
+  white-space: nowrap;
+}
+.rv-toast-close {
+  background: none; border: none; color: #94A3B8; font-size: 16px; cursor: pointer;
+  padding: 2px 4px; line-height: 1;
+}
+.rv-toast-close:hover { color: #fff; }
+
+/* ── Admin: enhanced review cards ───────────────────────────────────────────── */
+.adm-review-card {
+  border: 1px solid var(--ss-border-2); border-radius: 8px;
+  padding: 12px 14px; margin-bottom: 10px; background: var(--ss-panel);
+}
+.adm-review-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 6px; font: 400 12px/16px var(--ss-font-sans);
+}
+.adm-review-id    { font: 700 11px/14px var(--ss-font-sans); color: var(--ss-slate); background: var(--ss-clay); padding: 2px 6px; border-radius: 4px; }
+.adm-review-boat  { font: 700 13px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.adm-review-stars { color: #FBBF24; letter-spacing: 1px; }
+.adm-review-name  { color: var(--ss-slate); }
+.adm-review-meta  { color: var(--ss-slate); font-style: italic; }
+.adm-review-submitted { margin-left: auto; color: var(--ss-slate); font-size: 11px; }
+.adm-review-title { font: 600 13px/18px var(--ss-font-sans); color: var(--tb-ink); margin-bottom: 4px; }
+.adm-review-body  { font: 400 12px/18px var(--ss-font-sans); color: var(--tb-gray-2); margin-bottom: 8px; }
+.adm-review-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.adm-review-cmd {
+  display: inline-block; font-size: 11px; padding: 4px 8px;
+  border-radius: 4px; cursor: pointer; white-space: nowrap;
+}
+.adm-review-approve { background: #D1FAE5; color: #065F46; }
+.adm-review-reject  { background: #FEE2E2; color: #991B1B; }
+
+/* ── Admin: QR code cards ───────────────────────────────────────────────────── */
+.adm-qr-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;
+}
+.adm-qr-card {
+  border: 1px solid var(--ss-border-2); border-radius: 10px; padding: 20px 16px;
+  text-align: center; background: #fff;
+}
+.adm-qr-code { display: flex; justify-content: center; margin-bottom: 12px; }
+.adm-qr-landing  { font: 700 14px/18px var(--ss-font-sans); color: #0F4C81; margin-bottom: 6px; }
+.adm-qr-cta      { font: 600 13px/18px var(--ss-font-sans); color: var(--tb-ink); margin-bottom: 4px; }
+.adm-qr-sub      { font: 400 11px/14px var(--ss-font-sans); color: var(--ss-slate); }
+@media print {
+  .adm-qr-grid { grid-template-columns: repeat(2, 1fr); }
+  .adm-section:not(:has(.adm-qr-grid)) { display: none; }
+  .adm-header, .adm-btn { display: none; }
+}

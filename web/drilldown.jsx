@@ -68,6 +68,10 @@ function BoatDetail({ filters, setFilters, navigate, boat }) {
           </div>
         </div>
         <div className="actions">
+          <button className="btn primary" onClick={() => setDetailTab('reviews')}
+                  style={{background:'#0F4C81', color:'#fff', border:'none', width:'100%', marginBottom:6}}>
+            ⭐ Write a Review
+          </button>
           <button className="btn primary"><i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip</button>
         </div>
       </div>

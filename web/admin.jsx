@@ -1078,6 +1078,11 @@ function Section6() {
 function SectionReviews({ reviews }) {
   if (!reviews) return null;
   const { total, pending, approved, rejected, pendingReviews = [] } = reviews;
+  const byBoat = window.SD?.REVIEWS?.summary || {};
+  const topBoats = Object.entries(byBoat)
+    .filter(([, s]) => s.total_reviews >= 1)
+    .sort((a, b) => (b[1].total_reviews||0) - (a[1].total_reviews||0))
+    .slice(0, 8);
   return (
     <div className="adm-section">
       <div className="adm-section-title">Reviews</div>
@@ -1089,40 +1094,104 @@ function SectionReviews({ reviews }) {
           </div>
         ))}
       </div>
+
       {pendingReviews.length > 0 ? (
         <>
-          <div style={{fontWeight:600, marginBottom:8, fontSize:13}}>Pending Reviews</div>
-          <div style={{overflowX:'auto'}}>
-            <table className="adm-table" style={{width:'100%', fontSize:12}}>
-              <thead><tr>
-                <th>ID</th><th>Boat</th><th>Rating</th><th>Reviewer</th><th>Title</th><th>Date</th><th>Approve</th>
-              </tr></thead>
-              <tbody>
-                {pendingReviews.map(r => (
-                  <tr key={r.id}>
-                    <td>{r.id}</td>
-                    <td>{r.boat}</td>
-                    <td>{'★'.repeat(r.overall_rating || 0)}</td>
-                    <td>{r.reviewer_name || '—'}</td>
-                    <td style={{maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{r.title || '—'}</td>
-                    <td>{(r.submitted_at || '').slice(0,10)}</td>
-                    <td>
-                      <code style={{fontSize:10, background:'#F1F5F9', padding:'2px 4px', borderRadius:3}}>
-                        python -m src.reviews approve {r.id}
-                      </code>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div style={{marginTop:10, fontSize:11, color:'#64748B'}}>
-            To approve: <code>python -m src.reviews approve &lt;id&gt;</code> · To reject: <code>python -m src.reviews reject &lt;id&gt;</code> · Then re-run <code>--export-only</code>
+          <div style={{fontWeight:600, marginBottom:8, fontSize:13}}>Pending Reviews ({pendingReviews.length})</div>
+          {pendingReviews.map(r => (
+            <div key={r.id} className="adm-review-card">
+              <div className="adm-review-head">
+                <span className="adm-review-id">#{r.id}</span>
+                <span className="adm-review-boat">{r.boat}</span>
+                <span className="adm-review-stars">{'★'.repeat(r.overall_rating||0)}</span>
+                <span className="adm-review-name">{r.reviewer_name || 'Anonymous'}</span>
+                <span className="adm-review-meta">{r.trip_length || ''} · {(r.trip_date||r.submitted_at||'').slice(0,10)}</span>
+                <span className="adm-review-submitted">{(r.submitted_at||'').slice(0,10)}</span>
+              </div>
+              {r.title && <div className="adm-review-title">{r.title}</div>}
+              {r.body && <div className="adm-review-body">{r.body.slice(0,300)}{r.body.length>300?'…':''}</div>}
+              <div className="adm-review-actions">
+                <code className="adm-review-cmd adm-review-approve">python -m src.reviews approve {r.id}</code>
+                <code className="adm-review-cmd adm-review-reject">python -m src.reviews reject {r.id}</code>
+              </div>
+            </div>
+          ))}
+          <div style={{marginTop:8, fontSize:11, color:'#64748B'}}>
+            After approving/rejecting, re-run <code>python -m src.main --export-only</code>
           </div>
         </>
       ) : (
         <div className="adm-empty">No pending reviews.</div>
       )}
+
+      {topBoats.length > 0 && (
+        <>
+          <div style={{fontWeight:600, marginTop:20, marginBottom:8, fontSize:13}}>Review Analytics — Top Boats</div>
+          {topBoats.map(([boat, s]) => {
+            const labels = [[4.5,'Exceptional','#10B981'],[4.0,'Excellent','#22C55E'],[3.5,'Very Good','#84CC16'],[3.0,'Good','#EAB308'],[0,'Mixed','#F97316']];
+            const [,lbl,col] = labels.find(([t]) => (s.avg_overall||0) >= t) || labels[labels.length-1];
+            return (
+              <div key={boat} style={{display:'flex', alignItems:'center', gap:10, padding:'5px 0', borderBottom:'1px solid #E2E8F0', fontSize:12}}>
+                <span style={{flex:1, fontWeight:600}}>{boat}</span>
+                <span style={{color:col, fontWeight:600}}>{lbl}</span>
+                <span>★{s.avg_overall?.toFixed(1)||'—'}</span>
+                <span style={{color:'#64748B'}}>{s.total_reviews} review{s.total_reviews!==1?'s':''}</span>
+                {s.would_rebook_pct != null && <span style={{color:'#10B981'}}>{s.would_rebook_pct}% rebook</span>}
+              </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── QR Code Generator ────────────────────────────────────────────────────────
+function SectionQRCodes() {
+  const { useRef: _useRef, useEffect: _useEffect } = React;
+  const QR_LANDINGS = [
+    "H&M Landing",
+    "Fisherman's Landing",
+    "Seaforth Sportfishing",
+    "Point Loma Sportfishing",
+  ];
+
+  function QRCard({ landing }) {
+    const ref = _useRef(null);
+    const url = `https://thetunatracker.com/#review?landing=${encodeURIComponent(landing)}`;
+    _useEffect(() => {
+      if (!ref.current) return;
+      if (!window.QRCode) { ref.current.textContent = url; return; }
+      ref.current.innerHTML = '';
+      try {
+        new window.QRCode(ref.current, {
+          text: url, width: 160, height: 160,
+          colorDark: '#0F4C81', colorLight: '#ffffff',
+          correctLevel: window.QRCode.CorrectLevel?.H || 1,
+        });
+      } catch {}
+    }, [landing]);
+    return (
+      <div className="adm-qr-card">
+        <div className="adm-qr-code" ref={ref}/>
+        <div className="adm-qr-landing">{landing}</div>
+        <div className="adm-qr-cta">Review your trip on The Tuna Tracker</div>
+        <div className="adm-qr-sub">Takes 2 minutes · Help other anglers</div>
+        <div className="adm-qr-url" style={{fontSize:8, color:'#94A3B8', wordBreak:'break-all'}}>{url}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="adm-section">
+      <div className="adm-section-title">QR Code Generator</div>
+      <div style={{marginBottom:14, display:'flex', alignItems:'center', gap:12}}>
+        <button className="adm-btn" onClick={() => window.print()}>🖨️ Print Cards</button>
+        <span style={{fontSize:11, color:'#64748B'}}>Place at boat boarding areas · Include in confirmation emails · Post at fish-cleaning stations</span>
+      </div>
+      <div className="adm-qr-grid">
+        {QR_LANDINGS.map(l => <QRCard key={l} landing={l}/>)}
+      </div>
     </div>
   );
 }
@@ -1170,6 +1239,7 @@ function AdminView() {
         <Section3C correlation={admin.consensusCorrelation} />
         <Section4 preds={admin.recentPredictions} />
         <SectionReviews reviews={admin.reviews}/>
+        <SectionQRCodes/>
         <SectionCommunity/>
         <Section5 />
         <Section6 />

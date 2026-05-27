@@ -356,11 +356,62 @@ function TodayCatch({ navigate, settings }) {
               <span className="anglers-col">{fmt.n(b.anglers)}</span>
               <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
               <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
+              {selectedDate < TODAY_ISO && (
+                <span className="today-review-star" title="Review this trip"
+                      onClick={e => {
+                        e.stopPropagation();
+                        const params = new URLSearchParams();
+                        params.set('openReview', '1');
+                        params.set('date', selectedDate);
+                        params.set('length', b.tripLength || '');
+                        history.replaceState(null, '', `?${params.toString()}`);
+                        navigate('boat', { boat: b.boat });
+                      }}>⭐</span>
+              )}
             </div>
           ))}
         </Panel>
       )}
     </Fragment>
+  );
+}
+
+function ReturnVisitToast({ navigate }) {
+  const [toast, setToast] = useState(null);
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('tt_toast_shown')) return;
+      const today = new Date().toISOString().slice(0,10);
+      const viewed = JSON.parse(localStorage.getItem('tt_viewed_trips') || '[]');
+      const past = viewed.filter(v => v.date < today);
+      if (!past.length) return;
+      const pick = past[0];
+      setToast(pick);
+      sessionStorage.setItem('tt_toast_shown', '1');
+      // Mark reviewed so it won't show again
+      const updated = viewed.filter(v => !(v.boat === pick.boat && v.date === pick.date));
+      localStorage.setItem('tt_viewed_trips', JSON.stringify(updated));
+    } catch {}
+  }, []);
+  if (!toast) return null;
+  const dismiss = () => setToast(null);
+  const goReview = () => {
+    const params = new URLSearchParams();
+    params.set('openReview', '1');
+    params.set('date', toast.date);
+    if (toast.length) params.set('length', toast.length);
+    history.replaceState(null, '', `?${params.toString()}`);
+    navigate('boat', { boat: toast.boat });
+    dismiss();
+  };
+  return (
+    <div className="rv-toast">
+      <span className="rv-toast-text">
+        Welcome back! How was your trip on <strong>{toast.boat}</strong>?
+      </span>
+      <button className="rv-toast-review" onClick={goReview}>⭐ Leave a review</button>
+      <button className="rv-toast-close" onClick={dismiss} aria-label="Dismiss">✕</button>
+    </div>
   );
 }
 
@@ -382,6 +433,7 @@ function TodayView({ navigate, settings }) {
 
   return (
     <Fragment>
+      <ReturnVisitToast navigate={navigate}/>
       <div className="pagehead">
         <div>
           <h1>The Tuna Tracker</h1>

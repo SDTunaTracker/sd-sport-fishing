@@ -147,7 +147,7 @@ function HighlightedNote({ text }) {
 // ── Trip card ─────────────────────────────────────────────────────────────────
 const NOTE_LINES = 2; // lines visible when collapsed
 
-function TripCard({ s, avgTpaByKey, context }) {
+function TripCard({ s, avgTpaByKey, context, onReview }) {
   const [noteOpen, setNoteOpen] = useState(false);
 
   const dep    = new Date(s.departureAt);
@@ -159,8 +159,20 @@ function TripCard({ s, avgTpaByKey, context }) {
   const tpaKey = `${s.boat}|${s.tripLength}`;
   const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
 
+  const isPast = dep.getTime() < Date.now();
+
   const trackClick = () => {
     if (window.TTTrack) TTTrack.tripClick({ ...s, moonPhase: moon.phase }, context || {});
+    // Track viewed trip for return-visit review reminder
+    try {
+      const key = 'tt_viewed_trips';
+      const viewed = JSON.parse(localStorage.getItem(key) || '[]');
+      const entry = { boat: s.boat, date: dep.toISOString().slice(0,10), landing: s.landing, length: s.tripLength };
+      if (!viewed.some(v => v.boat === entry.boat && v.date === entry.date)) {
+        viewed.push(entry);
+        localStorage.setItem(key, JSON.stringify(viewed.slice(-20)));
+      }
+    } catch {}
   };
 
   const capPct      = s.capacity ? Math.round((s.openSpots / s.capacity) * 100) : null;
@@ -172,7 +184,6 @@ function TripCard({ s, avgTpaByKey, context }) {
       {s.boat}
     </a>
   ) : <span className="tp-card-boat-name">{s.boat}</span>;
-  const reviewSummary = window.SD.REVIEWS?.summary?.[s.boat];
 
   const TimeRow = ({ label, dt, isReturn }) => (
     <div className={`tp-card-time-row${isReturn ? ' tp-card-time-row-ret' : ''}`}>
@@ -189,12 +200,23 @@ function TripCard({ s, avgTpaByKey, context }) {
       <div className="tp-card-left">
         <div className="tp-card-boat" style={{display:'flex', alignItems:'center', gap:6, flexWrap:'wrap'}}>
           {boatEl}
-          {reviewSummary && reviewSummary.total_reviews > 0 && (
-            <span className="rv-badge">
-              ★ {reviewSummary.avg_overall.toFixed(1)}
-              <span className="rv-badge-count">({reviewSummary.total_reviews})</span>
-            </span>
-          )}
+            {(() => {
+            const rv = window.SD.REVIEWS?.summary?.[s.boat];
+            if (!rv || rv.total_reviews < 3 || !rv.avg_overall) return null;
+            const labels = [[4.5,'Exceptional','#10B981'],[4.0,'Excellent','#22C55E'],[3.5,'Very Good','#84CC16'],[3.0,'Good','#EAB308'],[0,'Mixed','#F97316']];
+            const [,lbl,col] = labels.find(([t]) => rv.avg_overall >= t) || labels[labels.length-1];
+            const topTitle = window.SD.REVIEWS?.byBoat?.[s.boat]?.[0]?.title;
+            return (
+              <div className="rv-card-badge">
+                <div className="rv-card-badge-top">
+                  <span className="rv-card-badge-score">{rv.avg_overall.toFixed(1)}</span>
+                  <span className="rv-card-badge-label" style={{color:col}}>{lbl}</span>
+                  <span className="rv-card-badge-count">· {rv.total_reviews} reviews</span>
+                </div>
+                {topTitle && <div className="rv-card-badge-quote">"{topTitle}"</div>}
+              </div>
+            );
+          })()}
         </div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <LengthBadge label={s.tripLength}/>
@@ -237,7 +259,14 @@ function TripCard({ s, avgTpaByKey, context }) {
         ) : (
           <SpotsBadge spots={s.openSpots} capacity={null}/>
         )}
-        {url && (
+        {isPast ? (
+          <div style={{textAlign:'right'}}>
+            <div style={{fontSize:10, color:'#94A3B8', marginBottom:4}}>Did you go on this trip?</div>
+            <button className="tp-card-review-btn" onClick={() => onReview && onReview(s)}>
+              ⭐ Review this trip →
+            </button>
+          </div>
+        ) : url && (
           <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn"
              onClick={trackClick}>
             View Trip →
@@ -287,7 +316,11 @@ function TripCard({ s, avgTpaByKey, context }) {
           <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
           {price && <span className="tp-card-price-mobile">{price}</span>}
         </div>
-        {url && (
+        {isPast ? (
+          <button className="tp-card-review-btn tp-card-book-full" onClick={() => onReview && onReview(s)}>
+            ⭐ Review this trip →
+          </button>
+        ) : url && (
           <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn tp-card-book-full"
              onClick={trackClick}>
             View Trip →
@@ -578,6 +611,9 @@ function MobileFilterSheet({ open, onClose, ...filterProps }) {
 function TripPlanner({ navigate }) {
   const _now = new Date();
 
+  // Review modal state
+  const [reviewTrip, setReviewTrip] = useState(null);
+
   // Top bar filters
   const [selMonth, setSelMonthRaw] = useState({ year: _now.getFullYear(), month: _now.getMonth() });
   const [selLandings, setSelLandings] = useState('all');
@@ -854,6 +890,7 @@ function TripPlanner({ navigate }) {
             <div className="tp-card-list">
               {displayed.map((s, idx) => (
                 <TripCard key={`${s.landing}-${s.sourceId}`} s={s} avgTpaByKey={avgTpaByKey}
+                          onReview={setReviewTrip}
                           context={{
                             tab:      activeTab,
                             position: idx + 1,
@@ -868,6 +905,17 @@ function TripPlanner({ navigate }) {
 
       <MobileFilterSheet open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)}
                          {...sidebarProps}/>
+
+      {reviewTrip && (() => {
+        const RM = window.ReviewModal;
+        if (!RM) return null;
+        return <RM
+          boat={reviewTrip.boat}
+          landing={reviewTrip.landing}
+          prefill={{ date: new Date(reviewTrip.departureAt).toISOString().slice(0,10), length: reviewTrip.tripLength }}
+          onClose={() => setReviewTrip(null)}
+        />;
+      })()}
     </Fragment>
   );
 }
