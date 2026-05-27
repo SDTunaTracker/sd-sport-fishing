@@ -42,26 +42,41 @@ def detect_boat_mention(text: str, boat_names: list[str]) -> str | None:
     return None
 
 
-def _fetch_subreddit(subreddit: str, query: str, limit: int = 15) -> list[dict]:
-    try:
-        resp = requests.get(
-            f'https://www.reddit.com/r/{subreddit}/search.json',
-            params={
-                'q': query,
-                'sort': 'new',
-                'limit': limit,
-                't': 'month',
-                'type': 'link',
-                'restrict_sr': '1',   # stay within this subreddit
-            },
-            headers=_HEADERS,
-            timeout=12,
-        )
-        if resp.status_code != 200:
-            return []
-        return [c['data'] for c in resp.json().get('data', {}).get('children', [])]
-    except Exception:
-        return []
+def _fetch_subreddit(subreddit: str, query: str, limit: int = 25,
+                     pages: int = 3, timeframe: str = 'year') -> list[dict]:
+    """Fetch up to `pages` pages of results from a subreddit search."""
+    results: list[dict] = []
+    after: str | None = None
+    for _ in range(pages):
+        params = {
+            'q': query,
+            'sort': 'new',
+            'limit': limit,
+            't': timeframe,
+            'type': 'link',
+            'restrict_sr': '1',
+        }
+        if after:
+            params['after'] = after
+        try:
+            resp = requests.get(
+                f'https://www.reddit.com/r/{subreddit}/search.json',
+                params=params,
+                headers=_HEADERS,
+                timeout=12,
+            )
+            if resp.status_code != 200:
+                break
+            data = resp.json().get('data', {})
+            children = [c['data'] for c in data.get('children', [])]
+            results.extend(children)
+            after = data.get('after')
+            if not after or len(children) < limit:
+                break
+            time.sleep(0.5)
+        except Exception:
+            break
+    return results
 
 
 def fetch_reddit_reports(conn: sqlite3.Connection) -> int:
