@@ -555,7 +555,7 @@ function RefineDatesSection({ selMonth, refineStart, setRefineStart, refineEnd, 
 function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
                           moonPhases, setMoonPhases, minWinRate, setMinWinRate,
                           minPrice, setMinPrice, maxPrice, setMaxPrice,
-                          boatSize, setBoatSize, onReset }) {
+                          boatSize, setBoatSize, capThresholds, onReset }) {
   const togglePhase = (phase) => {
     const sel = moonPhases === 'all' ? MOON_PHASE_OPTIONS.map(o => o.phase) : [...moonPhases];
     const next = sel.includes(phase) ? sel.filter(p => p !== phase) : [...sel, phase];
@@ -592,10 +592,10 @@ function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setR
 
       <SidebarSection title="Max Load">
         {[
-          ['any',   'Any size',              null],
-          ['small', 'Small (under 25)',       'More personal experience'],
-          ['med',   'Medium (25–40)',         null],
-          ['large', 'Large (40+)',            'More stable offshore'],
+          ['any',   'Any size',                                                              null],
+          ['small', `Small (≤${capThresholds.p33})`,                                        'More personal experience'],
+          ['med',   `Medium (${capThresholds.p33 + 1}–${capThresholds.p67})`,               null],
+          ['large', `Large (${capThresholds.p67 + 1}+)`,                                    'More stable offshore'],
         ].map(([val, label, note]) => (
           <label key={val} className="tp-sb-radio-row">
             <input type="radio" name="boatSize" checked={boatSize === val}
@@ -732,6 +732,20 @@ function TripPlanner({ navigate }) {
 
   const winRates = useMemo(() => SDA.boatWinRates(), []);
 
+  // Capacity percentile thresholds derived from actual upcoming-trip data
+  const capThresholds = useMemo(() => {
+    const now = new Date();
+    const vals = (window.SD.SCHEDULE || [])
+      .filter(s => s.capacity != null && new Date(s.departureAt) >= now)
+      .map(s => s.capacity)
+      .sort((a, b) => a - b);
+    if (vals.length < 3) return { p33: 25, p67: 40 };
+    return {
+      p33: vals[Math.floor(vals.length * 0.33)],
+      p67: vals[Math.floor(vals.length * 0.67)],
+    };
+  }, []);
+
   // Set of 'YYYY-MM' keys that have upcoming trips
   const tripMonths = useMemo(() => {
     const now = new Date();
@@ -805,13 +819,13 @@ function TripPlanner({ navigate }) {
       }
       if (boatSize !== 'any') {
         if (s.capacity == null) return false;
-        if (boatSize === 'small'  && s.capacity >= 25) return false;
-        if (boatSize === 'med'    && (s.capacity < 25 || s.capacity > 40)) return false;
-        if (boatSize === 'large'  && s.capacity <= 40) return false;
+        if (boatSize === 'small'  && s.capacity > capThresholds.p33) return false;
+        if (boatSize === 'med'    && (s.capacity <= capThresholds.p33 || s.capacity > capThresholds.p67)) return false;
+        if (boatSize === 'large'  && s.capacity <= capThresholds.p67) return false;
       }
       return true;
     });
-  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, winRates]);
+  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, capThresholds, winRates]);
 
   const displayed = useMemo(() => {
     const enriched = filtered.map(s => {
@@ -893,7 +907,7 @@ function TripPlanner({ navigate }) {
     moonPhases, setMoonPhases: setMoonPhasesTracked,
     minWinRate, setMinWinRate: setMinWinRateTracked,
     minPrice, setMinPrice, maxPrice, setMaxPrice,
-    boatSize, setBoatSize: setBoatSizeTracked,
+    boatSize, setBoatSize: setBoatSizeTracked, capThresholds,
     onReset: handleReset,
   };
 
