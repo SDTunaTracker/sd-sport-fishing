@@ -100,10 +100,14 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
       })
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} from worker`);
+    }
+
     const data = await response.json();
 
     if (data.error) {
-      throw new Error(data.error.message);
+      throw new Error(`Anthropic: ${data.error.type} — ${data.error.message}`);
     }
 
     return {
@@ -115,7 +119,7 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
   } catch (error) {
     console.error('Chat error:', error);
     return {
-      text: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
+      text: "Debug: " + (error.message || String(error)),
       usage: null,
       dataUsed: null
     };
