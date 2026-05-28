@@ -130,7 +130,7 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
         <div className="header-top">
           {/* Logo: fish icon + wordmark + region dropdown */}
           <div className="logo-wrap" ref={dropdownRef}>
-            <div className="logo" onClick={() => handleNavItem('today')} style={{cursor:'pointer'}}>
+            <div className="logo" onClick={() => handleNavItem('home')} style={{cursor:'pointer'}}>
               <i className="fa-solid fa-fish-fins logo-fish"></i>
               <div className="logo-text">
                 <span className="logo-wordmark">The Tuna Tracker</span>

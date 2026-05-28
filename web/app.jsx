@@ -12,7 +12,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // so refreshing or bookmarking keeps you on the same page.
 // Format: #<region-prefix>/<view>[/<params>]  e.g. #sd/today, #ocla/analytics/overview
 const HASH_VIEWS = {
-  today: 'today', tripplanner: 'tripplanner',
+  home: 'home', today: 'today', tripplanner: 'tripplanner',
   settings: 'account', admin: 'admin', forecast: 'forecast',
   account: 'account', boats: 'boats',
 };
@@ -31,7 +31,8 @@ function extractRegionFromHash(raw) {
 function routeFromHash() {
   const raw = window.location.hash.replace(/^#/, '');
   const { regionIds, rest } = extractRegionFromHash(raw);
-  if (!rest) return { view: 'today', params: {}, hashRegions: regionIds };
+  if (!rest) return { view: 'home', params: {}, hashRegions: regionIds };
+  if (rest === 'home') return { view: 'home', params: {}, hashRegions: regionIds };
   const [seg, ...parts] = rest.split('/');
   const detail = parts.length ? decodeURIComponent(parts.join('/')) : '';
 
@@ -62,7 +63,8 @@ function routeFromHash() {
 function hashFromRoute(view, params = {}, regions = ['san_diego']) {
   const prefix = window.regionsToHashPrefix ? window.regionsToHashPrefix(regions) : 'sd';
   let route;
-  if (view === 'boat' && params.boat) route = 'boat/' + encodeURIComponent(params.boat);
+  if (view === 'home') route = 'home';
+  else if (view === 'boat' && params.boat) route = 'boat/' + encodeURIComponent(params.boat);
   else if (view === 'landing' && params.landing) route = 'landing/' + encodeURIComponent(params.landing);
   else if (view === 'analytics') route = 'analytics/' + (params.subtab || 'overview');
   else if (view === 'boats') route = 'boats';
@@ -235,12 +237,14 @@ function App() {
 
   // Map nav tab id -> navigate() view
   const navMap = {
-    today: 'today', forecast: 'forecast', analytics: 'analytics',
+    home: 'home', today: 'today', forecast: 'forecast', analytics: 'analytics',
     tripplanner: 'tripplanner', account: 'account', boats: 'boats',
   };
 
   let content;
-  if (route.view === 'today') {
+  if (route.view === 'home') {
+    content = <HomeView navigate={navigate} settings={settings} regions={regions}/>;
+  } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'analytics') {
     content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions} subtab={route.params.subtab || 'overview'}/>;

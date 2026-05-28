@@ -492,4 +492,188 @@ function TodayView({ navigate, settings, regions }) {
   );
 }
 
-Object.assign(window, { TodayView });
+// ── Home page ─────────────────────────────────────────────────────────────────
+
+function HomeRatingBadge({ ratingKey }) {
+  const MAP = {
+    fire:  { bg: '#D1FAE5', color: '#065F46', text: 'On Fire'   },
+    above: { bg: '#D1FAE5', color: '#065F46', text: 'Above Avg' },
+    avg:   { bg: '#F1F5F9', color: '#64748B', text: 'Average'   },
+    below: { bg: '#FEF3C7', color: '#92400E', text: 'Below Avg' },
+    slow:  { bg: '#F1F5F9', color: '#64748B', text: 'Slow'      },
+    new:   { bg: '#F1F5F9', color: '#64748B', text: 'New'       },
+  };
+  const r = MAP[ratingKey] || MAP.new;
+  return (
+    <span style={{ background: r.bg, color: r.color, fontWeight: 600, fontSize: 10, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      {r.text}
+    </span>
+  );
+}
+
+function HomeView({ navigate, settings, regions }) {
+  // Trip count for credibility line
+  const totalTrips = window.SD?.META?.tripCount || 0;
+  const roundedTrips = Math.floor(totalTrips / 100) * 100;
+  const tripDisplay = roundedTrips.toLocaleString() + '+';
+
+  // Date list for the selected region
+  const dates = useMemo(() => {
+    const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
+    const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : null;
+    const rl = (eff && window.getLandingsForRegion) ? window.getLandingsForRegion(eff) : null;
+    const filtered = rl ? raw.filter(t => rl.includes(t.landing)) : raw;
+    const set = [...new Set(filtered.map(t => t.date))];
+    return set.sort().reverse();
+  }, [regions, settings]);
+
+  const [selectedDate, setSelectedDate] = useS(
+    () => dates.includes(TODAY_ISO) ? TODAY_ISO : (dates[0] || TODAY_ISO)
+  );
+
+  const ratingData = useMemo(
+    () => SDA.fishingRating(selectedDate, regions),
+    [selectedDate, regions, settings]
+  );
+
+  const boats      = ratingData.boats;
+  const trophyTotal = boats.reduce((s, b) => s + (b.totalTuna || 0), 0);
+  const anglersTotal = boats.reduce((s, b) => s + b.anglers, 0);
+  const landingCount = new Set(boats.map(b => b.landing)).size;
+  const previewBoats = boats.slice(0, 8);
+
+  const lastScrape = window.SD?.META?.lastScrape;
+  const timeStr = lastScrape
+    ? new Date(lastScrape).toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: '2-digit',
+        timeZone: 'America/Los_Angeles', timeZoneName: 'short',
+      })
+    : null;
+
+  const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
+
+  return (
+    <Fragment>
+      {/* ── HERO ──────────────────────────────────────────────────────── */}
+      <div className="home-hero">
+        <div className="home-hero-content">
+          <div className="home-hero-badge">SAN DIEGO'S #1 SPORTFISHING ANALYTICS</div>
+          <h1 className="home-hero-h1">Stop guessing.<br/>Start catching.</h1>
+          <p className="home-hero-sub">
+            See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.
+          </p>
+          <div className="home-cred">
+            <span className="home-cred-star">★</span>
+            {' Trusted data from '}
+            <span className="home-cred-count">{tripDisplay} trips</span>
+            {' since 2015'}
+          </div>
+        </div>
+      </div>
+
+      {/* ── STATS BAR ─────────────────────────────────────────────────── */}
+      <div className="home-stats-bar">
+        <div className="home-stat">
+          <span className="home-stat-num lime">{fmt.n(trophyTotal)}</span>
+          <span className="home-stat-lbl">Tuna Today</span>
+        </div>
+        <div className="home-stat">
+          <span className="home-stat-num">{boats.length}</span>
+          <span className="home-stat-lbl">Boats Out</span>
+        </div>
+        <div className="home-stat">
+          <span className="home-stat-num">{fmt.n(anglersTotal)}</span>
+          <span className="home-stat-lbl">Anglers</span>
+        </div>
+        <div className="home-stat">
+          <span className="home-stat-num">{landingCount}</span>
+          <span className="home-stat-lbl">Landings</span>
+        </div>
+      </div>
+
+      {/* ── TODAY'S REPORT (inline preview) ───────────────────────────── */}
+      <div className="home-section">
+        <div className="home-report-hd">
+          <div>
+            <div className="home-report-title">Today's Report</div>
+            <div className="home-report-sub">
+              {fmtDate(selectedDate)}{timeStr ? ` · Updated ${timeStr}` : ''}
+            </div>
+          </div>
+          <select className="home-date-sel"
+                  value={selectedDate}
+                  onChange={e => setSelectedDate(e.target.value)}>
+            {dates.map(dt => (
+              <option key={dt} value={dt}>
+                {fmtDate(dt)}{dt === TODAY_ISO ? ' (today)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {previewBoats.length === 0 ? (
+          <div className="home-report-empty">
+            {selectedDate === TODAY_ISO ? 'No reports yet today — check back later.' : 'No reports for this date.'}
+          </div>
+        ) : (
+          <div className="home-report-table-wrap">
+            <table className="home-report-table">
+              <thead>
+                <tr>
+                  <th>Boat</th>
+                  <th className="hrt-trip">Trip</th>
+                  <th className="hrt-bf">Bluefin</th>
+                  <th>TPA/Day</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewBoats.map((b, i) => (
+                  <tr key={i} className="hrt-row"
+                      onClick={() => navigate('boat', { boat: b.boat })}>
+                    <td>
+                      <div className="hrt-boat-name">{b.boat}</div>
+                      <div className="hrt-boat-landing">
+                        {(b.landing || '').replace(' Sportfishing', '').replace(' Landing', '')}
+                      </div>
+                    </td>
+                    <td className="hrt-trip">{b.tripLength}</td>
+                    <td className="hrt-bf" style={{
+                      color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)',
+                      fontWeight: b.Bluefin > 0 ? 600 : 400,
+                    }}>{fmt.n(b.Bluefin)}</td>
+                    <td style={{
+                      fontWeight: 700,
+                      color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)',
+                    }}>{fmt.tpa(b.trophyPerAnglerPerDay)}</td>
+                    <td><HomeRatingBadge ratingKey={b.ratingKey}/></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="home-report-footer">
+          <button className="home-full-report-btn" onClick={() => navigate('today')}>
+            View full report &amp; all boats →
+          </button>
+        </div>
+      </div>
+
+      {/* ── FEATURE CARDS ─────────────────────────────────────────────── */}
+      <div className="home-cards">
+        <div className="home-card" onClick={() => navigate('analytics', { subtab: 'overview' })}>
+          <div className="home-card-title">Analytics →</div>
+          <div className="home-card-desc">Boat leaderboards, head-to-head &amp; 11 years of trends</div>
+        </div>
+        <div className="home-card" onClick={() => navigate('tripplanner')}>
+          <div className="home-card-title">Trip Planner →</div>
+          <div className="home-card-desc">Compare &amp; find the best upcoming trips with open spots</div>
+        </div>
+      </div>
+    </Fragment>
+  );
+}
+
+Object.assign(window, { TodayView, HomeView });

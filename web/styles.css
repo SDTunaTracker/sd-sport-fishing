@@ -3237,3 +3237,237 @@ body.chat-open {
   .landing-map-container { height: 300px; }
   .boats-landing-header { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
+
+/* ───── Homepage redesign ───── */
+
+/* Hero: full-bleed break out of main-content padding */
+.home-hero {
+  position: relative;
+  min-height: 240px;
+  background-image:
+    linear-gradient(180deg,
+      rgba(15,42,74,0.15) 0%,
+      rgba(15,42,74,0.40) 55%,
+      rgba(15,42,74,0.93) 100%),
+    url('hero-sunrise.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  /* break out of .main-content padding */
+  margin: -16px -16px 0;
+  border-radius: 0;
+}
+.home-hero-content {
+  padding: 28px;
+  max-width: 520px;
+}
+.home-hero-badge {
+  display: inline-block;
+  background: rgba(52,211,153,0.15);
+  border: 1px solid #6EE7B7;
+  color: #6EE7B7;
+  font: 600 10px/14px var(--ss-font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+}
+.home-hero-h1 {
+  font: 800 33px/1.05 var(--ss-font-display, var(--ss-font-sans));
+  color: #fff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+  margin: 0 0 10px;
+}
+.home-hero-sub {
+  font: 400 13.5px/1.45 var(--ss-font-sans);
+  color: #E2E8F0;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  max-width: 470px;
+  margin: 0 0 12px;
+}
+.home-cred {
+  font: 500 12px/18px var(--ss-font-sans);
+  color: #CBD5E1;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.35);
+}
+.home-cred-star { color: #34D399; }
+.home-cred-count { color: #fff; font-weight: 700; }
+
+/* Stats bar */
+.home-stats-bar {
+  display: flex;
+  align-items: stretch;
+  background: #0B1F38;
+  margin: 0 -16px;
+}
+.home-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.home-stat:last-child { border-right: none; }
+.home-stat-num {
+  font: 800 20px/24px var(--ss-font-sans);
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.home-stat-num.lime { color: #34D399; }
+.home-stat-lbl {
+  font: 600 10px/14px var(--ss-font-sans);
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+/* Today's Report section */
+.home-section {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+.home-report-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  gap: 12px;
+}
+.home-report-title {
+  font: 800 20px/24px var(--ss-font-sans);
+  color: #0F2A4A;
+}
+.home-report-sub {
+  font: 400 12px/16px var(--ss-font-sans);
+  color: #94A3B8;
+  margin-top: 2px;
+}
+.home-date-sel {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font: 500 12px/18px var(--ss-font-sans);
+  color: var(--tb-ink);
+  background: #fff;
+  flex-shrink: 0;
+}
+.home-report-empty {
+  padding: 32px 20px;
+  text-align: center;
+  font: 400 13px/20px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+}
+
+/* Report table */
+.home-report-table-wrap { overflow-x: auto; }
+.home-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 12px/18px var(--ss-font-sans);
+}
+.home-report-table thead tr {
+  background: #F8FAFC;
+}
+.home-report-table th {
+  font: 600 10px/14px var(--ss-font-sans);
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #E2E8F0;
+}
+.home-report-table th:not(:first-child) { text-align: right; }
+.home-report-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+}
+.home-report-table td:not(:first-child) { text-align: right; }
+.home-report-table tbody tr:last-child td { border-bottom: none; }
+.hrt-row { cursor: pointer; transition: background 0.1s; }
+.hrt-row:hover { background: #F8FAFC; }
+.hrt-boat-name {
+  font: 600 12px/16px var(--ss-font-sans);
+  color: #0F2A4A;
+}
+.hrt-boat-landing {
+  font: 400 10px/14px var(--ss-font-sans);
+  color: #94A3B8;
+  margin-top: 1px;
+}
+
+/* Report footer link */
+.home-report-footer {
+  padding: 12px 20px;
+  text-align: center;
+  border-top: 1px solid #F1F5F9;
+}
+.home-full-report-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: 600 13px/18px var(--ss-font-sans);
+  color: #38BDF8;
+  padding: 4px 0;
+}
+.home-full-report-btn:hover { text-decoration: underline; }
+
+/* Feature cards */
+.home-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.home-card {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 18px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.home-card:hover {
+  box-shadow: 0 4px 16px rgba(15,42,74,0.1);
+  transform: translateY(-1px);
+}
+.home-card-title {
+  font: 800 15px/20px var(--ss-font-sans);
+  color: #0F2A4A;
+  margin-bottom: 6px;
+}
+.home-card-desc {
+  font: 400 12px/18px var(--ss-font-sans);
+  color: #64748B;
+}
+
+/* Mobile overrides */
+@media (max-width: 768px) {
+  .home-hero {
+    min-height: 220px;
+    margin: -12px -12px 0;
+  }
+  .home-hero-content { padding: 20px; }
+  .home-hero-h1 { font-size: 26px; }
+  .home-stats-bar { margin: 0 -12px; }
+  .home-stat { padding: 12px 4px; }
+  .home-stat-num { font-size: 18px; }
+  .home-stat-lbl { font-size: 9px; letter-spacing: 0.04em; }
+  .home-cards { grid-template-columns: 1fr; }
+  /* Hide Trip and Bluefin columns on mobile, keep Boat | TPA | Rating */
+  .home-report-table .hrt-trip,
+  .home-report-table .hrt-bf { display: none; }
+}
