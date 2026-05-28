@@ -3332,13 +3332,13 @@ body.chat-open {
   margin-top: 2px;
 }
 
-/* Today's Report section — side margins replace the stripped parent padding */
+/* Today's Report section — sits below feature cards */
 .home-section {
   background: #fff;
   border: 1px solid #E2E8F0;
   border-radius: 10px;
   overflow: hidden;
-  margin: 20px 16px 0;
+  margin: 16px 16px 0;
 }
 .home-report-hd {
   display: flex;
@@ -3349,8 +3349,20 @@ body.chat-open {
   gap: 12px;
 }
 .home-report-title {
-  font: 800 20px/24px var(--ss-font-sans);
+  font: 800 22px/28px var(--ss-font-sans);
   color: #0F2A4A;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.home-report-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 22px;
+  background: #34D399;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 .home-report-sub {
   font: 400 12px/16px var(--ss-font-sans);
@@ -3382,17 +3394,17 @@ body.chat-open {
   font: 400 12px/18px var(--ss-font-sans);
 }
 .home-report-table thead tr {
-  background: #F8FAFC;
+  background: #EEF2F7;
 }
 .home-report-table th {
-  font: 600 10px/14px var(--ss-font-sans);
-  color: #94A3B8;
+  font: 700 10px/14px var(--ss-font-sans);
+  color: #475569;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 8px 12px;
+  letter-spacing: 0.05em;
+  padding: 9px 12px;
   text-align: left;
   white-space: nowrap;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid #D1D9E6;
 }
 .home-report-table th:not(:first-child) { text-align: right; }
 .home-report-table td {
@@ -3405,7 +3417,7 @@ body.chat-open {
 .hrt-row { cursor: pointer; transition: background 0.1s; }
 .hrt-row:hover { background: #F8FAFC; }
 .hrt-boat-name {
-  font: 600 12px/16px var(--ss-font-sans);
+  font: 700 12px/16px var(--ss-font-sans);
   color: #0F2A4A;
 }
 .hrt-boat-landing {
@@ -3414,23 +3426,31 @@ body.chat-open {
   margin-top: 1px;
 }
 
-/* Report footer link */
+/* Report footer — proper CTA button */
 .home-report-footer {
-  padding: 12px 20px;
+  padding: 16px 20px;
   text-align: center;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
 }
 .home-full-report-btn {
-  background: none;
+  display: inline-block;
+  background: #38BDF8;
+  color: #fff;
   border: none;
+  border-radius: 8px;
+  font: 700 13px/18px var(--ss-font-sans);
+  padding: 10px 28px;
   cursor: pointer;
-  font: 600 13px/18px var(--ss-font-sans);
-  color: #38BDF8;
-  padding: 4px 0;
+  transition: background 0.12s, transform 0.1s;
+  letter-spacing: 0.01em;
 }
-.home-full-report-btn:hover { text-decoration: underline; }
+.home-full-report-btn:hover {
+  background: #0EA5E9;
+  transform: translateY(-1px);
+}
 
-/* Feature cards */
+/* Feature cards — bold navy blocks echoing the hero */
 .home-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3438,25 +3458,27 @@ body.chat-open {
   margin: 16px 16px 0;
 }
 .home-card {
-  background: #fff;
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  padding: 18px;
+  background: #0F2A4A;
+  border: none;
+  border-left: 3px solid #38BDF8;
+  border-radius: 12px;
+  padding: 22px 20px;
   cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s;
+  transition: background 0.15s, transform 0.12s;
 }
 .home-card:hover {
-  box-shadow: 0 4px 16px rgba(15,42,74,0.1);
-  transform: translateY(-1px);
+  background: #163a61;
+  transform: translateY(-2px);
 }
 .home-card-title {
-  font: 800 15px/20px var(--ss-font-sans);
-  color: #0F2A4A;
-  margin-bottom: 6px;
+  font: 800 16px/22px var(--ss-font-sans);
+  color: #fff;
+  margin-bottom: 8px;
 }
+.home-card-arrow { color: #38BDF8; }
 .home-card-desc {
-  font: 400 12px/18px var(--ss-font-sans);
-  color: #64748B;
+  font: 400 13px/19px var(--ss-font-sans);
+  color: #94A3B8;
 }
 
 /* Mobile overrides */

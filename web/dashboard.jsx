@@ -496,12 +496,12 @@ function TodayView({ navigate, settings, regions }) {
 
 function HomeRatingBadge({ ratingKey }) {
   const MAP = {
-    fire:  { bg: '#D1FAE5', color: '#065F46', text: 'On Fire'   },
-    above: { bg: '#D1FAE5', color: '#065F46', text: 'Above Avg' },
-    avg:   { bg: '#F1F5F9', color: '#64748B', text: 'Average'   },
-    below: { bg: '#FEF3C7', color: '#92400E', text: 'Below Avg' },
-    slow:  { bg: '#F1F5F9', color: '#64748B', text: 'Slow'      },
-    new:   { bg: '#F1F5F9', color: '#64748B', text: 'New'       },
+    fire:  { bg: '#BBF7D0', color: '#14532D', text: 'On Fire'   },
+    above: { bg: '#BBF7D0', color: '#14532D', text: 'Above Avg' },
+    avg:   { bg: '#E2E8F0', color: '#334155', text: 'Average'   },
+    below: { bg: '#FDE68A', color: '#78350F', text: 'Below Avg' },
+    slow:  { bg: '#E2E8F0', color: '#334155', text: 'Slow'      },
+    new:   { bg: '#E2E8F0', color: '#334155', text: 'New'       },
   };
   const r = MAP[ratingKey] || MAP.new;
   return (
@@ -591,6 +591,18 @@ function HomeView({ navigate, settings, regions }) {
         </div>
       </div>
 
+      {/* ── FEATURE CARDS ─────────────────────────────────────────────── */}
+      <div className="home-cards">
+        <div className="home-card" onClick={() => navigate('analytics', { subtab: 'overview' })}>
+          <div className="home-card-title">Analytics <span className="home-card-arrow">→</span></div>
+          <div className="home-card-desc">Boat leaderboards, head-to-head &amp; 11 years of trends</div>
+        </div>
+        <div className="home-card" onClick={() => navigate('tripplanner')}>
+          <div className="home-card-title">Trip Planner <span className="home-card-arrow">→</span></div>
+          <div className="home-card-desc">Compare &amp; find the best upcoming trips with open spots</div>
+        </div>
+      </div>
+
       {/* ── TODAY'S REPORT (inline preview) ───────────────────────────── */}
       <div className="home-section">
         <div className="home-report-hd">
@@ -644,7 +656,7 @@ function HomeView({ navigate, settings, regions }) {
                     }}>{fmt.n(b.Bluefin)}</td>
                     <td style={{
                       fontWeight: 700,
-                      color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)',
+                      color: i === 0 ? '#38BDF8' : 'var(--tb-ink)',
                     }}>{fmt.tpa(b.trophyPerAnglerPerDay)}</td>
                     <td><HomeRatingBadge ratingKey={b.ratingKey}/></td>
                   </tr>
@@ -658,18 +670,6 @@ function HomeView({ navigate, settings, regions }) {
           <button className="home-full-report-btn" onClick={() => navigate('today')}>
             View full report &amp; all boats →
           </button>
-        </div>
-      </div>
-
-      {/* ── FEATURE CARDS ─────────────────────────────────────────────── */}
-      <div className="home-cards">
-        <div className="home-card" onClick={() => navigate('analytics', { subtab: 'overview' })}>
-          <div className="home-card-title">Analytics →</div>
-          <div className="home-card-desc">Boat leaderboards, head-to-head &amp; 11 years of trends</div>
-        </div>
-        <div className="home-card" onClick={() => navigate('tripplanner')}>
-          <div className="home-card-title">Trip Planner →</div>
-          <div className="home-card-desc">Compare &amp; find the best upcoming trips with open spots</div>
         </div>
       </div>
     </Fragment>
