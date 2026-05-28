@@ -865,6 +865,103 @@ function EnsembleWidget({ ensemble }) {
   );
 }
 
+// ─── Fleet departures ─────────────────────────────────────────────────────────
+
+function getFleetAvailability(trip) {
+  const status = (trip.tripStatus || '').toLowerCase();
+  const raw    = (trip.tripTypeRaw || '').toLowerCase();
+  const note   = (trip.note || '').toLowerCase();
+  if (status === 'cancelled') return { label: 'CXL',   type: 'cancelled' };
+  if (raw.includes('private') || note.includes('private charter'))
+                               return { label: 'PRIV',  type: 'private'   };
+  if (!trip.openSpots)         return { label: 'FULL',  type: 'full'      };
+  const cap = trip.capacity;
+  return { label: cap ? `${trip.openSpots}/${cap}` : `${trip.openSpots} open`, type: 'open' };
+}
+
+function FleetDepartures({ date, navigate }) {
+  const [showAll, setShowAll] = useS(false);
+
+  const schedule = window.SD?.SCHEDULE || [];
+  const dayTrips = schedule.filter(t => (t.departureAt || '').slice(0, 10) === date);
+  if (!dayTrips.length) return null;
+
+  const [winRateMap] = useS(() => {
+    try { return SDA.boatWinRates() || {}; } catch(e) { return {}; }
+  });
+
+  const sorted = [...dayTrips].sort((a, b) => {
+    const avA = getFleetAvailability(a);
+    const avB = getFleetAvailability(b);
+    if (avA.type === 'cancelled' && avB.type !== 'cancelled') return  1;
+    if (avB.type === 'cancelled' && avA.type !== 'cancelled') return -1;
+    const wA = winRateMap[`${a.boat}|${a.tripLength}`]?.winRate ?? -1;
+    const wB = winRateMap[`${b.boat}|${b.tripLength}`]?.winRate ?? -1;
+    return wB - wA;
+  });
+
+  const todayStr  = new Date().toISOString().slice(0, 10);
+  const isToday   = date === todayStr;
+  const displayed = showAll ? sorted : sorted.slice(0, 8);
+
+  return (
+    <Panel title={isToday ? "Today's Departing Fleet" : `Fleet Departures`}>
+      <div className="fc-fleet-note">
+        Showing all boats heading out {isToday ? 'today' : 'this day'} — including sold-out and private charters — ranked by historical win rate. Tracking every departure lets us validate predictions against the full fleet.
+      </div>
+      <div className="fc-fleet-list">
+        {displayed.map((trip, i) => {
+          const av          = getFleetAvailability(trip);
+          const wr          = winRateMap[`${trip.boat}|${trip.tripLength}`];
+          const winRatePct  = wr ? Math.round(wr.winRate * 100) : null;
+          const timeStr     = (trip.departureAt || '').slice(11, 16);
+          const landingShort = (trip.landing || '').replace(' Sportfishing','').replace(' Landing','');
+          const isCancelled  = av.type === 'cancelled';
+          const isOpen       = av.type === 'open';
+
+          return (
+            <div
+              key={`${trip.boat}|${trip.departureAt}`}
+              className={`fc-fleet-row fc-fleet-${av.type}`}
+              onClick={isOpen && navigate ? () => navigate('boat', { boat: trip.boat }) : undefined}
+            >
+              <div className="fc-fleet-rank">{i + 1}</div>
+              <div className="fc-fleet-main">
+                <div className={`fc-fleet-boat${isCancelled ? ' fc-fleet-boat-cancelled' : ''}`}>
+                  {trip.boat}
+                </div>
+                <div className="fc-fleet-meta">
+                  {landingShort}{trip.tripLength ? ` · ${trip.tripLength}` : ''}{timeStr ? ` · ${timeStr}` : ''}
+                </div>
+              </div>
+              <div className="fc-fleet-win">
+                {winRatePct != null
+                  ? <Fragment>
+                      <span className="fc-fleet-win-pct" style={{ color: scoreColor(winRatePct / 10) }}>
+                        {winRatePct}%
+                      </span>
+                      <span className="fc-fleet-win-label">win</span>
+                    </Fragment>
+                  : <span className="fc-fleet-win-pct" style={{ color: 'var(--tb-gray-3)' }}>—</span>
+                }
+              </div>
+              <div className="fc-fleet-avail">
+                <span className={`fc-fleet-badge fc-fleet-badge-${av.type}`}>{av.label}</span>
+                {isOpen && <span className="fc-fleet-arrow">→</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {sorted.length > 8 && (
+        <button className="fc-fleet-show-more" onClick={() => setShowAll(s => !s)}>
+          {showAll ? 'Show fewer ↑' : `+ ${sorted.length - 8} more boats →`}
+        </button>
+      )}
+    </Panel>
+  );
+}
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function NoForecastData() {
   return (
@@ -950,6 +1047,9 @@ function ForecastView({ navigate }) {
       {/* Dual inshore / offshore scores */}
       <DualSegmentWidget fc={fc}/>
 
+      {/* Today's full fleet — all departures regardless of availability */}
+      <FleetDepartures date={today.date} navigate={navigate}/>
+
       {/* Ensemble model comparison */}
       <EnsembleWidget ensemble={fc.ensemble}/>
 
@@ -965,6 +1065,9 @@ function ForecastView({ navigate }) {
           </div>
           <SevenDayStrip days={days} selectedIdx={selectedDay} onSelect={setSelectedDay}/>
           <DayDetail day={selDay}/>
+          {selDay && selDay.date !== today.date && (
+            <FleetDepartures date={selDay.date} navigate={navigate}/>
+          )}
         </Fragment>
       )}
 

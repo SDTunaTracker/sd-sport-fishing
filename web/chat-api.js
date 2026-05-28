@@ -33,39 +33,61 @@ function buildBookingUrl(t) {
   return base;
 }
 
+function getForecastScoreForDate(dateStr) {
+  const fc = window.SD?.FORECAST;
+  if (!fc) return null;
+  if (fc.today?.date === dateStr) return fc.today.overall_score ?? null;
+  const day = (fc.sevenDay || []).find(d => d.date === dateStr);
+  return day?.overall_score ?? null;
+}
+
+function getMoonPhaseForDate(dateStr) {
+  const fc = window.SD?.FORECAST;
+  if (!fc) return null;
+  if (fc.today?.date === dateStr) return fc.today.moon_phase_name || null;
+  const day = (fc.sevenDay || []).find(d => d.date === dateStr);
+  return day?.moon_phase_name || null;
+}
+
 function getUpcomingTripsForChat(regions) {
   const today   = new Date().toISOString().slice(0, 10);
   const cutoff  = new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const allowed = getRegionLandings(regions);
 
+  let winRateMap = {};
+  try { winRateMap = SDA.boatWinRates() || {}; } catch(e) {}
+
   return (window.SD?.SCHEDULE || [])
-    .filter(t =>
-      t.departureDate >= today &&
-      t.departureDate <= cutoff &&
-      t.openSpots > 0 &&
-      allowed.includes(t.landing)
-    )
-    .sort((a, b) => a.departureDate.localeCompare(b.departureDate))
+    .filter(t => {
+      const depDate = (t.departureAt || '').slice(0, 10);
+      return depDate >= today && depDate <= cutoff && t.openSpots > 0 && allowed.includes(t.landing);
+    })
+    .sort((a, b) => (a.departureAt || '').localeCompare(b.departureAt || ''))
     .slice(0, 100)
-    .map(t => ({
-      boat:            t.boat,
-      landing:         t.landing,
-      departure:       t.departureDate,
-      departureTime:   t.departureTime,
-      returnDate:      t.returnDate,
-      tripLength:      t.tripLength,
-      price:           t.price,
-      effectivePrice:  t.effectivePrice,
-      openSpots:       t.openSpots,
-      maxLoad:         t.maxLoad,
-      mealsIncluded:   t.mealsIncluded,
-      moonPhase:       t.moonPhase,
-      forecastScore:   t.forecastScore,
-      winRate:         t.winRate,
-      avgTPA:          t.avgTPA,
-      bookingUrl:      buildBookingUrl(t),
-      boatPageUrl:     `#boat/${encodeURIComponent(t.boat)}`,
-    }));
+    .map(t => {
+      const depDate = (t.departureAt || '').slice(0, 10);
+      const depTime = (t.departureAt || '').slice(11, 16);
+      const wr      = winRateMap[`${t.boat}|${t.tripLength}`];
+      return {
+        boat:            t.boat,
+        landing:         t.landing,
+        departure:       depDate,
+        departureTime:   depTime,
+        returnDate:      t.returnAt ? t.returnAt.slice(0, 10) : null,
+        tripLength:      t.tripLength,
+        price:           t.price,
+        effectivePrice:  t.effectivePrice,
+        openSpots:       t.openSpots,
+        maxLoad:         t.capacity,
+        mealsIncluded:   t.mealsIncluded,
+        moonPhase:       getMoonPhaseForDate(depDate),
+        forecastScore:   getForecastScoreForDate(depDate),
+        winRate:         wr ? Math.round(wr.winRate * 100) : null,
+        avgTPA:          wr ? +(wr.avgTPAPerDay?.toFixed(2)) : null,
+        bookingUrl:      buildBookingUrl(t),
+        boatPageUrl:     `#boat/${encodeURIComponent(t.boat)}`,
+      };
+    });
 }
 
 function getBoatStatsForChat(regions) {

@@ -144,6 +144,7 @@ def _scheduled_to_js(row: sqlite3.Row) -> dict:
         "mealValue": row["meals_value"] or 0,
         "effectivePrice": row["effective_price"],
         "sourceId": row["source_id"],
+        "bookable": bool((row["open_spots"] or 0) > 0) and (row["trip_status"] or "").lower() != "cancelled",
     }
 
 

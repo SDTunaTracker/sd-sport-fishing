@@ -1007,6 +1007,89 @@ body.compact .dt td { padding: 7px 12px; }
 .fc-hist-tpa     { font: 700 12px/16px var(--ss-font-sans); color: var(--tb-accent); text-align: right; }
 .fc-hist-trips   { color: var(--tb-gray-3); font-size: 11px; text-align: right; }
 
+/* Fleet departures */
+.fc-fleet-note {
+  font: 400 11px/1.6 var(--ss-font-sans);
+  color: var(--tb-slate);
+  font-style: italic;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--tb-border-2);
+  margin-bottom: 6px;
+}
+.fc-fleet-list { display: flex; flex-direction: column; }
+.fc-fleet-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--tb-border-2);
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+.fc-fleet-row:last-child { border-bottom: none; }
+.fc-fleet-open   { cursor: pointer; }
+.fc-fleet-open:hover { background: var(--tb-foam); }
+.fc-fleet-full   { opacity: 0.65; }
+.fc-fleet-private { opacity: 0.5; }
+.fc-fleet-cancelled { opacity: 0.35; }
+.fc-fleet-rank {
+  font: 600 11px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.fc-fleet-main { flex: 1; min-width: 0; }
+.fc-fleet-boat {
+  font: 600 13px var(--ss-font-sans);
+  color: var(--tb-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-fleet-boat-cancelled { text-decoration: line-through; }
+.fc-fleet-meta {
+  font: 400 11px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-fleet-win {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 36px;
+  flex-shrink: 0;
+}
+.fc-fleet-win-pct  { font: 700 13px var(--ss-font-sans); }
+.fc-fleet-win-label {
+  font: 400 9px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.fc-fleet-avail  { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.fc-fleet-badge  { font: 600 10px var(--ss-font-sans); padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.fc-fleet-badge-open      { background: #D1FAE5; color: #065F46; }
+.fc-fleet-badge-full      { background: #FEF3C7; color: #92400E; }
+.fc-fleet-badge-private   { background: var(--tb-foam); color: var(--tb-slate); }
+.fc-fleet-badge-cancelled { background: #FEE2E2; color: #991B1B; }
+.fc-fleet-arrow  { font-size: 11px; color: var(--tb-accent); }
+.fc-fleet-show-more {
+  background: none;
+  border: 1px solid var(--tb-border-2);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font: 500 12px var(--ss-font-sans);
+  color: var(--tb-accent-d);
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+  transition: all 0.15s;
+}
+.fc-fleet-show-more:hover { background: var(--tb-accent-l); }
+
 /* Accuracy widget */
 .fc-accuracy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
 .fc-acc-kpi { background: var(--tb-foam); border-radius: 8px; padding: 10px; text-align: center; }
