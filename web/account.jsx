@@ -235,33 +235,20 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
         <h2 style={{ font: '700 20px/28px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 24 }}>My Account</h2>
 
-        <div style={card}>
-          <div style={{ font: '600 15px/22px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 8 }}>
-            Sign in to sync your preferences
+        <div style={{ ...card, textAlign: 'center', padding: '40px 32px' }}>
+          <i className="fa-solid fa-circle-user" style={{ fontSize: 48, color: 'var(--tb-lime)', marginBottom: 16, display: 'block' }}/>
+          <div style={{ font: '700 18px/26px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 8 }}>
+            Sign in to access your settings
           </div>
-          <p style={{ font: '400 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)', marginBottom: 16 }}>
-            Save your region and trophy species settings to your account and access them on any device.
-            Unlock Pro features as they launch.
+          <p style={{ font: '400 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)', marginBottom: 24, maxWidth: 380, margin: '0 auto 24px' }}>
+            Region preferences, trophy species, and display settings are saved to your account
+            and sync across all your devices.
           </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button className="btn-acct-primary" onClick={signUp}>Create Free Account</button>
             <button className="btn-acct-secondary" onClick={signIn}>Sign In</button>
           </div>
-          <div style={{ font: '400 12px/16px var(--ss-font-sans)', color: 'var(--ss-gray-3)', fontStyle: 'italic' }}>
-            Continuing as guest — your settings save locally on this browser.
-          </div>
         </div>
-
-        <RegionSection/>
-        <SpeciesSection/>
-
-        <button onClick={resetAll} style={{
-          background: 'none', border: '1px solid var(--ss-border)', borderRadius: 6,
-          padding: '7px 16px', cursor: 'pointer',
-          font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 4,
-        }}>
-          Reset to defaults
-        </button>
       </div>
     );
   }
