@@ -91,7 +91,7 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-opus-4-7',
         max_tokens: 400,
         system: buildSystemPrompt(pageContext),
         messages: [
