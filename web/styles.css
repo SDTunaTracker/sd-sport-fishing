@@ -3240,10 +3240,17 @@ body.chat-open {
 
 /* ───── Homepage redesign ───── */
 
-/* Hero: full-bleed break out of main-content padding */
+/* Strip main-content padding for the home view so hero + stats bar go edge-to-edge */
+.main-content[data-screen-label="home"] {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+/* Hero: truly full-width now that the parent has no padding */
 .home-hero {
   position: relative;
-  min-height: 240px;
+  min-height: 290px;
   background-image:
     linear-gradient(180deg,
       rgba(15,42,74,0.15) 0%,
@@ -3254,9 +3261,7 @@ body.chat-open {
   background-position: center;
   display: flex;
   align-items: flex-end;
-  /* break out of .main-content padding */
-  margin: -16px -16px 0;
-  border-radius: 0;
+  margin: 0;
 }
 .home-hero-content {
   padding: 28px;
@@ -3296,12 +3301,12 @@ body.chat-open {
 .home-cred-star { color: #34D399; }
 .home-cred-count { color: #fff; font-weight: 700; }
 
-/* Stats bar */
+/* Stats bar: also full-width (no padding to fight against) */
 .home-stats-bar {
   display: flex;
   align-items: stretch;
   background: #0B1F38;
-  margin: 0 -16px;
+  margin: 0;
 }
 .home-stat {
   flex: 1;
@@ -3327,13 +3332,13 @@ body.chat-open {
   margin-top: 2px;
 }
 
-/* Today's Report section */
+/* Today's Report section — side margins replace the stripped parent padding */
 .home-section {
   background: #fff;
   border: 1px solid #E2E8F0;
   border-radius: 10px;
   overflow: hidden;
-  margin-top: 20px;
+  margin: 20px 16px 0;
 }
 .home-report-hd {
   display: flex;
@@ -3430,7 +3435,7 @@ body.chat-open {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 16px;
+  margin: 16px 16px 0;
 }
 .home-card {
   background: #fff;
@@ -3456,17 +3461,15 @@ body.chat-open {
 
 /* Mobile overrides */
 @media (max-width: 768px) {
-  .home-hero {
-    min-height: 220px;
-    margin: -12px -12px 0;
-  }
+  .home-hero { min-height: 220px; margin: 0; }
   .home-hero-content { padding: 20px; }
   .home-hero-h1 { font-size: 26px; }
-  .home-stats-bar { margin: 0 -12px; }
+  .home-stats-bar { margin: 0; }
+  .home-section { margin-left: 12px; margin-right: 12px; }
+  .home-cards { grid-template-columns: 1fr; margin-left: 12px; margin-right: 12px; }
   .home-stat { padding: 12px 4px; }
   .home-stat-num { font-size: 18px; }
   .home-stat-lbl { font-size: 9px; letter-spacing: 0.04em; }
-  .home-cards { grid-template-columns: 1fr; }
   /* Hide Trip and Bluefin columns on mobile, keep Boat | TPA | Rating */
   .home-report-table .hrt-trip,
   .home-report-table .hrt-bf { display: none; }

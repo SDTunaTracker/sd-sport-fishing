@@ -131,7 +131,6 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
           {/* Logo: fish icon + wordmark + region dropdown */}
           <div className="logo-wrap" ref={dropdownRef}>
             <div className="logo" onClick={() => handleNavItem('home')} style={{cursor:'pointer'}}>
-              <i className="fa-solid fa-fish-fins logo-fish"></i>
               <div className="logo-text">
                 <span className="logo-wordmark">The Tuna Tracker</span>
                 <button className="logo-region-btn" onClick={e => { e.stopPropagation(); setRegionOpen(o => !o); }}>
@@ -180,7 +179,6 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu-head">
               <div className="mm-logo">
-                <i className="fa-solid fa-fish-fins" style={{color:'var(--tb-lime)'}}></i>
                 <span>The Tuna Tracker</span>
               </div>
               <span className="mm-close" onClick={closeMenu}>
