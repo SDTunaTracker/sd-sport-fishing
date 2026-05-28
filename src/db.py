@@ -288,6 +288,10 @@ _NEW_TRIP_COLUMNS = [
     ("region",      "TEXT DEFAULT 'san_diego'"),
     ("full_catch",      "TEXT DEFAULT NULL"),
     ("white_sea_bass",  "INTEGER DEFAULT 0"),
+    ("source",          "TEXT DEFAULT 'fish_count_page'"),
+    ("is_preliminary",  "INTEGER DEFAULT 0"),
+    ("written_text",    "TEXT"),
+    ("needs_review",    "INTEGER DEFAULT 0"),
 ]
 
 

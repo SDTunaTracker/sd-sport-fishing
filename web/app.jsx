@@ -13,7 +13,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // Format: #<region-prefix>/<view>[/<params>]  e.g. #sd/today, #ocla/analytics/overview
 const HASH_VIEWS = {
   today: 'today', tripplanner: 'tripplanner',
-  settings: 'settings', admin: 'admin', forecast: 'forecast',
+  settings: 'account', admin: 'admin', forecast: 'forecast',
+  account: 'account',
 };
 
 const ANALYTICS_SUBTABS = ['overview', 'boats', 'landings', 'headtohead', 'seasonality', 'moon'];
@@ -114,6 +115,13 @@ function App() {
     }
   }, [regions]);
 
+  function setRegionsDirect(newRegions) {
+    const cleaned = Array.isArray(newRegions) && newRegions.length > 0 ? newRegions : ['san_diego'];
+    setRegions(cleaned);
+    try { localStorage.setItem('tt_regions', JSON.stringify(cleaned)); } catch(e) {}
+    setFilters(f => ({ ...f, landing: 'all', boat: 'all' }));
+  }
+
   function toggleRegion(regionId) {
     setRegions(prev => {
       let next;
@@ -198,7 +206,7 @@ function App() {
   // Map nav tab id -> navigate() view
   const navMap = {
     today: 'today', forecast: 'forecast', analytics: 'analytics',
-    tripplanner: 'tripplanner', settings: 'settings',
+    tripplanner: 'tripplanner', account: 'account',
   };
 
   let content;
@@ -214,8 +222,9 @@ function App() {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} regions={regions}/>;
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
-  } else if (route.view === 'settings') {
-    content = <SettingsView settings={settings} onSettingsChange={onSettingsChange}/>;
+  } else if (route.view === 'account') {
+    content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
+                              regions={regions} onRegionsDirect={setRegionsDirect}/>;
   }
 
   const headerActive = (route.view === 'boat' || route.view === 'landing') ? 'analytics' : route.view;

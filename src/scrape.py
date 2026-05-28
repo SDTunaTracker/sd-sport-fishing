@@ -34,6 +34,8 @@ class LandingSource:
     url: str              # Fish-count page URL
     referer: str | None   # Optional Referer header (needed for fishcounts.com iframes)
     region: str = 'san_diego'
+    main_url: str | None = None   # Landing homepage — scanned for written reports
+    news_url: str | None = None   # News/blog page if separate from main
 
 
 SOURCES: tuple[LandingSource, ...] = (
@@ -41,21 +43,28 @@ SOURCES: tuple[LandingSource, ...] = (
         name="H&M Landing",
         url="https://www.fishcounts.com/hmlanding/fishcounts.php",
         referer="https://www.hmlanding.com/",
+        main_url="https://www.hmlanding.com/",
+        news_url="https://www.hmlanding.com/fish-report/",
     ),
     LandingSource(
         name="Fisherman's Landing",
         url="https://www.fishcounts.com/fishermanslanding/fishcounts.php",
         referer="https://www.fishermanslanding.com/",
+        main_url="https://www.fishermanslanding.com/",
+        news_url="https://www.fishermanslanding.com/fish-reports/",
     ),
     LandingSource(
         name="Seaforth Sportfishing",
         url="https://www.fishcounts.com/seaforth/fishcounts.php",
         referer="https://www.seaforthlanding.com/",
+        main_url="https://www.seaforthlanding.com/",
+        news_url="https://www.seaforthlanding.com/fish-reports/",
     ),
     LandingSource(
         name="Point Loma Sportfishing",
         url="https://www.pointlomasportfishing.com/fishcounts.php",
         referer=None,
+        main_url="https://www.pointlomasportfishing.com/",
     ),
     LandingSource(
         name="Oceanside Sea Center",
@@ -361,6 +370,168 @@ def scrape_all(sources: Iterable[LandingSource] = SOURCES,
             log.exception("scrape failed: %s", src.name)
             results.append((src, [], None, f"{type(e).__name__}: {e}"))
     return results
+
+
+_FINAL_KEYWORDS = [
+    'returned', 'returned home', 'docked', 'back at the dock',
+    'wrapped up', 'wrap up', 'final count', 'final totals',
+    'at the dock', 'tied up', 'now unloading', 'unloading',
+]
+
+_PRELIMINARY_KEYWORDS = [
+    'called in', 'phoned in', 'radio report', 'still fishing',
+    'currently fishing', 'on the water', 'mid-trip',
+    'morning report', 'check in', 'checking in', 'midday report',
+    'reporting in', 'out on the water',
+]
+
+
+def classify_report_status(text: str) -> str:
+    """Return 'final' or 'preliminary' for a written landing report."""
+    lower = text.lower()
+    for kw in _PRELIMINARY_KEYWORDS:
+        if kw in lower:
+            return 'preliminary'
+    for kw in _FINAL_KEYWORDS:
+        if kw in lower:
+            return 'final'
+    return 'preliminary'   # default safe — don't publish unconfirmed counts
+
+
+def _fetch_optional(url: str, timeout: float = 20.0) -> str | None:
+    """Fetch a URL, returning None on any error (used for supplementary pages)."""
+    headers = {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"}
+    try:
+        r = requests.get(url, headers=headers, timeout=timeout)
+        r.raise_for_status()
+        return r.text
+    except Exception as exc:
+        log.debug("optional fetch failed %s: %s", url, exc)
+        return None
+
+
+def _extract_text_blocks(html: str) -> list[str]:
+    """Pull paragraph/div text blocks from a landing page, filtering boilerplate."""
+    soup = BeautifulSoup(html, "lxml")
+    blocks: list[str] = []
+    for tag in soup.find_all(["p", "div", "li", "article"]):
+        text = tag.get_text(" ", strip=True)
+        if len(text) < 40 or len(text) > 2000:
+            continue
+        if any(skip in text.lower() for skip in ("©", "privacy policy", "javascript", "cookie")):
+            continue
+        blocks.append(text)
+    return blocks
+
+
+def _looks_like_fish_report(text: str) -> bool:
+    """Quick heuristic: does this block look like a boat fish report?"""
+    lower = text.lower()
+    has_boat_keyword = any(kw in lower for kw in (
+        'limits', 'limits of', 'anglers', 'limits of tuna',
+        'bluefin', 'yellowfin', 'yellowtail', 'dorado',
+        'albacore', 'limits of fish',
+    ))
+    has_status_keyword = any(kw in lower for kw in
+                             _FINAL_KEYWORDS + _PRELIMINARY_KEYWORDS)
+    return has_boat_keyword or has_status_keyword
+
+
+def scan_written_updates(src: LandingSource,
+                         target_date: date | None = None) -> list[dict]:
+    """Scan a landing's homepage and news page for written fish reports.
+
+    Returns a list of provisional trip dicts with source='written_update_final' or
+    'written_update_preliminary'. These supplement the structured fish-count table
+    when boats report in before the official count page is updated.
+
+    Each returned dict has only the fields we can reliably extract from free text:
+    date, landing, source, is_preliminary, written_text, scraped_at. The caller
+    should store them separately (not via insert_trips) until reconciled.
+    """
+    scraped_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    today = target_date or date.today()
+    reports: list[dict] = []
+
+    urls = [u for u in [src.main_url, src.news_url] if u]
+    if not urls:
+        return reports
+
+    for url in urls:
+        html = _fetch_optional(url)
+        if not html:
+            continue
+        blocks = _extract_text_blocks(html)
+        for block in blocks:
+            if not _looks_like_fish_report(block):
+                continue
+            # Try to find a date reference in the block; default to today.
+            block_date = P.parse_date(block) or today
+            if target_date and block_date != target_date:
+                continue
+            status = classify_report_status(block)
+            source_val = (f'written_update_{status}')
+            reports.append({
+                "date": block_date.isoformat(),
+                "landing": src.name,
+                "source": source_val,
+                "is_preliminary": 1 if status == 'preliminary' else 0,
+                "written_text": block[:1000],
+                "scraped_at": scraped_at,
+            })
+            log.info("written update [%s] %s — %s", status, src.name, block[:80])
+
+    return reports
+
+
+def reconcile_daily_counts(db_path: str = "tracker.db") -> dict:
+    """Compare written_update trips against structured fish-count entries for today.
+
+    Structured fish-count page entries are the source of truth. Any written_update
+    row that has a matching structured row gets deleted. Unmatched written_update
+    rows are flagged with needs_review=1.
+
+    Returns a summary dict: {matched, flagged}.
+    """
+    import sqlite3 as _sqlite3
+    today = date.today().isoformat()
+    conn = _sqlite3.connect(db_path)
+    conn.row_factory = _sqlite3.Row
+    matched = 0
+    flagged = 0
+    try:
+        written = conn.execute("""
+            SELECT id, boat, trip_length, landing, source
+            FROM trips
+            WHERE date = ?
+              AND source LIKE 'written_update%'
+        """, (today,)).fetchall()
+
+        for w in written:
+            structured = conn.execute("""
+                SELECT id FROM trips
+                WHERE date = ?
+                  AND boat = ?
+                  AND trip_length = ?
+                  AND landing = ?
+                  AND source = 'fish_count_page'
+            """, (today, w["boat"], w["trip_length"], w["landing"])).fetchone()
+
+            if structured:
+                conn.execute("DELETE FROM trips WHERE id = ?", (w["id"],))
+                matched += 1
+                log.info("reconcile: removed written update (structured entry exists) — %s %s",
+                         w["landing"], w["boat"])
+            else:
+                conn.execute("UPDATE trips SET needs_review = 1 WHERE id = ?", (w["id"],))
+                flagged += 1
+
+        conn.commit()
+    finally:
+        conn.close()
+
+    log.info("reconcile_daily_counts: %d matched+removed, %d flagged for review", matched, flagged)
+    return {"matched": matched, "flagged": flagged}
 
 
 def backfill_full_catch(db_path: str = "tracker.db", batch: int = 500) -> int:

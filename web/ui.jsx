@@ -61,24 +61,6 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
               <span className="logo-subtitle">{subtitle}</span>
             </div>
           </div>
-          {/* Region toggle pills — desktop and mobile */}
-          {window.REGIONS && (
-            <div className="header-region-selector">
-              {window.REGIONS.map(reg => {
-                const isActive = regions && regions.includes(reg.id);
-                return (
-                  <button
-                    key={reg.id}
-                    className={`region-pill${isActive ? ' sel' : ''}`}
-                    onClick={() => onRegionToggle && onRegionToggle(reg.id)}
-                    title={reg.label}
-                  >
-                    {reg.short}
-                  </button>
-                );
-              })}
-            </div>
-          )}
           {/* Nav tabs — desktop only */}
           <div className="header-nav">
             {NAV.map(t => (
@@ -89,12 +71,14 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
               </div>
             ))}
           </div>
-          {/* Gear icon */}
-          <span className="header-gear iconbtn" title="Settings"
-                onClick={() => handleNavItem('settings')}
-                style={{color: active === 'settings' ? 'var(--tb-ink)' : 'var(--tb-slate)'}}>
-            <i className="fa-solid fa-gear"></i>
-          </span>
+          {/* My Account button */}
+          <button className={`header-account-btn${active === 'account' ? ' sel' : ''}`}
+                  onClick={() => handleNavItem('account')}
+                  title="My Account">
+            <i className="fa-solid fa-circle-user"></i>
+            <span className="header-account-label">My Account</span>
+            <i className="fa-solid fa-caret-down" style={{fontSize:9,marginLeft:2,opacity:0.6}}></i>
+          </button>
           {/* Hamburger: mobile only */}
           <span className="header-hamburger iconbtn" title="Menu"
                 onClick={() => menuState === 'open' ? closeMenu() : openMenu()}>
@@ -125,31 +109,11 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
                 <span>{t.label}</span>
               </div>
             ))}
-            {window.REGIONS && (
-              <React.Fragment>
-                <div className="mobile-menu-divider"></div>
-                <div className="mm-section-label">Region</div>
-                {window.REGIONS.map(reg => {
-                  const isActive = regions && regions.includes(reg.id);
-                  return (
-                    <div
-                      key={reg.id}
-                      className={`mobile-menu-item${isActive ? ' sel' : ''}`}
-                      onClick={() => onRegionToggle && onRegionToggle(reg.id)}
-                    >
-                      <i className="fa-solid fa-location-dot"></i>
-                      <span>{reg.label}</span>
-                      {isActive && <i className="fa-solid fa-check mm-check"></i>}
-                    </div>
-                  );
-                })}
-              </React.Fragment>
-            )}
             <div className="mobile-menu-divider"></div>
-            <div className={`mobile-menu-item${active === 'settings' ? ' sel' : ''}`}
-                 onClick={() => handleNavItem('settings')}>
-              <i className="fa-solid fa-gear"></i>
-              <span>Settings</span>
+            <div className={`mobile-menu-item${active === 'account' ? ' sel' : ''}`}
+                 onClick={() => handleNavItem('account')}>
+              <i className="fa-solid fa-circle-user"></i>
+              <span>My Account</span>
             </div>
           </div>
         </div>
