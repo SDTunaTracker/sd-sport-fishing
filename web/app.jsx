@@ -72,6 +72,9 @@ function App() {
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
   const [pageContext, setPageContext] = useS({ page: 'today', boat: null, date: null });
 
+  // Clerk auth state — hook must be at top level.
+  const { user, isSignedIn } = useAuth();
+
   const [regions, setRegions] = useS(() => {
     const initial = routeFromHash();
     if (initial.hashRegions) return initial.hashRegions;
@@ -95,6 +98,28 @@ function App() {
   }
   // Initialize processed trips on first render.
   useE(() => { SDA.preprocessTrips(settings); }, []);
+
+  // When a user signs in, pull their saved region and species from Clerk metadata.
+  useE(() => {
+    if (!isSignedIn || !window.getUserPref) return;
+    const savedRegion = window.getUserPref('primary_region', null);
+    if (savedRegion && savedRegion !== regions[0]) {
+      setRegionsDirect([savedRegion]);
+    }
+    const savedSpecies = window.getUserPref('trophySpecies', null);
+    if (savedSpecies && Array.isArray(savedSpecies)) {
+      const next = { ...settings, trophySpecies: savedSpecies };
+      saveSettings(next);
+      SDA.preprocessTrips(next);
+      setSettingsState(next);
+    }
+    const savedMethod = window.getUserPref('tripLengthMethod', null);
+    if (savedMethod) {
+      const next = { ...settings, tripLengthMethod: savedMethod };
+      saveSettings(next);
+      setSettingsState(next);
+    }
+  }, [isSignedIn, user && user.id]);
 
   // Sync effective region to global so filterTrips picks it up automatically.
   useE(() => {

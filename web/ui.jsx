@@ -23,6 +23,28 @@ const fmt = {
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+function AuthButton() {
+  const { user, loaded, signIn, isSignedIn } = useAuth();
+
+  React.useEffect(() => {
+    if (!isSignedIn) return;
+    const el = document.getElementById('clerk-user-button');
+    if (el && window.Clerk && el.childElementCount === 0) {
+      window.Clerk.mountUserButton(el, { afterSignOutUrl: window.location.pathname });
+    }
+  }, [isSignedIn, user]);
+
+  if (!loaded) return null;
+
+  if (isSignedIn) {
+    return <div id="clerk-user-button" className="header-clerk-btn"></div>;
+  }
+
+  return (
+    <button className="auth-signin-btn" onClick={signIn}>Sign In</button>
+  );
+}
+
 function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
 
@@ -71,7 +93,7 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
               </div>
             ))}
           </div>
-          {/* My Account button */}
+          {/* My Account button (navigates to preferences page) */}
           <button className={`header-account-btn${active === 'account' ? ' sel' : ''}`}
                   onClick={() => handleNavItem('account')}
                   title="My Account">
@@ -79,6 +101,8 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
             <span className="header-account-label">My Account</span>
             <i className="fa-solid fa-caret-down" style={{fontSize:9,marginLeft:2,opacity:0.6}}></i>
           </button>
+          {/* Auth: Sign In button when logged out, Clerk avatar when logged in */}
+          <AuthButton/>
           {/* Hamburger: mobile only */}
           <span className="header-hamburger iconbtn" title="Menu"
                 onClick={() => menuState === 'open' ? closeMenu() : openMenu()}>
@@ -115,6 +139,13 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
               <i className="fa-solid fa-circle-user"></i>
               <span>My Account</span>
             </div>
+            {window.__clerkReady && !window.CLERK_USER && (
+              <div className="mobile-menu-item"
+                   onClick={() => { setMenuState('closed'); window.Clerk && window.Clerk.openSignIn(); }}>
+                <i className="fa-solid fa-right-to-bracket"></i>
+                <span>Sign In</span>
+              </div>
+            )}
           </div>
         </div>
       )}

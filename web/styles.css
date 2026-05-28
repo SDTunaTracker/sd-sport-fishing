@@ -184,6 +184,35 @@ a { color: inherit; text-decoration: none; }
 .header-nav .tab:hover { color: var(--tb-ink); }
 .header-gear { font-size: 16px; flex-shrink: 0; margin-left: 8px; }
 
+/* Auth sign-in button (shown when logged out) */
+.auth-signin-btn {
+  padding: 6px 14px; border-radius: 20px; cursor: pointer;
+  font: 600 13px/16px var(--ss-font-sans); color: #fff;
+  background: var(--tb-deep); border: none;
+  flex-shrink: 0; margin-left: 6px;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.auth-signin-btn:hover { opacity: 0.88; }
+
+/* Clerk UserButton mount target */
+.header-clerk-btn { display: inline-flex; align-items: center; margin-left: 6px; flex-shrink: 0; }
+
+/* Account page CTA buttons */
+.btn-acct-primary {
+  padding: 9px 20px; border-radius: 6px;
+  background: var(--tb-deep); color: #fff; border: none;
+  font: 600 13px/16px var(--ss-font-sans); cursor: pointer;
+}
+.btn-acct-primary:hover { opacity: 0.9; }
+.btn-acct-secondary {
+  padding: 9px 20px; border-radius: 6px;
+  background: none; color: var(--tb-deep);
+  border: 1px solid var(--tb-deep);
+  font: 600 13px/16px var(--ss-font-sans); cursor: pointer;
+}
+.btn-acct-secondary:hover { background: var(--ss-bg-muted); }
+
 /* My Account header button */
 .header-account-btn {
   display: inline-flex; align-items: center; gap: 6px;
