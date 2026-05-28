@@ -9,6 +9,30 @@ function getRegionLandings(regions) {
   return window.SD?.LANDINGS || [];
 }
 
+function buildBookingUrl(t) {
+  let base = null;
+  switch (t.landing) {
+    case 'Point Loma Sportfishing':
+      base = t.sourceId ? `https://pointloma.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(t.sourceId)}` : null;
+      break;
+    case 'Seaforth Sportfishing':
+      base = t.sourceId ? `https://seaforth.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(t.sourceId)}` : null;
+      break;
+    case "Fisherman's Landing":
+      base = t.sourceId ? `https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=${encodeURIComponent(t.sourceId)}` : null;
+      break;
+    case 'H&M Landing': {
+      const slug = (t.boat || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      base = slug ? `https://www.hmlanding.com/boat/${slug}` : null;
+      break;
+    }
+    default: break;
+  }
+  if (!base) return null;
+  if (window.TTTrack?.buildUrl) return TTTrack.buildUrl(base, t.boat, t.landing, t.departureDate || '');
+  return base;
+}
+
 function getUpcomingTripsForChat(regions) {
   const today   = new Date().toISOString().slice(0, 10);
   const cutoff  = new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -39,6 +63,8 @@ function getUpcomingTripsForChat(regions) {
       forecastScore:   t.forecastScore,
       winRate:         t.winRate,
       avgTPA:          t.avgTPA,
+      bookingUrl:      buildBookingUrl(t),
+      boatPageUrl:     `#boat/${encodeURIComponent(t.boat)}`,
     }));
 }
 
@@ -84,9 +110,9 @@ function buildSystemPrompt(pageContext) {
 
   const upcomingSection = upcomingTrips.length > 0
     ? upcomingTrips.map(t =>
-        `${t.boat} (${t.landing}) | ${t.tripLength} | Departs ${t.departure} ${t.departureTime || ''} | Returns ${t.returnDate} | $${t.price}${t.mealsIncluded ? ' (meals incl.)' : ''} | ${t.openSpots} spots open | Moon: ${t.moonPhase || 'N/A'} | Forecast: ${t.forecastScore ?? 'N/A'}/10 | Win Rate: ${t.winRate ?? 'N/A'}%`
+        `${t.boat} (${t.landing}) | ${t.tripLength} | Departs ${t.departure} ${t.departureTime || ''} | Returns ${t.returnDate} | $${t.price}${t.mealsIncluded ? ' (meals incl.)' : ''} | ${t.openSpots} spots open | Moon: ${t.moonPhase || 'N/A'} | Forecast: ${t.forecastScore ?? 'N/A'}/10 | Win Rate: ${t.winRate ?? 'N/A'}% | BoatPage: ${t.boatPageUrl} | Booking: ${t.bookingUrl || 'N/A'}`
       ).join('\n')
-    : 'No upcoming trips with open spots in the next 30 days.';
+    : 'No upcoming trips with open spots in the next 120 days.';
 
   const boatSection = boatStats.length > 0
     ? boatStats.map(b =>
@@ -164,6 +190,27 @@ CONTEXT AWARENESS:
 - If user mentions dates: only show trips in that range
 - If user mentions trip length: only show matching lengths
 - If user mentions a species: weight boats with strong history for that species
+
+LINK GENERATION:
+Include clickable markdown links [text](url) in your responses. Use the BoatPage and Booking URLs provided in each trip's data above.
+
+Internal app pages (use these exact formats):
+- Boat detail: use the BoatPage field from the trip data (e.g. #boat/Pacific%20Queen)
+- Trip Planner: [Trip Planner](#tripplanner)
+- Filtered by length: [Overnight trips](#tripplanner?tripLength=Overnight)
+- Today's report: [Today's Report](#today)
+- Forecast: [Forecast](#forecast)
+- Leaderboard: [Boat Leaderboard](#analytics/boats)
+
+When to link:
+- Trip recommendations: link the boat name to its BoatPage, and include [Book at {landing} →](Booking URL) if Booking is not N/A
+- First mention of any boat in a response: link to its boat page using #boat/{name encoded}
+- "Trip Planner" suggestions: always make it a link
+- Page suggestions ("check the forecast"): link the page name
+
+Format for trip recommendations:
+1. [Boat Name](BoatPage) — trip details
+   [Book at Landing Name →](bookingUrl)
 
 RESPONSE LENGTH:
 - Simple questions: 2-3 sentences

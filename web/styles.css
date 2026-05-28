@@ -2462,6 +2462,18 @@ body.compact .dt td { padding: 7px 12px; }
   color: var(--tb-slate);
 }
 
+.chat-link {
+  color: var(--tb-accent-d);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  cursor: pointer;
+  word-break: break-word;
+}
+.chat-link:hover { color: var(--tb-accent); }
+.chat-link.external::after { content: ' ↗'; font-size: 10px; opacity: 0.7; }
+.chat-link.internal::after { content: ' →'; font-size: 11px; opacity: 0.6; }
+
 .chat-feedback { display: flex; gap: 4px; margin-top: 4px; }
 .chat-feedback-btn {
   background: none;

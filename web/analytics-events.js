@@ -125,6 +125,16 @@ window.TTTrack = {
     }
   },
 
+  chatLinkClick: function(linkText, url, isExternal) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_link_click', {
+        link_text: linkText,
+        link_type: isExternal ? 'external_booking' : 'internal_page',
+        destination: url,
+      });
+    }
+  },
+
   getClickStats: function() {
     try {
       var clicks = JSON.parse(localStorage.getItem('tt_clicks') || '[]');

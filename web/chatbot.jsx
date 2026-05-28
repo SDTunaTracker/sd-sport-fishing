@@ -4,6 +4,60 @@
 
 const { useState, useEffect, useRef, Fragment } = React;
 
+function renderInlineText(text, key) {
+  const lines = text.split('\n');
+  return (
+    <span key={key}>
+      {lines.map((line, li) => {
+        const boldParts = line.split(/(\*\*[^*]+\*\*)/);
+        return (
+          <span key={li}>
+            {li > 0 && <br />}
+            {boldParts.map((part, pi) =>
+              part.startsWith('**') && part.endsWith('**')
+                ? <strong key={pi}>{part.slice(2, -2)}</strong>
+                : part
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function renderMessageContent(text, onInternalNav) {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+    parts.push({ type: 'link', label: match[1], url: match[2] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) parts.push({ type: 'text', value: text.slice(lastIndex) });
+
+  return parts.map((part, i) => {
+    if (part.type === 'link') {
+      const isExternal = part.url.startsWith('http');
+      return (
+        <a
+          key={i}
+          href={part.url}
+          target={isExternal ? '_blank' : undefined}
+          rel={isExternal ? 'noopener noreferrer' : undefined}
+          className={`chat-link${isExternal ? ' external' : ' internal'}`}
+          onClick={() => {
+            if (window.TTTrack?.chatLinkClick) TTTrack.chatLinkClick(part.label, part.url, isExternal);
+            if (!isExternal && onInternalNav) onInternalNav();
+          }}
+        >{part.label}</a>
+      );
+    }
+    return renderInlineText(part.value, i);
+  });
+}
+
 const SUGGESTED_QUESTIONS = [
   "What's the best trip this weekend?",
   "Find me an overnight trip under $500",
@@ -194,7 +248,7 @@ function ChatBot({ pageContext }) {
                   </div>
                 ) : (
                   <Fragment>
-                    <div className="chat-bubble">{msg.text}</div>
+                    <div className="chat-bubble">{renderMessageContent(msg.text, () => setOpen(false))}</div>
 
                     {msg.role === 'assistant' && msg.dataUsed && (
                       <div className="chat-reasoning">
