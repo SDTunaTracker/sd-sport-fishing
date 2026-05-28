@@ -14,10 +14,10 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 const HASH_VIEWS = {
   today: 'today', tripplanner: 'tripplanner',
   settings: 'account', admin: 'admin', forecast: 'forecast',
-  account: 'account',
+  account: 'account', boats: 'boats',
 };
 
-const ANALYTICS_SUBTABS = ['overview', 'boats', 'landings', 'headtohead', 'seasonality', 'moon'];
+const ANALYTICS_SUBTABS = ['overview', 'headtohead', 'seasonality', 'moon'];
 
 function extractRegionFromHash(raw) {
   if (!raw) return { regionIds: null, rest: '' };
@@ -39,6 +39,9 @@ function routeFromHash() {
   if (seg === 'landing' && detail) return { view: 'landing', params: { landing: detail }, hashRegions: regionIds };
 
   if (seg === 'analytics') {
+    // Legacy: analytics/boats → top-level boats page
+    if (detail === 'boats') return { view: 'boats', params: {}, hashRegions: regionIds };
+    // Legacy: analytics/landings → overview (landings is now just a filter)
     const subtab = ANALYTICS_SUBTABS.includes(detail) ? detail : 'overview';
     return { view: 'analytics', params: { subtab }, hashRegions: regionIds };
   }
@@ -47,10 +50,10 @@ function routeFromHash() {
     const sub = detail === 'moon' ? 'moon' : 'seasonality';
     return { view: 'analytics', params: { subtab: sub }, hashRegions: regionIds };
   }
-  if (seg === 'boats')      return { view: 'analytics', params: { subtab: 'boats' },      hashRegions: regionIds };
-  if (seg === 'landings')   return { view: 'analytics', params: { subtab: 'landings' },   hashRegions: regionIds };
-  if (seg === 'headtohead') return { view: 'analytics', params: { subtab: 'headtohead' }, hashRegions: regionIds };
-  if (seg === 'moon')       return { view: 'analytics', params: { subtab: 'moon' },       hashRegions: regionIds };
+  if (seg === 'boats')      return { view: 'boats',     params: {},                        hashRegions: regionIds };
+  if (seg === 'landings')   return { view: 'analytics', params: { subtab: 'overview' },    hashRegions: regionIds };
+  if (seg === 'headtohead') return { view: 'analytics', params: { subtab: 'headtohead' },  hashRegions: regionIds };
+  if (seg === 'moon')       return { view: 'analytics', params: { subtab: 'moon' },        hashRegions: regionIds };
 
   if (HASH_VIEWS[seg]) return { view: HASH_VIEWS[seg], params: {}, hashRegions: regionIds };
   return { view: 'today', params: {}, hashRegions: regionIds };
@@ -62,6 +65,7 @@ function hashFromRoute(view, params = {}, regions = ['san_diego']) {
   if (view === 'boat' && params.boat) route = 'boat/' + encodeURIComponent(params.boat);
   else if (view === 'landing' && params.landing) route = 'landing/' + encodeURIComponent(params.landing);
   else if (view === 'analytics') route = 'analytics/' + (params.subtab || 'overview');
+  else if (view === 'boats') route = 'boats';
   else route = view;
   return prefix + '/' + route;
 }
@@ -232,7 +236,7 @@ function App() {
   // Map nav tab id -> navigate() view
   const navMap = {
     today: 'today', forecast: 'forecast', analytics: 'analytics',
-    tripplanner: 'tripplanner', account: 'account',
+    tripplanner: 'tripplanner', account: 'account', boats: 'boats',
   };
 
   let content;
@@ -240,6 +244,8 @@ function App() {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'analytics') {
     content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions} subtab={route.params.subtab || 'overview'}/>;
+  } else if (route.view === 'boats') {
+    content = <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions}/>;
   } else if (route.view === 'boat') {
     content = <BoatDetail filters={filters} setFilters={setFilters} navigate={navigate} boat={route.params.boat} regions={regions}/>;
   } else if (route.view === 'landing') {
@@ -253,7 +259,9 @@ function App() {
                               regions={regions} onRegionsDirect={setRegionsDirect}/>;
   }
 
-  const headerActive = (route.view === 'boat' || route.view === 'landing') ? 'analytics' : route.view;
+  const headerActive = route.view === 'boat' ? 'boats'
+    : route.view === 'landing' ? 'analytics'
+    : route.view;
 
   return (
     <Fragment>

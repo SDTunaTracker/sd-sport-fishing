@@ -1273,6 +1273,17 @@ body.compact .dt td { padding: 7px 12px; }
 .fc-sp-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .fc-sp-score { font: 700 13px/18px var(--ss-font-sans); color: var(--tb-ink); width: 28px; text-align: right; flex-shrink: 0; }
 .fc-sp-lbl { font: 600 11px/14px var(--ss-font-sans); width: 36px; flex-shrink: 0; }
+/* ── Boats destination page ───────────────────────────────────────────────── */
+.boats-search-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.boats-search-input-wrap { position: relative; flex: 1; min-width: 200px; max-width: 340px; }
+.boats-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--tb-gray-3); font-size: 12px; pointer-events: none; }
+.boats-search-input { width: 100%; padding: 7px 28px 7px 30px; border: 1px solid var(--ss-border); border-radius: 8px; font: 500 13px/18px var(--ss-font-sans); color: var(--tb-ink); background: #fff; box-sizing: border-box; outline: none; }
+.boats-search-input:focus { border-color: var(--tb-accent); }
+.boats-search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: var(--tb-gray-3); line-height: 1; padding: 0 2px; }
+.boats-form-badge { display: inline-flex; align-items: center; gap: 3px; font: 600 11px/14px var(--ss-font-sans); padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.boats-form-badge.hot  { background: rgba(34,197,94,0.12);  color: #15803d; }
+.boats-form-badge.cold { background: rgba(96,165,250,0.12); color: #1d4ed8; }
+
 .fc-details-acc { margin-bottom: 20px; }
 .fc-details-toggle { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 20px; border-radius: 10px; border: 1px solid var(--ss-border); background: var(--ss-surface); cursor: pointer; font: 600 13px/18px var(--ss-font-sans); color: var(--tb-slate); }
 .fc-details-toggle:hover { background: var(--tb-foam); color: var(--tb-ink); }

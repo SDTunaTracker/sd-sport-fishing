@@ -163,8 +163,6 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
 
   const SUBTABS = [
     { id: 'overview',    label: 'Overview' },
-    { id: 'boats',       label: 'Boats' },
-    { id: 'landings',    label: 'Landings' },
     { id: 'headtohead',  label: 'Head-to-Head' },
     { id: 'seasonality', label: 'Seasonality' },
     { id: 'moon',        label: 'Moon Phase' },
@@ -287,7 +285,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
       <div style={{marginBottom: 12}}>
         <Panel title={`Top Boats — ${speciesLabel} per Angler per Day`}
                meta={`Ranked by avg ${speciesLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips`}
-               actions={<button className="btn sm ghost" onClick={() => navigate('analytics', {subtab:'boats'})}>View All →</button>}>
+               actions={<button className="btn sm ghost" onClick={() => navigate('boats', {})}>View All →</button>}>
           {topBoats.length === 0 ? (
             <div className="muted-block">No boats meet the minimum trip threshold for these filters.</div>
           ) : (
@@ -373,7 +371,7 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
       {/* By Landing */}
       <Panel title="By Landing"
              meta="Approved San Diego landings"
-             actions={<button className="btn sm ghost" onClick={() => navigate('analytics', {subtab:'landings'})}>Compare →</button>}>
+             >
         {landings.map((l) => {
           const max = Math.max(...landings.map(x => x.tpa));
           return (
@@ -399,12 +397,6 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
       <StreakTracker navigate={navigate} regions={regions}/>
 
       </Fragment>}
-
-      {/* Boats sub-tab */}
-      {subtab === 'boats' && <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions}/>}
-
-      {/* Landings sub-tab */}
-      {subtab === 'landings' && <LandingsView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
 
       {/* Head-to-Head sub-tab */}
       {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
