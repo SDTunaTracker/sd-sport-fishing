@@ -1087,30 +1087,6 @@ function ForecastView({ navigate }) {
       {/* Accuracy */}
       <AccuracyWidget accuracy={fc.accuracy}/>
 
-      {/* Community signal */}
-      {(() => {
-        const species = window.SD?.COMMUNITY?.biteReport?.species || [];
-        const hot = species.filter(s => s.status === 'hot' || s.status === 'active');
-        if (!hot.length) return null;
-        return (
-          <div className="cm-widget" style={{marginTop:16}}>
-            <div className="cm-widget-head">
-              <span className="cm-widget-title">Community Signal</span>
-              <span className="cm-widget-sub">Reddit fishing reports · last 7 days</span>
-            </div>
-            <div style={{display:'flex', flexWrap:'wrap', gap:8, paddingTop:8}}>
-              {hot.map(s => (
-                <div key={s.name} style={{display:'flex', alignItems:'center', gap:6, background:'var(--ss-clay)', borderRadius:6, padding:'5px 10px'}}>
-                  <span style={{width:8, height:8, borderRadius:'50%', background: s.status === 'hot' ? '#10B981' : '#FBBF24', display:'inline-block'}}/>
-                  <span style={{fontSize:13, fontWeight:600, color:'var(--tb-ink)'}}>{s.name}</span>
-                  <span style={{fontSize:11, color:'var(--ss-slate)'}}>{s.status}</span>
-                  {s.where && <span style={{fontSize:11, color:'var(--ss-slate)'}}>· {s.where}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
     </Fragment>
   );
 }

@@ -67,8 +67,17 @@ function AuthButton() {
   );
 }
 
-function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
+const REGION_OPTIONS = [
+  { id: 'san_diego',  label: 'San Diego' },
+  { id: 'oc_la',     label: 'OC / LA' },
+  { id: 'all_socal', label: 'All SoCal' },
+];
+const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+
+function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirect }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
+  const [regionOpen, setRegionOpen] = React.useState(false);
+  const dropdownRef = React.useRef(null);
 
   const NAV = [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
@@ -89,21 +98,59 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
     onNavigate && onNavigate(id);
   }
 
+  const currentChoice =
+    regions && regions.length >= 2 ? 'all_socal' :
+    regions && regions[0] === 'oc_la' ? 'oc_la' : 'san_diego';
+  const currentLabel = (REGION_OPTIONS.find(o => o.id === currentChoice) || REGION_OPTIONS[0]).label;
+
+  function handleRegionSelect(optionId) {
+    if (onRegionsDirect) {
+      onRegionsDirect(REGION_ID_TO_ARRAYS[optionId] || ['san_diego']);
+    }
+    if (window.setUserPref) window.setUserPref('region_choice', optionId);
+    setRegionOpen(false);
+  }
+
+  React.useEffect(() => {
+    if (!regionOpen) return;
+    function onOutsideClick(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setRegionOpen(false);
+    }
+    document.addEventListener('mousedown', onOutsideClick);
+    return () => document.removeEventListener('mousedown', onOutsideClick);
+  }, [regionOpen]);
+
   const menuVisible = menuState !== 'closed';
   const menuClosing = menuState === 'closing';
-  const subtitle = window.getRegionSubtitle && regions ? window.getRegionSubtitle(regions) : 'San Diego';
 
   return (
     <React.Fragment>
       <div className="app-header">
         <div className="header-top">
-          {/* Logo: fish icon + wordmark + subtitle */}
-          <div className="logo" onClick={() => handleNavItem('today')} style={{cursor:'pointer'}}>
-            <i className="fa-solid fa-fish-fins logo-fish"></i>
-            <div className="logo-text">
-              <span className="logo-wordmark">The Tuna Tracker</span>
-              <span className="logo-subtitle">{subtitle}</span>
+          {/* Logo: fish icon + wordmark + region dropdown */}
+          <div className="logo-wrap" ref={dropdownRef}>
+            <div className="logo" onClick={() => handleNavItem('today')} style={{cursor:'pointer'}}>
+              <i className="fa-solid fa-fish-fins logo-fish"></i>
+              <div className="logo-text">
+                <span className="logo-wordmark">The Tuna Tracker</span>
+                <button className="logo-region-btn" onClick={e => { e.stopPropagation(); setRegionOpen(o => !o); }}>
+                  <span>{currentLabel}</span>
+                  <i className={`fa-solid fa-chevron-${regionOpen ? 'up' : 'down'}`} style={{fontSize:7}}/>
+                </button>
+              </div>
             </div>
+            {regionOpen && (
+              <div className="region-dropdown">
+                {REGION_OPTIONS.map(opt => (
+                  <div key={opt.id}
+                       className={`region-dropdown-item${currentChoice === opt.id ? ' sel' : ''}`}
+                       onClick={() => handleRegionSelect(opt.id)}>
+                    <span className={`rdrop-dot${currentChoice === opt.id ? ' sel' : ''}`}/>
+                    <span>{opt.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {/* Nav tabs — desktop only */}
           <div className="header-nav">
