@@ -163,13 +163,14 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
               </div>
             ))}
           </div>
-          {/* Auth: Sign In (signed out) or Clerk avatar (signed in) */}
-          <AuthButton/>
-          {/* Hamburger: mobile only */}
-          <span className="header-hamburger iconbtn" title="Menu"
-                onClick={() => menuState === 'open' ? closeMenu() : openMenu()}>
-            <i className={`fa-solid ${menuState === 'open' ? 'fa-xmark' : 'fa-bars'}`}></i>
-          </span>
+          {/* Auth button + hamburger — always grouped on the right */}
+          <div className="header-right">
+            <AuthButton/>
+            <span className="header-hamburger iconbtn" title="Menu"
+                  onClick={() => menuState === 'open' ? closeMenu() : openMenu()}>
+              <i className={`fa-solid ${menuState === 'open' ? 'fa-xmark' : 'fa-bars'}`}></i>
+            </span>
+          </div>
         </div>
       </div>
 
