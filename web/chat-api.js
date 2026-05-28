@@ -1,26 +1,77 @@
 // Replace with your Cloudflare Worker URL after deploying
 const CHAT_PROXY_URL = 'https://chatbot.tylerjchristian.workers.dev';
 
+function getRegionLandings(regions) {
+  const r = regions || ['san_diego'];
+  if (window.getLandingsForRegion && window.getEffectiveRegion) {
+    return window.getLandingsForRegion(window.getEffectiveRegion(r)) || window.SD.LANDINGS;
+  }
+  return window.SD?.LANDINGS || [];
+}
+
+function getUpcomingTripsForChat(regions) {
+  const today   = new Date().toISOString().slice(0, 10);
+  const cutoff  = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const allowed = getRegionLandings(regions);
+
+  return (window.SD?.SCHEDULE || [])
+    .filter(t =>
+      t.departureDate >= today &&
+      t.departureDate <= cutoff &&
+      t.openSpots > 0 &&
+      allowed.includes(t.landing)
+    )
+    .sort((a, b) => a.departureDate.localeCompare(b.departureDate))
+    .slice(0, 40)
+    .map(t => ({
+      boat:            t.boat,
+      landing:         t.landing,
+      departure:       t.departureDate,
+      departureTime:   t.departureTime,
+      returnDate:      t.returnDate,
+      tripLength:      t.tripLength,
+      price:           t.price,
+      effectivePrice:  t.effectivePrice,
+      openSpots:       t.openSpots,
+      maxLoad:         t.maxLoad,
+      mealsIncluded:   t.mealsIncluded,
+      moonPhase:       t.moonPhase,
+      forecastScore:   t.forecastScore,
+      winRate:         t.winRate,
+      avgTPA:          t.avgTPA,
+    }));
+}
+
+function getBoatStatsForChat(regions) {
+  const allowed = getRegionLandings(regions);
+  try {
+    const yearTrips = SDA.filterTrips({
+      ...DEFAULT_FILTERS,
+      year: String(new Date().getFullYear())
+    }).filter(t => allowed.includes(t.landing));
+
+    const { rows } = SDA.boatLeaderboard(yearTrips, 'all', 5);
+    return rows.slice(0, 15).map(b => ({
+      boat:        b.boat,
+      landing:     b.landing,
+      winRate:     b.winRate,
+      avgTPA:      b.avgTPAPerDay?.toFixed(2),
+      tripCount:   b.tripCount,
+      streak:      b.streak?.current_streak_type,
+      streakCount: b.streak?.current_streak,
+    }));
+  } catch (e) { return []; }
+}
+
 function buildSystemPrompt(pageContext) {
   const today    = window.SD?.TODAY;
   const forecast = window.SD?.FORECAST;
   const meta     = window.SD?.META;
   const community = window.SD?.COMMUNITY;
+  const regions  = pageContext?.regions || ['san_diego'];
 
-  // Top 5 boats current year
-  const topBoats = (() => {
-    try {
-      const yearTrips = SDA.filterTrips({
-        ...DEFAULT_FILTERS,
-        year: String(new Date().getFullYear())
-      });
-      const { rows } = SDA.boatLeaderboard(yearTrips, 'all', 5);
-      return rows.slice(0, 5).map(b =>
-        `${b.boat} (${b.landing}) — ` +
-        `${b.avgTPAPerDay?.toFixed(2)} tuna/angler/day, ${b.winRate || '?'}% win rate`
-      ).join('\n');
-    } catch (e) { return 'Data unavailable'; }
-  })();
+  const upcomingTrips = getUpcomingTripsForChat(regions);
+  const boatStats     = getBoatStatsForChat(regions);
 
   const inshore  = forecast?.inshore?.today;
   const offshore = forecast?.offshore?.today;
@@ -30,6 +81,18 @@ function buildSystemPrompt(pageContext) {
         timeZone: 'America/Los_Angeles', timeZoneName: 'short'
       })
     : 'unknown';
+
+  const upcomingSection = upcomingTrips.length > 0
+    ? upcomingTrips.map(t =>
+        `${t.boat} (${t.landing}) | ${t.tripLength} | Departs ${t.departure} ${t.departureTime || ''} | Returns ${t.returnDate} | $${t.price}${t.mealsIncluded ? ' (meals incl.)' : ''} | ${t.openSpots} spots open | Moon: ${t.moonPhase || 'N/A'} | Forecast: ${t.forecastScore ?? 'N/A'}/10 | Win Rate: ${t.winRate ?? 'N/A'}%`
+      ).join('\n')
+    : 'No upcoming trips with open spots in the next 30 days.';
+
+  const boatSection = boatStats.length > 0
+    ? boatStats.map(b =>
+        `${b.boat} (${b.landing}): ${b.winRate}% win rate, ${b.avgTPA} TPA/day, ${b.tripCount} trips, ${b.streak === 'hot' ? `🔥 ${b.streakCount} straight good trips` : b.streak === 'cold' ? `❄️ ${b.streakCount} straight slow trips` : 'mixed recent form'}`
+      ).join('\n')
+    : 'No boat stats available.';
 
   return `You are a knowledgeable and friendly fishing advisor for The Tuna Tracker — San Diego's most detailed sportfishing analytics site.
 
@@ -61,8 +124,11 @@ Offshore (Overnight+ trips):
 - Eddy detected: ${offshore?.eddy_detected ? 'Yes' : 'No'}
 - Confidence: ${offshore?.confidence || 'N/A'}
 
-TOP BOATS THIS SEASON:
-${topBoats}
+UPCOMING TRIPS (next 30 days, open spots only):
+${upcomingSection}
+
+BOAT PERFORMANCE THIS SEASON:
+${boatSection}
 
 COMMUNITY INTEL:
 ${community?.biteReport?.species?.slice(0, 3)?.map(s => `${s.name}: ${s.status}`)?.join(', ') || 'No recent reports'}
@@ -71,9 +137,42 @@ ${pageContext?.boat ? `USER IS VIEWING: ${pageContext.boat} boat page` : ''}
 ${pageContext?.page ? `CURRENT PAGE: ${pageContext.page}` : ''}
 ${pageContext?.region && pageContext.region !== 'san_diego' ? `REGION CONTEXT: User is viewing ${pageContext.region === 'all_socal' ? 'All SoCal' : pageContext.region} data` : ''}
 
+TRIP RECOMMENDATION INSTRUCTIONS:
+When a user asks about trips, booking, or what to book — always search the upcoming trips list above and recommend specific trips by name, date, and price. Never recommend a trip with 0 open spots. Prefer trips with higher forecast scores when all else is equal. Flag trips on a full moon or new moon as a bonus.
+
+Format trip recommendations like this:
+"Based on what you're looking for, here are my top picks:
+
+1. **Pacific Queen** — 2 Day trip
+   Departs Fri Jun 15 · 10:00 AM
+   Returns Sun Jun 17 · 6:00 PM
+   $1,200/person · Meals included
+   21 spots open · 🌕 Full Moon
+   Forecast: 8.8/10 · Win Rate: 68%
+   → Book at Fisherman's Landing
+
+2. **Shogun** — 3 Day trip
+   ..."
+
+Always end trip recommendations with: "Want me to narrow this down? Tell me your preferred dates, budget, or trip length."
+
+If no trips match, say so honestly and suggest the Trip Planner page.
+
+CONTEXT AWARENESS:
+- If user is on a boat detail page: focus recommendations on that boat's upcoming trips first
+- If user mentions a budget: filter to that range
+- If user mentions dates: only show trips in that range
+- If user mentions trip length: only show matching lengths
+- If user mentions a species: weight boats with strong history for that species
+
+RESPONSE FORMATTING:
+- For trip recommendations: use the numbered list format above
+- For simple questions: 2-4 sentences
+- For comparisons: use a simple table
+- Never recommend a trip with 0 open spots
+
 GUIDELINES:
 - Be friendly, conversational, helpful
-- 2-4 sentences for simple questions
 - Use actual data in your answers
 - Be honest about uncertainty
 - Use fishing terms naturally
@@ -92,7 +191,7 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-opus-4-7',
-        max_tokens: 400,
+        max_tokens: 800,
         system: buildSystemPrompt(pageContext),
         messages: [
           ...conversationHistory,
@@ -111,23 +210,24 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
       throw new Error(`Anthropic: ${data.error.type} — ${data.error.message}`);
     }
 
+    const regions = pageContext?.regions || ['san_diego'];
     return {
-      text: data.content[0].text,
-      usage: data.usage,
-      dataUsed: extractDataUsed(userMessage, data.content[0].text)
+      text:     data.content[0].text,
+      usage:    data.usage,
+      dataUsed: extractDataUsed(userMessage, data.content[0].text, regions)
     };
 
   } catch (error) {
     console.error('Chat error:', error);
     return {
-      text: "Debug: " + (error.message || String(error)),
-      usage: null,
+      text:     "Debug: " + (error.message || String(error)),
+      usage:    null,
       dataUsed: null
     };
   }
 }
 
-function extractDataUsed(question, answer) {
+function extractDataUsed(question, answer, regions) {
   const used = [];
   const a = answer.toLowerCase();
 
@@ -148,6 +248,16 @@ function extractDataUsed(question, answer) {
 
   if (a.includes('temperature') || a.includes('°f') || a.includes('water')) {
     used.push(`SST: ${window.SD?.FORECAST?.offshore?.today?.sst || '?'}°F offshore`);
+  }
+
+  if (a.includes('departs') || a.includes('$') || a.includes('spots open') || a.includes('book')) {
+    const upcoming = getUpcomingTripsForChat(regions);
+    used.push(`Trip schedule: ${upcoming.length} upcoming trips checked`);
+  }
+
+  if (a.includes('win rate') || a.includes('tpa') || a.includes('streak')) {
+    const stats = getBoatStatsForChat(regions);
+    used.push(`Boat performance: ${stats.length} boats analyzed`);
   }
 
   return used.length > 0 ? used : null;

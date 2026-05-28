@@ -177,6 +177,7 @@ function App() {
       boat: route.params?.boat || null,
       date: null,
       region: window.getEffectiveRegion ? window.getEffectiveRegion(regions) : regions[0],
+      regions,
     });
   }, [route, regions]);
 

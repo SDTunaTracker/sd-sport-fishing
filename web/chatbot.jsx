@@ -5,10 +5,10 @@
 const { useState, useEffect, useRef, Fragment } = React;
 
 const SUGGESTED_QUESTIONS = [
-  "What's biting today?",
-  "Best boat for overnight trips?",
-  "Is this weekend good for fishing?",
-  "Which landing has the best boats?",
+  "What's the best trip this weekend?",
+  "Find me an overnight trip under $500",
+  "Which boat is hottest right now?",
+  "Best trip for bluefin this month?",
 ];
 
 function ChatBot({ pageContext }) {
