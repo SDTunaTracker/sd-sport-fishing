@@ -962,6 +962,198 @@ function FleetDepartures({ date, navigate }) {
   );
 }
 
+// ─── Today Hero Section (Section 1) ──────────────────────────────────────────
+const INSHORE_SPECIES  = ['Yellowtail', 'Dorado'];
+const OFFSHORE_SPECIES = ['Bluefin', 'Yellowfin'];
+
+function topSpeciesForSegment(today, list) {
+  if (!today) return null;
+  const scored = list
+    .map(sp => ({ name: sp, score: today[sp.toLowerCase() + '_score'] }))
+    .filter(s => s.score != null && s.score >= 5)
+    .sort((a, b) => b.score - a.score);
+  return scored.length ? scored.slice(0, 2).map(s => s.name).join(', ') : null;
+}
+
+function TodayHeroSection({ today, inshore, offshore }) {
+  const sst = today?.sst_offshore || today?.sst_nearshore;
+  const condParts = [
+    sst != null            && `${Math.round(sst)}°F`,
+    today?.wind_speed != null  && `${Math.round(today.wind_speed)}kn wind`,
+    today?.swell_height != null && `${today.swell_height.toFixed(1)}ft swell`,
+    today?.moon_phase_name && `${moonEmoji(today.moon_phase)} ${today.moon_phase_name}`,
+  ].filter(Boolean);
+
+  const segments = [
+    { id: 'inshore',  label: 'Inshore',  data: inshore,  topSp: topSpeciesForSegment(today, INSHORE_SPECIES)  },
+    { id: 'offshore', label: 'Offshore', data: offshore, topSp: topSpeciesForSegment(today, OFFSHORE_SPECIES) },
+  ];
+
+  return (
+    <div className="fc-hero-new">
+      <div className="fc-hero-new-grid">
+        {segments.map(seg => {
+          const score = seg.data?.overall_score;
+          const label = seg.data?.conditions_label;
+          return (
+            <div key={seg.id} className="fc-hero-new-seg">
+              <div className="fc-hero-new-title">{seg.label}</div>
+              <div className="fc-hero-new-score" style={{color: scoreColor(score)}}>
+                {score != null ? score.toFixed(1) : '—'}
+                <span className="fc-hero-new-denom">/10</span>
+              </div>
+              <div className="fc-hero-new-label">{label || '—'}</div>
+              {seg.topSp && (
+                <div className="fc-hero-new-species">🐟 {seg.topSp}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {condParts.length > 0 && (
+        <div className="fc-cond-line">{condParts.join(' · ')}</div>
+      )}
+    </div>
+  );
+}
+
+// ─── 7-Day Section (Section 2) ───────────────────────────────────────────────
+function SevenDaySection({ inDays, offDays }) {
+  const [tab, setTab] = useS('offshore');
+  const [selIdx, setSelIdx] = useS(0);
+  const days = tab === 'inshore' ? inDays : offDays;
+  const selDay = days[selIdx];
+
+  if (!inDays.length && !offDays.length) return null;
+
+  return (
+    <div className="fc-section-card">
+      <div className="fc-section-hd">
+        <span className="fc-section-title">7-Day Outlook</span>
+        <div className="fc-seg-tabs">
+          {['offshore','inshore'].map(t => (
+            <button key={t} className={`fc-seg-tab${tab===t?' active':''}`}
+              onClick={() => { setTab(t); setSelIdx(0); }}>
+              {t === 'offshore' ? 'Offshore' : 'Inshore'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="fc-strip-wrap">
+        <div className="fc-strip">
+          {days.map((d, i) => (
+            <button key={d.date}
+              className={`fc-day-card${i === selIdx ? ' active' : ''}`}
+              onClick={() => setSelIdx(i)}>
+              <div className="fc-day-name">{d.dayName || '—'}</div>
+              <div className="fc-day-score" style={{color: scoreColor(d.overall_score)}}>
+                {d.overall_score != null ? d.overall_score.toFixed(1) : '—'}
+              </div>
+              <div className="fc-day-label">
+                {d.conditions_label?.split(' ').slice(0,2).join(' ')}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {selDay && (
+        <div className="fc-day-detail-pill">
+          <div className="fc-day-detail-main">
+            <span style={{fontWeight:700, color:'var(--tb-ink)'}}>{selDay.dayName}</span>
+            <span style={{color:'var(--tb-slate)', marginLeft:8}}>{selDay.conditions_label}</span>
+            {selDay.summary && (
+              <span style={{color:'var(--tb-slate)', fontSize:12, display:'block', marginTop:4, lineHeight:1.6}}>
+                {selDay.summary}
+              </span>
+            )}
+          </div>
+          <div className="fc-day-detail-conds">
+            {selDay.sst != null && <span>{Math.round(selDay.sst)}°F SST</span>}
+            {selDay.swell_height != null && <span>🌊 {selDay.swell_height.toFixed(1)}ft</span>}
+            {selDay.wind_speed != null && <span>💨 {Math.round(selDay.wind_speed)}kn</span>}
+            <span>{moonEmoji(selDay.moon_phase)}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Species Target Section (Section 3) ──────────────────────────────────────
+function scoreLabel(s) {
+  if (s == null) return '—';
+  if (s >= 8)   return 'Hot';
+  if (s >= 6.5) return 'Good';
+  if (s >= 5)   return 'Fair';
+  if (s >= 3.5) return 'Slow';
+  return 'Poor';
+}
+
+function SpeciesDots({ score }) {
+  const filled = score != null ? Math.round(score / 2) : 0;
+  return (
+    <span className="fc-sp-dots">
+      {[0,1,2,3,4].map(i => (
+        <span key={i} className="fc-sp-dot"
+          style={{background: i < filled ? scoreColor(score) : 'var(--tb-border)'}}/>
+      ))}
+    </span>
+  );
+}
+
+function SpeciesTargetSection({ day }) {
+  if (!day) return null;
+  const species = [
+    { key: 'bluefin_score',    name: 'Bluefin',    color: SPECIES_COLORS.Bluefin    },
+    { key: 'yellowfin_score',  name: 'Yellowfin',  color: SPECIES_COLORS.Yellowfin  },
+    { key: 'yellowtail_score', name: 'Yellowtail', color: SPECIES_COLORS.Yellowtail },
+    { key: 'dorado_score',     name: 'Dorado',     color: SPECIES_COLORS.Dorado     },
+  ].filter(sp => day[sp.key] != null)
+   .sort((a, b) => (day[b.key]||0) - (day[a.key]||0));
+
+  if (!species.length) return null;
+
+  return (
+    <div className="fc-section-card">
+      <div className="fc-section-title" style={{marginBottom:16}}>What to Target</div>
+      {species.map(({ key, name, color }) => {
+        const s = day[key];
+        return (
+          <div key={key} className="fc-sp-row">
+            <span className="fc-sp-name" style={{color}}>{name}</span>
+            <SpeciesDots score={s}/>
+            <span className="fc-sp-score">{s.toFixed(1)}</span>
+            <span className="fc-sp-lbl" style={{color: scoreColor(s)}}>{scoreLabel(s)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Details Accordion ────────────────────────────────────────────────────────
+function DetailsAccordion({ fc }) {
+  const [open, setOpen] = useS(false);
+  return (
+    <div className="fc-details-acc">
+      <button className="fc-details-toggle" onClick={() => setOpen(o => !o)}>
+        <i className={`fa-solid fa-chevron-${open?'up':'down'}`} style={{fontSize:10}}/>
+        {open ? 'Hide' : 'Show'} forecast details & methodology
+      </button>
+      {open && (
+        <div className="fc-details-body">
+          <EnsembleWidget ensemble={fc.ensemble}/>
+          <DualSegmentWidget fc={fc}/>
+          <UpwellingWidget upwelling={fc.upwelling}/>
+          <SSTChart/>
+          <HistoricalMatch match={fc.historicalMatch}/>
+          <AccuracyWidget accuracy={fc.accuracy}/>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function NoForecastData() {
   return (
@@ -983,7 +1175,6 @@ function NoForecastData() {
 // ─── Main view ────────────────────────────────────────────────────────────────
 function ForecastView({ navigate }) {
   const fc = window.SD?.FORECAST;
-  const [selectedDay, setSelectedDay] = useS(0);
 
   useE(() => {
     if (!window.TTTrack || !fc?.today) return;
@@ -1005,88 +1196,32 @@ function ForecastView({ navigate }) {
     );
   }
 
-  const today = fc.today;
-  const days  = fc.sevenDay || [];
-  const selDay = days[selectedDay] || today;
+  const today   = fc.today;
+  const inshore  = fc.inshore?.today;
+  const offshore = fc.offshore?.today;
+  const inDays   = fc.inshore?.sevenDay  || [];
+  const offDays  = fc.offshore?.sevenDay || [];
 
   return (
     <Fragment>
       <div className="pagehead">
-        <div>
-          <h1>Fishing Forecast</h1>
-          <p style={{fontSize:14, color:'var(--tb-gray-3)', maxWidth:560, marginBottom:16, lineHeight:1.6}}>
-            Daily fishing conditions score (1–10) based on proprietary multi-factor analysis.
-          </p>
-        </div>
+        <h1>Fishing Forecast</h1>
       </div>
 
-      {/* Today's headline score */}
-      <Panel>
-        <div className="fc-today-hero">
-          <div className="fc-hero-left">
-            <div className="fc-hero-label">{today.conditions_label}</div>
-            <div className="fc-hero-score" style={{color: scoreColor(today.overall_score)}}>
-              {today.overall_score != null ? today.overall_score.toFixed(1) : '—'}
-              <span className="fc-hero-denom">/10</span>
-            </div>
-            <div className="fc-hero-date">
-              {today.dataDate && today.dataDate !== today.date
-                ? `Based on ${today.dataDate} SST data`
-                : `Today · ${today.date}`}
-            </div>
-          </div>
-          <div className="fc-hero-right">
-            {today.summary && (
-              <div className="fc-hero-summary">{today.summary}</div>
-            )}
-            <TodayConditionsBar today={today}/>
-          </div>
-        </div>
-      </Panel>
+      {/* Section 1: Today — inshore / offshore hero */}
+      <TodayHeroSection today={today} inshore={inshore} offshore={offshore}/>
 
-      {/* Dual inshore / offshore scores */}
-      <DualSegmentWidget fc={fc}/>
-
-      {/* Today's full fleet — all departures regardless of availability */}
+      {/* Today's departing fleet */}
       <FleetDepartures date={today.date} navigate={navigate}/>
 
-      {/* Ensemble model comparison */}
-      <EnsembleWidget ensemble={fc.ensemble}/>
+      {/* Section 2: 7-day outlook */}
+      <SevenDaySection inDays={inDays} offDays={offDays}/>
 
-      {/* Upwelling indicator */}
-      <UpwellingWidget upwelling={fc.upwelling}/>
+      {/* Section 3: Species target */}
+      <SpeciesTargetSection day={today}/>
 
-      {/* 7-day strip + selected day detail */}
-      {/* TODO: PRO FEATURE — lock for free users later */}
-      {days.length > 0 && (
-        <Fragment>
-          <div style={{marginTop: 16}}>
-            <div className="panel-title-inline">7-Day Forecast (Overall)</div>
-          </div>
-          <SevenDayStrip days={days} selectedIdx={selectedDay} onSelect={setSelectedDay}/>
-          <DayDetail day={selDay}/>
-          {selDay && selDay.date !== today.date && (
-            <FleetDepartures date={selDay.date} navigate={navigate}/>
-          )}
-        </Fragment>
-      )}
-
-      {/* Dual segment 7-day strips */}
-      <DualSevenDayStrip fc={fc}/>
-
-      {/* Species cards */}
-      <SpeciesGrid day={selDay}/>
-
-      {/* Conditions Like These */}
-      {/* TODO: PRO FEATURE — lock for free users later */}
-      <HistoricalMatch match={fc.historicalMatch}/>
-
-      {/* SST trend chart */}
-      <SSTChart/>
-
-      {/* Accuracy */}
-      <AccuracyWidget accuracy={fc.accuracy}/>
-
+      {/* Details accordion — power user content */}
+      <DetailsAccordion fc={fc}/>
     </Fragment>
   );
 }
