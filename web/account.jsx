@@ -6,26 +6,25 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
   const { useEffect, useState } = React;
   const { user, loaded, signIn, signUp, signOut, isSignedIn } = useAuth();
 
-  const REGIONS_DEF = window.REGIONS || [
-    { id: 'san_diego', label: 'San Diego',                   short: 'SD'    },
-    { id: 'oc_la',     label: 'Orange County / Los Angeles', short: 'OC/LA' },
-  ];
-
-  const primary     = regions[0] || 'san_diego';
-  const secondary   = REGIONS_DEF.find(r => r.id !== primary);
-  const hasSecondary = !!(secondary && regions.includes(secondary.id));
 
   // ── Region helpers ──────────────────────────────────────────────
-  function setPrimary(id) {
-    const newRegions = hasSecondary ? [id, regions.find(r => r !== id)] : [id];
-    onRegionsDirect(newRegions);
-    window.setUserPref('primary_region', id);
-  }
+  // Derive the three-way selection from the regions array.
+  const regionChoice =
+    regions.length >= 2               ? 'all_socal'  :
+    regions[0] === 'oc_la'            ? 'oc_la'      :
+                                        'san_diego';
 
-  function toggleSecondary() {
-    if (!secondary) return;
-    const newRegions = hasSecondary ? [primary] : [primary, secondary.id];
-    onRegionsDirect(newRegions);
+  const REGION_OPTIONS = [
+    { id: 'san_diego',  label: 'San Diego',             regions: ['san_diego'] },
+    { id: 'oc_la',      label: 'OC / LA',               regions: ['oc_la'] },
+    { id: 'all_socal',  label: 'All SoCal (both)',       regions: ['san_diego', 'oc_la'] },
+  ];
+
+  function setRegionChoice(optionId) {
+    const opt = REGION_OPTIONS.find(o => o.id === optionId);
+    if (!opt) return;
+    onRegionsDirect(opt.regions);
+    window.setUserPref('region_choice', optionId);
   }
 
   // ── Species helpers ─────────────────────────────────────────────
@@ -56,7 +55,7 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
   function resetAll() {
     handleSettingsChange(defaultSettings());
     onRegionsDirect(['san_diego']);
-    window.setUserPref('primary_region', 'san_diego');
+    window.setUserPref('region_choice', 'san_diego');
   }
 
   // ── Shared styles ───────────────────────────────────────────────
@@ -83,44 +82,25 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
   const { trophySpecies, tripLengthMethod } = settings;
   const isDefault = isDefaultSpecies(trophySpecies);
 
-  // ── Region section (shared between signed-in / signed-out) ──────
+  // ── Region section ──────────────────────────────────────────────
   function RegionSection() {
     return (
       <div style={card}>
-        <div style={sectionTitle}>Region Preferences</div>
-        <p style={sectionDesc}>Choose which sportfishing region's data to display across all views.</p>
+        <div style={sectionTitle}>Default Region</div>
+        <p style={sectionDesc}>Choose which region's data loads when you visit the site.</p>
 
-        <span style={fieldLabel}>Primary Region</span>
-        {REGIONS_DEF.map(reg => (
-          <label key={reg.id} style={{ ...radioRow, cursor: 'pointer' }}>
-            <input type="radio" name="primaryRegion" value={reg.id}
-                   checked={primary === reg.id}
-                   onChange={() => setPrimary(reg.id)}
+        {REGION_OPTIONS.map(opt => (
+          <label key={opt.id} style={{ ...radioRow, cursor: 'pointer' }}>
+            <input type="radio" name="regionChoice" value={opt.id}
+                   checked={regionChoice === opt.id}
+                   onChange={() => setRegionChoice(opt.id)}
                    style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
-            <span>{reg.label}</span>
-            {reg.id === 'san_diego' && (
+            <span>{opt.label}</span>
+            {opt.id === 'san_diego' && (
               <span style={{ font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)' }}>(default)</span>
             )}
           </label>
         ))}
-
-        {secondary && (
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--ss-border)' }}>
-            <span style={fieldLabel}>Additional Region</span>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-              <input type="checkbox" checked={hasSecondary} onChange={toggleSecondary}
-                     style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, marginTop: 3, cursor: 'pointer', flexShrink: 0 }}/>
-              <div>
-                <div style={{ font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-ink)' }}>
-                  Include {secondary.label} data
-                </div>
-                <div style={{ font: '400 12px/16px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 2 }}>
-                  Merge {secondary.short} boats and landings into your {primary === 'san_diego' ? 'San Diego' : 'OC/LA'} view
-                </div>
-              </div>
-            </label>
-          </div>
-        )}
       </div>
     );
   }

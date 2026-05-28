@@ -102,9 +102,10 @@ function App() {
   // When a user signs in, pull their saved region and species from Clerk metadata.
   useE(() => {
     if (!isSignedIn || !window.getUserPref) return;
-    const savedRegion = window.getUserPref('primary_region', null);
-    if (savedRegion && savedRegion !== regions[0]) {
-      setRegionsDirect([savedRegion]);
+    const CHOICE_MAP = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    const savedChoice = window.getUserPref('region_choice', null);
+    if (savedChoice && CHOICE_MAP[savedChoice]) {
+      setRegionsDirect(CHOICE_MAP[savedChoice]);
     }
     const savedSpecies = window.getUserPref('trophySpecies', null);
     if (savedSpecies && Array.isArray(savedSpecies)) {
