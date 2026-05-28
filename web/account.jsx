@@ -15,15 +15,6 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
   const secondary   = REGIONS_DEF.find(r => r.id !== primary);
   const hasSecondary = !!(secondary && regions.includes(secondary.id));
 
-  // Mount Clerk UserProfile widget when signed in (must be outside any conditional).
-  useEffect(() => {
-    if (!isSignedIn) return;
-    const el = document.getElementById('clerk-user-profile');
-    if (el && window.Clerk && el.childElementCount === 0) {
-      window.Clerk.mountUserProfile(el);
-    }
-  }, [isSignedIn]);
-
   // ── Region helpers ──────────────────────────────────────────────
   function setPrimary(id) {
     const newRegions = hasSecondary ? [id, regions.find(r => r !== id)] : [id];
@@ -255,13 +246,8 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
 
   // ── Signed-in state ─────────────────────────────────────────────
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
-      <h2 style={{ font: '700 20px/28px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 24 }}>My Account</h2>
-
-      {/* Clerk UserProfile — email, password, connected accounts */}
-      <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-        <div id="clerk-user-profile"/>
-      </div>
+    <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
+      <h2 style={{ font: '700 20px/28px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 24 }}>Preferences</h2>
 
       <RegionSection/>
       <SpeciesSection/>

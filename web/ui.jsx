@@ -29,9 +29,31 @@ function AuthButton() {
   React.useEffect(() => {
     if (!isSignedIn) return;
     const el = document.getElementById('clerk-user-button');
-    if (el && window.Clerk && el.childElementCount === 0) {
-      window.Clerk.mountUserButton(el, { afterSignOutUrl: window.location.pathname });
+    if (!el || !window.Clerk || el.childElementCount > 0) return;
+
+    // Derive the current region prefix from the hash so the Preferences link
+    // always lands on the right region's account page (e.g. #sd/account).
+    function prefixedAccountHash() {
+      const h = window.location.hash.replace(/^#/, '');
+      const slash = h.indexOf('/');
+      const prefix = slash !== -1 ? h.slice(0, slash) : 'sd';
+      return '#' + prefix + '/account';
     }
+
+    window.Clerk.mountUserButton(el, {
+      afterSignOutUrl: window.location.pathname,
+      userProfileMode: 'modal',
+      customMenuItems: [
+        {
+          label: 'Preferences',
+          onClick: () => { window.location.hash = prefixedAccountHash().slice(1); },
+          mountIcon: (iconEl) => {
+            iconEl.innerHTML = '<i class="fa-solid fa-sliders" style="font-size:13px"></i>';
+          },
+          unmountIcon: (iconEl) => { iconEl.innerHTML = ''; },
+        },
+      ],
+    });
   }, [isSignedIn, user]);
 
   if (!loaded) return null;
@@ -53,7 +75,6 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
     { id: 'forecast',    label: 'Forecast',     icon: 'fa-cloud-sun-rain' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
     { id: 'tripplanner', label: 'Trip Planner', icon: 'fa-calendar-check' },
-    { id: 'account',     label: 'My Account',   icon: 'fa-circle-user' },
   ];
 
   function openMenu() { setMenuState('open'); }
