@@ -53,6 +53,7 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
     { id: 'forecast',    label: 'Forecast',     icon: 'fa-cloud-sun-rain' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
     { id: 'tripplanner', label: 'Trip Planner', icon: 'fa-calendar-check' },
+    { id: 'account',     label: 'My Account',   icon: 'fa-circle-user' },
   ];
 
   function openMenu() { setMenuState('open'); }
@@ -93,15 +94,7 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
               </div>
             ))}
           </div>
-          {/* My Account button (navigates to preferences page) */}
-          <button className={`header-account-btn${active === 'account' ? ' sel' : ''}`}
-                  onClick={() => handleNavItem('account')}
-                  title="My Account">
-            <i className="fa-solid fa-circle-user"></i>
-            <span className="header-account-label">My Account</span>
-            <i className="fa-solid fa-caret-down" style={{fontSize:9,marginLeft:2,opacity:0.6}}></i>
-          </button>
-          {/* Auth: Sign In button when logged out, Clerk avatar when logged in */}
+          {/* Auth: Sign In (signed out) or Clerk avatar (signed in) */}
           <AuthButton/>
           {/* Hamburger: mobile only */}
           <span className="header-hamburger iconbtn" title="Menu"
@@ -133,18 +126,15 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle }) {
                 <span>{t.label}</span>
               </div>
             ))}
-            <div className="mobile-menu-divider"></div>
-            <div className={`mobile-menu-item${active === 'account' ? ' sel' : ''}`}
-                 onClick={() => handleNavItem('account')}>
-              <i className="fa-solid fa-circle-user"></i>
-              <span>My Account</span>
-            </div>
-            {window.__clerkReady && !window.CLERK_USER && (
-              <div className="mobile-menu-item"
-                   onClick={() => { setMenuState('closed'); window.Clerk && window.Clerk.openSignIn(); }}>
-                <i className="fa-solid fa-right-to-bracket"></i>
-                <span>Sign In</span>
-              </div>
+            {!window.CLERK_USER && (
+              <React.Fragment>
+                <div className="mobile-menu-divider"></div>
+                <div className="mobile-menu-item"
+                     onClick={() => { setMenuState('closed'); window.Clerk && window.Clerk.openSignIn(); }}>
+                  <i className="fa-solid fa-right-to-bracket"></i>
+                  <span>Sign In</span>
+                </div>
+              </React.Fragment>
             )}
           </div>
         </div>
