@@ -31,6 +31,22 @@ function ChatBot({ pageContext }) {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
+  // Prevent body scroll on mobile when chat is open
+  useEffect(() => {
+    if (open && window.innerWidth < 768) {
+      document.body.classList.add('chat-open');
+    } else {
+      document.body.classList.remove('chat-open');
+    }
+    return () => document.body.classList.remove('chat-open');
+  }, [open]);
+
+  function handleInputFocus() {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  }
+
   async function handleSend(text) {
     const msg = (text || input).trim();
     if (!msg || loading) return;
@@ -230,6 +246,7 @@ function ChatBot({ pageContext }) {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={handleInputFocus}
               placeholder="Ask about fishing conditions..."
               rows={1}
             />
