@@ -4,6 +4,20 @@
 
 const { useState, useEffect, useRef, Fragment } = React;
 
+const STATUS_MESSAGES = [
+  "Analyzing forecast data...",
+  "Checking upcoming trips...",
+  "Reviewing boat performance...",
+  "Looking at recent reports...",
+  "Calculating recommendations...",
+];
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 function renderInlineText(text, key) {
   const lines = text.split('\n');
   return (
@@ -58,6 +72,105 @@ function renderMessageContent(text, onInternalNav) {
   });
 }
 
+function parseMessageWithCards(text) {
+  const cardRegex = /<trip-card>([\s\S]*?)<\/trip-card>/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = cardRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+    try {
+      const tripData = JSON.parse(match[1].trim());
+      parts.push({ type: 'trip', data: tripData });
+    } catch(e) {
+      parts.push({ type: 'text', content: match[0] });
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+
+  return parts;
+}
+
+function ChatTripCard({ trip }) {
+  return (
+    <div className="chat-trip-card">
+      <div className="chat-trip-header">
+        <div className="chat-trip-boat">{trip.boat}</div>
+        {trip.forecastScore != null && (
+          <span className="score-badge">{trip.forecastScore}/10</span>
+        )}
+      </div>
+
+      <div className="chat-trip-meta">
+        <span className="chat-trip-landing">{trip.landing}</span>
+        {trip.tripLength && <span className="chat-trip-length">{trip.tripLength}</span>}
+      </div>
+
+      <div className="chat-trip-details">
+        <div className="chat-trip-row">
+          <span className="label">DEP</span>
+          <span>{formatDate(trip.departureDate)}{trip.departureTime ? ` · ${trip.departureTime}` : ''}</span>
+        </div>
+        <div className="chat-trip-row">
+          <span className="label">RET</span>
+          <span>{formatDate(trip.returnDate)}</span>
+        </div>
+        {trip.moonPhase && (
+          <div className="chat-trip-row">
+            <span>{trip.moonEmoji || '🌙'} {trip.moonPhase}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="chat-trip-stats">
+        {trip.winRate != null && (
+          <div className="stat">
+            <span className="stat-value">{trip.winRate}%</span>
+            <span className="stat-label">Win Rate</span>
+          </div>
+        )}
+        {trip.avgTPA != null && (
+          <div className="stat">
+            <span className="stat-value">{trip.avgTPA}</span>
+            <span className="stat-label">TPA/day</span>
+          </div>
+        )}
+        {trip.openSpots != null && (
+          <div className="stat">
+            <span className="stat-value">{trip.openSpots}{trip.maxLoad ? `/${trip.maxLoad}` : ''}</span>
+            <span className="stat-label">Open</span>
+          </div>
+        )}
+      </div>
+
+      <div className="chat-trip-footer">
+        <div className="chat-trip-price">
+          ${trip.price}
+          {trip.mealsIncluded && <span className="meals-badge">🍽️ Meals</span>}
+        </div>
+        {trip.bookingUrl && trip.bookingUrl !== 'N/A' && (
+          <a
+            href={trip.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="chat-trip-book-btn"
+            onClick={() => {
+              if (window.TTTrack?.chatLinkClick) TTTrack.chatLinkClick('Book', trip.bookingUrl, true);
+            }}
+          >Book →</a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const SUGGESTED_QUESTIONS = [
   "What's the best trip this weekend?",
   "Find me an overnight trip under $500",
@@ -72,20 +185,18 @@ function ChatBot({ pageContext }) {
   const [loading, setLoading]               = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [expandedReasoning, setExpandedReasoning] = useState({});
+  const [statusIdx, setStatusIdx]           = useState(0);
   const messagesEndRef = useRef(null);
   const inputRef       = useRef(null);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
-  // Prevent body scroll on mobile when chat is open
   useEffect(() => {
     if (open && window.innerWidth < 768) {
       document.body.classList.add('chat-open');
@@ -101,9 +212,7 @@ function ChatBot({ pageContext }) {
     const handleViewportResize = () => {
       if (window.visualViewport) {
         const panel = document.querySelector('.chat-panel');
-        if (panel) {
-          panel.style.height = `${window.visualViewport.height}px`;
-        }
+        if (panel) panel.style.height = `${window.visualViewport.height}px`;
       }
     };
     if (window.visualViewport) {
@@ -118,6 +227,15 @@ function ChatBot({ pageContext }) {
       if (panel) panel.style.height = '';
     };
   }, [open]);
+
+  // Rotate status message while loading
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setStatusIdx(prev => (prev + 1) % STATUS_MESSAGES.length);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   function handleInputFocus(e) {
     setTimeout(() => {
@@ -141,26 +259,50 @@ function ChatBot({ pageContext }) {
 
     setInput('');
     setShowSuggestions(false);
-    setMessages(prev => [...prev, { role: 'user', text: msg }]);
-    setLoading(true);
 
     const history = messages
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
 
-    const result = await sendChatMessage(msg, history, pageContext);
-
-    incrementChatUsage();
-    setLoading(false);
-    setMessages(prev => [...prev, {
-      role:     'assistant',
-      text:     result.text,
-      dataUsed: result.dataUsed,
-      followups: result.followups || [],
-      feedback: null
-    }]);
+    // Add user message and streaming placeholder; capture placeholder index before state updates
+    const placeholderIdx = messages.length + 1;
+    setMessages(prev => [...prev, { role: 'user', text: msg }]);
+    setMessages(prev => [...prev, { role: 'assistant', text: '', streaming: true, followups: [], actions: [], dataUsed: null, feedback: null }]);
+    setLoading(true);
+    setStatusIdx(0);
 
     if (window.TTTrack) TTTrack.chatMessage(msg, pageContext);
+
+    try {
+      const rawText = await streamChatMessage(
+        msg, history, pageContext,
+        (partialText) => {
+          setMessages(prev => prev.map((m, i) =>
+            i === placeholderIdx ? { ...m, text: partialText } : m
+          ));
+        }
+      );
+
+      incrementChatUsage();
+      const cleanText = extractCleanText(rawText);
+      const followups = extractFollowups(rawText);
+      const actions   = extractActions(rawText);
+      const dataUsed  = extractDataUsed(msg, cleanText, pageContext?.regions || ['san_diego']);
+
+      setMessages(prev => prev.map((m, i) =>
+        i === placeholderIdx
+          ? { ...m, text: cleanText, streaming: false, followups, actions, dataUsed }
+          : m
+      ));
+    } catch (err) {
+      setMessages(prev => prev.map((m, i) =>
+        i === placeholderIdx
+          ? { ...m, text: 'Something went wrong — please try again.', streaming: false }
+          : m
+      ));
+    }
+
+    setLoading(false);
   }
 
   function handleFeedback(idx, type) {
@@ -168,9 +310,30 @@ function ChatBot({ pageContext }) {
   }
 
   function handleFollowup(idx, text) {
-    // Clear chips from the message that was clicked so they don't linger
     setMessages(prev => prev.map((m, i) => i === idx ? { ...m, followups: [] } : m));
     handleSend(text);
+  }
+
+  function handleAction(action) {
+    switch(action.action) {
+      case 'compare':
+        window.location.hash = '#analytics/headtohead';
+        setOpen(false);
+        break;
+      case 'view-boat':
+        window.location.hash = `#boat/${encodeURIComponent(action.data)}`;
+        setOpen(false);
+        break;
+      case 'view-trips': {
+        const params = action.data ? new URLSearchParams(action.data).toString() : '';
+        window.location.hash = params ? `#tripplanner?${params}` : '#tripplanner';
+        setOpen(false);
+        break;
+      }
+      default:
+        break;
+    }
+    if (window.TTTrack?.chatAction) TTTrack.chatAction(action.action, action.data);
   }
 
   function handleKeyDown(e) {
@@ -248,9 +411,29 @@ function ChatBot({ pageContext }) {
                   </div>
                 ) : (
                   <Fragment>
-                    <div className="chat-bubble">{renderMessageContent(msg.text, () => setOpen(false))}</div>
+                    <div className="chat-bubble">
+                      {msg.streaming && !msg.text ? (
+                        <div className="chat-status">
+                          <div className="chat-status-dots">
+                            <span className="typing-dot">●</span>
+                            <span className="typing-dot">●</span>
+                            <span className="typing-dot">●</span>
+                          </div>
+                          <div className="chat-status-text">{STATUS_MESSAGES[statusIdx]}</div>
+                        </div>
+                      ) : (
+                        <Fragment>
+                          {parseMessageWithCards(msg.text).map((part, pi) =>
+                            part.type === 'trip'
+                              ? <ChatTripCard key={pi} trip={part.data} />
+                              : <Fragment key={pi}>{renderMessageContent(part.content, () => setOpen(false))}</Fragment>
+                          )}
+                          {msg.streaming && <span className="chat-streaming-cursor">▎</span>}
+                        </Fragment>
+                      )}
+                    </div>
 
-                    {msg.role === 'assistant' && msg.dataUsed && (
+                    {msg.role === 'assistant' && msg.dataUsed && !msg.streaming && (
                       <div className="chat-reasoning">
                         <button
                           className="chat-reasoning-toggle"
@@ -268,7 +451,7 @@ function ChatBot({ pageContext }) {
                       </div>
                     )}
 
-                    {msg.role === 'assistant' && (
+                    {msg.role === 'assistant' && !msg.streaming && (
                       <div className="chat-feedback">
                         <button
                           className={`chat-feedback-btn${msg.feedback === 'up' ? ' active' : ''}`}
@@ -280,6 +463,20 @@ function ChatBot({ pageContext }) {
                           onClick={() => handleFeedback(i, 'down')}
                           title="Not helpful"
                         >👎</button>
+                      </div>
+                    )}
+
+                    {msg.role === 'assistant' && msg.actions && msg.actions.length > 0 && (
+                      <div className="chat-actions">
+                        {msg.actions.map((action, j) => (
+                          <button
+                            key={j}
+                            className="chat-action-btn"
+                            onClick={() => handleAction(action)}
+                          >
+                            {action.label}
+                          </button>
+                        ))}
                       </div>
                     )}
 
@@ -303,16 +500,6 @@ function ChatBot({ pageContext }) {
                 )}
               </div>
             ))}
-
-            {loading && (
-              <div className="chat-message assistant">
-                <div className="chat-bubble typing">
-                  <span className="typing-dot">●</span>
-                  <span className="typing-dot">●</span>
-                  <span className="typing-dot">●</span>
-                </div>
-              </div>
-            )}
 
             <div ref={messagesEndRef} />
           </div>

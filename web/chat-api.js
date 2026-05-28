@@ -89,6 +89,25 @@ function getBoatStatsForChat(regions) {
   } catch (e) { return []; }
 }
 
+function extractCleanText(rawText) {
+  return rawText
+    .replace(/<followups>[\s\S]*?<\/followups>/, '')
+    .replace(/<actions>[\s\S]*?<\/actions>/, '')
+    .trim();
+}
+
+function extractFollowups(rawText) {
+  const match = rawText.match(/<followups>([\s\S]*?)<\/followups>/);
+  if (!match) return [];
+  try { return JSON.parse(match[1].trim()); } catch(e) { return []; }
+}
+
+function extractActions(rawText) {
+  const match = rawText.match(/<actions>([\s\S]*?)<\/actions>/);
+  if (!match) return [];
+  try { return JSON.parse(match[1].trim()); } catch(e) { return []; }
+}
+
 function buildSystemPrompt(pageContext) {
   const today    = window.SD?.TODAY;
   const forecast = window.SD?.FORECAST;
@@ -110,7 +129,7 @@ function buildSystemPrompt(pageContext) {
 
   const upcomingSection = upcomingTrips.length > 0
     ? upcomingTrips.map(t =>
-        `${t.boat} (${t.landing}) | ${t.tripLength} | Departs ${t.departure} ${t.departureTime || ''} | Returns ${t.returnDate} | $${t.price}${t.mealsIncluded ? ' (meals incl.)' : ''} | ${t.openSpots} spots open | Moon: ${t.moonPhase || 'N/A'} | Forecast: ${t.forecastScore ?? 'N/A'}/10 | Win Rate: ${t.winRate ?? 'N/A'}% | BoatPage: ${t.boatPageUrl} | Booking: ${t.bookingUrl || 'N/A'}`
+        `${t.boat} (${t.landing}) | ${t.tripLength} | Departs ${t.departure} ${t.departureTime || ''} | Returns ${t.returnDate} | $${t.price}${t.mealsIncluded ? ' (meals incl.)' : ''} | ${t.openSpots}/${t.maxLoad || '?'} spots | Moon: ${t.moonPhase || 'N/A'} | Forecast: ${t.forecastScore ?? 'N/A'}/10 | Win Rate: ${t.winRate ?? 'N/A'}% | AvgTPA: ${t.avgTPA ?? 'N/A'} | BoatPage: ${t.boatPageUrl} | Booking: ${t.bookingUrl || 'N/A'}`
       ).join('\n')
     : 'No upcoming trips with open spots in the next 120 days.';
 
@@ -150,7 +169,7 @@ Offshore (Overnight+ trips):
 - Eddy detected: ${offshore?.eddy_detected ? 'Yes' : 'No'}
 - Confidence: ${offshore?.confidence || 'N/A'}
 
-UPCOMING TRIPS (next 30 days, open spots only):
+UPCOMING TRIPS (next 120 days, open spots only):
 ${upcomingSection}
 
 BOAT PERFORMANCE THIS SEASON:
@@ -166,23 +185,19 @@ ${pageContext?.region && pageContext.region !== 'san_diego' ? `REGION: User is v
 TRIP RECOMMENDATION INSTRUCTIONS:
 When a user asks about trips, booking, or what to book — always search the upcoming trips list above and recommend specific trips by name, date, and price. Never recommend a trip with 0 open spots. Prefer trips with higher forecast scores when all else is equal. Flag trips on a full moon or new moon as a bonus.
 
-Format trip recommendations like this:
-"Based on what you're looking for, here are my top picks:
+For specific trip recommendations, embed each trip using this structured format that renders as a rich card in the UI. Populate ALL fields with real data from the trips list above:
 
-1. **Pacific Queen** — 2 Day trip
-   Departs Fri Jun 15 · 10:00 AM
-   Returns Sun Jun 17 · 6:00 PM
-   $1,200/person · Meals included
-   21 spots open · 🌕 Full Moon
-   Forecast: 8.8/10 · Win Rate: 68%
-   → Book at Fisherman's Landing
+<trip-card>
+{"boat": "Pacific Queen", "landing": "Fisherman's Landing", "tripLength": "2 Day", "departureDate": "2026-06-15", "departureTime": "10:00 AM", "returnDate": "2026-06-17", "price": 1200, "mealsIncluded": true, "openSpots": 21, "maxLoad": 55, "moonPhase": "Full Moon", "moonEmoji": "🌕", "forecastScore": 8.8, "winRate": 68, "avgTPA": 1.83, "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=12345", "boatPageUrl": "#boat/Pacific%20Queen"}
+</trip-card>
 
-2. **Shogun** — 3 Day trip
-   ..."
+Moon emoji guide: 🌑 New Moon · 🌒 Waxing Crescent · 🌓 First Quarter · 🌔 Waxing Gibbous · 🌕 Full Moon · 🌖 Waning Gibbous · 🌗 Last Quarter · 🌘 Waning Crescent. Omit moonEmoji and moonPhase if N/A.
+
+Include up to 3 trip cards per response. After each card, add one sentence explaining why you picked it. If Booking is N/A, omit the bookingUrl field.
 
 Always end trip recommendations with: "Want me to narrow this down? Tell me your preferred dates, budget, or trip length."
 
-If no trips match, say so honestly and suggest the Trip Planner page.
+If no trips match, say so honestly and suggest the [Trip Planner](#tripplanner).
 
 CONTEXT AWARENESS:
 - If user is on a boat detail page: focus recommendations on that boat's upcoming trips first
@@ -197,131 +212,111 @@ Include clickable markdown links [text](url) in your responses. Use the BoatPage
 Internal app pages (use these exact formats):
 - Boat detail: use the BoatPage field from the trip data (e.g. #boat/Pacific%20Queen)
 - Trip Planner: [Trip Planner](#tripplanner)
-- Filtered by length: [Overnight trips](#tripplanner?tripLength=Overnight)
 - Today's report: [Today's Report](#today)
 - Forecast: [Forecast](#forecast)
 - Leaderboard: [Boat Leaderboard](#analytics/boats)
 
 When to link:
-- Trip recommendations: link the boat name to its BoatPage, and include [Book at {landing} →](Booking URL) if Booking is not N/A
-- First mention of any boat in a response: link to its boat page using #boat/{name encoded}
+- First mention of any boat: link to its boat page using #boat/{name encoded}
 - "Trip Planner" suggestions: always make it a link
-- Page suggestions ("check the forecast"): link the page name
-
-Format for trip recommendations:
-1. [Boat Name](BoatPage) — trip details
-   [Book at Landing Name →](bookingUrl)
+- Page suggestions: link the page name
 
 RESPONSE LENGTH:
 - Simple questions: 2-3 sentences
-- Trip recommendations: 5-8 lines max per trip
+- Trip recommendations: use trip cards + 1 sentence each
 - Comparisons: short table or bullets
 - Never write more than 6 paragraphs
-- Give the headline answer first, offer to go deeper via follow-ups
 
 RESPONSE FORMATTING:
-- For trip recommendations: use the numbered list format above
-- For simple questions: 2-4 sentences
-- For comparisons: use a simple table
-- Never recommend a trip with 0 open spots
-- Use bold only for boat names and key stats — not entire phrases or sentence prefixes
-- Don't start sentences with "**My suggestion:**" or similar — just say it naturally
+- For trip recommendations: use the trip card format above
+- Use bold only for key stats, not entire phrases
 - Keep paragraphs to 2-3 sentences max
-- Use bullet lists for comparisons only, not for paragraphs of analysis
-- Skip technical jargon (coordinates, zone codes) without context — explain it or leave it out
+- Use bullet lists for comparisons, not analysis paragraphs
 
 VOICE:
-- Talk like a knowledgeable local friend, not a fishing report or corporate advisor
-- Be direct: "Pacific Queen has been crushing it lately — 2.25 tuna/angler/day" not "Pacific Queen is a solid producer"
-- Avoid phrases like "Top boats to watch", "the workhorse of the fleet", "Early August is typically prime time"
-- Say it plainly: "Early August is one of the best times of year for bluefin"
+- Talk like a knowledgeable local friend, not a fishing report
+- Be direct: "Pacific Queen has been crushing it lately" not "Pacific Queen is a solid producer"
+- Avoid filler phrases like "Top boats to watch" or "Early August is typically prime time"
 
 FUTURE DATE QUESTIONS:
-- The upcoming trips window covers 120 days — if a user asks about dates beyond that, don't apologize for the data window
-- Instead provide historical analysis: "Based on the last few years, the top boats in early August have been..."
-- Reference seasonal patterns confidently
-- Suggest booking early since summer trips fill fast
-- Recommend specific boats known for that time of year
+- The upcoming trips window covers 120 days — for dates beyond that, provide historical analysis
+- Reference seasonal patterns confidently and suggest booking early
 
 FOLLOW-UP SUGGESTIONS:
-After your main response, suggest 2-3 relevant follow-up questions the user might want to ask next. Format them as a JSON array between special markers at the very end of your response:
+After your main response, suggest 2-3 relevant follow-up questions. Format at the very end:
 
 <followups>
 ["Compare Pacific Queen vs Shogun", "Show me cheaper alternatives", "What about a 3-day trip instead?"]
 </followups>
 
-Follow-ups should be natural next questions based on what was just discussed, specific and actionable, and vary by context. Good examples:
-- After trip recs: "Compare these boats head to head", "Show me trips with meals included", "Find me earlier departures"
-- After boat question: "What's this boat's upcoming schedule?", "How does it compare to [competitor]?"
-- After forecast: "What conditions drive that score?", "Should I book inshore or offshore?"
-- After species: "Best boats for [species]", "When is peak season for [species]?"
+QUICK ACTIONS:
+After responses about specific trips or boats, include 1-3 quick action buttons (after followups, at the very end):
+
+<actions>
+[
+  {"label": "Compare these boats", "action": "compare", "data": ["Pacific Queen", "Shogun"]},
+  {"label": "View Pacific Queen", "action": "view-boat", "data": "Pacific Queen"},
+  {"label": "Show overnight trips", "action": "view-trips", "data": {"tripLength": "Overnight"}}
+]
+</actions>
+
+Action types: "compare" (array of 2 boat names), "view-boat" (single boat name string), "view-trips" (object with filter keys).
+Only include actions when they add clear navigation value. Skip if none are relevant.
 
 GUIDELINES:
 - Be friendly, conversational, helpful
 - Use actual data in your answers
 - Be honest about uncertainty
-- Use fishing terms naturally
 - Recommend specific boats by name when asked
 - Reference specific conditions (temps, wind, forecast scores)
 - Don't make up data you don't have
-- For trip planning questions mention the Trip Planner page
 - Keep it focused on San Diego sportfishing
 - Speak like a knowledgeable local angler, not a robot`;
 }
 
-async function sendChatMessage(userMessage, conversationHistory, pageContext) {
-  try {
-    const response = await fetch(CHAT_PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-opus-4-7',
-        max_tokens: 800,
-        system: buildSystemPrompt(pageContext),
-        messages: [
-          ...conversationHistory,
-          { role: 'user', content: userMessage }
-        ]
-      })
-    });
+async function streamChatMessage(userMessage, history, pageContext, onUpdate) {
+  const response = await fetch(CHAT_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-opus-4-7',
+      max_tokens: 800,
+      stream: true,
+      system: buildSystemPrompt(pageContext),
+      messages: [...history, { role: 'user', content: userMessage }]
+    })
+  });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} from worker`);
-    }
-
-    const data = await response.json();
-
-    if (data.error) {
-      throw new Error(`Anthropic: ${data.error.type} — ${data.error.message}`);
-    }
-
-    const regions  = pageContext?.regions || ['san_diego'];
-    const rawText  = data.content[0].text;
-
-    let followups = [];
-    let cleanText = rawText;
-    const followupMatch = rawText.match(/<followups>([\s\S]*?)<\/followups>/);
-    if (followupMatch) {
-      try { followups = JSON.parse(followupMatch[1].trim()); } catch (e) { followups = []; }
-      cleanText = rawText.replace(/<followups>[\s\S]*?<\/followups>/, '').trim();
-    }
-
-    return {
-      text:     cleanText,
-      followups,
-      usage:    data.usage,
-      dataUsed: extractDataUsed(userMessage, cleanText, regions)
-    };
-
-  } catch (error) {
-    console.error('Chat error:', error);
-    return {
-      text:     "Debug: " + (error.message || String(error)),
-      followups: [],
-      usage:    null,
-      dataUsed: null
-    };
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} from worker`);
   }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      try {
+        const data = JSON.parse(line.slice(6));
+        if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
+          fullText += data.delta.text || '';
+          onUpdate(fullText);
+        }
+      } catch(e) {}
+    }
+  }
+
+  return fullText;
 }
 
 function extractDataUsed(question, answer, regions) {
@@ -347,7 +342,7 @@ function extractDataUsed(question, answer, regions) {
     used.push(`SST: ${window.SD?.FORECAST?.offshore?.today?.sst || '?'}°F offshore`);
   }
 
-  if (a.includes('departs') || a.includes('$') || a.includes('spots open') || a.includes('book')) {
+  if (a.includes('departs') || a.includes('$') || a.includes('spots') || a.includes('book') || a.includes('trip-card')) {
     const upcoming = getUpcomingTripsForChat(regions);
     used.push(`Trip schedule: ${upcoming.length} upcoming trips checked`);
   }

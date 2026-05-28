@@ -27,6 +27,7 @@ export default {
     }
 
     const body = await request.json();
+    body.stream = true;
 
     const response = await fetch(
       'https://api.anthropic.com/v1/messages',
@@ -41,11 +42,10 @@ export default {
       }
     );
 
-    const data = await response.json();
-
-    return new Response(JSON.stringify(data), {
+    return new Response(response.body, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
         'Access-Control-Allow-Origin': origin,
       }
     });

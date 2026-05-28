@@ -135,6 +135,15 @@ window.TTTrack = {
     }
   },
 
+  chatAction: function(actionType, data) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_action', {
+        action_type: actionType,
+        action_data: typeof data === 'string' ? data : JSON.stringify(data),
+      });
+    }
+  },
+
   getClickStats: function() {
     try {
       var clicks = JSON.parse(localStorage.getItem('tt_clicks') || '[]');
