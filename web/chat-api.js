@@ -135,7 +135,7 @@ ${community?.biteReport?.species?.slice(0, 3)?.map(s => `${s.name}: ${s.status}`
 
 ${pageContext?.boat ? `USER IS VIEWING: ${pageContext.boat} boat page` : ''}
 ${pageContext?.page ? `CURRENT PAGE: ${pageContext.page}` : ''}
-${pageContext?.region && pageContext.region !== 'san_diego' ? `REGION CONTEXT: User is viewing ${pageContext.region === 'all_socal' ? 'All SoCal' : pageContext.region} data` : ''}
+${pageContext?.region && pageContext.region !== 'san_diego' ? `REGION: User is viewing ${pageContext.region === 'all_socal' ? 'All SoCal' : pageContext.region} data. Only suggest follow-ups about boats and trips in that region — don't reference boats from other regions unless viewing All SoCal.` : 'REGION: San Diego.'}
 
 TRIP RECOMMENDATION INSTRUCTIONS:
 When a user asks about trips, booking, or what to book — always search the upcoming trips list above and recommend specific trips by name, date, and price. Never recommend a trip with 0 open spots. Prefer trips with higher forecast scores when all else is equal. Flag trips on a full moon or new moon as a bonus.
@@ -170,6 +170,19 @@ RESPONSE FORMATTING:
 - For simple questions: 2-4 sentences
 - For comparisons: use a simple table
 - Never recommend a trip with 0 open spots
+
+FOLLOW-UP SUGGESTIONS:
+After your main response, suggest 2-3 relevant follow-up questions the user might want to ask next. Format them as a JSON array between special markers at the very end of your response:
+
+<followups>
+["Compare Pacific Queen vs Shogun", "Show me cheaper alternatives", "What about a 3-day trip instead?"]
+</followups>
+
+Follow-ups should be natural next questions based on what was just discussed, specific and actionable, and vary by context. Good examples:
+- After trip recs: "Compare these boats head to head", "Show me trips with meals included", "Find me earlier departures"
+- After boat question: "What's this boat's upcoming schedule?", "How does it compare to [competitor]?"
+- After forecast: "What conditions drive that score?", "Should I book inshore or offshore?"
+- After species: "Best boats for [species]", "When is peak season for [species]?"
 
 GUIDELINES:
 - Be friendly, conversational, helpful
@@ -210,17 +223,29 @@ async function sendChatMessage(userMessage, conversationHistory, pageContext) {
       throw new Error(`Anthropic: ${data.error.type} — ${data.error.message}`);
     }
 
-    const regions = pageContext?.regions || ['san_diego'];
+    const regions  = pageContext?.regions || ['san_diego'];
+    const rawText  = data.content[0].text;
+
+    let followups = [];
+    let cleanText = rawText;
+    const followupMatch = rawText.match(/<followups>([\s\S]*?)<\/followups>/);
+    if (followupMatch) {
+      try { followups = JSON.parse(followupMatch[1].trim()); } catch (e) { followups = []; }
+      cleanText = rawText.replace(/<followups>[\s\S]*?<\/followups>/, '').trim();
+    }
+
     return {
-      text:     data.content[0].text,
+      text:     cleanText,
+      followups,
       usage:    data.usage,
-      dataUsed: extractDataUsed(userMessage, data.content[0].text, regions)
+      dataUsed: extractDataUsed(userMessage, cleanText, regions)
     };
 
   } catch (error) {
     console.error('Chat error:', error);
     return {
       text:     "Debug: " + (error.message || String(error)),
+      followups: [],
       usage:    null,
       dataUsed: null
     };

@@ -58,9 +58,10 @@ function ChatBot({ pageContext }) {
     incrementChatUsage();
     setLoading(false);
     setMessages(prev => [...prev, {
-      role: 'assistant',
-      text: result.text,
+      role:     'assistant',
+      text:     result.text,
       dataUsed: result.dataUsed,
+      followups: result.followups || [],
       feedback: null
     }]);
 
@@ -69,6 +70,12 @@ function ChatBot({ pageContext }) {
 
   function handleFeedback(idx, type) {
     setMessages(prev => prev.map((m, i) => i === idx ? { ...m, feedback: type } : m));
+  }
+
+  function handleFollowup(idx, text) {
+    // Clear chips from the message that was clicked so they don't linger
+    setMessages(prev => prev.map((m, i) => i === idx ? { ...m, followups: [] } : m));
+    handleSend(text);
   }
 
   function handleKeyDown(e) {
@@ -178,6 +185,23 @@ function ChatBot({ pageContext }) {
                           onClick={() => handleFeedback(i, 'down')}
                           title="Not helpful"
                         >👎</button>
+                      </div>
+                    )}
+
+                    {msg.role === 'assistant' && msg.followups && msg.followups.length > 0 && (
+                      <div className="chat-followups">
+                        <div className="chat-followups-label">Continue the conversation:</div>
+                        <div className="chat-followups-list">
+                          {msg.followups.map((fu, j) => (
+                            <button
+                              key={j}
+                              className="chat-followup-chip"
+                              onClick={() => handleFollowup(i, fu)}
+                            >
+                              {fu} →
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </Fragment>
