@@ -19,6 +19,14 @@ from .conditions import snapshot as conditions_snapshot
 from .forecast import build_forecast_payload, calculate_consensus
 from .sst import LOCATIONS as SST_LOCATIONS
 
+LANDINGS_META = [
+    {"name": "H&M Landing",            "lat": 32.7235, "lng": -117.2276, "googleRating": 4.3, "googleCount": 850,  "region": "san_diego"},
+    {"name": "Fisherman's Landing",     "lat": 32.7250, "lng": -117.2265, "googleRating": 4.5, "googleCount": 650,  "region": "san_diego"},
+    {"name": "Point Loma Sportfishing", "lat": 32.7241, "lng": -117.2273, "googleRating": 4.4, "googleCount": 420,  "region": "san_diego"},
+    {"name": "Seaforth Sportfishing",   "lat": 32.7631, "lng": -117.2355, "googleRating": 4.7, "googleCount": 310,  "region": "san_diego"},
+    {"name": "Oceanside Sea Center",    "lat": 33.2052, "lng": -117.3891, "googleRating": 4.6, "googleCount": 180,  "region": "san_diego"},
+]
+
 LANDINGS = (
     "H&M Landing",
     "Fisherman's Landing",
@@ -583,6 +591,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
 
     payload = {
         "LANDINGS": list(LANDINGS),
+        "LANDINGS_META": LANDINGS_META,
         "TRIP_LENGTHS": list(TRIP_LENGTHS),
         "SPECIES": list(SPECIES),
         "TROPHY_SPECIES": list(TROPHY_SPECIES),

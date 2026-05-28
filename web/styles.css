@@ -3043,3 +3043,197 @@ body.chat-open {
   display: block;
   margin-top: 2px;
 }
+
+/* ───── Boats directory redesign ───── */
+
+/* Controls bar (search + form filter + view toggle) */
+.boats-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/* View toggle (Grid / Map / List) */
+.boats-view-toggle {
+  display: flex;
+  border: 1px solid var(--tb-border-2);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.boats-view-toggle button {
+  background: white;
+  border: none;
+  border-right: 1px solid var(--tb-border-2);
+  padding: 6px 13px;
+  cursor: pointer;
+  color: var(--tb-slate);
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.12s;
+}
+.boats-view-toggle button:last-child { border-right: none; }
+.boats-view-toggle button.active { background: var(--tb-accent-l); color: var(--tb-accent-d); }
+.boats-view-toggle button:hover:not(.active) { background: var(--tb-foam); }
+
+/* Star ratings */
+.star-row { display: inline-flex; align-items: center; gap: 2px; }
+.star-row i { color: #F59E0B; font-size: 11px; }
+.star-row-xs i { font-size: 10px; }
+.star-row-score { font: 600 11px/14px var(--ss-font-sans); color: var(--tb-ink); margin-left: 3px; }
+.star-row-count  { font: 400 10px/13px var(--ss-font-sans); color: var(--tb-gray-3); margin-left: 1px; }
+
+/* Landing sections (grid view) */
+.boats-grid-wrap { display: flex; flex-direction: column; gap: 28px; }
+.boats-landing-section {}
+.boats-landing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 9px;
+  border-bottom: 2px solid var(--tb-border-2);
+  margin-bottom: 12px;
+}
+.blh-left { display: flex; align-items: center; gap: 8px; }
+.blh-name { font: 700 15px/20px var(--ss-font-sans); color: var(--tb-ink); }
+.blh-count {
+  font: 500 11px/14px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  background: var(--tb-foam);
+  border: 1px solid var(--tb-border-2);
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+.blh-rating { display: flex; align-items: center; gap: 6px; }
+.blh-google { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-3); }
+
+/* Boat card grid */
+.boats-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
+  gap: 12px;
+}
+
+/* Individual boat card */
+.boat-card {
+  background: white;
+  border: 1px solid var(--tb-border-2);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.boat-card:hover {
+  box-shadow: 0 4px 16px rgba(27,43,59,0.12);
+  transform: translateY(-1px);
+}
+.boat-card-img {
+  position: relative;
+  height: 108px;
+  background: var(--tb-foam);
+  overflow: hidden;
+}
+.boat-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.boat-card-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--tb-gray-2);
+  font-size: 28px;
+}
+.boat-card-badge-overlay {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+.boat-card-body { padding: 10px 10px 9px; }
+.boat-card-name {
+  font: 600 13px/18px var(--ss-font-sans);
+  color: var(--tb-ink);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.boat-card-stats { display: flex; gap: 12px; margin: 6px 0 5px; }
+.boat-card-stat  { display: flex; flex-direction: column; }
+.bcs-val { font: 700 13px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.bcs-lbl { font: 400 10px/13px var(--ss-font-sans); color: var(--tb-gray-3); }
+.boat-card-lengths { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.boat-card-len {
+  font: 500 10px/14px var(--ss-font-sans);
+  color: var(--tb-slate);
+  background: var(--tb-foam);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+/* Map view */
+.boats-map-wrap { display: flex; flex-direction: column; gap: 14px; }
+.landing-map-container {
+  height: 420px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--tb-border-2);
+  background: var(--tb-foam);
+}
+
+/* Leaflet custom pin */
+.l-pin { display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.l-pin-dot {
+  width: 16px; height: 16px;
+  background: var(--tb-accent-d);
+  border: 2.5px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.l-pin-label {
+  font: 600 10px/13px var(--ss-font-sans);
+  background: white;
+  color: var(--tb-ink);
+  padding: 1px 5px;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  margin-top: 3px;
+}
+
+/* Leaflet popup body */
+.l-popup { min-width: 148px; font-family: var(--ss-font-sans); }
+.l-popup-name  { font: 700 13px/18px var(--ss-font-sans); color: var(--tb-ink); margin-bottom: 4px; }
+.l-popup-rating { font: 500 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.l-popup-boats  { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
+
+/* Landing chips below map */
+.boats-landing-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.blanding-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid var(--tb-border-2);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+.blc-name  { font: 600 12px/16px var(--ss-font-sans); color: var(--tb-ink); }
+.blc-rating { font: 500 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
+.blc-count  { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-3); }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .boats-controls { gap: 8px; }
+  .boats-view-toggle { margin-left: 0; width: 100%; }
+  .boats-view-toggle button { flex: 1; }
+  .boats-card-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
+  .landing-map-container { height: 300px; }
+  .boats-landing-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
