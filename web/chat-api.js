@@ -182,22 +182,44 @@ ${pageContext?.boat ? `USER IS VIEWING: ${pageContext.boat} boat page` : ''}
 ${pageContext?.page ? `CURRENT PAGE: ${pageContext.page}` : ''}
 ${pageContext?.region && pageContext.region !== 'san_diego' ? `REGION: User is viewing ${pageContext.region === 'all_socal' ? 'All SoCal' : pageContext.region} data. Only suggest follow-ups about boats and trips in that region — don't reference boats from other regions unless viewing All SoCal.` : 'REGION: San Diego.'}
 
-TRIP RECOMMENDATION INSTRUCTIONS:
-When a user asks about trips, booking, or what to book — always search the upcoming trips list above and recommend specific trips by name, date, and price. Never recommend a trip with 0 open spots. Prefer trips with higher forecast scores when all else is equal. Flag trips on a full moon or new moon as a bonus.
+TRIP RECOMMENDATION FORMAT — CRITICAL RULES:
 
-For specific trip recommendations, embed each trip using this structured format that renders as a rich card in the UI. Populate ALL fields with real data from the trips list above:
+When a user asks about available trips (by date, length, price, species, or "best" / "what should I book"):
+
+1. ALWAYS use <trip-card> JSON format for every recommended trip. NEVER list trips in plain text, bullets, or numbered lists.
+
+2. Show 3–5 trip cards maximum per response. Do not show more even if more trips match.
+
+3. Order cards by best match for what was asked:
+   - "Best" / "hottest" / "top pick" → sort by win rate, then forecastScore
+   - "Cheapest" / "budget" → sort by price ascending
+   - Specific dates → sort by departureDate ascending
+   - Specific length → show matching tripLength first
+
+4. Each card MUST include all available fields from the trip data:
+   boat, landing, tripLength, departureDate, departureTime, returnDate, price, mealsIncluded, openSpots, maxLoad, moonPhase (with moonEmoji), forecastScore, winRate, avgTPA, bookingUrl, boatPageUrl.
+   If a field is N/A in the data, omit it from the JSON.
+
+5. Add 1–2 sentences BEFORE the cards explaining your selection logic (e.g. "Here are the highest win-rate overnight trips departing this weekend:").
+
+6. Add 1 sentence AFTER the last card noting the top choice or a notable alternative.
+
+7. ALWAYS include quick action buttons in the <actions> block — at minimum: "Compare these boats" and one filter action relevant to the query.
+
+TRIP CARD FORMAT (populate with real data, not this example):
 
 <trip-card>
 {"boat": "Pacific Queen", "landing": "Fisherman's Landing", "tripLength": "2 Day", "departureDate": "2026-06-15", "departureTime": "10:00 AM", "returnDate": "2026-06-17", "price": 1200, "mealsIncluded": true, "openSpots": 21, "maxLoad": 55, "moonPhase": "Full Moon", "moonEmoji": "🌕", "forecastScore": 8.8, "winRate": 68, "avgTPA": 1.83, "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=12345", "boatPageUrl": "#boat/Pacific%20Queen"}
 </trip-card>
 
-Moon emoji guide: 🌑 New Moon · 🌒 Waxing Crescent · 🌓 First Quarter · 🌔 Waxing Gibbous · 🌕 Full Moon · 🌖 Waning Gibbous · 🌗 Last Quarter · 🌘 Waning Crescent. Omit moonEmoji and moonPhase if N/A.
+Moon emoji guide: 🌑 New Moon · 🌒 Waxing Crescent · 🌓 First Quarter · 🌔 Waxing Gibbous · 🌕 Full Moon · 🌖 Waning Gibbous · 🌗 Last Quarter · 🌘 Waning Crescent.
 
-Include up to 3 trip cards per response. After each card, add one sentence explaining why you picked it. If Booking is N/A, omit the bookingUrl field.
-
-Always end trip recommendations with: "Want me to narrow this down? Tell me your preferred dates, budget, or trip length."
-
-If no trips match, say so honestly and suggest the [Trip Planner](#tripplanner).
+NO TRIPS FOUND — what to do:
+If a user asks about dates or a trip type with NO matching trips in the schedule data above:
+- Be honest: e.g. "No 1.5-day trips are currently scheduled for early August yet."
+- Then provide historical analysis using the boat performance stats above.
+- Suggest they check back closer to those dates or use the [Trip Planner](#tripplanner).
+- NEVER invent or estimate trip details that aren't in the schedule data.
 
 CONTEXT AWARENESS:
 - If user is on a boat detail page: focus recommendations on that boat's upcoming trips first
