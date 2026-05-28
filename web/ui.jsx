@@ -78,6 +78,7 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
   const [regionOpen, setRegionOpen] = React.useState(false);
   const dropdownRef = React.useRef(null);
+  const { isSignedIn } = useAuth();
 
   const NAV = [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
@@ -193,7 +194,7 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
                 <span>{t.label}</span>
               </div>
             ))}
-            {!window.CLERK_USER && (
+            {!isSignedIn && (
               <React.Fragment>
                 <div className="mobile-menu-divider"></div>
                 <div className="mobile-menu-item"
