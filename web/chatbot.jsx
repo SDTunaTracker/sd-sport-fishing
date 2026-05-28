@@ -41,8 +41,33 @@ function ChatBot({ pageContext }) {
     return () => document.body.classList.remove('chat-open');
   }, [open]);
 
-  function handleInputFocus() {
+  // Visual Viewport API: resize panel to actual visible height when keyboard appears
+  useEffect(() => {
+    if (!open) return;
+    const handleViewportResize = () => {
+      if (window.visualViewport) {
+        const panel = document.querySelector('.chat-panel');
+        if (panel) {
+          panel.style.height = `${window.visualViewport.height}px`;
+        }
+      }
+    };
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+      handleViewportResize();
+    }
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+      }
+      const panel = document.querySelector('.chat-panel');
+      if (panel) panel.style.height = '';
+    };
+  }, [open]);
+
+  function handleInputFocus(e) {
     setTimeout(() => {
+      e.target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
   }
