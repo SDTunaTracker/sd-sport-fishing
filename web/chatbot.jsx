@@ -389,17 +389,21 @@ function ChatBot({ pageContext }) {
 
           {/* Header */}
           <div className="chat-header">
-            <button className="chat-close-btn" onClick={() => setOpen(false)} aria-label="Close">
+            <button className="chat-header-minimize" onClick={handleReset} aria-label="New conversation" title="New conversation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+            <div className="chat-header-title">
+              <span className="chat-title">Co-Captain</span>
+              <span className="chat-beta-badge">BETA</span>
+            </div>
+            <button className="chat-header-close" onClick={() => setOpen(false)} aria-label="Close">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
-            <div className="chat-title-wrap">
-              <span className="chat-title">Co-Captain</span>
-              <span className="chat-beta-badge">BETA</span>
-            </div>
-            <div style={{width:36}}/>
           </div>
 
           {/* Messages */}
@@ -412,23 +416,19 @@ function ChatBot({ pageContext }) {
                     {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                   </span>
                 </div>
-                <div className="chat-disclaimer">
-                  This chat is powered by AI. Verify important information.
-                </div>
                 <div className="chat-message assistant">
                   <div className="chat-bubble assistant">
-                    Hey, I'm Co-Captain — your AI fishing partner. I can help you find the right boat, compare fish counts, plan your next trip, or dig into 11 years of San Diego sportfishing data.
-                    <br/><br/>
-                    What are you looking for?
+                    Hey, I'm Co-Captain — your AI fishing partner. Ask me about boats, fish counts, trips, or what's biting.
                   </div>
                 </div>
+                <div className="chat-disclaimer">AI can be inaccurate. Verify important information.</div>
               </Fragment>
             )}
 
             {showSuggestions && (
               <div className="chat-suggestions">
                 {SUGGESTED_QUESTIONS.map((q, i) => (
-                  <button key={i} className="chat-suggestion-btn" onClick={() => handleSend(q)}>
+                  <button key={i} className="chat-suggestion-chip" onClick={() => handleSend(q)}>
                     {q}
                   </button>
                 ))}
