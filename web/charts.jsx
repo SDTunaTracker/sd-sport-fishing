@@ -64,27 +64,16 @@ function addBankMarkers(map) {
     { name: '302 Spot',     lat: 32.0,  lng: -117.7, dir: 'right' },
   ];
 
-  var markers = banks.map(function(b) {
-    return L.circleMarker([b.lat, b.lng], {
+  banks.forEach(function(b) {
+    L.circleMarker([b.lat, b.lng], {
       radius: 5, color: '#fff', weight: 2,
       fillColor: '#1E293B', fillOpacity: 0.95,
     }).addTo(map).bindTooltip(b.name, {
-      permanent: true, direction: b.dir,
+      permanent: false, direction: b.dir,
       offset: [0, b.dir === 'top' ? -6 : b.dir === 'bottom' ? 6 : 0],
       className: 'bank-label',
     });
   });
-
-  // Show labels only at zoom 8+; hover-only when zoomed out to avoid clutter
-  function updateBankLabels() {
-    var permanent = map.getZoom() >= 8;
-    markers.forEach(function(m) {
-      if (permanent) { m.openTooltip(); }
-      else { m.closeTooltip(); }
-    });
-  }
-  map.on('zoomend', updateBankLabels);
-  updateBankLabels();
 }
 
 // ── Waypoints helpers ─────────────────────────────────────────────────────────
@@ -402,11 +391,10 @@ function ChartsView() {
     if (!mapInstance.current) return;
 
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
-    // light_all keeps place-name labels so users can orient (see "Pacific Ocean", island names)
-    // satellite gets dark_nolabels since the imagery is opaque
+    // Voyager has blue ocean coloring + labels; satellite uses dark_nolabels (imagery is opaque)
     var cartoUrl = (chartType === 'satellite')
       ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
     basemapLayer.current = L.tileLayer(cartoUrl, {
       attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19,
     }).addTo(mapInstance.current);
