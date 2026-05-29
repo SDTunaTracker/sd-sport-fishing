@@ -728,6 +728,21 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     js += "window.SD = " + json.dumps(payload, separators=(",", ":"), default=str) + ";\n"
     out_path.write_text(js, encoding="utf-8")
 
+    # Size guard — Cloudflare Pages hard limit is 25 MiB per file.
+    _size_mb = out_path.stat().st_size / (1024 * 1024)
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
+    _log.info("data.js size: %.2f MiB", _size_mb)
+    if _size_mb > 24.0:
+        raise RuntimeError(
+            f"data.js is {_size_mb:.1f} MiB — exceeds 24 MiB safety threshold "
+            f"(Cloudflare Pages limit: 25 MiB). Reduce exports before committing."
+        )
+    if _size_mb > 20.0:
+        _log.warning(
+            "data.js is %.1f MiB — approaching 25 MiB Cloudflare Pages limit.", _size_mb
+        )
+
     # Regenerate sitemap.xml alongside data.js.
     try:
         _write_sitemap(out_path, boats)

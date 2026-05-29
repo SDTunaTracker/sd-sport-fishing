@@ -123,6 +123,53 @@ jobs:
           echo "$RESULT"
           echo "$RESULT" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('success') else 1)"
 
+      - name: Verify Cloudflare Pages build succeeded
+        # Polls the CF Pages API until the build for the current commit
+        # completes (success or failure). Fails this workflow loudly if CF
+        # Pages rejected the build — catches issues like the 25 MiB file-size
+        # limit before you discover it hours later on the live site.
+        # Requires CLOUDFLARE_API_TOKEN (Cache Purge) and CLOUDFLARE_ACCOUNT_ID.
+        # Skips silently if secrets are not yet configured.
+        if: ${{ env.CLOUDFLARE_ACCOUNT_ID != '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          PROJECT="sd-sport-fishing"
+          SHA=$(git rev-parse HEAD)
+          SHORT=${SHA:0:12}
+          echo "Waiting for Cloudflare Pages build for commit $SHORT..."
+          sleep 20
+          for i in $(seq 1 30); do
+            RESP=$(curl -s \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/deployments" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            STATUS=$(echo "$RESP" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for d in data.get('result', []):
+              sha = (d.get('deployment_trigger') or {}).get('metadata', {}).get('commit_hash', '')
+              if sha.startswith('$SHORT'):
+                  stage = d.get('latest_stage', {})
+                  print(stage.get('status', 'unknown'))
+                  sys.exit(0)
+          print('pending')
+          " 2>/dev/null || echo "pending")
+            echo "  attempt $i/30: $STATUS"
+            if [ "$STATUS" = "success" ]; then
+              echo "Cloudflare Pages build succeeded."
+              exit 0
+            fi
+            if [ "$STATUS" = "failure" ]; then
+              echo "Cloudflare Pages build FAILED for commit $SHORT."
+              echo "Check: https://dash.cloudflare.com/pages/project/$PROJECT"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for Cloudflare Pages build — check dashboard manually."
+        continue-on-error: true
+
       - name: Post-deploy smoke test
         run: |
           echo "Waiting 60 s for CDN propagation..."

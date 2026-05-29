@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """
 Verify that all JSX files in web/ are referenced in web/index.html,
-and that version strings are recent (within 7 days).
+that version strings are recent (within 7 days), and that no file
+exceeds the Cloudflare Pages 25 MiB per-file limit.
 
 Run before committing or as part of CI pre-flight.
 Exit code 0 = all good. Exit code 1 = problems found.
 """
 import os, re, sys
 from datetime import date, timedelta
+from pathlib import Path
 
 here = os.path.dirname(os.path.abspath(__file__))
-web  = os.path.normpath(os.path.join(here, "..", "web"))
-html = os.path.join(web, "index.html")
+web  = Path(os.path.normpath(os.path.join(here, "..", "web")))
+html = web / "index.html"
 
-text = open(html, encoding="utf-8").read()
+text = html.read_text(encoding="utf-8")
 
 # ── 1. Every .jsx in web/ must appear in index.html ──────────────────────────
 jsx_files = [f for f in os.listdir(web) if f.endswith(".jsx")]
@@ -37,25 +39,35 @@ for m in re.finditer(r'\?v=(\d{8})(?:-\d+)?', text):
     except ValueError:
         pass  # non-date version string — skip
 
-# ── 3. No file in web/ may exceed 24 MiB (Cloudflare Pages hard limit: 25 MiB) ─
-CLOUDFLARE_LIMIT_MB = 24.0
-oversized = []
-for f in os.listdir(web):
-    fpath = os.path.join(web, f)
-    if not os.path.isfile(fpath):
+# ── 3. File size guard — Cloudflare Pages hard limit is 25 MiB per file ──────
+WARN_MB = 20.0
+FAIL_MB = 24.0
+oversized  = []  # will block commit
+size_warns = []  # advisory only
+
+for fpath in sorted(web.rglob("*")):
+    if not fpath.is_file():
         continue
-    size_mb = os.path.getsize(fpath) / (1024 * 1024)
-    if size_mb > CLOUDFLARE_LIMIT_MB:
-        oversized.append((f, size_mb))
+    size_mb = fpath.stat().st_size / (1024 * 1024)
+    rel = fpath.relative_to(web.parent)
+    if size_mb >= FAIL_MB:
+        oversized.append((rel, size_mb))
+    elif size_mb >= WARN_MB:
+        size_warns.append((rel, size_mb))
 
 # ── Report ────────────────────────────────────────────────────────────────────
 fail = False
 
+if size_warns:
+    print(f"File size warnings (> {WARN_MB:.0f} MiB — approaching 25 MiB Cloudflare limit):")
+    for rel, mb in size_warns:
+        print(f"  {rel}  {mb:.1f} MiB")
+
 if oversized:
-    print(f"OVERSIZED files (> {CLOUDFLARE_LIMIT_MB} MiB — Cloudflare Pages limit is 25 MiB):")
-    for fname, size_mb in sorted(oversized, key=lambda x: -x[1]):
-        print(f"  web/{fname}  {size_mb:.1f} MiB")
-    print("  Re-run: python -m src.main --export-only")
+    print(f"OVERSIZED files (> {FAIL_MB:.0f} MiB — will fail Cloudflare Pages deploy):")
+    for rel, mb in oversized:
+        print(f"  {rel}  {mb:.1f} MiB")
+    print("  Fix: python -m src.main --export-only  (re-runs export reductions)")
     fail = True
 
 if missing:
@@ -71,6 +83,6 @@ if stale:
     fail = True
 
 if not fail:
-    print(f"OK: all {len(jsx_files)} JSX files referenced, versions are fresh.")
+    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits.")
 
 sys.exit(1 if fail else 0)
