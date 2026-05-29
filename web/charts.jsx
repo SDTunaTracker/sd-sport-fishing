@@ -54,24 +54,37 @@ function addLandingPins(map) {
 
 function addBankMarkers(map) {
   var banks = [
-    { name: '9-Mile Bank',  lat: 32.7,  lng: -117.4 },
-    { name: '43 Fathom',    lat: 32.8,  lng: -117.6 },
-    { name: '60-Mile Bank', lat: 32.4,  lng: -117.7 },
-    { name: '182 Spot',     lat: 32.6,  lng: -118.0 },
-    { name: '209 Spot',     lat: 32.3,  lng: -117.9 },
-    { name: 'Tanner Bank',  lat: 32.7,  lng: -119.1 },
-    { name: 'Cortes Bank',  lat: 32.4,  lng: -119.1 },
-    { name: '302 Spot',     lat: 32.0,  lng: -117.7 },
+    { name: '9-Mile Bank',  lat: 32.7,  lng: -117.4, dir: 'top' },
+    { name: '43 Fathom',    lat: 32.8,  lng: -117.6, dir: 'left' },
+    { name: '60-Mile Bank', lat: 32.4,  lng: -117.7, dir: 'bottom' },
+    { name: '182 Spot',     lat: 32.6,  lng: -118.0, dir: 'top' },
+    { name: '209 Spot',     lat: 32.3,  lng: -117.9, dir: 'bottom' },
+    { name: 'Tanner Bank',  lat: 32.7,  lng: -119.1, dir: 'top' },
+    { name: 'Cortes Bank',  lat: 32.4,  lng: -119.1, dir: 'bottom' },
+    { name: '302 Spot',     lat: 32.0,  lng: -117.7, dir: 'right' },
   ];
-  banks.forEach(function(b) {
-    L.circleMarker([b.lat, b.lng], {
+
+  var markers = banks.map(function(b) {
+    return L.circleMarker([b.lat, b.lng], {
       radius: 5, color: '#fff', weight: 2,
       fillColor: '#1E293B', fillOpacity: 0.95,
     }).addTo(map).bindTooltip(b.name, {
-      permanent: true, direction: 'top',
-      offset: [0, -6], className: 'bank-label',
+      permanent: true, direction: b.dir,
+      offset: [0, b.dir === 'top' ? -6 : b.dir === 'bottom' ? 6 : 0],
+      className: 'bank-label',
     });
   });
+
+  // Show labels only at zoom 8+; hover-only when zoomed out to avoid clutter
+  function updateBankLabels() {
+    var permanent = map.getZoom() >= 8;
+    markers.forEach(function(m) {
+      if (permanent) { m.openTooltip(); }
+      else { m.closeTooltip(); }
+    });
+  }
+  map.on('zoomend', updateBankLabels);
+  updateBankLabels();
 }
 
 // ── Waypoints helpers ─────────────────────────────────────────────────────────
@@ -333,7 +346,7 @@ function ChartsView() {
   const [waypoints, setWaypoints]       = React.useState(loadWaypoints);
   const [showModal, setShowModal]       = React.useState(false);
   const [pendingLatLng, setPending]     = React.useState(null);
-  const [sidebarOpen, setSidebarOpen]   = React.useState(true);
+  const [sidebarOpen, setSidebarOpen]   = React.useState(false);
   const mapRef          = React.useRef(null);
   const mapInstance     = React.useRef(null);
   const basemapLayer    = React.useRef(null);
@@ -349,8 +362,9 @@ function ChartsView() {
 
     mapInstance.current = L.map(mapRef.current, {
       center: [32.5, -118.5], zoom: 7, minZoom: 6, maxZoom: 10,
-      maxBounds: [[31, -121], [35, -116]],
-      maxBoundsViscosity: 0.8,
+      // East bound at -117.5 keeps the view in ocean/coastal waters (Salton Sea is at -115.9)
+      maxBounds: [[28, -123], [36, -117.5]],
+      maxBoundsViscosity: 1.0,
     });
 
     addLandingPins(mapInstance.current);
@@ -388,9 +402,11 @@ function ChartsView() {
     if (!mapInstance.current) return;
 
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
+    // light_all keeps place-name labels so users can orient (see "Pacific Ocean", island names)
+    // satellite gets dark_nolabels since the imagery is opaque
     var cartoUrl = (chartType === 'satellite')
       ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png';
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
     basemapLayer.current = L.tileLayer(cartoUrl, {
       attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19,
     }).addTo(mapInstance.current);

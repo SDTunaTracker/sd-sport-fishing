@@ -3739,18 +3739,23 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .chart-legend-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  font: 400 11px var(--ss-font-sans);
-  color: var(--tb-gray-3, #64748B);
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--tb-foam, #F8FAFC);
+  border: 1px solid var(--tb-border-2, #E2E8F0);
+  border-radius: 8px;
+  font: 500 11px var(--ss-font-sans);
+  color: var(--tb-slate, #475569);
 }
 .legend-label { white-space: nowrap; }
 .legend-gradient-bar {
   flex: 1;
-  max-width: 240px;
-  height: 12px;
-  border-radius: 6px;
-  border: 1px solid var(--tb-border-2, #E2E8F0);
+  max-width: 300px;
+  height: 14px;
+  border-radius: 7px;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
 }
 
 .chart-attribution {
