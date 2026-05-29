@@ -112,10 +112,18 @@ function getBoatStatsForChat(regions) {
 }
 
 function extractCleanText(rawText) {
-  return rawText
-    .replace(/<followups>[\s\S]*?<\/followups>/, '')
-    .replace(/<actions>[\s\S]*?<\/actions>/, '')
+  let clean = rawText
+    .replace(/<followups>[\s\S]*?<\/followups>/g, '')
+    .replace(/<actions>[\s\S]*?<\/actions>/g, '')
     .trim();
+
+  // If a trip-card opened but never closed (token-limit truncation), hide it —
+  // same guard that cleanStreamingText applies during streaming.
+  const openIdx  = clean.lastIndexOf('<trip-card>');
+  const closeIdx = clean.lastIndexOf('</trip-card>');
+  if (openIdx > closeIdx) clean = clean.substring(0, openIdx).trim();
+
+  return clean;
 }
 
 function extractFollowups(rawText) {
@@ -324,7 +332,7 @@ async function streamChatMessage(userMessage, history, pageContext, onUpdate) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-opus-4-7',
-      max_tokens: 800,
+      max_tokens: 1500,
       stream: true,
       system: buildSystemPrompt(pageContext),
       messages: [...history, { role: 'user', content: userMessage }]

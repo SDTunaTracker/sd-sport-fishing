@@ -106,7 +106,8 @@ function parseMessageWithCards(text) {
       const tripData = JSON.parse(match[1].trim());
       parts.push({ type: 'trip', data: tripData });
     } catch(e) {
-      parts.push({ type: 'text', content: match[0] });
+      // Malformed JSON (truncated by token limit, trailing comma, etc.) —
+      // drop this card silently rather than rendering raw <trip-card> text.
     }
     lastIndex = match.index + match[0].length;
   }
