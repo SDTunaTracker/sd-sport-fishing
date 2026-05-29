@@ -4001,3 +4001,210 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   }
   .wp-sidebar.open { max-height: 320px; }
 }
+
+/* ── Wave 1: Conditions overlays (Wind / Waves) ─────────────────────────── */
+
+.cond-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.cond-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.cond-bg {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: rgba(15, 30, 43, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.cond-lbl {
+  font: 700 10px var(--ss-font-sans, 'Inter', sans-serif);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Loading overlay */
+.cond-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
+  pointer-events: none;
+  z-index: 900;
+}
+
+.cond-loading-pill {
+  background: rgba(15, 30, 43, 0.82);
+  color: #e2e8f0;
+  font: 600 13px var(--ss-font-sans, 'Inter', sans-serif);
+  padding: 8px 18px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ── Wave 1: Tides panel ────────────────────────────────────────────────── */
+
+.tides-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.tides-station-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tides-station {
+  font: 700 15px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+}
+
+.tides-date {
+  font: 500 13px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+}
+
+/* Summary cards */
+.tides-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.tides-summary-item {
+  background: var(--tb-foam, #f0f9ff);
+  border: 1px solid var(--tb-border-2, #e2e8f0);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tides-sum-label {
+  font: 500 11px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tides-sum-value {
+  font: 700 18px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+}
+
+.tides-sum-value.tide-high { color: #2563eb; }
+.tides-sum-value.tide-low  { color: #64748b; }
+
+/* Schedule table */
+.tides-schedule-title {
+  font: 700 13px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.tides-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tide-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--tb-border-2, #e2e8f0);
+  background: white;
+  transition: background 0.15s;
+}
+
+.tide-row-next {
+  border-color: #38bdf8;
+  background: #f0f9ff;
+  box-shadow: 0 0 0 2px rgba(56,189,248,0.2);
+}
+
+.tide-row-past {
+  opacity: 0.55;
+}
+
+.tide-type-badge {
+  font: 700 11px var(--ss-font-sans, 'Inter', sans-serif);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  min-width: 44px;
+  text-align: center;
+}
+
+.tide-high-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tide-low-badge {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.tide-row-time {
+  font: 600 14px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+  flex: 1;
+}
+
+.tide-row-height {
+  font: 700 14px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+}
+
+.tide-next-pill {
+  font: 700 10px var(--ss-font-sans, 'Inter', sans-serif);
+  background: #38bdf8;
+  color: #0f1e2b;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tides-note {
+  font: 500 12px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  text-align: center;
+  padding-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .tides-panel { padding: 14px; }
+  .tides-summary { grid-template-columns: 1fr 1fr; }
+  .tide-row { padding: 8px 10px; gap: 8px; }
+}
