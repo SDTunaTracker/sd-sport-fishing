@@ -1,4 +1,4 @@
-# SD Sport Fishing — Trophy Catch Tracker
+# SD Sport Fishing — Trophy Catch Tracker 
 
 Daily-updated analytics dashboard for the four major San Diego sportfishing landings:
 H&M Landing, Fisherman's Landing, Point Loma Sportfishing, and Seaforth Sportfishing.
