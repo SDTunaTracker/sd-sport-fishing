@@ -1,18 +1,21 @@
 function getOverlayLayer(chartType) {
-  var date = new Date();
-  date.setDate(date.getDate() - 2);
-  var dateStr = date.toISOString().slice(0, 10);
+  // Chlorophyll data lags ~1 day; SST/satellite use no-date form (GIBS serves latest available)
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  var yday = yesterday.toISOString().slice(0, 10);
 
   switch (chartType) {
     case 'sst':
+      // MODIS Aqua thermal SST, max native zoom 6; no-date URL = GIBS default (latest available)
       return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_MidIR_4km_Day_Daily/default/' + dateStr + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
-        { opacity: 0.7, attribution: 'NASA GIBS · MODIS Aqua', maxNativeZoom: 7 }
+        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_Thermal_4km_Day_Daily/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png',
+        { opacity: 0.75, attribution: 'NASA GIBS · MODIS Aqua SST', maxNativeZoom: 6 }
       );
     case 'chlorophyll':
+      // VIIRS NOAA-20 chlorophyll, Level7; data available with ~1-day lag
       return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_Chlorophyll_A_4km_Daily/default/' + dateStr + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
-        { opacity: 0.7, attribution: 'NASA GIBS · MODIS Aqua', maxNativeZoom: 7 }
+        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_Chlorophyll_a/default/' + yday + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
+        { opacity: 0.75, attribution: 'NASA GIBS · VIIRS NOAA-20', maxNativeZoom: 7 }
       );
     case 'bathymetry':
       return L.tileLayer.wms('https://wms.gebco.net/mapserv', {
@@ -23,8 +26,9 @@ function getOverlayLayer(chartType) {
         attribution: '© GEBCO 2024',
       });
     case 'satellite':
+      // MODIS Terra true-color, Level9; no-date URL = today's pass
       return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/' + dateStr + '/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
         { opacity: 1.0, attribution: 'NASA GIBS · MODIS Terra', maxNativeZoom: 9 }
       );
     default:
@@ -147,7 +151,7 @@ function ChartsView() {
     if (!mapRef.current || mapInstance.current) return;
 
     mapInstance.current = L.map(mapRef.current, {
-      center: [32.5, -118.0], zoom: 7, minZoom: 6, maxZoom: 10,
+      center: [32.5, -118.5], zoom: 7, minZoom: 6, maxZoom: 10,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
