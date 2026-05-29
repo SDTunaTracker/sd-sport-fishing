@@ -102,3 +102,10 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Post-deploy smoke test
+        run: |
+          echo "Waiting 60 s for CDN propagation..."
+          sleep 60
+          python3 scripts/smoke-test.py --base-url=https://thetunatracker.com
+        continue-on-error: true
