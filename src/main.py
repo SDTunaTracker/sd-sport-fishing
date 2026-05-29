@@ -217,6 +217,16 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         except Exception as e:
             summary_lines.append(f"  Recalibration ERROR (non-fatal): {e}")
 
+        # Weekly boat photo update — runs on Sundays only.
+        if datetime.now().weekday() == 6:
+            try:
+                from .scrape_boat_photos import update_all_boat_photos
+                with db.connect(DB_PATH) as photo_conn:
+                    update_all_boat_photos(photo_conn)
+                summary_lines.append("  Boat photos: weekly update complete")
+            except Exception as e:
+                summary_lines.append(f"  Boat photos ERROR (non-fatal): {e}")
+
     print("Daily run summary:")
     for line in summary_lines:
         print(line)
