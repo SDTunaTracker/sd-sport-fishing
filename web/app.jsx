@@ -223,6 +223,13 @@ function App() {
     if (window.TTTrack) TTTrack.pageView(route.view);
   }, [route.view]);
 
+  // Update SEO meta tags on every route change — more reliable than hashchange
+  // alone because React sometimes updates route state without touching the hash
+  // (replaceState for region prefix, or same-hash re-navigation).
+  useE(() => {
+    if (window.__updateMetaTags) window.__updateMetaTags(route.view, route.params || {});
+  }, [route.view, route.params?.boat, route.params?.subtab]);
+
   // Keep pageContext in sync with route and regions for the chatbot.
   useE(() => {
     setPageContext({

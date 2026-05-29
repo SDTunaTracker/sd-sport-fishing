@@ -128,7 +128,14 @@
   }
 
   window.addEventListener('hashchange', updateFromHash);
-  updateFromHash(); // run immediately on script load (scripts load in body)
+
+  // Primary update: fire from React's route-change useEffect via __updateMetaTags.
+  // Fallback: run on DOMContentLoaded (after React's initial mount + any replaceState
+  // calls that don't fire hashchange) and immediately on script load for crawlers.
+  updateFromHash();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateFromHash);
+  }
 
   window.__updateMetaTags = update;
 })();
