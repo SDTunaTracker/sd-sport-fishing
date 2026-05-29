@@ -364,35 +364,52 @@
     return 'slow';
   }
 
-  // For each trip on selectedDate, look back 30 days of same-trip-length history
-  // and compute a percentile rating. Returns rated boat rows + angler-weighted
-  // fleet rating key.
-  // Returns object keyed by "boat|tripLength" → { winRate, avgTPAPerDay, tripCount }.
-  // Win rate = fraction of that boat's trips (for that trip length) where its
-  // trophyPerAnglerPerDay beat the fleet median for the same trip length.
+  // Returns object keyed by "boat|tripLength" → { winRate, wins, matchupCount, avgTPAPerDay, total }.
+  // Win rate = H2H: % of matchups won where 2+ boats ran the same trip length on the same date.
+  // winRate is null for boat+tripLength combos with <10 matchups (insufficient sample).
   function boatWinRates() {
+    const MIN_MATCHUPS = 10;
     const allTrips = window.SD_PROC_TRIPS || window.SD.TRIPS;
 
-    // Fleet median trophyPerAnglerPerDay per trip length
-    const byLen = {};
+    // Group trips by (date, tripLength) to find competitive matchups
+    const byDayLen = {};
     allTrips.forEach(t => {
-      (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t.trophyPerAnglerPerDay || 0);
+      const k = `${t.date}|${t.tripLength}`;
+      (byDayLen[k] || (byDayLen[k] = [])).push(t);
     });
-    const fleetMed = {};
-    Object.entries(byLen).forEach(([len, vals]) => { fleetMed[len] = median(vals); });
 
-    // Per (boat, tripLength) accumulate wins / total / TPA sum
-    const out = {};
-    allTrips.forEach(t => {
-      const key = `${t.boat}|${t.tripLength}`;
-      const r = out[key] || (out[key] = { wins: 0, total: 0, tpaSum: 0 });
-      r.total++;
-      r.tpaSum += t.trophyPerAnglerPerDay || 0;
-      if ((t.trophyPerAnglerPerDay || 0) > (fleetMed[t.tripLength] || 0)) r.wins++;
+    // Per (boat, tripLength): H2H wins + matchup count
+    const mStats = {};
+    Object.values(byDayLen).forEach(group => {
+      if (group.length < 2) return;
+      const top = Math.max(...group.map(t => t.trophyPerAnglerPerDay || 0));
+      group.forEach(t => {
+        const k = `${t.boat}|${t.tripLength}`;
+        const r = mStats[k] || (mStats[k] = { wins: 0, matchupCount: 0 });
+        r.matchupCount++;
+        if ((t.trophyPerAnglerPerDay || 0) >= top - 1e-9) r.wins++;
+      });
     });
-    Object.values(out).forEach(r => {
-      r.winRate     = r.total > 0 ? r.wins / r.total : 0;
-      r.avgTPAPerDay = r.total > 0 ? r.tpaSum / r.total : 0;
+
+    // Per (boat, tripLength): total trip count + TPA sum (includes non-matchup trips)
+    const tStats = {};
+    allTrips.forEach(t => {
+      const k = `${t.boat}|${t.tripLength}`;
+      const r = tStats[k] || (tStats[k] = { tpaSum: 0, total: 0 });
+      r.tpaSum += t.trophyPerAnglerPerDay || 0;
+      r.total++;
+    });
+
+    const out = {};
+    Object.entries(tStats).forEach(([k, ts]) => {
+      const ms = mStats[k] || { wins: 0, matchupCount: 0 };
+      out[k] = {
+        total:        ts.total,
+        avgTPAPerDay: ts.total > 0 ? ts.tpaSum / ts.total : 0,
+        wins:         ms.wins,
+        matchupCount: ms.matchupCount,
+        winRate:      ms.matchupCount >= MIN_MATCHUPS ? ms.wins / ms.matchupCount : null,
+      };
     });
     return out;
   }

@@ -173,6 +173,13 @@ function buildSystemPrompt(pageContext) {
 
 Your job is to help anglers make better decisions about when to fish, which boat to book, and what to expect offshore.
 
+METRIC DEFINITIONS — always use these when discussing stats:
+- Win Rate: % of head-to-head matchups won. A matchup = two or more boats ran the same trip length on the same day; the boat with the highest catch-per-angler wins. Example: "Pacific Queen has a 43% Win Rate — won 43 of 100 direct matchups against peer boats."
+- TPA/Day: Trophy fish Per Angler per Day. Example: "1.8 TPA/Day means the boat averaged 1.8 trophy fish per angler each day of the trip."
+- Forecast Score: 1–10 prediction of fishing quality based on water temp, wind, swell, and historical catch data.
+
+When you first mention Win Rate, TPA/Day, or Forecast Score in a conversation, briefly explain it inline in plain language. Do NOT repeat the explanation later in the same conversation.
+
 CURRENT DATA (updated ${scrapeTime}):
 
 TODAY'S CATCH:

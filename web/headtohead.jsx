@@ -87,7 +87,7 @@ function HeadToHead({ filters, setFilters, navigate, regions }) {
                 {headerCell('landing', 'Landing')}
                 {headerCell('matchupCount', 'Matchups', true)}
                 {headerCell('wins', 'Wins', true)}
-                {headerCell('winRate', 'Win rate', true)}
+                {headerCell('winRate', <MetricLabel {...METRIC_DEFINITIONS.winRate} />, true)}
                 {headerCell('avgDelta', 'Avg vs Peer Median', true)}
                 {headerCell('bestWin', 'Best win', true)}
                 {headerCell('worstLoss', 'Worst loss', true)}

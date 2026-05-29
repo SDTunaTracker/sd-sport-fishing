@@ -940,7 +940,7 @@ function FleetDepartures({ date, navigate }) {
                       <span className="fc-fleet-win-pct" style={{ color: scoreColor(winRatePct / 10) }}>
                         {winRatePct}%
                       </span>
-                      <span className="fc-fleet-win-label">win</span>
+                      <span className="fc-fleet-win-label"><MetricLabel {...METRIC_DEFINITIONS.winRate} /></span>
                     </Fragment>
                   : <span className="fc-fleet-win-pct" style={{ color: 'var(--tb-gray-3)' }}>—</span>
                 }

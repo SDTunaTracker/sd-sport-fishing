@@ -51,6 +51,20 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
 
   const profile = window.SD?.BOAT_PROFILES?.[boat];
 
+  // H2H win rate: aggregate across all trip lengths with sufficient matchup data
+  const h2hWinRate = useMemo(() => {
+    try {
+      const raw = SDA.boatWinRates ? SDA.boatWinRates() : {};
+      let wins = 0, matchupCount = 0;
+      for (const [key, val] of Object.entries(raw)) {
+        if (key.split('|')[0] !== boat || val.winRate == null) continue;
+        wins         += val.wins;
+        matchupCount += val.matchupCount;
+      }
+      return matchupCount > 0 ? { winRate: wins / matchupCount, matchupCount } : null;
+    } catch(e) { return null; }
+  }, [boat]);
+
   return (
     <Fragment>
       <Crumbs items={[
@@ -110,6 +124,13 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
       <div className="kpis">
         <KPI label="Tuna / Angler" value={fmt.tpa(tpa)} ctx={`${fmt.n(totalAnglers)} anglers · ${allTrips.length} trips`}/>
         <KPI label="Total Fish" value={fmt.n(totalTuna)} ctx={`All tracked species`}/>
+        {h2hWinRate && (
+          <KPI
+            label={<MetricLabel {...METRIC_DEFINITIONS.winRate} />}
+            value={`${Math.round(h2hWinRate.winRate * 100)}%`}
+            ctx={`${h2hWinRate.matchupCount} matchups`}
+          />
+        )}
       </div>
 
       <div className="detail-grid" style={{marginBottom: 12}}>

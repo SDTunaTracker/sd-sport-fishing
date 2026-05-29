@@ -264,7 +264,7 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
           {ret && <TimeRow label="Ret" dt={ret} isReturn/>}
         </div>
         <div className="tp-card-wr-row">
-          <span className="tp-card-stat-label">Win Rate</span>
+          <span className="tp-card-stat-label"><MetricLabel {...METRIC_DEFINITIONS.winRate} /></span>
           <WinRateBadge wr={s._winRate}/>
           {s._trips > 0 && <span className="tp-card-trip-count">{s._trips} trips</span>}
           {avgTpa != null && (
@@ -614,7 +614,7 @@ function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setR
         ))}
       </SidebarSection>
 
-      <SidebarSection title="Min Win Rate">
+      <SidebarSection title={<MetricLabel {...METRIC_DEFINITIONS.winRate} />}>
         {[['Any', 0], ['40%+', 0.40], ['60%+', 0.60], ['80%+', 0.80]].map(([label, val]) => (
           <label key={label} className="tp-sb-radio-row">
             <input type="radio" name="minWinRate" checked={minWinRate === val}

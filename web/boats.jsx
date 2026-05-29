@@ -160,15 +160,20 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
   const boatWinMap = useMemo(() => {
     try {
       const raw = SDA.boatWinRates ? SDA.boatWinRates() : {};
+      // Aggregate H2H stats across all trip lengths per boat (weighted by matchup count).
+      // Skip entries where winRate is null (insufficient matchup data for that trip length).
       const acc = {};
       for (const [key, val] of Object.entries(raw)) {
+        if (val.winRate == null) continue;
         const boat = key.split('|')[0];
-        if (!acc[boat]) acc[boat] = { sum: 0, n: 0 };
-        acc[boat].sum += val.winRate;
-        acc[boat].n   += 1;
+        if (!acc[boat]) acc[boat] = { wins: 0, matchupCount: 0 };
+        acc[boat].wins         += val.wins;
+        acc[boat].matchupCount += val.matchupCount;
       }
       const out = {};
-      for (const [boat, { sum, n }] of Object.entries(acc)) out[boat] = sum / n;
+      for (const [boat, { wins, matchupCount }] of Object.entries(acc)) {
+        out[boat] = matchupCount > 0 ? wins / matchupCount : null;
+      }
       return out;
     } catch(e) { return {}; }
   }, []);
@@ -400,7 +405,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                     {speciesLabel}/Day <span className="sortarrow">{sortArrow('avgTPAPerDay')}</span>
                   </th>
                   <th className={`num ${sortBy === 'winRate' ? 'active' : ''}`} onClick={() => toggleSort('winRate')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                    Win Rate <span className="sortarrow">{sortArrow('winRate')}</span>
+                    <MetricLabel {...METRIC_DEFINITIONS.winRate} /> <span className="sortarrow">{sortArrow('winRate')}</span>
                   </th>
                   <th className={sortBy === 'form' ? 'active' : ''} onClick={() => toggleSort('form')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     Form <span className="sortarrow">{sortArrow('form')}</span>
