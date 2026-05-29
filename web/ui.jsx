@@ -142,14 +142,31 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
             </div>
             {regionOpen && (
               <div className="region-dropdown">
-                {REGION_OPTIONS.map(opt => (
-                  <div key={opt.id}
-                       className={`region-dropdown-item${currentChoice === opt.id ? ' sel' : ''}`}
-                       onClick={() => handleRegionSelect(opt.id)}>
-                    <span className={`rdrop-dot${currentChoice === opt.id ? ' sel' : ''}`}/>
-                    <span>{opt.label}</span>
+                <div className={`region-dropdown-item${currentChoice === 'san_diego' ? ' sel' : ''}`}
+                     onClick={() => handleRegionSelect('san_diego')}>
+                  <span className={`rdrop-dot${currentChoice === 'san_diego' ? ' sel' : ''}`}/>
+                  <span>San Diego</span>
+                </div>
+                {window.FEATURES && window.FEATURES.SHOW_OCLA ? (
+                  <React.Fragment>
+                    <div className={`region-dropdown-item${currentChoice === 'oc_la' ? ' sel' : ''}`}
+                         onClick={() => handleRegionSelect('oc_la')}>
+                      <span className={`rdrop-dot${currentChoice === 'oc_la' ? ' sel' : ''}`}/>
+                      <span>OC / LA</span>
+                    </div>
+                    <div className={`region-dropdown-item${currentChoice === 'all_socal' ? ' sel' : ''}`}
+                         onClick={() => handleRegionSelect('all_socal')}>
+                      <span className={`rdrop-dot${currentChoice === 'all_socal' ? ' sel' : ''}`}/>
+                      <span>All SoCal</span>
+                    </div>
+                  </React.Fragment>
+                ) : (
+                  <div className="region-dropdown-item region-dropdown-item-cs">
+                    <i className="fa-solid fa-lock" style={{fontSize:9,color:'var(--tb-gray-3)'}}/>
+                    <span style={{color:'var(--tb-gray-3)'}}>OC / LA</span>
+                    <span className="rdrop-cs-badge">Coming Soon</span>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>

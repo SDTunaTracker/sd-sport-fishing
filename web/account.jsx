@@ -83,24 +83,47 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
   const isDefault = isDefaultSpecies(trophySpecies);
 
   // ── Region section ──────────────────────────────────────────────
+  const showOcla = window.FEATURES && window.FEATURES.SHOW_OCLA;
+
   function RegionSection() {
     return (
       <div style={card}>
         <div style={sectionTitle}>Default Region</div>
         <p style={sectionDesc}>Choose which region's data loads when you visit the site.</p>
 
-        {REGION_OPTIONS.map(opt => (
-          <label key={opt.id} style={{ ...radioRow, cursor: 'pointer' }}>
-            <input type="radio" name="regionChoice" value={opt.id}
-                   checked={regionChoice === opt.id}
-                   onChange={() => setRegionChoice(opt.id)}
-                   style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
-            <span>{opt.label}</span>
-            {opt.id === 'san_diego' && (
-              <span style={{ font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)' }}>(default)</span>
-            )}
-          </label>
-        ))}
+        <label style={{ ...radioRow, cursor: 'pointer' }}>
+          <input type="radio" name="regionChoice" value="san_diego"
+                 checked={regionChoice === 'san_diego'}
+                 onChange={() => setRegionChoice('san_diego')}
+                 style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
+          <span>San Diego</span>
+          <span style={{ font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)' }}>(default)</span>
+        </label>
+
+        {showOcla ? (
+          <React.Fragment>
+            <label style={{ ...radioRow, cursor: 'pointer' }}>
+              <input type="radio" name="regionChoice" value="oc_la"
+                     checked={regionChoice === 'oc_la'}
+                     onChange={() => setRegionChoice('oc_la')}
+                     style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
+              <span>OC / LA</span>
+            </label>
+            <label style={{ ...radioRow, cursor: 'pointer' }}>
+              <input type="radio" name="regionChoice" value="all_socal"
+                     checked={regionChoice === 'all_socal'}
+                     onChange={() => setRegionChoice('all_socal')}
+                     style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
+              <span>All SoCal (both)</span>
+            </label>
+          </React.Fragment>
+        ) : (
+          <div style={{ ...radioRow, cursor: 'default', opacity: 0.55 }}>
+            <i className="fa-solid fa-lock" style={{ fontSize: 11, color: 'var(--ss-gray-3)', flexShrink: 0 }}/>
+            <span style={{ color: 'var(--ss-gray-3)' }}>OC / LA</span>
+            <span style={{ font: '400 10px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)', background: 'var(--ss-foam)', padding: '2px 8px', borderRadius: 10 }}>Coming Soon</span>
+          </div>
+        )}
       </div>
     );
   }

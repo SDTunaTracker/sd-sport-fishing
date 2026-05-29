@@ -82,6 +82,8 @@ function App() {
   const { user, isSignedIn } = useAuth();
 
   const [regions, setRegions] = useS(() => {
+    // Feature flag: OC/LA is not public yet — lock to SD-only.
+    if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) return ['san_diego'];
     const initial = routeFromHash();
     if (initial.hashRegions) return initial.hashRegions;
     try {
@@ -94,6 +96,17 @@ function App() {
     if (old === 'all_socal') return ['san_diego', 'oc_la'];
     return ['san_diego'];
   });
+
+  // Strip any oc_la that leaked in from localStorage/hash when flag is off.
+  useE(() => {
+    if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) {
+      if (regions.includes('oc_la')) {
+        const next = ['san_diego'];
+        setRegions(next);
+        try { localStorage.setItem('tt_regions', JSON.stringify(next)); } catch(e) {}
+      }
+    }
+  }, [regions]);
 
   // Settings: trophy species + trip length methodology, persisted to localStorage.
   const [settings, setSettingsState] = useS(() => loadSettings());
