@@ -3552,3 +3552,44 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 }
 .chat-building-indicator .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .chat-building-indicator .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Freshness widget ────────────────────────────────────────────────────── */
+.freshness-widget { position: relative; display: inline-flex; align-items: center; }
+.freshness-pill {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: none; border: none; cursor: pointer; padding: 0;
+  font: 500 11px/1 var(--ss-font-sans);
+  transition: opacity 0.15s;
+}
+.freshness-pill:hover { opacity: 0.75; }
+.freshness-icon { font-size: 10px; }
+.freshness-label { text-decoration: underline; text-underline-offset: 2px; }
+.freshness-widget.compact .freshness-label { font-size: 10px; }
+
+.freshness-popover {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 200;
+  background: #fff; border: 1px solid var(--tb-border-2);
+  border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  padding: 12px 14px; min-width: 240px;
+}
+.freshness-popover-title {
+  font: 600 11px/1 var(--ss-font-sans);
+  color: var(--tb-slate); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 8px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--tb-border-2);
+}
+.freshness-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 0; font: 400 12px/1.4 var(--ss-font-sans);
+}
+.freshness-row-icon { font-size: 10px; font-weight: 700; width: 12px; flex-shrink: 0; }
+.freshness-row-name { flex: 1; color: var(--tb-ink); }
+.freshness-row-time { color: var(--tb-gray-3); font-size: 11px; }
+
+/* Freshness line in home stats bar */
+.home-stat-freshness {
+  width: 100%; text-align: center;
+  font: 400 10px/1 var(--ss-font-sans);
+  color: #64748B; padding: 6px 0 2px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}

@@ -10,6 +10,89 @@ function _fcScoreColor(s) {
   return 'var(--tb-coral)';
 }
 
+function useFreshness(regions) {
+  const status = window.SD?.SCRAPE_STATUS;
+  if (!status) return null;
+  const allLandings = status.landings || {};
+  const keys = Object.keys(allLandings);
+  if (!keys.length) return null;
+
+  // Filter to landings relevant to the current region
+  const regionLandings = (window.getLandingsForRegion && window.getEffectiveRegion)
+    ? window.getLandingsForRegion(window.getEffectiveRegion(regions || ['san_diego']))
+    : null;
+  const relevant = regionLandings ? keys.filter(k => regionLandings.includes(k)) : keys;
+
+  const fresh  = relevant.filter(k => allLandings[k].status === 'fresh').length;
+  const stale  = relevant.filter(k => allLandings[k].status === 'stale').length;
+  const failed = relevant.filter(k => allLandings[k].status === 'failed').length;
+
+  return { fresh, stale, failed, total: relevant.length, relevant, allLandings };
+}
+
+function timeAgo(isoStr) {
+  if (!isoStr) return 'never';
+  const d = new Date(isoStr);
+  const mins = Math.round((Date.now() - d) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  return `${hrs}h ago`;
+}
+
+function FreshnessWidget({ regions, compact }) {
+  const [open, setOpen] = useS(false);
+  const ref = React.useRef(null);
+  const f = useFreshness(regions);
+
+  React.useEffect(() => {
+    if (!open) return;
+    function onOutside(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [open]);
+
+  if (!f) return null;
+
+  const allFresh = f.stale === 0 && f.failed === 0;
+  const hasFailed = f.failed > 0;
+  const icon  = hasFailed ? '❌' : f.stale > 0 ? '⚠️' : '✓';
+  const color = hasFailed ? '#EF4444' : f.stale > 0 ? '#F59E0B' : '#34D399';
+  const label = allFresh
+    ? `${f.total} landings fresh`
+    : hasFailed
+      ? `${f.fresh} of ${f.total} fresh, ${f.failed} down`
+      : `${f.fresh} of ${f.total} fresh`;
+
+  return (
+    <span className={`freshness-widget${compact ? ' compact' : ''}`} ref={ref}>
+      <button className="freshness-pill" style={{ color }} onClick={() => setOpen(o => !o)}
+              title="Click for landing details">
+        <span className="freshness-icon">{icon}</span>
+        <span className="freshness-label">{label}</span>
+      </button>
+      {open && (
+        <div className="freshness-popover">
+          <div className="freshness-popover-title">Landing Update Status</div>
+          {f.relevant.map(name => {
+            const info = f.allLandings[name];
+            const s = info.status;
+            const ico = s === 'fresh' ? '✓' : s === 'stale' ? '⚠' : '✗';
+            const c   = s === 'fresh' ? '#34D399' : s === 'stale' ? '#F59E0B' : '#EF4444';
+            return (
+              <div key={name} className="freshness-row">
+                <span className="freshness-row-icon" style={{ color: c }}>{ico}</span>
+                <span className="freshness-row-name">{name}</span>
+                <span className="freshness-row-time">{timeAgo(info.lastSuccess)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </span>
+  );
+}
+
 function ForecastWidget({ navigate }) {
   const fc = window.SD?.FORECAST?.today;
   if (!fc) return null;
@@ -281,7 +364,12 @@ function TodayCatch({ navigate, settings, regions }) {
         <div className="today-left">
           <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</div>
           <div className="today-date">{fmtDate(selectedDate)}</div>
-          {timeStr && <div style={{fontSize:11, color:'#94A3B8', marginTop:2}}>Updated {timeStr}</div>}
+          {timeStr && (
+            <div style={{fontSize:11, color:'#94A3B8', marginTop:2, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap'}}>
+              Updated {timeStr}
+              <FreshnessWidget regions={regions} compact/>
+            </div>
+          )}
         </div>
 
         {ratingData.fleetRatingKey && (
@@ -589,6 +677,11 @@ function HomeView({ navigate, settings, regions }) {
           <span className="home-stat-num">{landingCount}</span>
           <span className="home-stat-lbl">Landings</span>
         </div>
+        {timeStr && (
+          <div className="home-stat-freshness">
+            Updated {timeStr} · <FreshnessWidget regions={regions} compact/>
+          </div>
+        )}
       </div>
 
       {/* ── FEATURE CARDS ─────────────────────────────────────────────── */}

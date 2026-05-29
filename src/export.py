@@ -562,6 +562,49 @@ def _forecast_scores_history(conn: sqlite3.Connection) -> list:
         return []
 
 
+def _scrape_status_payload(conn: sqlite3.Connection) -> dict:
+    """Build per-landing freshness from the last 24h of scrape_log."""
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+
+    rows = conn.execute("""
+        SELECT
+            landing,
+            MAX(CASE WHEN status='ok' THEN started_at END) AS last_success,
+            MAX(started_at)                                  AS last_attempt,
+            MAX(CASE WHEN status='ok' THEN trips_kept END)   AS trips_today
+        FROM scrape_log
+        WHERE started_at >= datetime('now', '-24 hours')
+        GROUP BY landing
+    """).fetchall()
+
+    landings: dict = {}
+    last_full: str | None = None
+
+    for row in rows:
+        ls = row["last_success"]
+        status = "failed"
+        if ls:
+            try:
+                dt = datetime.fromisoformat(ls)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                age_min = (now - dt).total_seconds() / 60
+                status = "fresh" if age_min < 90 else "stale" if age_min < 240 else "failed"
+            except Exception:
+                pass
+        landings[row["landing"]] = {
+            "lastSuccess": ls,
+            "lastAttempt": row["last_attempt"],
+            "status": status,
+            "tripsToday": row["trips_today"] or 0,
+        }
+        if ls and (last_full is None or ls > last_full):
+            last_full = ls
+
+    return {"lastFullScrape": last_full, "landings": landings}
+
+
 def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | None = None) -> int:
     """Write data.js. Returns trip count written.
 
@@ -607,6 +650,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "COMMUNITY": _community_payload(conn),
         "BOAT_PROFILES": _boat_profiles_payload(conn),
         "ADMIN": _admin_payload(conn),
+        "SCRAPE_STATUS": _scrape_status_payload(conn),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,
             "tripCount": len(trips),

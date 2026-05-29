@@ -174,6 +174,27 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         n = export(conn, DATA_JS_PATH, weather_forecast=weather_fc)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
 
+        # Staleness alerting — log any landing dark for 4+ hours during operating hours.
+        try:
+            _hour = datetime.now().hour
+            if 6 <= _hour <= 22:
+                cutoff = (datetime.now(timezone.utc) - timedelta(hours=4)).isoformat()
+                stale = conn.execute("""
+                    SELECT landing, MAX(started_at) AS last
+                    FROM scrape_log WHERE status='ok'
+                    GROUP BY landing
+                    HAVING MAX(started_at) < ?
+                """, (cutoff,)).fetchall()
+                if stale:
+                    alert_log = ROOT / "logs" / "staleness_alerts.log"
+                    alert_log.parent.mkdir(exist_ok=True)
+                    with open(alert_log, "a") as f:
+                        f.write(f"{datetime.utcnow().isoformat()}: Stale landings: "
+                                f"{[r['landing'] for r in stale]}\n")
+                    summary_lines.append(f"  STALENESS ALERT: {[r['landing'] for r in stale]}")
+        except Exception as e:
+            summary_lines.append(f"  Staleness check ERROR (non-fatal): {e}")
+
     # Rolling backup — written after a successful export so we always have a
     # clean recovery point that's at most one run old.
     try:
