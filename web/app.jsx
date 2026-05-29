@@ -272,6 +272,7 @@ function App() {
       <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
+      <AppFooter/>
 
       <ChatBot pageContext={pageContext}/>
 

@@ -195,6 +195,13 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
                 <span>{t.label}</span>
               </div>
             ))}
+            <div className="mobile-menu-divider"></div>
+            <a className="mobile-menu-item"
+               href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
+               onClick={() => setMenuState('closed')}>
+              <i className="fa-solid fa-envelope"></i>
+              <span>Contact</span>
+            </a>
             {!isSignedIn && (
               <React.Fragment>
                 <div className="mobile-menu-divider"></div>
@@ -477,8 +484,24 @@ function OcLaComingSoon({ onSwitchRegion }) {
   );
 }
 
+function AppFooter() {
+  return (
+    <footer className="app-footer">
+      <span className="app-footer-copy">&copy; 2026 The Tuna Tracker</span>
+      <nav className="app-footer-links">
+        <a href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
+           className="app-footer-link">Contact</a>
+        <span className="app-footer-sep">·</span>
+        <span className="app-footer-link muted">About</span>
+        <span className="app-footer-sep">·</span>
+        <span className="app-footer-link muted">Privacy</span>
+      </nav>
+    </footer>
+  );
+}
+
 Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
-  AppHeader, SideNav, Crumbs, KPI, Panel,
+  AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
 });
