@@ -724,6 +724,58 @@ function HomeRatingBadge({ ratingKey }) {
   );
 }
 
+function TopPerformersSection({ navigate, regions }) {
+  const tpMap = useMemo(() => {
+    try {
+      const now   = new Date();
+      const start = new Date(now); start.setDate(now.getDate() - 30);
+      const startISO = start.toISOString().slice(0, 10);
+      const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
+      const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : null;
+      const rl  = (eff && window.getLandingsForRegion) ? window.getLandingsForRegion(eff) : null;
+      const slice = raw.filter(t => t.date >= startISO && (!rl || rl.includes(t.landing)));
+      return SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates(slice) : {};
+    } catch(e) { return {}; }
+  }, [regions]);
+
+  const topBoats = useMemo(() => {
+    return Object.entries(tpMap)
+      .filter(([, d]) => d.tier === 'top' || d.tier === 'strong')
+      .sort((a, b) => b[1].rate - a[1].rate)
+      .slice(0, 8);
+  }, [tpMap]);
+
+  if (topBoats.length === 0) return null;
+
+  return (
+    <div className="home-section home-tp-section">
+      <div className="home-report-hd">
+        <div>
+          <div className="home-report-title">
+            This Month's Top Performers
+          </div>
+          <div className="home-report-sub">
+            Boats in the top 25% of comparable same-length trips · last 30 days
+          </div>
+        </div>
+        <button className="home-full-report-btn" style={{whiteSpace:'nowrap'}}
+                onClick={() => navigate('boats')}>
+          All boats →
+        </button>
+      </div>
+      <div className="home-tp-grid">
+        {topBoats.map(([boat, data]) => (
+          <div key={boat} className="home-tp-card" onClick={() => navigate('boat', { boat })}>
+            <div className="home-tp-boat">{boat}</div>
+            <TopPerformerBadge tier={data.tier} pct={data.rate} />
+            <div className="home-tp-meta">{data.wins}/{data.total} trips</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function HomeView({ navigate, settings, regions }) {
   // Trip count for credibility line
   const totalTrips = window.SD?.META?.tripCount || 0;
@@ -792,20 +844,26 @@ function HomeView({ navigate, settings, regions }) {
       {/* ── STATS BAR ─────────────────────────────────────────────────── */}
       <div className="home-stats-bar">
         <div className="home-stat">
-          <span className="home-stat-num lime">{fmt.n(trophyTotal)}</span>
-          <span className="home-stat-lbl">Tuna Today</span>
+          {trophyTotal === 0 ? (
+            <span className="home-stat-num" style={{color: 'var(--ss-slate)'}}>—</span>
+          ) : (
+            <span className="home-stat-num lime">{fmt.n(trophyTotal)}</span>
+          )}
+          <span className="home-stat-lbl">
+            {trophyTotal === 0 ? 'Boats Returning' : 'Tuna Today'}
+          </span>
         </div>
         <div className="home-stat">
           <span className="home-stat-num">{boats.length}</span>
-          <span className="home-stat-lbl">Boats Out</span>
+          <span className="home-stat-lbl">{boats.length === 1 ? 'Boat Out' : 'Boats Out'}</span>
         </div>
         <div className="home-stat">
           <span className="home-stat-num">{fmt.n(anglersTotal)}</span>
-          <span className="home-stat-lbl">Anglers</span>
+          <span className="home-stat-lbl">{anglersTotal === 1 ? 'Angler' : 'Anglers'}</span>
         </div>
         <div className="home-stat">
           <span className="home-stat-num">{landingCount}</span>
-          <span className="home-stat-lbl">Landings</span>
+          <span className="home-stat-lbl">{landingCount === 1 ? 'Landing' : 'Landings'}</span>
         </div>
         {timeStr && (
           <div className="home-stat-freshness">
@@ -825,6 +883,9 @@ function HomeView({ navigate, settings, regions }) {
           <div className="home-card-desc">Compare &amp; find the best upcoming trips with open spots</div>
         </div>
       </div>
+
+      {/* ── THIS MONTH'S TOP PERFORMERS ──────────────────────────────── */}
+      <TopPerformersSection navigate={navigate} regions={regions}/>
 
       {/* ── TODAY'S REPORT (inline preview) ───────────────────────────── */}
       <div className="home-section">

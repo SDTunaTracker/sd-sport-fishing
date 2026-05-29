@@ -42,3 +42,23 @@ function MetricLabel({ name, tooltip, learnMoreLink }) {
   );
 }
 window.MetricLabel = MetricLabel;
+
+// Compact tier badge for top-performer rate.
+// tier: 'top' | 'strong' | 'solid' | 'developing'
+// pct: optional numeric 0–1 to show alongside icon
+function TopPerformerBadge({ tier, pct, style }) {
+  if (!tier) return null;
+  const cfg = {
+    top:        { icon: '⭐', label: 'Top Performer',  cls: 'tp-tier-top' },
+    strong:     { icon: '🔥', label: 'Strong',          cls: 'tp-tier-strong' },
+    solid:      { icon: '✓',  label: 'Solid',           cls: 'tp-tier-solid' },
+    developing: { icon: '○',  label: 'Developing',      cls: 'tp-tier-developing' },
+  }[tier] || { icon: '—', label: tier, cls: '' };
+  return (
+    <span className={`tp-tier-badge ${cfg.cls}`} title={cfg.label} style={style}>
+      <span className="tp-tier-icon">{cfg.icon}</span>
+      {pct != null && <span className="tp-tier-pct">{Math.round(pct * 100)}%</span>}
+    </span>
+  );
+}
+window.TopPerformerBadge = TopPerformerBadge;

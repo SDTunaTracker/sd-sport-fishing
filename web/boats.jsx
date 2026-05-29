@@ -30,7 +30,7 @@ function StarRow({ rating, count, size }) {
   );
 }
 
-function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, form, lengths, navigate }) {
+function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, tpData, form, lengths, navigate }) {
   const hasPhoto = profile && profile.photoUrl;
 
   let badge = null;
@@ -65,6 +65,11 @@ function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, form, leng
             <div className="boat-card-stat">
               <span className="bcs-val">{Math.round(winRate * 100)}%</span>
               <span className="bcs-lbl">win rate</span>
+            </div>
+          )}
+          {tpData && (tpData.tier === 'top' || tpData.tier === 'strong') && (
+            <div className="boat-card-stat">
+              <TopPerformerBadge tier={tpData.tier} pct={tpData.rate} />
             </div>
           )}
         </div>
@@ -178,6 +183,11 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
     } catch(e) { return {}; }
   }, []);
 
+  const boatTPMap = useMemo(() => {
+    try { return SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates() : {}; }
+    catch(e) { return {}; }
+  }, []);
+
   const formMap = useMemo(() => {
     try {
       const _ALL = { year:'all', species:'all', landing:'all', month:'all', minTrips:0, includeZero:true, boat:'all' };
@@ -207,11 +217,12 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
   const boatRows = useMemo(() => rows.map(r => ({
     ...r,
     winRate: boatWinMap[r.boat] ?? null,
+    tpData:  boatTPMap[r.boat]  ?? null,
     form:    formMap[r.boat]    ?? null,
     lengths: boatLengths[r.boat] || [],
     profile: profiles[r.boat]   || null,
     reviews: reviewsMap[r.boat] || null,
-  })), [rows, boatWinMap, formMap, boatLengths, profiles, reviewsMap]);
+  })), [rows, boatWinMap, boatTPMap, formMap, boatLengths, profiles, reviewsMap]);
 
   const filtered = useMemo(() => {
     let r = [...boatRows];
@@ -228,6 +239,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
     return [...filtered].sort((a, b) => {
       let va, vb;
       if      (sortBy === 'winRate') { va = a.winRate ?? -1; vb = b.winRate ?? -1; }
+      else if (sortBy === 'tpRate')  { va = a.tpData?.rate ?? -1; vb = b.tpData?.rate ?? -1; }
       else if (sortBy === 'form')    { va = a.form    ?? -1; vb = b.form    ?? -1; }
       else if (sortBy === 'boat' || sortBy === 'landing') { va = a[sortBy] || ''; vb = b[sortBy] || ''; }
       else                           { va = a[sortBy] ?? -1; vb = b[sortBy] ?? -1; }
@@ -372,6 +384,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                       reviewData={b.reviews}
                       tpa={b.avgTPAPerDay}
                       winRate={b.winRate}
+                      tpData={b.tpData}
                       form={b.form}
                       lengths={b.lengths}
                       navigate={navigate}
@@ -407,6 +420,9 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                   <th className={`num ${sortBy === 'winRate' ? 'active' : ''}`} onClick={() => toggleSort('winRate')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     <MetricLabel {...METRIC_DEFINITIONS.winRate} /> <span className="sortarrow">{sortArrow('winRate')}</span>
                   </th>
+                  <th className={`num ${sortBy === 'tpRate' ? 'active' : ''}`} onClick={() => toggleSort('tpRate')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    <MetricLabel {...METRIC_DEFINITIONS.topPerformerRate} /> <span className="sortarrow">{sortArrow('tpRate')}</span>
+                  </th>
                   <th className={sortBy === 'form' ? 'active' : ''} onClick={() => toggleSort('form')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     Form <span className="sortarrow">{sortArrow('form')}</span>
                   </th>
@@ -429,6 +445,11 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                     <td className="num">{fmt.n(b.tripCount)}</td>
                     <td className="num">{fmt.tpa(b.avgTPAPerDay)}</td>
                     <td className="num">{b.winRate != null ? `${Math.round(b.winRate * 100)}%` : '—'}</td>
+                    <td className="num">
+                      {b.tpData
+                        ? <TopPerformerBadge tier={b.tpData.tier} pct={b.tpData.rate} />
+                        : <span style={{color:'var(--ss-gray-2)'}}>—</span>}
+                    </td>
                     <td>
                       {b.form >= 7
                         ? <span className="boats-form-badge hot">🔥 Hot</span>

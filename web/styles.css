@@ -3364,11 +3364,11 @@ body.chat-open {
   margin-bottom: 10px;
 }
 .home-hero-h1 {
-  font: 800 33px/1.05 var(--ss-font-display, var(--ss-font-sans));
+  font: 800 56px/1.0 var(--ss-font-display, var(--ss-font-sans));
   color: #fff;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   text-shadow: 0 2px 20px rgba(0,0,0,0.4);
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 .home-hero-sub {
   font: 400 13.5px/1.45 var(--ss-font-sans);
@@ -3534,6 +3534,40 @@ body.chat-open {
   transform: translateY(-1px);
 }
 
+/* Top Performers section */
+.home-tp-section { border-top: 1px solid var(--ss-border-2); }
+.home-tp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 0 20px 20px;
+}
+.home-tp-card {
+  background: var(--ss-clay);
+  border: 1px solid var(--ss-border-2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.12s, transform 0.1s;
+}
+.home-tp-card:hover {
+  border-color: #38BDF8;
+  transform: translateY(-1px);
+}
+.home-tp-boat {
+  font: 700 13px/18px var(--ss-font-sans);
+  color: var(--ss-black);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.home-tp-meta {
+  font: 400 11px/16px var(--ss-font-sans);
+  color: var(--ss-slate);
+  margin-top: 4px;
+}
+
 /* Feature cards — bold navy blocks echoing the hero */
 .home-cards {
   display: grid;
@@ -3569,7 +3603,7 @@ body.chat-open {
 @media (max-width: 768px) {
   .home-hero { min-height: 220px; margin: 0; }
   .home-hero-content { padding: 20px; }
-  .home-hero-h1 { font-size: 26px; }
+  .home-hero-h1 { font-size: 36px; }
   .home-stats-bar { margin: 0; }
   .home-section { margin-left: 12px; margin-right: 12px; }
   .home-cards { grid-template-columns: 1fr; margin-left: 12px; margin-right: 12px; }
@@ -4504,6 +4538,24 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .metric-tooltip-link:hover {
   text-decoration: underline;
 }
+
+/* Top Performer tier badges */
+.tp-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font: 600 11px/16px var(--ss-font-sans);
+  white-space: nowrap;
+}
+.tp-tier-icon { font-size: 12px; line-height: 1; }
+.tp-tier-pct  { font-variant-numeric: tabular-nums; }
+
+.tp-tier-top        { background: rgba(251,191,36,0.18); color: #d97706; border: 1px solid rgba(251,191,36,0.4); }
+.tp-tier-strong     { background: rgba(249,115,22,0.12); color: #ea580c; border: 1px solid rgba(249,115,22,0.3); }
+.tp-tier-solid      { background: rgba(52,211,153,0.12); color: #059669; border: 1px solid rgba(52,211,153,0.3); }
+.tp-tier-developing { background: var(--ss-clay); color: var(--ss-slate); border: 1px solid var(--ss-border-2); }
 
 @media (max-width: 768px) {
   .metric-tooltip {

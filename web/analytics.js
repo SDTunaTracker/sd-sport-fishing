@@ -508,6 +508,56 @@
     return result;
   }
 
+  // Returns object keyed by boat → { rate, wins, total, tier }.
+  // Rate = % of trips where this boat ranked in the top 25% of comparable trips
+  // (same trip length, within ±3 days of that trip's date, ≥3 other boats required).
+  // tier: 'top' (≥50%), 'strong' (35-49%), 'solid' (25-34%), 'developing' (<25%).
+  // Pass tripsOverride to restrict to a subset (e.g. last 30 days).
+  function boatTopPerformerRates(tripsOverride) {
+    const MIN_QUALIFYING = 5;
+    const MIN_COMPARABLE = 3;
+    const THREE_DAYS_MS  = 3 * 86400000;
+
+    const source = (tripsOverride || window.SD_PROC_TRIPS || window.SD.TRIPS)
+      .filter(t => t.trophyPerAnglerPerDay != null);
+
+    // Pre-compute date timestamps and group by tripLength
+    const withMs = source.map(t => ({ ...t, _ms: new Date(t.date + 'T00:00:00Z').getTime() }));
+    const byLen  = {};
+    withMs.forEach(t => (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t));
+
+    const stats = {};   // boat → { wins, qualifying }
+
+    withMs.forEach(trip => {
+      const bucket     = byLen[trip.tripLength] || [];
+      const comparable = bucket.filter(t => t.boat !== trip.boat && Math.abs(t._ms - trip._ms) <= THREE_DAYS_MS);
+      if (comparable.length < MIN_COMPARABLE) return;
+
+      const r = stats[trip.boat] || (stats[trip.boat] = { wins: 0, qualifying: 0 });
+      r.qualifying++;
+
+      // Top-25% threshold across this trip + all comparable trips
+      const allTPAs = [trip.trophyPerAnglerPerDay, ...comparable.map(t => t.trophyPerAnglerPerDay)]
+        .sort((a, b) => b - a);
+      const threshold = allTPAs[Math.floor(allTPAs.length * 0.25)] ?? 0;
+
+      if (trip.trophyPerAnglerPerDay >= threshold) r.wins++;
+    });
+
+    const out = {};
+    for (const [boat, s] of Object.entries(stats)) {
+      if (s.qualifying < MIN_QUALIFYING) continue;
+      const rate = s.wins / s.qualifying;
+      out[boat] = {
+        rate,
+        wins:  s.wins,
+        total: s.qualifying,
+        tier:  rate >= 0.50 ? 'top' : rate >= 0.35 ? 'strong' : rate >= 0.25 ? 'solid' : 'developing',
+      };
+    }
+    return out;
+  }
+
   window.SDA = {
     preprocessTrips,
     filterTrips,
@@ -523,6 +573,7 @@
     peerLeaderboard,
     fishingRating,
     boatWinRates,
+    boatTopPerformerRates,
     boatStreaks,
     median, mean, stddev, speciesField,
   };

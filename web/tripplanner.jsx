@@ -266,6 +266,9 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
         <div className="tp-card-wr-row">
           <span className="tp-card-stat-label"><MetricLabel {...METRIC_DEFINITIONS.winRate} /></span>
           <WinRateBadge wr={s._winRate}/>
+          {s._tpData && (s._tpData.tier === 'top' || s._tpData.tier === 'strong') && (
+            <TopPerformerBadge tier={s._tpData.tier} pct={s._tpData.rate} style={{marginLeft: 4}}/>
+          )}
           {s._trips > 0 && <span className="tp-card-trip-count">{s._trips} trips</span>}
           {avgTpa != null && (
             <><span className="tp-card-stats-sep">·</span>
@@ -738,6 +741,7 @@ function TripPlanner({ navigate, regions }) {
   }, [openPop]);
 
   const winRates = useMemo(() => SDA.boatWinRates(), []);
+  const tpRates  = useMemo(() => SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates() : {}, []);
 
   // Capacity percentile thresholds derived from actual upcoming-trip data
   const capThresholds = useMemo(() => {
@@ -839,7 +843,8 @@ function TripPlanner({ navigate, regions }) {
     const enriched = filtered.map(s => {
       const wr = winRates[`${s.boat}|${s.tripLength}`];
       const ep = effectivePrice(s);
-      return { ...s, _winRate: wr ? wr.winRate : null, _trips: wr ? wr.total : 0, _effectivePrice: ep };
+      const tp = tpRates[s.boat] ?? null;
+      return { ...s, _winRate: wr ? wr.winRate : null, _trips: wr ? wr.total : 0, _effectivePrice: ep, _tpData: tp };
     });
     const copy = [...enriched];
     switch (sortBy) {

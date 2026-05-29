@@ -65,6 +65,11 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
     } catch(e) { return null; }
   }, [boat]);
 
+  const tpRateData = useMemo(() => {
+    try { return SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates()[boat] ?? null : null; }
+    catch(e) { return null; }
+  }, [boat]);
+
   return (
     <Fragment>
       <Crumbs items={[
@@ -129,6 +134,13 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
             label={<MetricLabel {...METRIC_DEFINITIONS.winRate} />}
             value={`${Math.round(h2hWinRate.winRate * 100)}%`}
             ctx={`${h2hWinRate.matchupCount} matchups`}
+          />
+        )}
+        {tpRateData && (
+          <KPI
+            label={<MetricLabel {...METRIC_DEFINITIONS.topPerformerRate} />}
+            value={<TopPerformerBadge tier={tpRateData.tier} pct={tpRateData.rate} />}
+            ctx={`${tpRateData.wins}/${tpRateData.total} trips`}
           />
         )}
       </div>

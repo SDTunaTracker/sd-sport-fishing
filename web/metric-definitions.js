@@ -15,4 +15,8 @@ window.METRIC_DEFINITIONS = {
     name: 'Forecast Score',
     tooltip: 'Predicted fishing quality 1–10, based on water temperature, wind, swell height, moon phase, and years of historical catch data.',
   },
+  topPerformerRate: {
+    name: 'Top Performer Rate',
+    tooltip: '% of trips where this boat landed in the top 25% of comparable trips — same trip length, within ±3 days, vs. boats from all four landings. A more inclusive ranking than Win Rate: any trip with 3+ comparable boats qualifies.',
+  },
 };
