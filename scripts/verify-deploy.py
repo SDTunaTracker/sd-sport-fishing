@@ -37,8 +37,26 @@ for m in re.finditer(r'\?v=(\d{8})(?:-\d+)?', text):
     except ValueError:
         pass  # non-date version string — skip
 
+# ── 3. No file in web/ may exceed 24 MiB (Cloudflare Pages hard limit: 25 MiB) ─
+CLOUDFLARE_LIMIT_MB = 24.0
+oversized = []
+for f in os.listdir(web):
+    fpath = os.path.join(web, f)
+    if not os.path.isfile(fpath):
+        continue
+    size_mb = os.path.getsize(fpath) / (1024 * 1024)
+    if size_mb > CLOUDFLARE_LIMIT_MB:
+        oversized.append((f, size_mb))
+
 # ── Report ────────────────────────────────────────────────────────────────────
 fail = False
+
+if oversized:
+    print(f"OVERSIZED files (> {CLOUDFLARE_LIMIT_MB} MiB — Cloudflare Pages limit is 25 MiB):")
+    for fname, size_mb in sorted(oversized, key=lambda x: -x[1]):
+        print(f"  web/{fname}  {size_mb:.1f} MiB")
+    print("  Re-run: python -m src.main --export-only")
+    fail = True
 
 if missing:
     print("MISSING from index.html:")
