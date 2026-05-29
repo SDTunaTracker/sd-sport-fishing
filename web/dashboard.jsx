@@ -40,6 +40,16 @@ function timeAgo(isoStr) {
   return `${hrs}h ago`;
 }
 
+const SHORT_NAMES = {
+  'H&M Landing': 'H&M',
+  "Fisherman's Landing": "Fisherman's",
+  'Seaforth Sportfishing': 'Seaforth',
+  'Point Loma Sportfishing': 'Point Loma',
+  'Oceanside Sea Center': 'Oceanside',
+  '22nd Street Landing': '22nd Street',
+};
+function shortName(n) { return SHORT_NAMES[n] || n; }
+
 function FreshnessWidget({ regions, compact }) {
   const [open, setOpen] = useS(false);
   const ref = React.useRef(null);
@@ -54,15 +64,35 @@ function FreshnessWidget({ regions, compact }) {
 
   if (!f) return null;
 
-  const allFresh = f.stale === 0 && f.failed === 0;
-  const hasFailed = f.failed > 0;
-  const icon  = hasFailed ? '❌' : f.stale > 0 ? '⚠️' : '✓';
-  const color = hasFailed ? '#EF4444' : f.stale > 0 ? '#F59E0B' : '#34D399';
-  const label = allFresh
-    ? `${f.total} landings fresh`
-    : hasFailed
-      ? `${f.fresh} of ${f.total} fresh, ${f.failed} down`
-      : `${f.fresh} of ${f.total} fresh`;
+  // Map backend status (fresh/stale/failed) → user-facing terminology
+  const STATUS_MAP = { fresh: 'updated', stale: 'waiting', failed: 'delayed' };
+  const landings = f.relevant.map(name => ({
+    name,
+    status: STATUS_MAP[f.allLandings[name].status] || 'delayed',
+    info: f.allLandings[name],
+  }));
+
+  const total      = landings.length;
+  const updatedLs  = landings.filter(l => l.status === 'updated');
+  const waitingLs  = landings.filter(l => l.status === 'waiting');
+  const delayedLs  = landings.filter(l => l.status === 'delayed');
+  const updCount   = updatedLs.length;
+
+  let icon, label, color;
+
+  if (updCount === total) {
+    icon = '✓'; label = 'All landings updated'; color = '#10B981';
+  } else if (waitingLs.length === 1 && delayedLs.length === 0) {
+    icon = '⌛'; label = `Waiting on ${shortName(waitingLs[0].name)}`; color = '#F59E0B';
+  } else if (waitingLs.length === 2 && delayedLs.length === 0) {
+    icon = '⌛'; label = `Waiting on ${shortName(waitingLs[0].name)} and ${shortName(waitingLs[1].name)}`; color = '#F59E0B';
+  } else if (waitingLs.length > 0 && delayedLs.length === 0) {
+    icon = '⌛'; label = `${updCount} of ${total} updated`; color = '#F59E0B';
+  } else if (delayedLs.length === 1) {
+    icon = '⌛'; label = `${shortName(delayedLs[0].name)} delayed`; color = '#F59E0B';
+  } else {
+    icon = '⌛'; label = `${updCount} of ${total} updated`; color = '#F59E0B';
+  }
 
   return (
     <span className={`freshness-widget${compact ? ' compact' : ''}`} ref={ref}>
@@ -74,11 +104,9 @@ function FreshnessWidget({ regions, compact }) {
       {open && (
         <div className="freshness-popover">
           <div className="freshness-popover-title">Landing Update Status</div>
-          {f.relevant.map(name => {
-            const info = f.allLandings[name];
-            const s = info.status;
-            const ico = s === 'fresh' ? '✓' : s === 'stale' ? '⚠' : '✗';
-            const c   = s === 'fresh' ? '#34D399' : s === 'stale' ? '#F59E0B' : '#EF4444';
+          {landings.map(({ name, status, info }) => {
+            const ico = status === 'updated' ? '✓' : '⌛';
+            const c   = status === 'updated' ? '#34D399' : '#F59E0B';
             return (
               <div key={name} className="freshness-row">
                 <span className="freshness-row-icon" style={{ color: c }}>{ico}</span>
