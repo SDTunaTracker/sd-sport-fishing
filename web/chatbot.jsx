@@ -72,6 +72,26 @@ function renderMessageContent(text, onInternalNav) {
   });
 }
 
+function cleanStreamingText(text) {
+  let clean = text;
+  // Strip complete followups/actions blocks — they're rendered as UI, not raw text
+  clean = clean.replace(/<followups>[\s\S]*?<\/followups>/g, '');
+  clean = clean.replace(/<actions>[\s\S]*?<\/actions>/g, '');
+  // Hide any tag that opened but hasn't closed yet (still buffering)
+  for (const tag of ['trip-card', 'followups', 'actions']) {
+    const openIdx  = clean.lastIndexOf(`<${tag}>`);
+    const closeIdx = clean.lastIndexOf(`</${tag}>`);
+    if (openIdx > closeIdx) clean = clean.substring(0, openIdx);
+  }
+  return clean.trim();
+}
+
+function isBufferingCard(text) {
+  const openIdx  = text.lastIndexOf('<trip-card>');
+  const closeIdx = text.lastIndexOf('</trip-card>');
+  return openIdx > closeIdx;
+}
+
 function parseMessageWithCards(text) {
   const cardRegex = /<trip-card>([\s\S]*?)<\/trip-card>/g;
   const parts = [];
@@ -277,8 +297,10 @@ function ChatBot({ pageContext }) {
       const rawText = await streamChatMessage(
         msg, history, pageContext,
         (partialText) => {
+          const cleaned = cleanStreamingText(partialText);
+          const buildingCard = isBufferingCard(partialText);
           setMessages(prev => prev.map((m, i) =>
-            i === placeholderIdx ? { ...m, text: partialText } : m
+            i === placeholderIdx ? { ...m, text: cleaned, buildingCard } : m
           ));
         }
       );
@@ -428,7 +450,16 @@ function ChatBot({ pageContext }) {
                               ? <ChatTripCard key={pi} trip={part.data} />
                               : <Fragment key={pi}>{renderMessageContent(part.content, () => setOpen(false))}</Fragment>
                           )}
-                          {msg.streaming && <span className="chat-streaming-cursor">▎</span>}
+                          {msg.streaming && msg.buildingCard ? (
+                            <div className="chat-building-indicator">
+                              <span className="typing-dot">●</span>
+                              <span className="typing-dot">●</span>
+                              <span className="typing-dot">●</span>
+                              <span>Building recommendations...</span>
+                            </div>
+                          ) : (
+                            msg.streaming && <span className="chat-streaming-cursor">▎</span>
+                          )}
                         </Fragment>
                       )}
                     </div>

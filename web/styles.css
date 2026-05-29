@@ -3534,3 +3534,21 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .app-footer-link.muted { cursor: default; opacity: 0.6; }
 .app-footer-sep { color: var(--tb-gray-1); }
 .mobile-menu-item[href] { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 14px; }
+
+/* ── Chat building indicator ─────────────────────────────────────────────── */
+.chat-building-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font: 400 11px/1 var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  font-style: italic;
+}
+.chat-building-indicator .typing-dot {
+  font-size: 6px;
+  animation: typing-bounce 1.2s infinite ease-in-out;
+  color: var(--tb-gray-2);
+}
+.chat-building-indicator .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.chat-building-indicator .typing-dot:nth-child(3) { animation-delay: 0.4s; }
