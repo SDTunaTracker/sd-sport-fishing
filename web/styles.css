@@ -3759,6 +3759,224 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   color: var(--tb-gray-3, #94A3B8);
 }
 
+/* ── Charts Phase 2.5/4: map container, markers, popups, waypoints ────────── */
+
+.chart-map-container { position: relative; }
+
+/* Landing pins — custom sky-blue dot replacing default Leaflet marker */
+.landing-marker { background: none; border: none; }
+.landing-pin {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--tb-accent, #38BDF8);
+  border: 3px solid white;
+  box-shadow: 0 0 0 1.5px #0F2A4A, 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Bank permanent labels */
+.bank-label {
+  background: rgba(15,42,74,0.90) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 2px 7px !important;
+  font: 600 10px var(--ss-font-sans) !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+.bank-label::before { display: none !important; }
+
+/* Click-to-save popup */
+.tt-popup .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  padding: 0;
+  overflow: hidden;
+}
+.tt-popup .leaflet-popup-content { margin: 0; }
+.map-popup {
+  font: 400 13px var(--ss-font-sans);
+  min-width: 200px;
+  padding: 12px 14px 10px;
+}
+.popup-coords {
+  font: 600 11px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.popup-save-waypoint {
+  display: block; width: 100%;
+  background: var(--tb-accent, #38BDF8);
+  color: var(--tb-midnight, #0F1E2B);
+  border: none; border-radius: 8px;
+  padding: 8px 14px;
+  font: 700 12px var(--ss-font-sans);
+  cursor: pointer;
+}
+.popup-save-waypoint:hover { background: var(--tb-accent-d, #0284C7); color: white; }
+
+/* Waypoint map markers — amber teardrop */
+.waypoint-marker-icon { background: none; border: none; }
+.waypoint-pin {
+  width: 20px; height: 20px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--tb-gold, #FBBF24);
+  border: 2px solid white;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+}
+.wp-popup-content { font: 400 13px var(--ss-font-sans); padding: 2px; }
+.wp-popup-content b { font-size: 14px; color: var(--tb-ink); display: block; margin-bottom: 2px; }
+.wp-popup-notes { margin: 4px 0 0; color: var(--tb-slate); font-size: 12px; }
+.wp-popup-content small { color: var(--tb-gray-3); font-size: 11px; display: block; margin-top: 4px; }
+
+/* Waypoints sidebar (absolute overlay on map) */
+.wp-sidebar {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 256px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  border: 1px solid var(--tb-border-2);
+  z-index: 800;
+  overflow: hidden;
+  max-height: 46px;
+  transition: max-height 0.22s ease;
+}
+.wp-sidebar.open { max-height: 480px; }
+.wp-sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px;
+  height: 46px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--tb-foam);
+  border-bottom: 1px solid var(--tb-border-2);
+  gap: 6px;
+}
+.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: var(--tb-ink); flex: 1; }
+.wp-sidebar-controls { display: flex; align-items: center; gap: 6px; }
+.wp-sidebar-chevron { font-size: 9px; color: var(--tb-gray-3); }
+.wp-export-wrap { position: relative; }
+.wp-export-btn {
+  background: none; border: 1px solid var(--tb-border-2);
+  border-radius: 5px; padding: 3px 7px;
+  font: 600 10px var(--ss-font-sans); color: var(--tb-slate);
+  cursor: pointer;
+}
+.wp-export-btn:hover { background: var(--tb-sand, #EEF2F7); }
+.wp-export-dropdown {
+  position: absolute; right: 0; top: calc(100% + 4px);
+  background: white; border: 1px solid var(--tb-border-2);
+  border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+  min-width: 150px; z-index: 10; overflow: hidden;
+}
+.wp-export-dropdown button {
+  display: block; width: 100%; text-align: left;
+  padding: 9px 12px; background: none; border: none;
+  font: 500 12px var(--ss-font-sans); color: var(--tb-ink); cursor: pointer;
+}
+.wp-export-dropdown button:hover { background: var(--tb-foam); }
+.wp-sidebar-list { overflow-y: auto; max-height: 420px; }
+.wp-empty {
+  padding: 16px 14px;
+  font: 400 12px var(--ss-font-sans);
+  color: var(--tb-gray-3); line-height: 1.5;
+}
+.wp-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--tb-border-2);
+  cursor: pointer;
+}
+.wp-item:hover { background: var(--tb-foam); }
+.wp-item:last-child { border-bottom: none; }
+.wp-item-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
+.wp-item-name { font: 700 12px var(--ss-font-sans); color: var(--tb-ink); flex: 1; }
+.wp-item-coords { font: 400 11px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
+.wp-item-notes {
+  font: 400 11px var(--ss-font-sans); color: var(--tb-slate);
+  margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wp-item-delete {
+  background: none; border: none; color: var(--tb-gray-2);
+  cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; border-radius: 4px;
+  flex-shrink: 0;
+}
+.wp-item-delete:hover { color: var(--tb-coral, #F87171); background: var(--tb-coral-l, #FEE2E2); }
+
+/* Waypoint save modal */
+.wp-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000;
+}
+.wp-modal {
+  background: white; border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  width: 380px; max-width: calc(100vw - 32px);
+  overflow: hidden;
+}
+.wp-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--tb-border-2);
+  font: 700 15px var(--ss-font-sans); color: var(--tb-ink);
+}
+.wp-modal-close {
+  background: none; border: none; font-size: 20px; line-height: 1;
+  color: var(--tb-gray-3); cursor: pointer; padding: 4px;
+}
+.wp-modal-close:hover { color: var(--tb-ink); }
+.wp-modal-body { padding: 16px 20px 4px; }
+.wp-field { margin-bottom: 14px; }
+.wp-field label {
+  display: block;
+  font: 600 11px var(--ss-font-sans); color: var(--tb-slate);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;
+}
+.wp-field input, .wp-field textarea {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid var(--tb-border-2); border-radius: 8px;
+  padding: 8px 10px;
+  font: 400 13px var(--ss-font-sans); color: var(--tb-ink);
+  outline: none; resize: none;
+  background: white;
+}
+.wp-field input:focus, .wp-field textarea:focus {
+  border-color: var(--tb-accent, #38BDF8);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+}
+.wp-coords-display {
+  font: 500 12px var(--ss-font-sans); color: var(--tb-slate);
+  background: var(--tb-foam); border-radius: 6px;
+  padding: 8px 10px; margin-bottom: 4px;
+}
+.wp-modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--tb-border-2);
+}
+.wp-btn-cancel {
+  background: none; border: 1px solid var(--tb-border-2);
+  border-radius: 8px; padding: 8px 16px;
+  font: 600 13px var(--ss-font-sans); color: var(--tb-slate); cursor: pointer;
+}
+.wp-btn-cancel:hover { background: var(--tb-foam); }
+.wp-btn-save {
+  background: var(--tb-accent, #38BDF8);
+  color: var(--tb-midnight, #0F1E2B); border: none;
+  border-radius: 8px; padding: 8px 20px;
+  font: 700 13px var(--ss-font-sans); cursor: pointer;
+}
+.wp-btn-save:hover:not(:disabled) { background: var(--tb-accent-d, #0284C7); color: white; }
+.wp-btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
 @media (max-width: 768px) {
   .charts-view { padding: 16px; }
   .chart-map { height: 400px; }
@@ -3766,4 +3984,15 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   .chart-tab { flex-shrink: 0; }
   .chart-legend-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
   .legend-gradient-bar { width: 100%; max-width: none; }
+  /* On mobile, sidebar collapses below the map */
+  .wp-sidebar {
+    position: static;
+    width: 100%;
+    border-radius: 0 0 10px 10px;
+    border-top: none;
+    max-height: 46px;
+    margin-top: -1px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .wp-sidebar.open { max-height: 320px; }
 }
