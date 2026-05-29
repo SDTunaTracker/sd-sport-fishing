@@ -349,6 +349,7 @@ def parse_page(html: str, landing: str, source_url: str,
             "source": "fish_count_page",
             "is_preliminary": 0,
             "written_text": None,
+            "reported_at": None,
         })
     return out
 
@@ -551,9 +552,10 @@ def _apply_text_fallback(src: LandingSource, trips: list[dict],
         trip["full_catch"] = P.build_full_catch(tracked, result["other"])
 
         status = classify_report_status(result["text"])
-        trip["source"] = "text_fallback"
+        trip["source"] = "text_preliminary" if status == "preliminary" else "text_final"
         trip["is_preliminary"] = 1 if status == "preliminary" else 0
         trip["written_text"] = result["text"][:1000]
+        trip["reported_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
         log.info("text_fallback [%s]: %s %s — %s",
                  status, src.name, trip["boat"], result["text"][:80])
@@ -626,7 +628,10 @@ def reconcile_daily_counts(db_path: str = "tracker.db") -> dict:
             SELECT id, boat, trip_length, landing, source
             FROM trips
             WHERE date = ?
-              AND source LIKE 'written_update%'
+              AND source IN (
+                'text_preliminary', 'text_final', 'text_fallback',
+                'written_update_final', 'written_update_preliminary'
+              )
         """, (today,)).fetchall()
 
         for w in written:
@@ -642,7 +647,7 @@ def reconcile_daily_counts(db_path: str = "tracker.db") -> dict:
             if structured:
                 conn.execute("DELETE FROM trips WHERE id = ?", (w["id"],))
                 matched += 1
-                log.info("reconcile: removed written update (structured entry exists) — %s %s",
+                log.info("reconcile: removed text entry (structured exists) — %s %s",
                          w["landing"], w["boat"])
             else:
                 conn.execute("UPDATE trips SET needs_review = 1 WHERE id = ?", (w["id"],))

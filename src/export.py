@@ -111,6 +111,8 @@ def _trip_to_js(row: sqlite3.Row, include_full_catch: bool = False) -> dict:
         "White Sea Bass": row["white_sea_bass"] or 0,
         "source": row["source"] or "fish_count_page",
         "isPreliminary": bool(row["is_preliminary"]),
+        "reportedAt": row["reported_at"] if "reported_at" in row.keys() else None,
+        "rawText": (row["written_text"] or "")[:300] if "written_text" in row.keys() and row["written_text"] else None,
     }
     if include_full_catch or d >= _FULL_CATCH_CUTOFF:
         fc = row["full_catch"] if "full_catch" in row.keys() else None
@@ -164,6 +166,10 @@ def _today_summary(trips: list[dict]) -> dict | None:
     Uses the latest date present in the data rather than calendar today,
     because landing sites typically post yesterday's results — the widget
     would otherwise always be empty until sites catch up.
+
+    Splits boats into:
+      - boats: returned/final trips (is_preliminary=False) — count toward totals
+      - stillFishing: preliminary/called-in trips (is_preliminary=True) — shown separately
     """
     if not trips:
         return None
@@ -174,14 +180,44 @@ def _today_summary(trips: list[dict]) -> dict | None:
     today = [t for t in qualifying if t["date"] == today_str]
     if not today:
         return None
-    # One row per boat: keep the trip with the highest trophyPerAnglerPerDay.
+
+    # Split into final (returned) and preliminary (still fishing).
+    final_today = [t for t in today if not t.get("isPreliminary")]
+    prelim_today = [t for t in today if t.get("isPreliminary")]
+
+    # One row per boat for final: keep the trip with the highest trophyPerAnglerPerDay.
     by_boat: dict[str, dict] = {}
-    for t in today:
+    for t in final_today:
         key = t["boat"]
         if key not in by_boat or (t["trophyPerAnglerPerDay"] or 0) > (by_boat[key]["trophyPerAnglerPerDay"] or 0):
             by_boat[key] = t
     boats = sorted(by_boat.values(), key=lambda t: t["trophyPerAnglerPerDay"] or 0, reverse=True)
     deduped = list(by_boat.values())
+
+    # Preliminary trips: flat list, one entry per boat (dedup, keep first seen).
+    seen_prelim: set[str] = set()
+    still_fishing: list[dict] = []
+    for t in prelim_today:
+        key = t["boat"].lower()
+        if key in seen_prelim:
+            continue
+        seen_prelim.add(key)
+        catch: dict[str, int] = {}
+        for sp in ("Bluefin", "Yellowfin", "Yellowtail", "Dorado", "Skipjack", "Bigeye", "Albacore"):
+            v = t.get(sp, 0) or 0
+            if v > 0:
+                catch[sp] = v
+        still_fishing.append({
+            "boat": t["boat"],
+            "landing": t["landing"],
+            "tripLength": t["tripLength"],
+            "anglers": t["anglers"],
+            "catch": catch,
+            "reportedAt": t.get("reportedAt"),
+            "rawText": t.get("rawText"),
+            "source": t.get("source"),
+        })
+
     return {
         "date": today_str,
         "trophyCount": sum(t["trophyCount"] for t in deduped),
@@ -202,6 +238,7 @@ def _today_summary(trips: list[dict]) -> dict | None:
             }
             for t in boats
         ],
+        "stillFishing": still_fishing,
         "Bluefin":    sum(t["Bluefin"]    for t in deduped),
         "Yellowfin":  sum(t["Yellowfin"]  for t in deduped),
         "Yellowtail": sum(t["Yellowtail"] for t in deduped),

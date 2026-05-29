@@ -2269,6 +2269,27 @@ body.compact .dt td { padding: 7px 12px; }
 }
 .today-review-star:hover { opacity: 1; }
 
+/* ── Still Fishing section ──────────────────────────────────────────────────── */
+.still-fishing-section {
+  margin-top: 16px; padding: 18px 20px;
+  background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 10px;
+}
+.sf-header { margin-bottom: 14px; }
+.sf-title { font: 700 15px/20px var(--ss-font-sans); color: var(--tb-ink); }
+.sf-subtitle { font: 400 11px/16px var(--ss-font-sans); color: var(--tb-gray-3); font-style: italic; margin-top: 2px; }
+.sf-list { display: flex; flex-direction: column; gap: 0; }
+.sf-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid #FDE68A; gap: 12px;
+}
+.sf-row:last-child { border-bottom: none; }
+.sf-boat { display: flex; flex-direction: column; gap: 2px; }
+.sf-boat-name { font: 700 13px/18px var(--ss-font-sans); color: var(--tb-ink); }
+.sf-boat-sub { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-3); }
+.sf-catch { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.sf-catch-summary { font: 600 13px/18px var(--ss-font-sans); color: var(--tb-ink); text-align: right; }
+.sf-reported { font: 400 10px/14px var(--ss-font-sans); color: #92400E; }
+
 /* ── Return visit toast ─────────────────────────────────────────────────────── */
 .rv-toast {
   position: fixed; bottom: 20px; right: 20px; z-index: 900;

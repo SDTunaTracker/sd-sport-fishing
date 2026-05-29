@@ -304,6 +304,42 @@ function CatchDetail({ fullCatch }) {
   );
 }
 
+function StillFishingSection({ trips }) {
+  if (!trips || trips.length === 0) return null;
+  return (
+    <div className="still-fishing-section">
+      <div className="sf-header">
+        <div>
+          <div className="sf-title">Still Fishing</div>
+          <div className="sf-subtitle">Mid-trip reports — final counts post when boats return</div>
+        </div>
+      </div>
+      <div className="sf-list">
+        {trips.map((t, i) => {
+          const catchParts = Object.entries(t.catch || {})
+            .filter(([, n]) => n > 0)
+            .map(([sp, n]) => `${n} ${sp}`);
+          const catchStr = catchParts.length > 0 ? catchParts.join(', ') : 'No count yet';
+          const ago = t.reportedAt ? timeAgo(t.reportedAt) : null;
+          const landing = (t.landing || '').replace(' Sportfishing', '').replace(' Landing', '');
+          return (
+            <div key={i} className="sf-row">
+              <div className="sf-boat">
+                <span className="sf-boat-name">{t.boat}</span>
+                <span className="sf-boat-sub">{landing} · {t.tripLength} · {t.anglers} anglers</span>
+              </div>
+              <div className="sf-catch">
+                <span className="sf-catch-summary">{catchStr}</span>
+                {ago && <span className="sf-reported">Called in {ago}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function TodayCatch({ navigate, settings, regions }) {
   const [expanded, setExpanded] = useS({});
 
@@ -328,8 +364,16 @@ function TodayCatch({ navigate, settings, regions }) {
   // Rating data for selected date (includes sorted boat rows + fleet rating key).
   const ratingData = useMemo(() => SDA.fishingRating(selectedDate, regions), [selectedDate, settings, regions]);
 
+  const isToday = selectedDate === TODAY_ISO;
+
+  // For today: split returned boats (final) from still-fishing (preliminary).
+  const returnedBoats = isToday
+    ? ratingData.boats.filter(b => !b.isPreliminary)
+    : ratingData.boats;
+  const stillFishing = isToday ? (window.SD?.TODAY?.stillFishing || []) : [];
+
   const summary = useMemo(() => {
-    const boats = ratingData.boats;
+    const boats = returnedBoats;
     return {
       trophyCount: boats.reduce((s, t) => s + (t.totalTuna || 0), 0),
       anglers:     boats.reduce((s, t) => s + t.anglers, 0),
@@ -338,9 +382,7 @@ function TodayCatch({ navigate, settings, regions }) {
       Yellowtail:  boats.reduce((s, t) => s + (t.Yellowtail || 0), 0),
       Dorado:      boats.reduce((s, t) => s + (t.Dorado || 0), 0),
     };
-  }, [ratingData]);
-
-  const isToday = selectedDate === TODAY_ISO;
+  }, [ratingData, isToday]);
   const lastScrape = window.SD?.META?.lastScrape;
   const timeStr = lastScrape
     ? new Date(lastScrape).toLocaleTimeString('en-US', {
@@ -395,12 +437,12 @@ function TodayCatch({ navigate, settings, regions }) {
 
       </div>
 
-      {ratingData.boats.length === 0 ? (
+      {returnedBoats.length === 0 && stillFishing.length === 0 ? (
         <div style={{padding:'32px 0', textAlign:'center',
                      color:'var(--ss-slate)', font:'400 14px/20px var(--ss-font-sans)'}}>
           {isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}
         </div>
-      ) : (
+      ) : returnedBoats.length > 0 ? (
         <Panel title="Today's Report" meta="Sorted by tuna per angler (TPA) per day">
           <div className="today-boat-row today-boat-hd">
             <span>Boat</span>
@@ -415,7 +457,7 @@ function TodayCatch({ navigate, settings, regions }) {
             <span>TPA/Day</span>
             <span className="rating-col">Rating</span>
           </div>
-          {ratingData.boats.map((b, i) => {
+          {returnedBoats.map((b, i) => {
             const hasFc = b.fullCatch && Object.keys(b.fullCatch).length > 0;
             const expandKey = `${b.boat}|${b.landing}`;
             const isExpanded = expanded[expandKey];
@@ -458,7 +500,9 @@ function TodayCatch({ navigate, settings, regions }) {
             );
           })}
         </Panel>
-      )}
+      ) : null}
+
+      {isToday && <StillFishingSection trips={stillFishing}/>}
     </Fragment>
   );
 }

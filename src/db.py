@@ -292,6 +292,7 @@ _NEW_TRIP_COLUMNS = [
     ("is_preliminary",  "INTEGER DEFAULT 0"),
     ("written_text",    "TEXT"),
     ("needs_review",    "INTEGER DEFAULT 0"),
+    ("reported_at",     "TEXT"),
 ]
 
 
@@ -408,7 +409,7 @@ TRIP_FIELDS = (
     "rockfish", "sheephead", "calico_bass", "sand_bass", "halibut",
     "lingcod", "whitefish", "bonito", "barracuda", "other_fish", "is_half_day",
     "region", "full_catch", "white_sea_bass",
-    "source", "is_preliminary", "written_text",
+    "source", "is_preliminary", "written_text", "reported_at",
 )
 
 
