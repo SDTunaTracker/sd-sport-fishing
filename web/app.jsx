@@ -14,7 +14,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 const HASH_VIEWS = {
   home: 'home', today: 'today', tripplanner: 'tripplanner',
   settings: 'account', admin: 'admin', forecast: 'forecast',
-  account: 'account', boats: 'boats',
+  account: 'account', boats: 'boats', charts: 'charts',
 };
 
 const ANALYTICS_SUBTABS = ['overview', 'headtohead', 'seasonality', 'moon'];
@@ -258,7 +258,7 @@ function App() {
   // Map nav tab id -> navigate() view
   const navMap = {
     home: 'home', today: 'today', forecast: 'forecast', analytics: 'analytics',
-    tripplanner: 'tripplanner', account: 'account', boats: 'boats',
+    tripplanner: 'tripplanner', account: 'account', boats: 'boats', charts: 'charts',
   };
 
   let content;
@@ -278,6 +278,8 @@ function App() {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} regions={regions}/>;
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
+  } else if (route.view === 'charts') {
+    content = <ChartsView navigate={navigate}/>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
                               regions={regions} onRegionsDirect={setRegionsDirect}/>;

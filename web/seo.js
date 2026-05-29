@@ -31,6 +31,10 @@
       title: 'My Account | Tuna Tracker',
       desc:  'Manage your Tuna Tracker preferences, region, and trophy species settings.'
     },
+    charts: {
+      title: 'Ocean Conditions Map — SST, Chlorophyll & Currents | Tuna Tracker',
+      desc:  'Interactive ocean condition maps for Southern California fishing grounds. Sea surface temperature, chlorophyll, satellite imagery, and live current forecasts.',
+    },
   };
 
   var ORG_LD = {
@@ -109,7 +113,7 @@
   var PREFIXES = { sd: 1, ocla: 1, 'sd+ocla': 1 };
   var VIEW_MAP = {
     home: 'home', today: 'today', forecast: 'forecast', boats: 'boats',
-    analytics: 'analytics', tripplanner: 'tripplanner',
+    analytics: 'analytics', tripplanner: 'tripplanner', charts: 'charts',
     account: 'account', settings: 'account', boat: 'boat', landing: 'landing',
   };
 

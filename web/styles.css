@@ -3677,3 +3677,57 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   color: #64748B; padding: 6px 0 2px;
   display: flex; align-items: center; justify-content: center; gap: 4px;
 }
+
+/* ── Charts view ──────────────────────────────────────────────────────────── */
+.charts-view {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.charts-header h1 {
+  font: 800 28px var(--ss-font-sans);
+  color: var(--tb-ink);
+  margin: 0;
+}
+.charts-header p {
+  font: 400 14px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+  margin: 4px 0 20px;
+}
+.chart-map {
+  width: 100%;
+  height: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--tb-border-2);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font: 400 11px var(--ss-font-sans);
+  color: var(--tb-gray-3);
+}
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend-gradient {
+  width: 120px;
+  height: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--tb-border-2);
+}
+.legend-gradient.sst {
+  background: linear-gradient(to right,
+    #0033CC, #0099FF, #66CCFF,
+    #99FF66, #FFCC00, #FF6600, #CC0000);
+}
+
+@media (max-width: 768px) {
+  .chart-map { height: 400px; }
+  .charts-view { padding: 16px; }
+}
