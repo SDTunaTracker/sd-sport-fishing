@@ -66,10 +66,15 @@ MOON_PHASES = ("New", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
 _FULL_CATCH_CUTOFF: str = (date.today() - timedelta(days=30)).isoformat()
 
 
+def _round(v, n: int = 4):
+    return round(v, n) if v is not None else None
+
+
 def _trip_to_js(row: sqlite3.Row, include_full_catch: bool = False) -> dict:
     d = row["date"]
     year, month, day = (int(x) for x in d.split("-"))
-    t = {
+    # Core fields always present
+    t: dict = {
         "id": row["id"],
         "date": d,
         "year": year,
@@ -80,42 +85,60 @@ def _trip_to_js(row: sqlite3.Row, include_full_catch: bool = False) -> dict:
         "tripLength": row["trip_length"],
         "tripLengthDays": row["trip_length_days"],
         "anglers": row["anglers"],
-        "Bluefin": row["bluefin"],
-        "Yellowfin": row["yellowfin"],
-        "Yellowtail": row["yellowtail"],
-        "Dorado": row["dorado"],
-        "Skipjack": row["skipjack"],
-        "Bigeye": row["bigeye"],
-        "Albacore": row["albacore"],
+        # Trophy species kept even when 0 — accessed directly in _today_summary
+        "Bluefin": row["bluefin"] or 0,
+        "Yellowfin": row["yellowfin"] or 0,
+        "Yellowtail": row["yellowtail"] or 0,
+        "Dorado": row["dorado"] or 0,
         "trophyCount": row["trophy_count"],
-        "trophyPerAngler": row["trophy_per_angler"],
-        "trophyPerAnglerPerDay": row["trophy_per_angler_per_day"],
-        # Alias so the design's analytics.js can keep using `totalTuna` as the
-        # "all species" rollup field. With trophy-focused semantics this is the
-        # trophy count (bluefin + yellowfin + yellowtail + dorado).
-        "totalTuna": row["trophy_count"],
+        # Round to 4 dp — frontend needs <0.001 precision but not 16 digits
+        "trophyPerAngler": _round(row["trophy_per_angler"]),
+        "trophyPerAnglerPerDay": _round(row["trophy_per_angler_per_day"]),
+        # totalTuna omitted: analytics.js preprocessTrips() recomputes it from
+        # trophy species, so shipping a duplicate wastes ~500 KB.
         "moonPhase": row["moon_phase"],
-        "moonIllum": row["moon_illum"],
-        "daysFromNew": row["days_from_new"],
-        "daysFromFull": row["days_from_full"],
+        "moonIllum": _round(row["moon_illum"], 1),
+        "daysFromNew": _round(row["days_from_new"], 1),
+        "daysFromFull": _round(row["days_from_full"], 1),
         "region": row["region"] or "san_diego",
-        "Rockfish":      row["rockfish"]       or 0,
-        "Sheephead":     row["sheephead"]      or 0,
-        "Calico Bass":   row["calico_bass"]    or 0,
-        "Sand Bass":     row["sand_bass"]      or 0,
-        "Halibut":       row["halibut"]        or 0,
-        "Lingcod":       row["lingcod"]        or 0,
-        "Whitefish":     row["whitefish"]      or 0,
-        "Bonito":        row["bonito"]         or 0,
-        "Barracuda":     row["barracuda"]      or 0,
-        "White Sea Bass": row["white_sea_bass"] or 0,
-        "source": row["source"] or "fish_count_page",
-        "isPreliminary": bool(row["is_preliminary"]),
-        "reportedAt": row["reported_at"] if "reported_at" in row.keys() else None,
-        "rawText": (row["written_text"] or "")[:300] if "written_text" in row.keys() and row["written_text"] else None,
     }
+
+    # Secondary species: omit when 0 — frontend uses || 0 fallback
+    _row_keys = row.keys()
+    for key, col in (
+        ("Skipjack",      "skipjack"),
+        ("Bigeye",        "bigeye"),
+        ("Albacore",      "albacore"),
+        ("Rockfish",      "rockfish"),
+        ("Sheephead",     "sheephead"),
+        ("Calico Bass",   "calico_bass"),
+        ("Sand Bass",     "sand_bass"),
+        ("Halibut",       "halibut"),
+        ("Lingcod",       "lingcod"),
+        ("Whitefish",     "whitefish"),
+        ("Bonito",        "bonito"),
+        ("Barracuda",     "barracuda"),
+        ("White Sea Bass","white_sea_bass"),
+    ):
+        v = (row[col] if col in _row_keys else 0) or 0
+        if v:
+            t[key] = v
+
+    # Omit default/null metadata fields to reduce payload
+    src = row["source"] or "fish_count_page"
+    if src != "fish_count_page":
+        t["source"] = src
+    if row["is_preliminary"]:
+        t["isPreliminary"] = True
+    reported_at = row["reported_at"] if "reported_at" in _row_keys else None
+    if reported_at:
+        t["reportedAt"] = reported_at
+    written_text = row["written_text"] if "written_text" in _row_keys else None
+    if written_text:
+        t["rawText"] = written_text[:300]
+
     if include_full_catch or d >= _FULL_CATCH_CUTOFF:
-        fc = row["full_catch"] if "full_catch" in row.keys() else None
+        fc = row["full_catch"] if "full_catch" in _row_keys else None
         if fc:
             t["fullCatch"] = json.loads(fc)
     return t

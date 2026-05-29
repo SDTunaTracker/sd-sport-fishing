@@ -328,4 +328,38 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(err) {
+    return { error: err };
+  }
+  componentDidCatch(err, info) {
+    if (window.gtag) gtag('event', 'js_error_boundary', { description: String(err), fatal: false });
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{padding:'32px 24px',maxWidth:480,margin:'60px auto',fontFamily:'system-ui,sans-serif'}}>
+          <div style={{fontSize:18,fontWeight:700,color:'#0F2A4A',marginBottom:8}}>Something went wrong</div>
+          <div style={{fontSize:14,color:'#64748B',marginBottom:20,lineHeight:1.5}}>
+            {String(this.state.error.message || this.state.error)}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{background:'#38BDF8',color:'white',border:'none',borderRadius:8,padding:'10px 20px',fontSize:14,cursor:'pointer'}}
+          >
+            Reload page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ErrorBoundary><App/></ErrorBoundary>
+);

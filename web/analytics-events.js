@@ -167,3 +167,19 @@ window.TTTrack = {
     } catch(e) { return null; }
   },
 };
+
+// Memory pressure monitor — logs to GA when JS heap exceeds 200 MB.
+// Helps identify devices hitting memory limits before they get a blank page.
+(function () {
+  if (!window.performance || !performance.memory) return;
+  var warned = false;
+  setInterval(function () {
+    var mb = performance.memory.usedJSHeapSize / 1048576;
+    if (mb > 200 && !warned) {
+      warned = true;
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'high_memory_warning', { memory_mb: Math.round(mb) });
+      }
+    }
+  }, 30000);
+})();

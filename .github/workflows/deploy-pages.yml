@@ -59,10 +59,26 @@ jobs:
           done
           [ $FAIL -eq 0 ] || exit 1
 
-      - name: Stamp cache-bust version into index.html
+      - name: Pre-compile JSX with esbuild and stamp cache-bust version
         run: |
           VERSION=$(date -u +%Y%m%d%H%M)
-          sed -i "s/?v=[^\"']*/?v=${VERSION}/g" web/index.html
+
+          # Compile all JSX files → web/dist/*.js
+          # --minify-whitespace and --minify-syntax are safe; --minify-identifiers
+          # is intentionally excluded because top-level names (AppHeader, ChatBot,
+          # etc.) are referenced as globals by other scripts loaded after this one.
+          mkdir -p web/dist
+          npx --yes esbuild web/*.jsx \
+            --outdir=web/dist \
+            --loader:.jsx=jsx \
+            --jsx-factory=React.createElement \
+            --jsx-fragment=React.Fragment \
+            --minify-whitespace \
+            --minify-syntax \
+            --target=es2018
+
+          # Patch index.html: remove Babel CDN tag, update script refs to dist/
+          python3 scripts/build-prod.py "$VERSION"
 
       - name: Upload web/ as the Pages artifact
         uses: actions/upload-pages-artifact@v3
