@@ -430,18 +430,22 @@ function SearchInput({ icon, label, value, onClick, active }) {
 function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
   const selected = value === 'all' ? options : (Array.isArray(value) ? value : []);
   const allSelected = value === 'all' || selected.length === options.length;
+  const someSelected = !allSelected && selected.length > 0;
 
   const toggle = (opt) => {
     const next = selected.includes(opt)
       ? selected.filter(o => o !== opt)
       : [...selected, opt];
-    onChange(next.length === 0 || next.length === options.length ? 'all' : next);
+    onChange(next.length === options.length ? 'all' : next);
   };
 
   return (
     <div className="tp-popover tp-popover-check">
       <label className="tp-pop-check-row tp-pop-check-all">
-        <input type="checkbox" checked={allSelected} onChange={() => onChange('all')}/>
+        <input type="checkbox"
+               checked={allSelected}
+               ref={el => { if (el) el.indeterminate = someSelected; }}
+               onChange={() => onChange(allSelected ? [] : 'all')}/>
         <span>{allLabel || 'All'}</span>
       </label>
       <div className="tp-pop-divider"/>
@@ -782,7 +786,8 @@ function TripPlanner({ navigate, regions }) {
   const _matches = (val, filter) => {
     if (filter == null || filter === 'all' || filter === '') return true;
     const sel = Array.isArray(filter) ? filter : [filter];
-    return sel.length === 0 || sel.map(String).includes(String(val));
+    if (sel.length === 0) return false;
+    return sel.map(String).includes(String(val));
   };
 
   const filtered = useMemo(() => {
