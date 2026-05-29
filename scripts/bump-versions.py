@@ -61,7 +61,7 @@ for m in re.finditer(r'(?:src|href)="(?:dist/)?([^"?]+\.(jsx|js|css))\?v=([^"]+)
     old_tag = f"?v={old_ver}"
     new_full = full_match.replace(old_tag, new_tag, 1)
     text = text.replace(full_match, new_full, 1)
-    bumped.append(f"  {source}: ?v={old_ver} → {new_tag[3:]}")
+    bumped.append(f"  {source}: ?v={old_ver} -> {new_tag[3:]}")
 
 if bumped:
     print("Bumped versions:")

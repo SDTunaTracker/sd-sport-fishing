@@ -20,7 +20,7 @@ for arg in sys.argv[1:]:
 
 CHECKS = [
     (f"{base}/",             "Tuna Tracker",  "Homepage missing brand name"),
-    (f"{base}/",             "hero-sunrise",  "Homepage missing hero CSS class"),
+    (f"{base}/",             "build-commit",  "Homepage missing build-commit meta tag"),
     (f"{base}/data.js",      "window.SD",     "data.js missing window.SD export"),
     (f"{base}/charts.jsx",   "ChartsView",    "charts.jsx missing ChartsView function"),
     (f"{base}/chatbot.jsx",  "Co-Captain",    "chatbot.jsx missing Co-Captain text"),
