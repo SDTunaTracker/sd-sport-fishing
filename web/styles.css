@@ -2609,15 +2609,6 @@ body.compact .dt td { padding: 7px 12px; }
   font: 800 16px var(--ss-font-sans);
   color: #0F2A4A;
 }
-.chat-beta-badge {
-  background: #0F2A4A;
-  color: white;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 999px;
-  letter-spacing: 0.05em;
-}
 
 .chat-messages {
   flex: 1;

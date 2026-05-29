@@ -396,7 +396,6 @@ function ChatBot({ pageContext }) {
             </button>
             <div className="chat-header-title">
               <span className="chat-title">Co-Captain</span>
-              <span className="chat-beta-badge">BETA</span>
             </div>
             <button className="chat-header-close" onClick={() => setOpen(false)} aria-label="Close">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
