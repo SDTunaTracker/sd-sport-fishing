@@ -2269,6 +2269,41 @@ body.compact .dt td { padding: 7px 12px; }
 }
 .today-review-star:hover { opacity: 1; }
 
+/* ── Today performance summary banner ──────────────────────────────────────── */
+.summary-banner {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px; border-radius: 10px; margin-bottom: 14px;
+  padding: 13px 16px;
+}
+.summary-banner.hot {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FED7AA 100%);
+  border: 1px solid #F59E0B; border-left: 4px solid #EA580C;
+}
+.summary-banner.hot .summary-message { font: 700 14px/1.4 var(--ss-font-sans); color: #92400E; }
+.summary-banner.hot .summary-context  { font: 500 12px/1.4 var(--ss-font-sans); color: #B45309; }
+.summary-banner.hot.on-fire {
+  background: linear-gradient(135deg, #FCA5A5 0%, #FCD34D 100%);
+  border: 1px solid #EA580C; border-left: 4px solid #DC2626;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.summary-banner.hot.on-fire .summary-message { color: #7C2D12; font-weight: 800; }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234,88,12,.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(234,88,12,0); }
+}
+.summary-banner.neutral {
+  background: var(--tb-foam); border: 1px solid var(--tb-border-2);
+  border-left: 4px solid var(--tb-gray-3);
+}
+.summary-banner.neutral .summary-message { font: 600 13px/1.4 var(--ss-font-sans); color: var(--tb-ink); }
+.summary-banner.neutral .summary-context  { font: 400 12px/1.4 var(--ss-font-sans); color: var(--tb-gray-3); }
+.summary-banner.cool {
+  background: #F1F5F9; border: 1px solid var(--tb-border-2);
+  border-left: 4px solid #64748B;
+}
+.summary-banner.cool .summary-message { font: 600 13px/1.4 var(--ss-font-sans); color: var(--tb-slate); }
+.summary-banner.cool .summary-context  { font: 400 12px/1.4 var(--ss-font-sans); color: var(--tb-gray-3); }
+
 /* ── Still Fishing section ──────────────────────────────────────────────────── */
 .still-fishing-section {
   margin-top: 16px; padding: 18px 20px;

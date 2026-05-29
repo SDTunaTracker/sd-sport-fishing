@@ -257,6 +257,101 @@ function CatchDetail({ fullCatch }) {
   );
 }
 
+// ── Today performance summary ────────────────────────────────────────────────
+
+function _avgArr(arr) {
+  if (!arr.length) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function getTodayPerformanceSummary(todayTrips, allTrips, selectedDate) {
+  if (!todayTrips || todayTrips.length === 0) {
+    return { status: 'no_data', tone: 'neutral', message: null };
+  }
+  const todayAvgTPA = _avgArr(todayTrips.map(t => t.trophyPerAnglerPerDay || 0));
+  const boatCount = todayTrips.length;
+
+  // Early-day heuristic: before 4pm local time with only 1-2 boats back
+  if (selectedDate === TODAY_ISO && new Date().getHours() < 16 && boatCount <= 2) {
+    return {
+      status: 'early', tone: 'neutral',
+      message: `Early reports — ${boatCount} boat${boatCount > 1 ? 's' : ''} back so far`,
+      boatContext: null, todayAvg: todayAvgTPA, historicalAvg: null,
+    };
+  }
+
+  // 30-day historical baseline for the same trip lengths represented today
+  const cutoff = new Date(new Date(selectedDate + 'T12:00:00Z').getTime() - 30 * 24 * 60 * 60 * 1000)
+    .toISOString().slice(0, 10);
+  const lengths = new Set(todayTrips.map(t => t.tripLength));
+  const historical = (allTrips || []).filter(t =>
+    t.date >= cutoff && t.date < selectedDate && lengths.has(t.tripLength)
+  );
+
+  const boatCtx = `${boatCount} boat${boatCount > 1 ? 's' : ''} returned`;
+  if (historical.length < 5) {
+    return {
+      status: 'insufficient_history', tone: 'neutral',
+      message: `${boatCtx} today`, boatContext: null,
+      todayAvg: todayAvgTPA, historicalAvg: null,
+    };
+  }
+
+  const histAvgTPA = _avgArr(historical.map(t => t.trophyPerAnglerPerDay || 0));
+  const pct = histAvgTPA > 0 ? ((todayAvgTPA - histAvgTPA) / histAvgTPA) * 100 : 0;
+
+  // Dominant species: ≥80% of today's trophy catch from one species
+  const totals = { Bluefin: 0, Yellowfin: 0, Yellowtail: 0, Dorado: 0 };
+  let catchTotal = 0;
+  todayTrips.forEach(t => {
+    Object.keys(totals).forEach(sp => { totals[sp] += (t[sp] || 0); catchTotal += (t[sp] || 0); });
+  });
+  let dominant = null;
+  if (catchTotal > 0) {
+    const [sp, n] = Object.entries(totals).sort((a, b) => b[1] - a[1])[0];
+    if (n / catchTotal >= 0.8) dominant = sp;
+  }
+
+  let status, message, tone, cssExtra = '';
+  if (pct >= 50) {
+    status = 'on_fire'; tone = 'hot'; cssExtra = 'on-fire';
+    message = dominant
+      ? `🔥 ${dominant} on fire! Today is ${Math.round(pct)}% above the 30-day avg.`
+      : `🔥 ON FIRE! Today is ${Math.round(pct)}% above the 30-day average.`;
+  } else if (pct >= 20) {
+    status = 'hot'; tone = 'hot';
+    message = dominant
+      ? `🔥 ${dominant} are hot — ${Math.round(pct)}% above the 30-day avg.`
+      : `🔥 Hot day — ${Math.round(pct)}% above the 30-day average.`;
+  } else if (pct >= -15) {
+    status = 'average'; tone = 'neutral';
+    message = 'Today is in line with the last 30 days.';
+  } else if (pct >= -40) {
+    status = 'below_average'; tone = 'cool';
+    message = `Today is ${Math.round(Math.abs(pct))}% below the 30-day average.`;
+  } else {
+    status = 'slow'; tone = 'cool';
+    message = `Slow day — ${Math.round(Math.abs(pct))}% below the 30-day average.`;
+  }
+
+  return { status, tone, cssExtra, message, boatContext: boatCtx, todayAvg: todayAvgTPA, historicalAvg: histAvgTPA, pct };
+}
+
+function TodaySummaryBanner({ summary }) {
+  if (!summary || !summary.message) return null;
+  const cls = ['summary-banner', summary.tone, summary.cssExtra].filter(Boolean).join(' ');
+  return (
+    <div className={cls}>
+      <span className="summary-message">{summary.message}</span>
+      {summary.boatContext && (
+        <span className="summary-context">
+          {summary.boatContext} · {fmt.tpa(summary.todayAvg)} avg
+        </span>
+      )}
+    </div>
+  );
+}
+
 function StillFishingSection({ trips }) {
   if (!trips || trips.length === 0) return null;
   return (
@@ -336,6 +431,11 @@ function TodayCatch({ navigate, settings, regions }) {
       Dorado:      boats.reduce((s, t) => s + (t.Dorado || 0), 0),
     };
   }, [ratingData, isToday]);
+
+  const perfSummary = useMemo(() => {
+    const boats = isToday ? ratingData.boats.filter(b => !b.isPreliminary) : ratingData.boats;
+    return getTodayPerformanceSummary(boats, window.SD_PROC_TRIPS || window.SD.TRIPS, selectedDate);
+  }, [ratingData, selectedDate]);
   const lastScrape = window.SD?.META?.lastScrape;
   const timeStr = lastScrape
     ? new Date(lastScrape).toLocaleTimeString('en-US', {
@@ -397,6 +497,7 @@ function TodayCatch({ navigate, settings, regions }) {
         </div>
       ) : returnedBoats.length > 0 ? (
         <Panel title="Today's Report" meta="Sorted by tuna per angler (TPA) per day">
+          <TodaySummaryBanner summary={perfSummary}/>
           <div className="today-boat-row today-boat-hd">
             <span>Boat</span>
             <span>Landing</span>
@@ -624,7 +725,12 @@ function HomeView({ navigate, settings, regions }) {
   const trophyTotal = boats.reduce((s, b) => s + (b.totalTuna || 0), 0);
   const anglersTotal = boats.reduce((s, b) => s + b.anglers, 0);
   const landingCount = new Set(boats.map(b => b.landing)).size;
-  const previewBoats = boats.slice(0, 8);
+  const previewBoats = boats.filter(b => !b.isPreliminary).slice(0, 8);
+
+  const homePerfSummary = useMemo(() => {
+    const returned = boats.filter(b => !b.isPreliminary);
+    return getTodayPerformanceSummary(returned, window.SD_PROC_TRIPS || window.SD.TRIPS, selectedDate);
+  }, [ratingData, selectedDate]);
 
   const lastScrape = window.SD?.META?.lastScrape;
   const timeStr = lastScrape
@@ -711,6 +817,8 @@ function HomeView({ navigate, settings, regions }) {
             ))}
           </select>
         </div>
+
+        {previewBoats.length > 0 && <TodaySummaryBanner summary={homePerfSummary}/>}
 
         {previewBoats.length === 0 ? (
           <div className="home-report-empty">
