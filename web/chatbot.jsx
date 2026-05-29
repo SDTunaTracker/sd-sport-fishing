@@ -193,9 +193,9 @@ function ChatTripCard({ trip }) {
 
 const SUGGESTED_QUESTIONS = [
   "What's the best trip this weekend?",
-  "Find me an overnight trip under $500",
   "Which boat is hottest right now?",
-  "Best trip for bluefin this month?",
+  "Find me an overnight trip under $500",
+  "Best boat for bluefin this month?",
 ];
 
 function ChatBot({ pageContext }) {
@@ -377,9 +377,10 @@ function ChatBot({ pageContext }) {
           setOpen(o => !o);
           if (!open && window.TTTrack) TTTrack.chatOpen();
         }}
-        aria-label="Open fishing advisor"
+        aria-label="Ask Co-Captain"
+        title="Ask Co-Captain"
       >
-        {open ? '✕' : '💬'}
+        💬
       </button>
 
       {/* Chat panel */}
@@ -388,28 +389,40 @@ function ChatBot({ pageContext }) {
 
           {/* Header */}
           <div className="chat-header">
-            <div className="chat-header-left">
-              <span className="chat-fish-icon">🐟</span>
-              <div>
-                <div className="chat-title">Fishing Advisor</div>
-                <div className="chat-subtitle">Powered by AI · San Diego data</div>
-              </div>
+            <button className="chat-close-btn" onClick={() => setOpen(false)} aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <div className="chat-title-wrap">
+              <span className="chat-title">Co-Captain</span>
+              <span className="chat-beta-badge">BETA</span>
             </div>
-            <div className="chat-header-actions">
-              <button className="chat-icon-btn" onClick={handleReset} title="New conversation">↺</button>
-              <button className="chat-icon-btn" onClick={() => setOpen(false)} title="Close">✕</button>
-            </div>
+            <div style={{width:36}}/>
           </div>
 
           {/* Messages */}
           <div className="chat-messages">
 
             {messages.length === 0 && (
-              <div className="chat-welcome">
-                <div className="chat-welcome-text">
-                  Ask me anything about San Diego sportfishing — conditions, boats, trip planning, or what's biting!
+              <Fragment>
+                <div className="chat-date-pill-wrap">
+                  <span className="chat-date-pill">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </span>
                 </div>
-              </div>
+                <div className="chat-disclaimer">
+                  This chat is powered by AI. Verify important information.
+                </div>
+                <div className="chat-message assistant">
+                  <div className="chat-bubble assistant">
+                    Hey, I'm Co-Captain — your AI fishing partner. I can help you find the right boat, compare fish counts, plan your next trip, or dig into 11 years of San Diego sportfishing data.
+                    <br/><br/>
+                    What are you looking for?
+                  </div>
+                </div>
+              </Fragment>
             )}
 
             {showSuggestions && (
@@ -433,7 +446,7 @@ function ChatBot({ pageContext }) {
                   </div>
                 ) : (
                   <Fragment>
-                    <div className="chat-bubble">
+                    <div className={`chat-bubble ${msg.role}`}>
                       {msg.streaming && !msg.text ? (
                         <div className="chat-status">
                           <div className="chat-status-dots">
@@ -537,21 +550,26 @@ function ChatBot({ pageContext }) {
 
           {/* Input */}
           <div className="chat-input-area">
-            <textarea
+            <input
+              type="text"
               ref={inputRef}
               className="chat-input"
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
-              placeholder="Ask about fishing conditions..."
-              rows={1}
+              placeholder="Ask Co-Captain..."
             />
             <button
               className="chat-send-btn"
               onClick={() => handleSend()}
               disabled={!input.trim() || loading}
-            >➤</button>
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:18,height:18}}>
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
+              </svg>
+            </button>
           </div>
 
           {DAILY_LIMIT < 999 && (
