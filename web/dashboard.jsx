@@ -144,53 +144,6 @@ const BITE_STATUS = {
   none:   { dots: 1, color: '#94A3B8', label: 'Quiet' },
 };
 
-function BiteStatusDots({ status }) {
-  const cfg = BITE_STATUS[status] || BITE_STATUS.none;
-  return (
-    <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
-      {[0,1,2,3,4].map(i => (
-        <span key={i} style={{
-          width: 7, height: 7, borderRadius: '50%',
-          background: i < cfg.dots ? cfg.color : '#1E293B',
-          display: 'inline-block', flexShrink: 0,
-        }}/>
-      ))}
-      <span style={{ color: cfg.color, fontWeight: 700, fontSize: 11, marginLeft: 4 }}>
-        {cfg.label}
-      </span>
-    </span>
-  );
-}
-
-function BiteReportWidget() {
-  const community = window.SD?.COMMUNITY;
-  const bite = community?.biteReport;
-  if (!bite || !bite.species || bite.species.length === 0) return null;
-  // Filter to trophy + common species the user cares about
-  const display = bite.species.filter(s =>
-    ['Bluefin','Yellowfin','Yellowtail','Dorado','Albacore','Yellowtail','White Sea Bass'].includes(s.name)
-  ).slice(0, 5);
-  if (display.length === 0) return null;
-  return (
-    <div className="cm-widget">
-      <div className="cm-widget-head">
-        <div className="cm-widget-title">🎣 What's Biting</div>
-        <div className="cm-widget-sub">Based on recent community reports</div>
-      </div>
-      <div className="cm-bite-list">
-        {display.map(sp => (
-          <div key={sp.name} className="cm-bite-row">
-            <span className="cm-bite-name">{sp.name}</span>
-            <BiteStatusDots status={sp.status}/>
-            <span className="cm-bite-where">{sp.where || '—'}</span>
-            <span className="cm-bite-reports">{sp.reports} report{sp.reports !== 1 ? 's' : ''}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function HotspotsWidget() {
   const community = window.SD?.COMMUNITY;
   const spots = community?.hotspots;
@@ -581,7 +534,6 @@ function TodayView({ navigate, settings, regions }) {
 
       <TodayCatch navigate={navigate} settings={settings} regions={regions}/>
       <WeeklySummaryWidget/>
-      <BiteReportWidget/>
       <HotspotsWidget/>
 
       <CommunityReportsWidget/>
