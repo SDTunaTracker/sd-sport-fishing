@@ -1,0 +1,11 @@
+{
+  "_instructions": "Map MMSI (9-digit string) to vessel info. Run scripts/discover_mmsi.py to auto-identify boats from live AIS. Then deploy the vessel-tracker CF Worker.",
+  "_format": "MMSI -> {name, landing}",
+  "_how_to_lookup_manually": [
+    "1. Go to https://www.marinetraffic.com and search vessel name",
+    "2. Or https://www.vesseltracker.com",
+    "3. Find the MMSI (9-digit number) on the vessel page",
+    "4. Add entry below: '338XXXXXX': {'name': 'Boat Name', 'landing': 'Landing Name'}"
+  ],
+  "vessels": {}
+}

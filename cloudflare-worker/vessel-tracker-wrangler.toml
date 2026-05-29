@@ -1,0 +1,26 @@
+name            = "vessel-tracker"
+main            = "vessel-tracker.js"
+compatibility_date = "2024-09-23"
+workers_dev     = true
+
+# ── Cron: refresh AIS every 5 minutes ────────────────────────────────────────
+[triggers]
+crons = ["*/5 * * * *"]
+
+# ── KV namespace ──────────────────────────────────────────────────────────────
+# 1. Create KV namespace in CF dashboard → Workers & Pages → KV
+#    Name: VESSEL_POSITIONS
+# 2. Replace the IDs below with yours from the dashboard
+[[kv_namespaces]]
+binding    = "VESSEL_POSITIONS"
+id         = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
+
+# ── Secrets (set via wrangler CLI, not in this file) ─────────────────────────
+# wrangler secret put AISSTREAM_API_KEY
+# wrangler secret put AUTH_TOKEN
+# wrangler secret put VESSEL_MMSI_JSON
+#
+# VESSEL_MMSI_JSON format (minified JSON string):
+#   {"338123456":{"name":"Pacific Queen","landing":"Fisherman's Landing"},...}
+#   Run: python scripts/discover_mmsi.py  to generate this mapping.

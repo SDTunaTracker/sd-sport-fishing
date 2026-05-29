@@ -415,6 +415,115 @@ function WaypointsSidebar({ waypoints, onSelect, onDelete, onExport, isOpen, onT
   );
 }
 
+// ── Boats Live: helpers ───────────────────────────────────────────────────────
+
+var BOAT_POLL_MS = 60000; // refresh every 60 s
+
+function fetchBoatPositions() {
+  var workerUrl = (window.VESSEL_WORKER_URL || '').trim();
+  var url = workerUrl
+    ? workerUrl.replace(/\/$/, '') + '/vessels'
+    : '/ais_positions.json';
+  return fetch(url, { cache: 'no-store' }).then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  });
+}
+
+function boatSpeedColor(kts) {
+  if (kts == null || kts < 0.5) return '#94a3b8'; // gray  – docked/drifting
+  if (kts < 3)                   return '#22c55e'; // green – fishing
+  if (kts < 8)                   return '#eab308'; // yellow
+  if (kts < 14)                  return '#f97316'; // orange
+  return '#60a5fa';                                // blue  – transit
+}
+
+function boatIconHtml(boat) {
+  var age     = Date.now() - new Date(boat.updated_at).getTime();
+  var fresh   = age < 10 * 60 * 1000;
+  var heading = (boat.heading != null && boat.heading <= 360) ? boat.heading : (boat.cog || 0);
+  var color   = boatSpeedColor(boat.sog);
+  var label   = boat.name.split(' ').slice(-1)[0];
+  return '<div class="boat-wrap' + (fresh ? ' boat-fresh' : '') + '">' +
+    '<div class="boat-icon" style="border-color:' + color + '">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+        '<g transform="rotate(' + heading + ',12,12)">' +
+          '<polygon points="12,2 17,20 12,15 7,20" fill="' + color + '" stroke="white" stroke-width="1.2"/>' +
+        '</g>' +
+      '</svg>' +
+    '</div>' +
+    '<div class="boat-lbl" style="color:' + color + '">' + label + '</div>' +
+  '</div>';
+}
+
+function boatPopupHtml(boat) {
+  var age    = Math.round((Date.now() - new Date(boat.updated_at).getTime()) / 60000);
+  var sog    = boat.sog || 0;
+  var status = sog < 0.5 ? '⚓ At dock / drifting'
+             : sog < 3   ? '🎣 Fishing'
+             : sog < 10  ? '🚢 Underway'
+             :              '⚡ Transit speed';
+  return '<div class="boat-popup">' +
+    '<div class="bp-name">' + boat.name + '</div>' +
+    '<div class="bp-status">' + status + '</div>' +
+    '<div class="bp-stats">' +
+      '<span>' + sog.toFixed(1) + ' kt</span>' +
+      '<span>' + Math.round(boat.cog || boat.heading || 0) + '°</span>' +
+    '</div>' +
+    '<div class="bp-meta">' + (boat.landing || '') + '</div>' +
+    '<div class="bp-updated">Updated ' + age + ' min ago</div>' +
+  '</div>';
+}
+
+function buildBoatsLayer(boats) {
+  var group = L.layerGroup();
+  boats.forEach(function(boat) {
+    if (boat.lat == null || boat.lng == null) return;
+
+    // Trail polyline (drawn first, below marker)
+    var trail = boat.trail || [];
+    if (trail.length >= 1) {
+      var pts = trail.map(function(p) { return [p.lat, p.lng]; });
+      pts.push([boat.lat, boat.lng]);
+      L.polyline(pts, {
+        color: boatSpeedColor(boat.sog), weight: 2, opacity: 0.4, dashArray: '4 6',
+      }).addTo(group);
+    }
+
+    // Vessel marker
+    L.marker([boat.lat, boat.lng], {
+      icon: L.divIcon({
+        className: 'boat-marker-icon',
+        html:      boatIconHtml(boat),
+        iconSize:  [46, 52],
+        iconAnchor:[23, 26],
+      }),
+      zIndexOffset: 500,
+    }).addTo(group).bindPopup(boatPopupHtml(boat), { className: 'boat-popup-wrap' });
+  });
+  return group;
+}
+
+// ── Boats Live: setup panel ───────────────────────────────────────────────────
+
+function BoatsSetupOverlay() {
+  return (
+    <div className="boats-setup-overlay">
+      <div className="boats-setup-card">
+        <div className="boats-setup-icon">🚢</div>
+        <h3>Vessel Tracking — Setup Required</h3>
+        <p>To show live boat positions, deploy the vessel-tracker Cloudflare Worker and add your AIS API key.</p>
+        <ol className="boats-setup-steps">
+          <li>Register free at <b>aisstream.io</b> → get API key</li>
+          <li>Run: <code>python scripts/discover_mmsi.py</code></li>
+          <li>Deploy: <code>cd cloudflare-worker && wrangler deploy vessel-tracker.js</code></li>
+          <li>Set <code>window.VESSEL_WORKER_URL</code> in <code>web/index.html</code></li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+
 // ── ChartTypeTabs ─────────────────────────────────────────────────────────────
 
 function ChartTypeTabs({ active, onChange }) {
@@ -426,16 +535,18 @@ function ChartTypeTabs({ active, onChange }) {
     { id: 'wind',        label: 'Wind',             icon: '💨' },
     { id: 'waves',       label: 'Waves',            icon: '🌊' },
     { id: 'tides',       label: 'Tides',            icon: '🌙' },
+    { id: 'boats',       label: 'Boats Live',       icon: '🚢', badge: 'LIVE' },
   ];
   return (
     <div className="chart-type-tabs">
       {tabs.map(function(tab) {
         return (
           <button key={tab.id}
-            className={'chart-tab' + (active === tab.id ? ' active' : '')}
+            className={'chart-tab' + (active === tab.id ? ' active' : '') + (tab.badge ? ' chart-tab-live' : '')}
             onClick={function() { onChange(tab.id); }}>
             <span className="tab-icon">{tab.icon}</span>
             {tab.label}
+            {tab.badge && <span className="tab-live-badge">{tab.badge}</span>}
           </button>
         );
       })}
@@ -454,6 +565,7 @@ function ChartsHeader({ chartType }) {
     wind:        { title: 'Wind Conditions',            desc: 'Current wind speed and direction. Green = calm (<8 kt). Yellow = moderate. Red = rough (>28 kt). Data: Open-Meteo.' },
     waves:       { title: 'Wave Height & Direction',    desc: 'Significant wave height in feet — the main factor for trip comfort. Blue = calm (<2 ft). Data: Open-Meteo Marine.' },
     tides:       { title: 'San Diego Tide Schedule',    desc: 'High and low tides for today from NOAA Station 9410230. Fish most actively bite on moving tides.' },
+    boats:       { title: 'Boats Live — Real-Time Positions', desc: 'Live AIS vessel positions for tracked SD sportfishing boats. Green = fishing slow. Blue = transit speed. Trail = last 60 min.' },
   };
   var c = titles[chartType] || titles.sst;
   return (
@@ -479,6 +591,7 @@ function ChartLegend({ type }) {
     waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)', low: 'Calm (0–2 ft)', high: 'Rough (8+ ft)' },
     satellite:   null,
     tides:       null,
+    boats:       null,
   };
   var config = legends[type];
   if (!config) return null;
@@ -501,12 +614,16 @@ function ChartsView() {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [tidesData, setTidesData]     = React.useState(null);
   const [condLoading, setCondLoading] = React.useState(false);
+  const [boatPositions, setBoats]     = React.useState([]);
+  const [boatsError, setBoatsError]   = React.useState(false);
 
   const mapRef          = React.useRef(null);
   const mapInstance     = React.useRef(null);
   const basemapLayer    = React.useRef(null);
   const overlayLayer    = React.useRef(null);
   const condGroupRef    = React.useRef(null);
+  const boatLayerRef    = React.useRef(null);
+  const boatsPollRef    = React.useRef(null);
   const chartTypeRef    = React.useRef(chartType);
   const waypointMarkers = React.useRef({});
 
@@ -591,6 +708,46 @@ function ChartsView() {
     } else {
       setCondLoading(false);
     }
+
+    // Clear boat layer + poll when leaving boats tab
+    if (chartType !== 'boats') {
+      clearInterval(boatsPollRef.current);
+      boatsPollRef.current = null;
+      if (boatLayerRef.current) {
+        mapInstance.current.removeLayer(boatLayerRef.current);
+        boatLayerRef.current = null;
+      }
+      setBoats([]);
+      setBoatsError(false);
+    }
+  }, [chartType]);
+
+  // Boat polling effect
+  React.useEffect(function() {
+    if (chartType !== 'boats' || !mapInstance.current) return;
+
+    function refreshBoats() {
+      fetchBoatPositions()
+        .then(function(data) {
+          setBoats(data);
+          setBoatsError(false);
+          if (!mapInstance.current) return;
+          if (boatLayerRef.current) mapInstance.current.removeLayer(boatLayerRef.current);
+          if (data.length > 0) {
+            boatLayerRef.current = buildBoatsLayer(data);
+            boatLayerRef.current.addTo(mapInstance.current);
+          } else {
+            boatLayerRef.current = null;
+          }
+        })
+        .catch(function() {
+          setBoatsError(true);
+        });
+    }
+
+    refreshBoats();
+    boatsPollRef.current = setInterval(refreshBoats, BOAT_POLL_MS);
+    return function() { clearInterval(boatsPollRef.current); };
   }, [chartType]);
 
   // Sync waypoint markers to state
@@ -616,7 +773,9 @@ function ChartsView() {
   function handleDelete(id) { var n = waypoints.filter(function(wp) { return wp.id !== id; }); setWaypoints(n); persistWaypoints(n); }
   function handleSelect(wp) { if (mapInstance.current) mapInstance.current.setView([wp.lat, wp.lng], 9, { animate: true }); }
 
-  var showMap = chartType !== 'tides';
+  var showMap       = chartType !== 'tides';
+  var workerReady   = !!(window.VESSEL_WORKER_URL || '').trim();
+  var showBoatSetup = chartType === 'boats' && !workerReady && boatsError;
 
   return (
     <div className="charts-view">
@@ -631,6 +790,12 @@ function ChartsView() {
               <div className="cond-loading-pill">Loading conditions…</div>
             </div>
           )}
+          {chartType === 'boats' && !boatsError && boatPositions.length > 0 && (
+            <div className="boats-count-pill">
+              🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
+            </div>
+          )}
+          {showBoatSetup && <BoatsSetupOverlay />}
           <WaypointsSidebar
             waypoints={waypoints} onSelect={handleSelect}
             onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
@@ -644,7 +809,7 @@ function ChartsView() {
       )}
 
       <ChartLegend type={chartType} />
-      <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA</div>
+      <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
       {showModal && pendingLatLng && (
         <WaypointModal latlng={pendingLatLng} onSave={handleSave}

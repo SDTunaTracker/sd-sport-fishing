@@ -4208,3 +4208,212 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   .tides-summary { grid-template-columns: 1fr 1fr; }
   .tide-row { padding: 8px 10px; gap: 8px; }
 }
+
+/* ── Boats Live tab badge ────────────────────────────────────────────────── */
+
+.chart-tab-live { position: relative; }
+
+.tab-live-badge {
+  font: 700 9px var(--ss-font-sans, 'Inter', sans-serif);
+  background: #ef4444;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  margin-left: 5px;
+  vertical-align: middle;
+  animation: live-pulse 2s infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ── Boat vessel markers ─────────────────────────────────────────────────── */
+
+.boat-marker-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.boat-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.boat-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: rgba(15, 30, 43, 0.80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: transform 0.3s ease;
+}
+
+/* Fresh position pulse ring */
+.boat-fresh .boat-icon::after {
+  content: '';
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: boat-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  opacity: 0;
+}
+
+@keyframes boat-ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+  0%         { transform: scale(1); opacity: 0.4; }
+}
+
+.boat-lbl {
+  font: 700 10px var(--ss-font-sans, 'Inter', sans-serif);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ── Boat popup ──────────────────────────────────────────────────────────── */
+
+.boat-popup-wrap .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+}
+
+.boat-popup-wrap .leaflet-popup-content {
+  margin: 0;
+}
+
+.boat-popup {
+  padding: 12px 14px;
+  min-width: 180px;
+}
+
+.bp-name {
+  font: 700 14px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+  margin-bottom: 4px;
+}
+
+.bp-status {
+  font: 500 12px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  margin-bottom: 8px;
+}
+
+.bp-stats {
+  display: flex;
+  gap: 14px;
+  font: 700 13px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+  margin-bottom: 4px;
+}
+
+.bp-meta {
+  font: 400 11px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  margin-bottom: 4px;
+}
+
+.bp-updated {
+  font: 500 11px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  border-top: 1px solid var(--tb-border-2, #e2e8f0);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+/* ── Boats count pill ────────────────────────────────────────────────────── */
+
+.boats-count-pill {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 30, 43, 0.82);
+  color: #e2e8f0;
+  font: 700 12px var(--ss-font-sans, 'Inter', sans-serif);
+  padding: 6px 14px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  pointer-events: none;
+  z-index: 900;
+  white-space: nowrap;
+}
+
+/* ── Boats setup overlay ─────────────────────────────────────────────────── */
+
+.boats-setup-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 30, 43, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 900;
+  padding: 20px;
+}
+
+.boats-setup-card {
+  background: white;
+  border-radius: 14px;
+  padding: 28px 32px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.boats-setup-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.boats-setup-card h3 {
+  font: 700 17px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+  margin-bottom: 10px;
+}
+
+.boats-setup-card p {
+  font: 400 13px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-slate, #64748b);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.boats-setup-steps {
+  text-align: left;
+  font: 400 12px var(--ss-font-sans, 'Inter', sans-serif);
+  color: var(--tb-ink, #1a2b3c);
+  line-height: 1.8;
+  padding-left: 18px;
+  margin: 0;
+}
+
+.boats-setup-steps code {
+  background: #f0f9ff;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: #0369a1;
+}
+
+@media (max-width: 768px) {
+  .boats-setup-card { padding: 20px; }
+  .boats-count-pill { top: 8px; font-size: 11px; }
+}
