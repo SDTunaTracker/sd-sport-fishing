@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Iterable
@@ -345,6 +346,9 @@ def parse_page(html: str, landing: str, source_url: str,
             "region": region,
             "full_catch": P.build_full_catch(tracked, other),
             "_unknowns": unknowns,
+            "source": "fish_count_page",
+            "is_preliminary": 0,
+            "written_text": None,
         })
     return out
 
@@ -353,8 +357,21 @@ def scrape_landing(src: LandingSource, target_date: date | None = None,
                    ) -> tuple[list[dict], date | None, str]:
     """Fetch + parse one landing. Returns (trips, page_date, raw_html)."""
     html = _fetch(src)
+    raw_rows, page_date = _extract_rows(html)
     trips = parse_page(html, src.name, src.url, target_date=target_date, region=src.region)
-    _, page_date = _extract_rows(html)
+
+    # Identify boats whose fish-count cell was blank in the structured table.
+    blank_boats: set[str] = set()
+    for r in raw_rows:
+        if not r["fish_count_text"].strip():
+            if target_date is None or r["date"] == target_date:
+                blank_boats.add(r["boat"].strip())
+
+    if blank_boats and (src.main_url or src.news_url):
+        log.debug("text_fallback: %d blank-count boat(s) at %s — scanning written updates",
+                  len(blank_boats), src.name)
+        _apply_text_fallback(src, trips, blank_boats, target_date)
+
     return trips, page_date, html
 
 
@@ -371,6 +388,18 @@ def scrape_all(sources: Iterable[LandingSource] = SOURCES,
             results.append((src, [], None, f"{type(e).__name__}: {e}"))
     return results
 
+
+# Matches "<count> <species>" in free-form written reports.
+# Handles "12 bluefin tuna", "12 bluefin", "5 yellowtail", etc.
+_TEXT_SPECIES_RE = re.compile(
+    r'(\d+)\s+'
+    r'(bluefin(?:\s+tuna)?|yellowfin(?:\s+tuna)?|yellowtail|'
+    r'dorado|mahi(?:-?mahi)?|'
+    r'albacore(?:\s+tuna)?|skipjack(?:\s+tuna)?|bigeye(?:\s+tuna)?|'
+    r'calico(?:\s+bass)?|halibut|rockfish|white\s+sea\s+bass|sheephead|'
+    r'bonito|barracuda|lingcod)',
+    re.I,
+)
 
 _FINAL_KEYWORDS = [
     'returned', 'returned home', 'docked', 'back at the dock',
@@ -435,6 +464,99 @@ def _looks_like_fish_report(text: str) -> bool:
     has_status_keyword = any(kw in lower for kw in
                              _FINAL_KEYWORDS + _PRELIMINARY_KEYWORDS)
     return has_boat_keyword or has_status_keyword
+
+
+def _extract_boat_counts_from_text(text: str, boat_name: str) -> dict | None:
+    """Find boat_name in text and extract species counts from surrounding context.
+
+    Returns {'tracked': {...}, 'other': {...}, 'text': str} or None if the boat
+    isn't mentioned or no species counts are found near the mention.
+    """
+    text_lower = text.lower()
+    boat_lower = boat_name.lower()
+
+    idx = text_lower.find(boat_lower)
+    if idx == -1:
+        # Try matching the first significant word (≥5 chars) of the boat name.
+        first = next((w for w in boat_lower.split() if len(w) >= 5), "")
+        if first:
+            idx = text_lower.find(first)
+    if idx == -1:
+        return None
+
+    # Extract a window: 80 chars before the name mention, 400 chars after.
+    window = text[max(0, idx - 80): idx + 400]
+
+    tracked = {sp: 0 for sp in P.TRACKED_SPECIES}
+    other: dict[str, int] = {}
+    found_any = False
+
+    for m in _TEXT_SPECIES_RE.finditer(window):
+        after = window[m.end(): m.end() + 12].strip().lower()
+        if after.startswith("released"):
+            continue
+        count = int(m.group(1))
+        raw_species = m.group(2)
+        canon = P.normalize_species(raw_species)
+        if canon in tracked:
+            tracked[canon] = max(tracked[canon], count)
+            found_any = True
+        elif canon in P.EXTENDED_SPECIES_COLUMNS:
+            other[canon] = other.get(canon, 0) + count
+            found_any = True
+
+    if not found_any:
+        return None
+
+    return {"tracked": tracked, "other": other, "text": window.strip()}
+
+
+def _apply_text_fallback(src: LandingSource, trips: list[dict],
+                         blank_boats: set[str],
+                         target_date: date | None) -> None:
+    """Fill blank fish-count trips from written text on the landing's supplementary pages.
+
+    Mutates trip dicts in-place: updates species counts, recalculates trophy metrics,
+    and sets source='text_fallback' / is_preliminary / written_text.
+    """
+    urls = [u for u in [src.main_url, src.news_url] if u]
+    if not urls:
+        return
+
+    combined_text = ""
+    for url in urls:
+        html = _fetch_optional(url)
+        if html:
+            blocks = _extract_text_blocks(html)
+            combined_text += "\n".join(blocks) + "\n"
+
+    if not combined_text:
+        return
+
+    for trip in trips:
+        if trip["boat"] not in blank_boats:
+            continue
+        result = _extract_boat_counts_from_text(combined_text, trip["boat"])
+        if not result:
+            continue
+
+        for sp in P.TRACKED_SPECIES:
+            trip[sp.lower()] = result["tracked"].get(sp, 0)
+
+        tracked = result["tracked"]
+        metrics = P.trophy_metrics(tracked, trip["anglers"], trip["trip_length_days"])
+        trip["trophy_count"] = metrics.trophy_count
+        trip["trophy_per_angler"] = metrics.trophy_per_angler
+        trip["trophy_per_angler_per_day"] = metrics.trophy_per_angler_per_day
+        trip["full_catch"] = P.build_full_catch(tracked, result["other"])
+
+        status = classify_report_status(result["text"])
+        trip["source"] = "text_fallback"
+        trip["is_preliminary"] = 1 if status == "preliminary" else 0
+        trip["written_text"] = result["text"][:1000]
+
+        log.info("text_fallback [%s]: %s %s — %s",
+                 status, src.name, trip["boat"], result["text"][:80])
 
 
 def scan_written_updates(src: LandingSource,

@@ -109,6 +109,8 @@ def _trip_to_js(row: sqlite3.Row, include_full_catch: bool = False) -> dict:
         "Bonito":        row["bonito"]         or 0,
         "Barracuda":     row["barracuda"]      or 0,
         "White Sea Bass": row["white_sea_bass"] or 0,
+        "source": row["source"] or "fish_count_page",
+        "isPreliminary": bool(row["is_preliminary"]),
     }
     if include_full_catch or d >= _FULL_CATCH_CUTOFF:
         fc = row["full_catch"] if "full_catch" in row.keys() else None

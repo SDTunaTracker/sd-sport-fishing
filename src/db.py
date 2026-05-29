@@ -408,6 +408,7 @@ TRIP_FIELDS = (
     "rockfish", "sheephead", "calico_bass", "sand_bass", "halibut",
     "lingcod", "whitefish", "bonito", "barracuda", "other_fish", "is_half_day",
     "region", "full_catch", "white_sea_bass",
+    "source", "is_preliminary", "written_text",
 )
 
 
