@@ -334,6 +334,51 @@ def _migrate(conn: sqlite3.Connection) -> None:
         )""")
 
 
+def repair_if_corrupt(db_path: Path) -> bool:
+    """Check DB integrity; if malformed, repair in-place via iterdump and return True."""
+    import logging
+    log = logging.getLogger(__name__)
+    try:
+        c = sqlite3.connect(str(db_path), timeout=10)
+        result = c.execute("PRAGMA integrity_check").fetchone()[0]
+        c.close()
+        if result == "ok":
+            return False
+    except Exception:
+        pass  # treat any open failure as corrupt
+
+    log.warning("DB integrity check failed — attempting repair")
+    tmp = db_path.with_suffix(".db.repairing")
+    try:
+        src = sqlite3.connect(str(db_path), timeout=10)
+        dst = sqlite3.connect(str(tmp), timeout=10)
+        for line in src.iterdump():
+            try:
+                dst.execute(line)
+            except Exception:
+                pass
+        dst.commit()
+        src.close()
+        dst.close()
+        bak = db_path.with_suffix(".db.corrupt-bak")
+        db_path.rename(bak)
+        tmp.rename(db_path)
+        log.warning("DB repaired successfully (corrupt copy saved to %s)", bak.name)
+        return True
+    except Exception as e:
+        log.error("DB repair failed: %s", e)
+        if tmp.exists():
+            tmp.unlink()
+        return False
+
+
+def backup(db_path: Path) -> None:
+    """Copy the DB to tracker.db.bak for use as a recovery point."""
+    import shutil
+    bak = db_path.with_suffix(".db.bak")
+    shutil.copy2(str(db_path), str(bak))
+
+
 @contextmanager
 def connect(db_path: Path):
     db_path.parent.mkdir(parents=True, exist_ok=True)

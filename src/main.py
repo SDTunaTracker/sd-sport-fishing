@@ -37,6 +37,9 @@ def _setup_logging(verbose: bool) -> None:
 
 def run(target_date: date | None, export_only: bool, hourly: bool = False) -> int:
     summary_lines: list[str] = []
+    repaired = db.repair_if_corrupt(DB_PATH)
+    if repaired:
+        summary_lines.append("  WARNING: DB was corrupt — repaired automatically")
     with db.connect(DB_PATH) as conn:
         if not export_only:
             for src, trips, page_date, err in scrape_all(SOURCES, target_date=target_date):
@@ -170,6 +173,13 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
 
         n = export(conn, DATA_JS_PATH, weather_forecast=weather_fc)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
+
+    # Rolling backup — written after a successful export so we always have a
+    # clean recovery point that's at most one run old.
+    try:
+        db.backup(DB_PATH)
+    except Exception as e:
+        summary_lines.append(f"  Backup ERROR (non-fatal): {e}")
 
     if not hourly:
         # Weekly recalibration — runs after the main connection closes to avoid locking.
