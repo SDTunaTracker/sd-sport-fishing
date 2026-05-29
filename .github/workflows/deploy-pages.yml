@@ -61,7 +61,9 @@ jobs:
 
       - name: Pre-compile JSX with esbuild and stamp cache-bust version
         run: |
+          set -e
           VERSION=$(date -u +%Y%m%d%H%M)
+          echo "Build version: $VERSION"
 
           # Compile all JSX files → web/dist/*.js
           # --minify-whitespace and --minify-syntax are safe; --minify-identifiers
@@ -76,9 +78,37 @@ jobs:
             --minify-whitespace \
             --minify-syntax \
             --target=es2018
+          echo "esbuild done — $(ls web/dist/*.js | wc -l) files in web/dist/"
 
           # Patch index.html: remove Babel CDN tag, update script refs to dist/
-          python3 scripts/build-prod.py "$VERSION"
+          # Use inline Python (avoids __file__ path-resolution issues on the runner).
+          python3 - <<PYEOF
+import re
+v = "$VERSION"
+with open("web/index.html", encoding="utf-8") as fh:
+    t = fh.read()
+original = t
+# 1. Remove @babel/standalone script tag
+t = re.sub(r"\n?[ \t]*<script[^>]+babel\.min\.js[^>]*></script>", "", t)
+# 2. Replace type="text/babel" JSX refs with compiled dist/ refs
+t = re.sub(
+    r'type="text/babel" src="([^"]+)\.jsx\?v=[^"]+"',
+    lambda m: f'src="dist/{m.group(1)}.js?v={v}"',
+    t,
+)
+# 3. Stamp all remaining ?v= query strings
+t = re.sub(r"\?v=[^\"'\s]+", f"?v={v}", t)
+with open("web/index.html", "w", encoding="utf-8") as fh:
+    fh.write(t)
+# Verify the patch actually ran
+assert "babel.min.js" not in t, "PATCH FAILED: Babel tag not removed"
+assert 'type="text/babel"' not in t, "PATCH FAILED: text/babel still present"
+assert f"?v={v}" in t, "PATCH FAILED: version string not stamped"
+print(f"index.html patched OK (v={v})")
+PYEOF
+
+          echo "--- Script tags in patched index.html ---"
+          grep -i "<script" web/index.html
 
       - name: Upload web/ as the Pages artifact
         uses: actions/upload-pages-artifact@v3
