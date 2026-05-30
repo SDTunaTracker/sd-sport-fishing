@@ -1,5 +1,5 @@
 // Trip Planner — Expedia-style redesign
-const { useState, useMemo, useEffect, Fragment } = React;
+const { useState, useMemo, useEffect, useRef, Fragment } = React;
 
 // ── Moon helpers ─────────────────────────────────────────────────────────────
 const _MOON_REF    = Date.UTC(2000, 0, 6, 18, 14, 0);
@@ -732,12 +732,16 @@ function TripPlanner({ navigate, regions }) {
     if (window.TTTrack && v !== 'any') TTTrack.filterApplied('boat_size', v);
   };
 
-  // Close popovers on outside click
+  // Close popovers on outside click — ref-based so clicks inside the bar are ignored
+  const searchWrapRef = useRef(null);
   useEffect(() => {
     if (!openPop) return;
-    const handler = () => setOpenPop(null);
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
+    const handler = (e) => {
+      if (searchWrapRef.current && searchWrapRef.current.contains(e.target)) return;
+      setOpenPop(null);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, [openPop]);
 
   const winRates = useMemo(() => SDA.boatWinRates(), []);
@@ -940,7 +944,7 @@ function TripPlanner({ navigate, regions }) {
       </div>
 
       {/* Top search bar */}
-      <div className="tp-search-wrap" onClick={e => e.stopPropagation()}>
+      <div className="tp-search-wrap" ref={searchWrapRef}>
         <TopSearchBar
           selMonth={selMonth} setSelMonth={setSelMonth} tripMonths={tripMonths}
           selLandings={selLandings} setSelLandings={setSelLandingsTracked}
