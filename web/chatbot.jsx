@@ -106,14 +106,17 @@ function parseMessageWithCards(text) {
       const tripData = JSON.parse(match[1].trim());
       parts.push({ type: 'trip', data: tripData });
     } catch(e) {
-      // Malformed JSON (truncated by token limit, trailing comma, etc.) —
-      // drop this card silently rather than rendering raw <trip-card> text.
+      // Malformed JSON — log for debugging but don't render raw tag text.
+      console.warn('[Co-Captain] trip-card JSON parse failed:', e.message, match[1].slice(0, 80));
     }
     lastIndex = match.index + match[0].length;
   }
 
   if (lastIndex < text.length) {
-    parts.push({ type: 'text', content: text.slice(lastIndex) });
+    const trailing = text.slice(lastIndex);
+    // Strip any raw <trip-card> tags the regex missed (mobile safety net).
+    const stripped = trailing.replace(/<trip-card>[\s\S]*?<\/trip-card>/g, '');
+    if (stripped.trim()) parts.push({ type: 'text', content: stripped });
   }
 
   return parts;
@@ -307,14 +310,15 @@ function ChatBot({ pageContext }) {
       );
 
       incrementChatUsage();
-      const cleanText = extractCleanText(rawText);
-      const followups = extractFollowups(rawText);
-      const actions   = extractActions(rawText);
-      const dataUsed  = extractDataUsed(msg, cleanText, pageContext?.regions || ['san_diego']);
+      const cleanText   = extractCleanText(rawText);
+      const parsedParts = parseMessageWithCards(cleanText);
+      const followups   = extractFollowups(rawText);
+      const actions     = extractActions(rawText);
+      const dataUsed    = extractDataUsed(msg, cleanText, pageContext?.regions || ['san_diego']);
 
       setMessages(prev => prev.map((m, i) =>
         i === placeholderIdx
-          ? { ...m, text: cleanText, streaming: false, followups, actions, dataUsed }
+          ? { ...m, text: cleanText, parsedParts, streaming: false, followups, actions, dataUsed }
           : m
       ));
     } catch (err) {
@@ -458,7 +462,7 @@ function ChatBot({ pageContext }) {
                         </div>
                       ) : (
                         <Fragment>
-                          {parseMessageWithCards(msg.text).map((part, pi) =>
+                          {(msg.parsedParts || parseMessageWithCards(msg.text)).map((part, pi) =>
                             part.type === 'trip'
                               ? <ChatTripCard key={pi} trip={part.data} />
                               : <Fragment key={pi}>{renderMessageContent(part.content, () => setOpen(false))}</Fragment>
