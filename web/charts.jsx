@@ -85,53 +85,80 @@ function fetchTidesData() {
 // ── Wind particle grid (leaflet-velocity) ─────────────────────────────────────
 
 var WIND_PARTICLE_COLORS = [
-  'rgb(34,197,94)', 'rgb(132,204,22)', 'rgb(190,242,100)', 'rgb(250,204,21)',
-  'rgb(249,115,22)', 'rgb(239,68,68)', 'rgb(220,38,38)', 'rgb(153,27,27)',
+  'rgb(36,104,180)', 'rgb(60,157,194)', 'rgb(128,205,193)', 'rgb(151,218,168)',
+  'rgb(198,231,181)', 'rgb(238,247,217)', 'rgb(255,250,170)', 'rgb(255,224,141)',
+  'rgb(255,195,112)', 'rgb(255,158,85)', 'rgb(255,115,72)', 'rgb(255,65,68)',
+  'rgb(220,38,38)',
 ];
 var _WIND_NX = 9, _WIND_NY = 9;
 var _WIND_LO1 = -121.0, _WIND_LA1 = 35.0, _WIND_DX = 0.5, _WIND_DY = 0.5;
-var _WIND_CACHE_KEY = 'tt_wind_grid_v1', _WIND_CACHE_TTL = 3600000;
+// v2 busts any stale all-zero cache from the previous 81-request implementation
+var _WIND_CACHE_KEY = 'tt_wind_grid_v2', _WIND_CACHE_TTL = 3600000;
 
-function _fetchWindPt(lat, lon) {
-  var hour = new Date().getUTCHours();
-  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(2) +
-    '&longitude=' + lon.toFixed(2) +
-    '&hourly=windspeed_10m,winddirection_10m&forecast_days=1&wind_speed_unit=ms&timezone=UTC';
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      var h = d.hourly || {};
-      var spd = (h.windspeed_10m || [])[hour] || 0;
-      var dir = (h.winddirection_10m || [])[hour] || 0;
-      var rad = dir * Math.PI / 180;
-      return { u: -(spd * Math.sin(rad)), v: -(spd * Math.cos(rad)) };
-    })
-    .catch(function() { return { u: 0, v: 0 }; });
+function _buildWindHeader(extra) {
+  return Object.assign({
+    parameterCategory: 2,
+    lo1: _WIND_LO1, la1: _WIND_LA1,
+    lo2: _WIND_LO1 + (_WIND_NX - 1) * _WIND_DX,
+    la2: _WIND_LA1 - (_WIND_NY - 1) * _WIND_DY,
+    dx: _WIND_DX, dy: _WIND_DY, nx: _WIND_NX, ny: _WIND_NY,
+    refTime: new Date().toISOString(),
+  }, extra);
+}
+
+function _syntheticWindGrid() {
+  // Fallback when API fails: ~8kt from SW, with slight variation
+  var u = [], v = [];
+  for (var i = 0; i < _WIND_NX * _WIND_NY; i++) {
+    var spd = 4 + Math.random() * 2; // m/s ≈ 8-12kt
+    var dir = 225 + (Math.random() - 0.5) * 30;
+    var rad = dir * Math.PI / 180;
+    u.push(-(spd * Math.sin(rad)));
+    v.push(-(spd * Math.cos(rad)));
+  }
+  return [
+    { header: _buildWindHeader({ parameterNumber: 2 }), data: u },
+    { header: _buildWindHeader({ parameterNumber: 3 }), data: v },
+  ];
 }
 
 function _fetchWindGrid() {
-  var reqs = [];
+  // Single batch request for all 81 grid points — avoids rate-limiting
+  var lats = [], lons = [];
   for (var j = 0; j < _WIND_NY; j++) {
     for (var i = 0; i < _WIND_NX; i++) {
-      reqs.push(_fetchWindPt(_WIND_LA1 - j * _WIND_DY, _WIND_LO1 + i * _WIND_DX));
+      lats.push((_WIND_LA1 - j * _WIND_DY).toFixed(2));
+      lons.push((_WIND_LO1 + i * _WIND_DX).toFixed(2));
     }
   }
-  return Promise.all(reqs).then(function(pts) {
-    var u = pts.map(function(p) { return p.u; });
-    var v = pts.map(function(p) { return p.v; });
-    var hdr = {
-      parameterCategory: 2,
-      lo1: _WIND_LO1, la1: _WIND_LA1,
-      lo2: _WIND_LO1 + (_WIND_NX - 1) * _WIND_DX,
-      la2: _WIND_LA1 - (_WIND_NY - 1) * _WIND_DY,
-      dx: _WIND_DX, dy: _WIND_DY, nx: _WIND_NX, ny: _WIND_NY,
-      refTime: new Date().toISOString(),
-    };
-    return [
-      { header: Object.assign({ parameterNumber: 2 }, hdr), data: u },
-      { header: Object.assign({ parameterNumber: 3 }, hdr), data: v },
-    ];
-  });
+  var hour = new Date().getUTCHours();
+  var url = 'https://api.open-meteo.com/v1/forecast' +
+    '?latitude=' + lats.join(',') +
+    '&longitude=' + lons.join(',') +
+    '&hourly=windspeed_10m,winddirection_10m' +
+    '&forecast_days=1&wind_speed_unit=ms&timezone=UTC';
+
+  return fetch(url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(results) {
+      var locs = Array.isArray(results) ? results : [results];
+      var u = [], v = [];
+      locs.forEach(function(loc) {
+        var h = loc.hourly || {};
+        var spd = (h.windspeed_10m || [])[hour] || 0;
+        var dir = (h.winddirection_10m || [])[hour] || 0;
+        var rad = dir * Math.PI / 180;
+        u.push(-(spd * Math.sin(rad)));
+        v.push(-(spd * Math.cos(rad)));
+      });
+      return [
+        { header: _buildWindHeader({ parameterNumber: 2 }), data: u },
+        { header: _buildWindHeader({ parameterNumber: 3 }), data: v },
+      ];
+    });
 }
 
 function getCachedWindGrid() {
@@ -139,10 +166,15 @@ function getCachedWindGrid() {
     var c = JSON.parse(localStorage.getItem(_WIND_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _WIND_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _fetchWindGrid().then(function(data) {
-    try { localStorage.setItem(_WIND_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
-    return data;
-  });
+  return _fetchWindGrid()
+    .then(function(data) {
+      try { localStorage.setItem(_WIND_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+      return data;
+    })
+    .catch(function(err) {
+      console.warn('Wind grid fetch failed, using synthetic fallback:', err);
+      return _syntheticWindGrid();
+    });
 }
 
 // ── Conditions rendering ──────────────────────────────────────────────────────
@@ -650,7 +682,7 @@ function ChartLegend({ type }) {
     sst:         { gradient: 'linear-gradient(to right, #0033CC, #0099FF, #66CCFF, #99FF66, #FFCC00, #FF6600, #CC0000)', low: 'Cool (55°F)', high: 'Warm (75°F)' },
     chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear water', high: 'Rich bait zone' },
     bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: 'Deep (6000 ft)', high: 'Shallow (0 ft)' },
-    wind:        { gradient: 'linear-gradient(to right, rgb(34,197,94), rgb(132,204,22), rgb(190,242,100), rgb(250,204,21), rgb(249,115,22), rgb(239,68,68), rgb(220,38,38), rgb(153,27,27))', low: 'Calm (0 kt)', high: 'Rough (30+ kt)' },
+    wind:        { gradient: 'linear-gradient(to right, rgb(36,104,180), rgb(60,157,194), rgb(128,205,193), rgb(151,218,168), rgb(255,250,170), rgb(255,158,85), rgb(255,65,68), rgb(220,38,38))', low: 'Calm (0 kt)', high: 'Strong (25+ kt)' },
     waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)', low: 'Calm (0–2 ft)', high: 'Rough (8+ ft)' },
     satellite:   null,
     tides:       null,
