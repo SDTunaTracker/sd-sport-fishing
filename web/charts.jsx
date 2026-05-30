@@ -82,6 +82,69 @@ function fetchTidesData() {
   ).then(function(r) { return r.json(); });
 }
 
+// ── Wind particle grid (leaflet-velocity) ─────────────────────────────────────
+
+var WIND_PARTICLE_COLORS = [
+  'rgb(34,197,94)', 'rgb(132,204,22)', 'rgb(190,242,100)', 'rgb(250,204,21)',
+  'rgb(249,115,22)', 'rgb(239,68,68)', 'rgb(220,38,38)', 'rgb(153,27,27)',
+];
+var _WIND_NX = 9, _WIND_NY = 9;
+var _WIND_LO1 = -121.0, _WIND_LA1 = 35.0, _WIND_DX = 0.5, _WIND_DY = 0.5;
+var _WIND_CACHE_KEY = 'tt_wind_grid_v1', _WIND_CACHE_TTL = 3600000;
+
+function _fetchWindPt(lat, lon) {
+  var hour = new Date().getUTCHours();
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(2) +
+    '&longitude=' + lon.toFixed(2) +
+    '&hourly=windspeed_10m,winddirection_10m&forecast_days=1&wind_speed_unit=ms&timezone=UTC';
+  return fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var h = d.hourly || {};
+      var spd = (h.windspeed_10m || [])[hour] || 0;
+      var dir = (h.winddirection_10m || [])[hour] || 0;
+      var rad = dir * Math.PI / 180;
+      return { u: -(spd * Math.sin(rad)), v: -(spd * Math.cos(rad)) };
+    })
+    .catch(function() { return { u: 0, v: 0 }; });
+}
+
+function _fetchWindGrid() {
+  var reqs = [];
+  for (var j = 0; j < _WIND_NY; j++) {
+    for (var i = 0; i < _WIND_NX; i++) {
+      reqs.push(_fetchWindPt(_WIND_LA1 - j * _WIND_DY, _WIND_LO1 + i * _WIND_DX));
+    }
+  }
+  return Promise.all(reqs).then(function(pts) {
+    var u = pts.map(function(p) { return p.u; });
+    var v = pts.map(function(p) { return p.v; });
+    var hdr = {
+      parameterCategory: 2,
+      lo1: _WIND_LO1, la1: _WIND_LA1,
+      lo2: _WIND_LO1 + (_WIND_NX - 1) * _WIND_DX,
+      la2: _WIND_LA1 - (_WIND_NY - 1) * _WIND_DY,
+      dx: _WIND_DX, dy: _WIND_DY, nx: _WIND_NX, ny: _WIND_NY,
+      refTime: new Date().toISOString(),
+    };
+    return [
+      { header: Object.assign({ parameterNumber: 2 }, hdr), data: u },
+      { header: Object.assign({ parameterNumber: 3 }, hdr), data: v },
+    ];
+  });
+}
+
+function getCachedWindGrid() {
+  try {
+    var c = JSON.parse(localStorage.getItem(_WIND_CACHE_KEY) || 'null');
+    if (c && Date.now() - c.ts < _WIND_CACHE_TTL) return Promise.resolve(c.data);
+  } catch(e) {}
+  return _fetchWindGrid().then(function(data) {
+    try { localStorage.setItem(_WIND_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+    return data;
+  });
+}
+
 // ── Conditions rendering ──────────────────────────────────────────────────────
 
 function windColor(kts) {
@@ -562,7 +625,7 @@ function ChartsHeader({ chartType }) {
     chlorophyll: { title: 'Chlorophyll Concentration',  desc: 'Phytoplankton density indicates feeding zones — bait fish gather at the edges of green plumes.' },
     bathymetry:  { title: 'Bathymetry (Ocean Depth)',   desc: 'Underwater structure — banks, ledges, and drop-offs hold fish year-round.' },
     satellite:   { title: 'Satellite Imagery',          desc: 'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.' },
-    wind:        { title: 'Wind Conditions',            desc: 'Current wind speed and direction. Green = calm (<8 kt). Yellow = moderate. Red = rough (>28 kt). Data: Open-Meteo.' },
+    wind:        { title: 'Wind Conditions',            desc: 'Animated wind particle flow — Windy-style. Green = calm (<8 kt), yellow = moderate, red = rough (>28 kt). Data: Open-Meteo.' },
     waves:       { title: 'Wave Height & Direction',    desc: 'Significant wave height in feet — the main factor for trip comfort. Blue = calm (<2 ft). Data: Open-Meteo Marine.' },
     tides:       { title: 'San Diego Tide Schedule',    desc: 'High and low tides for today from NOAA Station 9410230. Fish most actively bite on moving tides.' },
     boats:       { title: 'Boats Live — Real-Time Positions', desc: 'Live AIS vessel positions for tracked SD sportfishing boats. Green = fishing slow. Blue = transit speed. Trail = last 60 min.' },
@@ -587,7 +650,7 @@ function ChartLegend({ type }) {
     sst:         { gradient: 'linear-gradient(to right, #0033CC, #0099FF, #66CCFF, #99FF66, #FFCC00, #FF6600, #CC0000)', low: 'Cool (55°F)', high: 'Warm (75°F)' },
     chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear water', high: 'Rich bait zone' },
     bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: 'Deep (6000 ft)', high: 'Shallow (0 ft)' },
-    wind:        { gradient: 'linear-gradient(to right, #22c55e, #84cc16, #eab308, #f97316, #ef4444)', low: 'Calm (0 kt)', high: 'Rough (30+ kt)' },
+    wind:        { gradient: 'linear-gradient(to right, rgb(34,197,94), rgb(132,204,22), rgb(190,242,100), rgb(250,204,21), rgb(249,115,22), rgb(239,68,68), rgb(220,38,38), rgb(153,27,27))', low: 'Calm (0 kt)', high: 'Rough (30+ kt)' },
     waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)', low: 'Calm (0–2 ft)', high: 'Rough (8+ ft)' },
     satellite:   null,
     tides:       null,
@@ -624,6 +687,7 @@ function ChartsView() {
   const condGroupRef    = React.useRef(null);
   const boatLayerRef    = React.useRef(null);
   const boatsPollRef    = React.useRef(null);
+  const velocityLayerRef = React.useRef(null);
   const chartTypeRef    = React.useRef(chartType);
   const waypointMarkers = React.useRef({});
 
@@ -685,17 +749,54 @@ function ChartsView() {
     var overlay = getOverlayLayer(chartType);
     if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
 
-    // Clear conditions (wind/wave arrows)
+    // Clear conditions (wind/wave arrows + velocity particles)
     if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
+    if (velocityLayerRef.current) { mapInstance.current.removeLayer(velocityLayerRef.current); velocityLayerRef.current = null; }
     setTidesData(null);
 
     // Async conditions
-    if (chartType === 'wind' || chartType === 'waves') {
+    if (chartType === 'wind') {
       setCondLoading(true);
-      fetchConditionsData(chartType).then(function(data) {
+      if (typeof L.velocityLayer === 'function') {
+        getCachedWindGrid().then(function(data) {
+          setCondLoading(false);
+          if (!mapInstance.current || chartTypeRef.current !== 'wind') return;
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: {
+              velocityType: 'Wind',
+              position: 'bottomleft',
+              emptyString: 'No wind data',
+              angleConvention: 'bearingCW',
+              speedUnit: 'kt',
+            },
+            data: data,
+            maxVelocity: 15,
+            velocityScale: 0.005,
+            particleAge: 64,
+            lineWidth: 2,
+            particleMultiplier: 0.0033,
+            colorScale: WIND_PARTICLE_COLORS,
+            opacity: 0.92,
+          });
+          vl.addTo(mapInstance.current);
+          velocityLayerRef.current = vl;
+        }).catch(function() { setCondLoading(false); });
+      } else {
+        fetchConditionsData('wind').then(function(data) {
+          setCondLoading(false);
+          if (!mapInstance.current) return;
+          var layer = buildConditionsLayer('wind', data);
+          layer.addTo(mapInstance.current);
+          condGroupRef.current = layer;
+        }).catch(function() { setCondLoading(false); });
+      }
+    } else if (chartType === 'waves') {
+      setCondLoading(true);
+      fetchConditionsData('waves').then(function(data) {
         setCondLoading(false);
         if (!mapInstance.current) return;
-        var layer = buildConditionsLayer(chartType, data);
+        var layer = buildConditionsLayer('waves', data);
         layer.addTo(mapInstance.current);
         condGroupRef.current = layer;
       }).catch(function() { setCondLoading(false); });
