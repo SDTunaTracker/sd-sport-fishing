@@ -1,0 +1,89 @@
+name: AIS Vessel Discovery
+
+on:
+  schedule:
+    # 5 AM Pacific (12 UTC) — morning departure window
+    - cron: '0 12 * * *'
+    # 1 PM Pacific (20 UTC) — afternoon return window
+    - cron: '0 20 * * *'
+
+  workflow_dispatch:
+    inputs:
+      duration_seconds:
+        description: 'How long to listen (seconds)'
+        default: '7200'
+        required: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install websockets
+
+      - name: Run AIS discovery
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          DURATION=${{ github.event.inputs.duration_seconds || '7200' }}
+          echo "Listening for ${DURATION}s"
+          python scripts/discover_mmsi.py \
+            --duration "$DURATION" \
+            --output data/ais-discoveries.json \
+            --boats-file data/boat-mmsi.json \
+            --append
+
+      - name: Commit discoveries
+        run: |
+          git config user.name "Tuna Tracker AIS Bot"
+          git config user.email "bot@thetunatracker.com"
+          git add data/ais-discoveries.json data/vessel_mmsi.json
+          if git diff --staged --quiet; then
+            echo "No new discoveries to commit"
+          else
+            git commit -m "AIS discovery: $(date -u +%FT%TZ)"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f data/ais-discoveries.json ]; then
+            python - <<'EOF'
+          import json
+          with open('data/ais-discoveries.json') as f:
+              data = json.load(f)
+          sessions = data.get('_sessions', [])
+          last = sessions[-1] if sessions else {}
+          obs  = last.get('unique_mmsis_seen', 0)
+          msgs = last.get('total_messages', 0)
+          matched = last.get('matched_known_boats', [])
+          print(f"Messages received   : {msgs}")
+          print(f"Unique vessels seen : {obs}")
+          print(f"Matched our boats   : {len(matched)}")
+          if matched:
+              print("Boats found:")
+              for b in matched:
+                  print(f"  MMSI {b['mmsi']}  {b['name']}")
+          all_obs = data.get('all_observed_vessels', {})
+          total_matched = sum(
+              1 for v in all_obs.values() if v.get('matched_our_boat')
+          )
+          print(f"\nAll-time matched boats: {total_matched}")
+          EOF
+          else
+            echo "No discoveries file found"
+          fi
