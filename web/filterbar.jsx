@@ -165,7 +165,7 @@ const DEFAULT_FILTERS = {
   tripLength: 'all',
   species: 'all',
   minTrips: 1,
-  includeZero: false,
+  includeZero: true,
 };
 
 Object.assign(window, { FilterBar, DEFAULT_FILTERS, MultiSelect });

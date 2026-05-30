@@ -5,7 +5,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "comfortable",
   "monthlyView": "tpa",
   "showSpike": true,
-  "includeZero": false
+  "includeZero": true
 }/*EDITMODE-END*/;
 
 // URL-hash routing: the hash is the source of truth for the active route,
