@@ -4071,7 +4071,7 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 
 /* Velocity canvas glow — makes particles pop against any basemap */
 .leaflet-velocity-overlay canvas {
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.4));
 }
 
 /* Recenter control */

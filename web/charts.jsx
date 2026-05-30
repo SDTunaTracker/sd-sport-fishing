@@ -85,17 +85,22 @@ function fetchTidesData() {
 // ── Wind particle grid (leaflet-velocity) ─────────────────────────────────────
 
 var WIND_PARTICLE_COLORS = [
-  'rgb(0,200,255)',   // bright cyan  — calm
-  'rgb(0,255,200)',   // mint
-  'rgb(50,255,100)',  // bright green
-  'rgb(150,255,50)',  // lime
-  'rgb(255,255,50)',  // yellow
-  'rgb(255,200,0)',   // gold
-  'rgb(255,140,0)',   // bright orange
-  'rgb(255,80,0)',    // red-orange
-  'rgb(255,0,60)',    // red
-  'rgb(220,0,100)',   // hot pink-red
-  'rgb(180,0,180)',   // magenta — strong
+  'rgb(255,255,255)', // 0 m/s  — white (calm)
+  'rgb(240,248,255)', // 2      — pale blue
+  'rgb(200,220,255)', // 4      — light blue
+  'rgb(140,180,255)', // 6      — blue
+  'rgb(100,220,180)', // 8      — teal-green
+  'rgb(80,220,100)',  // 10     — green
+  'rgb(180,220,60)',  // 12     — lime
+  'rgb(255,220,50)',  // 14     — yellow
+  'rgb(255,180,40)',  // 16     — gold
+  'rgb(255,130,30)',  // 18     — orange
+  'rgb(255,90,30)',   // 21     — red-orange
+  'rgb(240,50,50)',   // 24     — red
+  'rgb(200,30,80)',   // 27     — magenta-red
+  'rgb(160,30,140)',  // 30     — purple
+  'rgb(120,30,180)',  // 33     — deep purple
+  'rgb(80,30,180)',   // 35+    — violet (storm)
 ];
 var _WIND_NX = 9, _WIND_NY = 9;
 var _WIND_LO1 = -121.0, _WIND_LA1 = 35.0, _WIND_DX = 0.5, _WIND_DY = 0.5;
@@ -785,7 +790,7 @@ function ChartLegend({ type }) {
     sst:         { gradient: 'linear-gradient(to right, #0033CC, #0099FF, #66CCFF, #99FF66, #FFCC00, #FF6600, #CC0000)', low: 'Cool (55°F)', high: 'Warm (75°F)' },
     chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear water', high: 'Rich bait zone' },
     bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: 'Deep (6000 ft)', high: 'Shallow (0 ft)' },
-    wind:        { gradient: 'linear-gradient(to right, rgb(0,200,255), rgb(50,255,100), rgb(255,255,50), rgb(255,140,0), rgb(255,0,60), rgb(180,0,180))', low: 'Calm (0 kt)', high: 'Strong (30+ kt)' },
+    wind:        { gradient: 'linear-gradient(to right, rgb(255,255,255), rgb(140,180,255), rgb(80,220,100), rgb(255,220,50), rgb(255,130,30), rgb(240,50,50), rgb(160,30,140), rgb(80,30,180))', low: 'Calm (0 kt)', high: 'Storm (60+ kt)' },
     waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)', low: 'Calm (0–2 ft)', high: 'Rough (8+ ft)' },
     currents:    { gradient: 'linear-gradient(to right, rgb(20,60,140), rgb(100,160,220), rgb(180,230,220), rgb(250,230,150), rgb(255,150,70), rgb(220,40,40))', low: 'Slack (0 kt)', high: 'Strong (2+ kt)' },
     satellite:   null,
@@ -917,10 +922,10 @@ function ChartsView() {
               speedUnit: 'kt',
             },
             data: data,
-            maxVelocity: 25,
+            maxVelocity: 35,
             velocityScale: 0.008,
             particleAge: 60,
-            lineWidth: 2.0,
+            lineWidth: 1.8,
             particleMultiplier: 0.008,
             frameRate: 30,
             colorScale: WIND_PARTICLE_COLORS,
