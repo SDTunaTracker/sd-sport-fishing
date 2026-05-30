@@ -470,7 +470,7 @@ function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
 // ── Top search bar ────────────────────────────────────────────────────────────
 function TopSearchBar({ selMonth, setSelMonth, tripMonths,
                         selLandings, setSelLandings, selLengths, setSelLengths,
-                        openPop, setOpenPop }) {
+                        openPop, setOpenPop, regions }) {
   const monthLabel = selMonth
     ? `${MONTH_NAMES_FULL[selMonth.month]} ${selMonth.year}`
     : 'Any Month';
@@ -946,6 +946,7 @@ function TripPlanner({ navigate, regions }) {
           selLandings={selLandings} setSelLandings={setSelLandingsTracked}
           selLengths={selLengths}   setSelLengths={setSelLengthsTracked}
           openPop={openPop} setOpenPop={setOpenPop}
+          regions={regions}
         />
       </div>
 
