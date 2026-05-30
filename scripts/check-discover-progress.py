@@ -18,7 +18,7 @@ def check_progress():
         print("No active discovery run found (logs/ais-discover.pid missing).")
         return
 
-    pid = int(pid_file.read_text().strip())
+    pid = int(pid_file.read_text(encoding='utf-8-sig').strip())
 
     try:
         import psutil
@@ -37,7 +37,7 @@ def check_progress():
         print(f"PID: {pid}  (install psutil for runtime info)")
 
     # Check latest log file
-    logs = sorted(LOG_DIR.glob('ais-discover-*.log'))
+    logs = sorted(LOG_DIR.glob('ais-discover-[0-9]*.log'))
     if logs:
         log = logs[-1]
         lines = log.read_text(encoding='utf-8', errors='replace').splitlines()
