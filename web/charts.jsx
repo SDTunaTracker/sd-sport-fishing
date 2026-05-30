@@ -1,16 +1,54 @@
+// ── SST source configuration ──────────────────────────────────────────────────
+
+var SST_SOURCES = {
+  daily: {
+    label: 'Daily (MODIS)',
+    badge: null,
+    desc: 'Latest single-day MODIS Aqua SST. Marine layer may create cloud gaps — switch to Gap-free for clearer coverage.',
+    layer: function() {
+      return L.tileLayer(
+        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_Thermal_4km_Day_Daily/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png',
+        { opacity: 0.75, attribution: 'NASA GIBS · MODIS Aqua', maxNativeZoom: 6 }
+      );
+    },
+  },
+  night: {
+    label: 'Nightly (MODIS)',
+    badge: null,
+    desc: 'Nighttime MODIS Aqua SST pass. Different cloud coverage than daytime — may reveal clearer ocean areas.',
+    layer: function() {
+      return L.tileLayer(
+        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_Thermal_4km_Night_Daily/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png',
+        { opacity: 0.75, attribution: 'NASA GIBS · MODIS Aqua Night', maxNativeZoom: 6 }
+      );
+    },
+  },
+  mur: {
+    label: 'Gap-free (MUR)',
+    badge: 'Recommended',
+    desc: 'JPL MUR multi-source composite — fuses satellite + in-situ data. No cloud gaps. ~2 day lag. Best for finding temperature breaks.',
+    layer: function() {
+      var d = new Date();
+      d.setDate(d.getDate() - 2);
+      var dt = d.toISOString().slice(0, 10);
+      return L.tileLayer(
+        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GHRSST_L4_MUR_Sea_Surface_Temperature/default/' + dt + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
+        { opacity: 0.80, attribution: 'NASA GIBS · JPL MUR', maxNativeZoom: 7 }
+      );
+    },
+  },
+};
+
 // ── Overlay layers (synchronous tile/WMS layers) ──────────────────────────────
 
-function getOverlayLayer(chartType) {
+function getOverlayLayer(chartType, sstMode) {
   var yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   var yday = yesterday.toISOString().slice(0, 10);
 
   switch (chartType) {
     case 'sst':
-      return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_Thermal_4km_Day_Daily/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png',
-        { opacity: 0.75, attribution: 'NASA GIBS · MODIS Aqua SST', maxNativeZoom: 6 }
-      );
+      return (SST_SOURCES[sstMode || 'mur'] || SST_SOURCES.mur).layer();
     case 'chlorophyll':
       return L.tileLayer(
         'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_Chlorophyll_a/default/' + yday + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
@@ -758,9 +796,29 @@ function ChartTypeTabs({ active, onChange }) {
 
 // ── ChartsHeader ──────────────────────────────────────────────────────────────
 
-function ChartsHeader({ chartType }) {
+function SstSourcePicker({ mode, onChange }) {
+  return (
+    <div className="sst-source-picker">
+      <span className="sst-picker-label">SST Source:</span>
+      {Object.keys(SST_SOURCES).map(function(id) {
+        var src = SST_SOURCES[id];
+        return (
+          <button key={id}
+            className={'sst-picker-btn' + (mode === id ? ' active' : '')}
+            onClick={function() { onChange(id); }}>
+            {src.label}
+            {src.badge && <span className="sst-picker-badge">{src.badge}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ChartsHeader({ chartType, sstMode }) {
+  var sstSrc = SST_SOURCES[sstMode] || SST_SOURCES.mur;
   var titles = {
-    sst:         { title: 'Sea Surface Temperature',    desc: 'Bait concentrates at temperature breaks — look for 1–2°F transitions in the 64–72°F range.' },
+    sst:         { title: 'Sea Surface Temperature',    desc: sstSrc.desc + ' Bait concentrates at 1–2°F transitions in the 64–72°F range.' },
     chlorophyll: { title: 'Chlorophyll Concentration',  desc: 'Phytoplankton density indicates feeding zones — bait fish gather at the edges of green plumes.' },
     bathymetry:  { title: 'Bathymetry (Ocean Depth)',   desc: 'Underwater structure — banks, ledges, and drop-offs hold fish year-round.' },
     satellite:   { title: 'Satellite Imagery',          desc: 'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.' },
@@ -812,6 +870,9 @@ function ChartLegend({ type }) {
 
 function ChartsView() {
   const [chartType, setChartType]     = React.useState('sst');
+  const [sstMode, setSstMode]         = React.useState(function() {
+    return localStorage.getItem('tt_sst_mode') || 'mur';
+  });
   const [waypoints, setWaypoints]     = React.useState(loadWaypoints);
   const [showModal, setShowModal]     = React.useState(false);
   const [pendingLatLng, setPending]   = React.useState(null);
@@ -830,9 +891,11 @@ function ChartsView() {
   const boatsPollRef    = React.useRef(null);
   const velocityLayerRef = React.useRef(null);
   const chartTypeRef    = React.useRef(chartType);
+  const sstModeRef      = React.useRef(sstMode);
   const waypointMarkers = React.useRef({});
 
   React.useEffect(function() { chartTypeRef.current = chartType; }, [chartType]);
+  React.useEffect(function() { sstModeRef.current = sstMode; }, [sstMode]);
 
   // Initialize map once
   React.useEffect(function() {
@@ -897,7 +960,7 @@ function ChartsView() {
 
     // Tile overlay (SST / chloro / bathymetry / satellite)
     if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
-    var overlay = getOverlayLayer(chartType);
+    var overlay = getOverlayLayer(chartType, sstModeRef.current);
     if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
 
     // Clear conditions (wind/wave arrows + velocity particles)
@@ -1005,6 +1068,15 @@ function ChartsView() {
     }
   }, [chartType]);
 
+  // Swap SST tile layer when user changes source (without reinitializing full tab)
+  React.useEffect(function() {
+    if (chartTypeRef.current !== 'sst' || !mapInstance.current) return;
+    localStorage.setItem('tt_sst_mode', sstMode);
+    if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
+    var overlay = getOverlayLayer('sst', sstMode);
+    if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+  }, [sstMode]);
+
   // Boat polling effect
   React.useEffect(function() {
     if (chartType !== 'boats' || !mapInstance.current) return;
@@ -1062,8 +1134,11 @@ function ChartsView() {
 
   return (
     <div className="charts-view">
-      <ChartsHeader chartType={chartType} />
+      <ChartsHeader chartType={chartType} sstMode={sstMode} />
       <ChartTypeTabs active={chartType} onChange={setChartType} />
+      {chartType === 'sst' && (
+        <SstSourcePicker mode={sstMode} onChange={setSstMode} />
+      )}
 
       {showMap && (
         <div className="chart-map-container">
