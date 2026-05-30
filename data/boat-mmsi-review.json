@@ -1,0 +1,19 @@
+{
+  "_status": "Web scrape hit rate limit after 4 boats. Pivoting to AIS discovery.",
+
+  "San Diego": {
+    "mmsi": "247141340",
+    "matched_name": "SAN DIEGO",
+    "confidence": 60,
+    "source": "vesselfinder",
+    "REJECT_REASON": "MMSI prefix 247 = Italy. Not a US vessel. Name collision."
+  },
+
+  "Sea Watch": {
+    "mmsi": "367010820",
+    "matched_name": "SEA WATCHER I",
+    "confidence": 65,
+    "source": "vesselfinder",
+    "REVIEW_NOTE": "82% name match. Could be registered under different name. Verify manually."
+  }
+}
