@@ -698,13 +698,23 @@ function ChartsView() {
     if (!mapRef.current || mapInstance.current) return;
 
     mapInstance.current = L.map(mapRef.current, {
-      center: [32.5, -118.5], zoom: 7, minZoom: 6, maxZoom: 10,
-      maxBounds: [[28, -123], [36, -117.5]],
-      maxBoundsViscosity: 1.0,
+      center: [32.5, -118.5], zoom: 7, minZoom: 4, maxZoom: 12,
     });
 
     addLandingPins(mapInstance.current);
     addBankMarkers(mapInstance.current);
+
+    var recenterControl = L.control({ position: 'topright' });
+    recenterControl.onAdd = function() {
+      var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control recenter-control');
+      div.innerHTML = '<a href="#" title="Recenter on San Diego">📍 Recenter</a>';
+      L.DomEvent.on(div, 'click', function(e) {
+        L.DomEvent.preventDefault(e);
+        mapInstance.current.setView([32.5, -118.5], 7, { animate: true });
+      });
+      return div;
+    };
+    recenterControl.addTo(mapInstance.current);
 
     window.ttOpenWaypointModal = function(lat, lng) {
       mapInstance.current.closePopup();

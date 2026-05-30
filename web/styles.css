@@ -4069,6 +4069,22 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   line-height: 1;
 }
 
+/* Recenter control */
+.recenter-control a {
+  padding: 6px 10px;
+  display: block;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.recenter-control a:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
 /* Loading overlay */
 .cond-loading-overlay {
   position: absolute;
