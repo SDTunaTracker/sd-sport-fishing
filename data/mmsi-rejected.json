@@ -1,0 +1,28 @@
+{
+  "_comment": "MMSI numbers explicitly rejected to prevent re-investigation. Do not add these to boat-mmsi.json.",
+  "538070070": {
+    "name": "TRITON",
+    "rejected_at": "2026-05-30T15:29Z",
+    "reason": "Marshall Islands flag (538 prefix). Position at LAX area (33.97N, -118.45W). Not a US sportfisher."
+  },
+  "366855060": {
+    "name": "NEW DEL MAR",
+    "rejected_at": "2026-05-30T15:29Z",
+    "reason": "Marina Del Rey Sportfishing boat. Position at Redondo Beach (33.90N, -118.55W). Not SD-based."
+  },
+  "366977270": {
+    "name": "VICTORY",
+    "rejected_at": "2026-05-30T15:29Z",
+    "reason": "Long Beach-based Victory. Position at San Pedro/Catalina (33.59N, -118.19W). Name collision with SD Victory."
+  },
+  "368117820": {
+    "name": "VOYAGER",
+    "rejected_at": "2026-05-30T15:29Z",
+    "reason": "LA-area Voyager (33.72N, -118.28W). Our confirmed Seaforth Voyager is 368026910. Duplicate name collision."
+  },
+  "338424198": {
+    "name": "PATRIOT",
+    "rejected_at": "2026-05-30T15:29Z",
+    "reason": "Marina del Rey / LAX area boat (33.98N, -118.45W). Not our Patriot (SD). Different vessel."
+  }
+}

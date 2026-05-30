@@ -1,6 +1,6 @@
 {
   "_comment": "MMSI numbers for SD sportfishing boats",
-  "_format": "9-digit MMSI string, or null if AIS unavailable",
+  "_format": "9-digit MMSI string, or null if AIS unavailable. Objects with 'status' field are review-pending.",
   "_verification_status": "Tier 1 = high confidence (search snippet showed exact match); Tier 2 = needs in-person verification",
 
   "San Diego": null,
@@ -30,5 +30,19 @@
   "Reel Champion": null,
   "Excalibur": null,
   "Pacific Queen": "367186270",
-  "Royal Polaris": "367050490"
+  "Royal Polaris": "367050490",
+  "Liberty": "338301392",
+  "Liberty (2)": "367740760",
+  "Islander": "368406170",
+  "Fortune": "338425851",
+  "Pegasus": {
+    "mmsi": "366958230",
+    "status": "needs_verification",
+    "note": "Observed in transit lane SD-Catalina. Confirm position consistency over 2-hour runs."
+  },
+  "Victory (SD)": {
+    "mmsi": "368064780",
+    "status": "needs_verification",
+    "note": "Position in SD Bay but name conflict with Long Beach Victory. Watch over time."
+  }
 }
