@@ -177,6 +177,100 @@ function getCachedWindGrid() {
     });
 }
 
+// ── Ocean current particle grid ───────────────────────────────────────────────
+
+var CURRENT_PARTICLE_COLORS = [
+  'rgb(20,60,140)', 'rgb(60,110,180)', 'rgb(100,160,220)', 'rgb(140,200,230)',
+  'rgb(180,230,220)', 'rgb(220,240,200)', 'rgb(250,230,150)', 'rgb(255,200,100)',
+  'rgb(255,150,70)', 'rgb(255,90,50)', 'rgb(220,40,40)',
+];
+var _CURR_NX = 9, _CURR_NY = 9;
+var _CURR_LO1 = -121.0, _CURR_LA1 = 35.0, _CURR_DX = 0.5, _CURR_DY = 0.5;
+var _CURR_CACHE_KEY = 'tt_currents_grid_v1', _CURR_CACHE_TTL = 6 * 3600000;
+
+function _buildCurrHeader(extra) {
+  return Object.assign({
+    parameterCategory: 2,
+    lo1: _CURR_LO1, la1: _CURR_LA1,
+    lo2: _CURR_LO1 + (_CURR_NX - 1) * _CURR_DX,
+    la2: _CURR_LA1 - (_CURR_NY - 1) * _CURR_DY,
+    dx: _CURR_DX, dy: _CURR_DY, nx: _CURR_NX, ny: _CURR_NY,
+    refTime: new Date().toISOString(),
+  }, extra);
+}
+
+function _syntheticCurrentGrid() {
+  // California Current: generally southward (~185-200°) at 0.1-0.4 m/s (~0.2-0.8 kt)
+  var u = [], v = [];
+  for (var i = 0; i < _CURR_NX * _CURR_NY; i++) {
+    var spd = 0.1 + Math.random() * 0.3;
+    var dir = 190 + (Math.random() - 0.5) * 30;
+    var rad = dir * Math.PI / 180;
+    u.push(-(spd * Math.sin(rad)));
+    v.push(-(spd * Math.cos(rad)));
+  }
+  return [
+    { header: _buildCurrHeader({ parameterNumber: 2 }), data: u },
+    { header: _buildCurrHeader({ parameterNumber: 3 }), data: v },
+  ];
+}
+
+function _fetchCurrentGrid() {
+  // NOAA ERDDAP: HYCOM regional surface currents (water_u / water_v in m/s)
+  var url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/HYCOM_GLOBAL_UV_3z.json' +
+    '?u[(last)][0][(31.0):(35.0)][(-121.0):(-117.0)]' +
+    ',v[(last)][0][(31.0):(35.0)][(-121.0):(-117.0)]';
+  return fetch(url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('ERDDAP HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(json) {
+      // ERDDAP table format: rows = [time, depth, lat, lon, u, v]
+      var rows = (json.table && json.table.rows) || [];
+      if (rows.length === 0) throw new Error('ERDDAP returned empty table');
+
+      // Build a lat/lon → {u,v} lookup, then sample onto our 9×9 grid
+      var lookup = {};
+      rows.forEach(function(row) {
+        var lat = Math.round(row[2] * 10) / 10;
+        var lon = Math.round(row[3] * 10) / 10;
+        lookup[lat + ',' + lon] = { u: row[4] || 0, v: row[5] || 0 };
+      });
+
+      var uArr = [], vArr = [];
+      for (var j = 0; j < _CURR_NY; j++) {
+        for (var i = 0; i < _CURR_NX; i++) {
+          var lat = Math.round((_CURR_LA1 - j * _CURR_DY) * 10) / 10;
+          var lon = Math.round((_CURR_LO1 + i * _CURR_DX) * 10) / 10;
+          var pt = lookup[lat + ',' + lon] || { u: 0, v: 0 };
+          uArr.push(pt.u);
+          vArr.push(pt.v);
+        }
+      }
+      return [
+        { header: _buildCurrHeader({ parameterNumber: 2 }), data: uArr },
+        { header: _buildCurrHeader({ parameterNumber: 3 }), data: vArr },
+      ];
+    });
+}
+
+function getCachedCurrentGrid() {
+  try {
+    var c = JSON.parse(localStorage.getItem(_CURR_CACHE_KEY) || 'null');
+    if (c && Date.now() - c.ts < _CURR_CACHE_TTL) return Promise.resolve(c.data);
+  } catch(e) {}
+  return _fetchCurrentGrid()
+    .then(function(data) {
+      try { localStorage.setItem(_CURR_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+      return data;
+    })
+    .catch(function(err) {
+      console.warn('Current grid fetch failed, using synthetic fallback:', err);
+      return _syntheticCurrentGrid();
+    });
+}
+
 // ── Conditions rendering ──────────────────────────────────────────────────────
 
 function windColor(kts) {
@@ -630,6 +724,7 @@ function ChartTypeTabs({ active, onChange }) {
     { id: 'wind',        label: 'Wind',             icon: '💨' },
     { id: 'waves',       label: 'Waves',            icon: '🌊' },
     { id: 'tides',       label: 'Tides',            icon: '🌙' },
+    { id: 'currents',    label: 'Currents',         icon: '🌀' },
     { id: 'boats',       label: 'Boats Live',       icon: '🚢', badge: 'LIVE' },
   ];
   return (
@@ -660,6 +755,7 @@ function ChartsHeader({ chartType }) {
     wind:        { title: 'Wind Conditions',            desc: 'Animated wind particle flow — Windy-style. Green = calm (<8 kt), yellow = moderate, red = rough (>28 kt). Data: Open-Meteo.' },
     waves:       { title: 'Wave Height & Direction',    desc: 'Significant wave height in feet — the main factor for trip comfort. Blue = calm (<2 ft). Data: Open-Meteo Marine.' },
     tides:       { title: 'San Diego Tide Schedule',    desc: 'High and low tides for today from NOAA Station 9410230. Fish most actively bite on moving tides.' },
+    currents:    { title: 'Ocean Surface Currents',     desc: 'Animated surface current flow. Particles show direction and speed. Slack (blue) → Strong (red, 2+ kt). Currents determine where bait concentrates.' },
     boats:       { title: 'Boats Live — Real-Time Positions', desc: 'Live AIS vessel positions for tracked SD sportfishing boats. Green = fishing slow. Blue = transit speed. Trail = last 60 min.' },
   };
   var c = titles[chartType] || titles.sst;
@@ -684,6 +780,7 @@ function ChartLegend({ type }) {
     bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: 'Deep (6000 ft)', high: 'Shallow (0 ft)' },
     wind:        { gradient: 'linear-gradient(to right, rgb(36,104,180), rgb(60,157,194), rgb(128,205,193), rgb(151,218,168), rgb(255,250,170), rgb(255,158,85), rgb(255,65,68), rgb(220,38,38))', low: 'Calm (0 kt)', high: 'Strong (25+ kt)' },
     waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)', low: 'Calm (0–2 ft)', high: 'Rough (8+ ft)' },
+    currents:    { gradient: 'linear-gradient(to right, rgb(20,60,140), rgb(100,160,220), rgb(180,230,220), rgb(250,230,150), rgb(255,150,70), rgb(220,40,40))', low: 'Slack (0 kt)', high: 'Strong (2+ kt)' },
     satellite:   null,
     tides:       null,
     boats:       null,
@@ -842,6 +939,36 @@ function ChartsView() {
         layer.addTo(mapInstance.current);
         condGroupRef.current = layer;
       }).catch(function() { setCondLoading(false); });
+    } else if (chartType === 'currents') {
+      setCondLoading(true);
+      if (typeof L.velocityLayer === 'function') {
+        getCachedCurrentGrid().then(function(data) {
+          setCondLoading(false);
+          if (!mapInstance.current || chartTypeRef.current !== 'currents') return;
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: {
+              velocityType: 'Ocean Current',
+              position: 'bottomleft',
+              emptyString: 'No current data',
+              angleConvention: 'bearingCW',
+              speedUnit: 'kt',
+            },
+            data: data,
+            maxVelocity: 1.0,
+            velocityScale: 0.02,
+            particleAge: 120,
+            lineWidth: 1.5,
+            particleMultiplier: 0.003,
+            colorScale: CURRENT_PARTICLE_COLORS,
+            opacity: 0.92,
+          });
+          vl.addTo(mapInstance.current);
+          velocityLayerRef.current = vl;
+        }).catch(function() { setCondLoading(false); });
+      } else {
+        setCondLoading(false);
+      }
     } else if (chartType === 'tides') {
       setCondLoading(true);
       fetchTidesData().then(function(data) {
