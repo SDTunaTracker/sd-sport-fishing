@@ -268,6 +268,19 @@ CREATE TABLE IF NOT EXISTS forecast_scores (
     created_at TEXT,
     PRIMARY KEY (date, segment)
 );
+
+CREATE TABLE IF NOT EXISTS boats (
+    name            TEXT PRIMARY KEY,
+    landing         TEXT,
+    mmsi            TEXT,
+    imo             TEXT,
+    ais_verified    INTEGER DEFAULT 0,
+    ais_last_seen   TEXT,
+    vessel_length_m REAL,
+    vessel_type     TEXT,
+    first_seen      TEXT,
+    last_seen       TEXT
+);
 """
 
 

@@ -28,7 +28,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-# ── Bootstrap path ────────────────────────────────────────────────────────────
+# -- Bootstrap path ------------------------------------------------------------
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -44,15 +44,15 @@ except ImportError:
     print("ERROR: websockets not installed. Run: .venv/Scripts/pip.exe install websockets")
     sys.exit(1)
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# -- Config --------------------------------------------------------------------
 API_KEY   = os.getenv('AISSTREAM_API_KEY', '')
 SOCAL_BOX = [[31.0, -121.0], [35.0, -117.0]]
 DB_PATH   = ROOT / 'tracker.db'
 OUT_PATH  = ROOT / 'data' / 'vessel_mmsi.json'
 
-MATCH_THRESHOLD = 0.72  # fuzzy ratio minimum
+MATCH_THRESHOLD = 0.85  # fuzzy ratio minimum
 
-# ── Load known boat names from DB ────────────────────────────────────────────
+# -- Load known boat names from DB --------------------------------------------
 
 def load_db_boats():
     conn = sqlite3.connect(DB_PATH)
@@ -88,7 +88,7 @@ def best_match(ais_name, db_boats):
     return None
 
 
-# ── AIS listener ──────────────────────────────────────────────────────────────
+# -- AIS listener --------------------------------------------------------------
 
 async def listen(duration: int, db_boats: list) -> dict:
     """
@@ -102,7 +102,7 @@ async def listen(duration: int, db_boats: list) -> dict:
     seen    = set()
     uri     = 'wss://stream.aisstream.io/v0/stream'
 
-    print(f"\n  Listening for {duration}s (Ctrl-C to stop early)…")
+    print(f"\n  Listening for {duration}s (Ctrl-C to stop early)...")
     print(f"  Matching against {len(db_boats)} boats from DB\n")
 
     deadline = asyncio.get_event_loop().time() + duration
@@ -157,7 +157,7 @@ async def listen(duration: int, db_boats: list) -> dict:
     return found
 
 
-# ── Update vessel_mmsi.json ───────────────────────────────────────────────────
+# -- Update vessel_mmsi.json ---------------------------------------------------
 
 def update_mmsi_file(matches: dict, dry_run: bool, out_path: Path):
     current = json.loads(out_path.read_text()) if out_path.exists() else {}
@@ -172,7 +172,8 @@ def update_mmsi_file(matches: dict, dry_run: bool, out_path: Path):
         added += 1
 
     current['vessels'] = vessels
-    current['_last_discover_run'] = datetime.utcnow().isoformat() + 'Z'
+    from datetime import timezone
+    current['_last_discover_run'] = datetime.now(timezone.utc).isoformat()
     current['_vessel_count'] = len(vessels)
 
     print(f"\n  Added {added} new vessel(s), skipped {skipped} already present.")
@@ -183,12 +184,12 @@ def update_mmsi_file(matches: dict, dry_run: bool, out_path: Path):
         print(json.dumps(current, indent=2)[:2000])
     else:
         out_path.write_text(json.dumps(current, indent=2))
-        print(f"\n  Saved → {out_path}")
+        print(f"\n  Saved: {out_path}")
         print("\n  Next step: copy 'vessels' dict into VESSEL_MMSI_JSON secret:")
-        print(f"  echo '{json.dumps(vessels)}' | wrangler secret put VESSEL_MMSI_JSON --name vessel-tracker")
+        print(f"  wrangler secret put VESSEL_MMSI_JSON --name vessel-tracker")
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# -- Main ----------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description='Discover MMSI numbers for SD sportfishing boats')
@@ -198,13 +199,13 @@ def main():
     args = parser.parse_args()
 
     db_boats = load_db_boats()
-    print(f"SD Sport Fishing — MMSI Discovery")
-    print(f"{'─'*50}")
+    print("SD Sport Fishing - MMSI Discovery")
+    print("-" * 50)
     print(f"Loaded {len(db_boats)} active boats from tracker.db")
 
     matches = asyncio.run(listen(args.duration, db_boats))
 
-    print(f"\n{'─'*50}")
+    print("\n" + "-" * 50)
     print(f"Found {len(matches)} match(es) in {args.duration}s window\n")
 
     if matches:

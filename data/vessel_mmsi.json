@@ -7,5 +7,76 @@
     "3. Find the MMSI (9-digit number) on the vessel page",
     "4. Add entry below: '338XXXXXX': {'name': 'Boat Name', 'landing': 'Landing Name'}"
   ],
-  "vessels": {}
+  "vessels": {
+    "338424198": {
+      "name": "Patriot",
+      "landing": "Newport Landing"
+    },
+    "366977270": {
+      "name": "Victory",
+      "landing": "Long Beach Sportfishing"
+    },
+    "367740760": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
+    },
+    "368235810": {
+      "name": "Orion",
+      "landing": "Channel Islands Sportfishing"
+    },
+    "366855060": {
+      "name": "New Del Mar",
+      "landing": "Marina Del Rey Sportfishing"
+    },
+    "338555612": {
+      "name": "Tribute",
+      "landing": "Seaforth Sportfishing"
+    },
+    "338301392": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
+    },
+    "368117820": {
+      "name": "Voyager",
+      "landing": "Seaforth Sportfishing"
+    },
+    "368026910": {
+      "name": "Voyager",
+      "landing": "Seaforth Sportfishing"
+    },
+    "338316391": {
+      "name": "Patriot",
+      "landing": "Newport Landing"
+    },
+    "368406170": {
+      "name": "Islander",
+      "landing": "Fisherman's Landing"
+    },
+    "368358380": {
+      "name": "Triton",
+      "landing": "LA Waterfront Sportfishing"
+    },
+    "366958230": {
+      "name": "Pegasus",
+      "landing": "Fisherman's Landing"
+    },
+    "538070070": {
+      "name": "Triton",
+      "landing": "LA Waterfront Sportfishing"
+    },
+    "368064780": {
+      "name": "Victory",
+      "landing": "Long Beach Sportfishing"
+    },
+    "366977380": {
+      "name": "Freelance",
+      "landing": "Davey's Locker"
+    },
+    "367621160": {
+      "name": "Freedom",
+      "landing": "22nd Street Landing"
+    }
+  },
+  "_last_discover_run": "2026-05-30T05:03:20.961617Z",
+  "_vessel_count": 17
 }
