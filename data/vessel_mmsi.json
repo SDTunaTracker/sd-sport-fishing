@@ -56,10 +56,6 @@
       "name": "Triton",
       "landing": "LA Waterfront Sportfishing"
     },
-    "366958230": {
-      "name": "Pegasus",
-      "landing": "Fisherman's Landing"
-    },
     "538070070": {
       "name": "Triton",
       "landing": "LA Waterfront Sportfishing"
@@ -72,24 +68,12 @@
       "name": "Freelance",
       "landing": "Davey's Locker"
     },
-    "367621160": {
-      "name": "Freedom",
-      "landing": "22nd Street Landing"
-    },
     "338425851": {
       "name": "Fortune",
       "landing": "Fisherman's Landing"
     },
-    "367655460": {
-      "name": "Native Sun",
-      "landing": "22nd Street Landing"
-    },
     "368352260": {
       "name": "Constitution",
-      "landing": "Fisherman's Landing"
-    },
-    "319160000": {
-      "name": "Islander",
       "landing": "Fisherman's Landing"
     },
     "366746210": {
@@ -100,19 +84,11 @@
       "name": "Legend",
       "landing": "H&M Landing"
     },
-    "338478738": {
-      "name": "Fortune",
-      "landing": "Fisherman's Landing"
-    },
-    "367034320": {
-      "name": "City of Long Beach",
-      "landing": "Pierpoint Landing"
-    },
-    "368121320": {
-      "name": "Triton",
-      "landing": "LA Waterfront Sportfishing"
+    "367185130": {
+      "name": "Spirit of Adventure",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-05-31T17:57:18.603529+00:00",
-  "_vessel_count": 26
+  "_last_discover_run": "2026-05-31T19:14:09.502418+00:00",
+  "_vessel_count": 20
 }

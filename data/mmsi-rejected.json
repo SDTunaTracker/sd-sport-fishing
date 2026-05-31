@@ -24,5 +24,35 @@
     "name": "PATRIOT",
     "rejected_at": "2026-05-30T15:29Z",
     "reason": "Marina del Rey / LAX area boat (33.98N, -118.45W). Not our Patriot (SD). Different vessel."
+  },
+  "366958230": {
+    "name": "PEGASUS",
+    "rejected_at": "2026-05-31T00:00Z",
+    "reason": "Position at San Pedro/Catalina transit lane (33.73N, -118.27W). Not SD-based."
+  },
+  "319160000": {
+    "name": "ISLANDER",
+    "rejected_at": "2026-05-31T00:00Z",
+    "reason": "Cayman Islands flag (319 prefix). False positive match against our SD Islander (368406170)."
+  },
+  "367621160": {
+    "name": "FREEDOM",
+    "rejected_at": "2026-05-31T00:00Z",
+    "reason": "22nd Street Landing vessel (San Pedro/LA). Not one of our 4 tracked SD landings."
+  },
+  "367655460": {
+    "name": "NATIVE SUN",
+    "rejected_at": "2026-05-31T20:00Z",
+    "reason": "22nd Street Landing vessel (San Pedro/LA). Not one of our 4 tracked SD landings."
+  },
+  "367034320": {
+    "name": "CITY OF LONG BEACH",
+    "rejected_at": "2026-05-31T20:00Z",
+    "reason": "Pierpoint Landing vessel (Long Beach). Not SD-based."
+  },
+  "368121320": {
+    "name": "TRITON",
+    "rejected_at": "2026-05-31T20:00Z",
+    "reason": "LA Waterfront Sportfishing vessel. Not SD-based. Third Triton false positive."
   }
 }

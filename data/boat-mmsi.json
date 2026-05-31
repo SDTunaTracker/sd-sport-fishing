@@ -21,7 +21,7 @@
   "Horizon": null,
   "Patriot (SD)": null,
   "Highliner": null,
-  "Spirit of Adventure": null,
+  "Spirit of Adventure": "367185130",
   "Point Loma": null,
   "El Gato Dos": null,
   "Vendetta 2": null,
@@ -35,14 +35,6 @@
   "Liberty (2)": "367740760",
   "Islander": "368406170",
   "Fortune": "338425851",
-  "Pegasus": {
-    "mmsi": "366958230",
-    "status": "needs_verification",
-    "note": "Observed in transit lane SD-Catalina. Confirm position consistency over 2-hour runs."
-  },
-  "Victory (SD)": {
-    "mmsi": "368064780",
-    "status": "needs_verification",
-    "note": "Position in SD Bay but name conflict with Long Beach Victory. Watch over time."
-  }
+  "Constitution": "368352260",
+  "Victory (SD)": "368064780"
 }
