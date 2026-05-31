@@ -14,6 +14,7 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Iterable
 
 import requests
@@ -368,11 +369,20 @@ def scrape_landing(src: LandingSource, target_date: date | None = None,
             if target_date is None or r["date"] == target_date:
                 blank_boats.add(r["boat"].strip())
 
-    if blank_boats and (src.main_url or src.news_url):
-        log.debug("text_fallback: %d blank-count boat(s) at %s — scanning written updates",
-                  len(blank_boats), src.name)
-        _apply_text_fallback(src, trips, blank_boats, target_date)
+    if src.main_url or src.news_url:
+        known_boats = [t['boat'] for t in trips]
+        if blank_boats:
+            log.debug("text_fallback: %d blank-count boat(s) at %s — scanning written updates",
+                      len(blank_boats), src.name)
+            _apply_text_fallback(src, trips, blank_boats, target_date)
+        try:
+            n = _apply_calledin_reports(src, trips, known_boats, target_date)
+            if n:
+                log.info("calledin_reports: filled %d trip(s) at %s", n, src.name)
+        except Exception as exc:
+            log.warning("calledin_reports failed at %s: %s", src.name, exc)
 
+    _write_last_success(src.name)
     return trips, page_date, html
 
 
@@ -390,10 +400,11 @@ def scrape_all(sources: Iterable[LandingSource] = SOURCES,
     return results
 
 
-# Matches "<count> <species>" in free-form written reports.
-# Handles "12 bluefin tuna", "12 bluefin", "5 yellowtail", etc.
+# Matches "<count> [mixed] <species>" in free-form written reports.
+# Handles "12 bluefin tuna", "5 yellowtail", "20 mixed Rockfish", etc.
 _TEXT_SPECIES_RE = re.compile(
     r'(\d+)\s+'
+    r'(?:mixed\s+)?'
     r'(bluefin(?:\s+tuna)?|yellowfin(?:\s+tuna)?|yellowtail|'
     r'dorado|mahi(?:-?mahi)?|'
     r'albacore(?:\s+tuna)?|skipjack(?:\s+tuna)?|bigeye(?:\s+tuna)?|'
@@ -401,6 +412,293 @@ _TEXT_SPECIES_RE = re.compile(
     r'bonito|barracuda|lingcod)',
     re.I,
 )
+
+# ---------------------------------------------------------------------------
+# Called-in / returned-with text report parser
+# ---------------------------------------------------------------------------
+
+# Strip "UPDATE 10:30AM:", "AM UPDATE:", bare "UPDATE:" from block start.
+_BLOCK_PREFIX_RE = re.compile(
+    r'^(?:'
+    r'(?:UPDATE\s+)?\d{1,2}:\d{2}\s*(?:AM|PM)\s*[:\-]\s*'
+    r'|UPDATE\s*[:\-]\s*'
+    r'|(?:AM|PM)\s+UPDATE\s*[:\-]\s*'
+    r')',
+    re.I,
+)
+
+# Trailing " AM" / " PM" qualifier at end of a boat-name string.
+_AM_PM_SUFFIX_RE = re.compile(r'\s+(AM|PM)\s*$', re.I)
+
+# "The " prefix to strip from boat-name candidates.
+_THE_PREFIX_RE = re.compile(r'^the\s+', re.I)
+
+# (pattern, template_type) pairs tried in order per block.
+_REPORT_TEMPLATES: list[tuple[re.Pattern, str]] = [
+    # "Dolphin AM called in – 22 Bluefin Tuna, 5 Yellowtail"
+    (re.compile(
+        r'(?P<boat_am>[A-Za-z][A-Za-z0-9 \-\']{1,44}?)'
+        r'\s+(?:called?\s+in|phoned?\s+in|check(?:ing|ed)?\s+in|reporting\s+in)'
+        r'\s*[–\-:—]?\s*(?:with\s+)?'
+        r'(?P<counts>[^\n]{5,280})',
+        re.I,
+    ), 'calledin'),
+    # "Dolphin PM returned with 18 Bluefin Tuna, 3 Dorado"
+    (re.compile(
+        r'(?P<boat_am>[A-Za-z][A-Za-z0-9 \-\']{1,44}?)'
+        r'\s+returned\s+(?:to\s+(?:the\s+)?dock\s+)?(?:home\s+)?with\s+'
+        r'(?P<counts>[^\n]{5,280})',
+        re.I,
+    ), 'returned'),
+    # "Caught aboard the Dolphin AM: 12 Yellowtail, 20 mixed Rockfish"
+    (re.compile(
+        r'caught\s+(?:aboard\s+)?(?:the\s+)?'
+        r'(?P<boat_am>[A-Za-z][A-Za-z0-9 \-\']{1,44}?)'
+        r'\s*[:–\-—]\s*'
+        r'(?P<counts>[^\n]{5,280})',
+        re.I,
+    ), 'caught'),
+]
+
+
+def _split_boat_am_pm(
+    raw: str,
+    known_boats: list[str] | None,
+) -> tuple[str, str | None]:
+    """Return (boat_name, 'AM'|'PM'|None) from a raw match like 'Dolphin AM'.
+
+    Strips leading 'The', extracts trailing AM/PM, then fuzzy-matches against
+    known_boats if provided. Falls back to the cleaned string as-is (low confidence).
+    """
+    import difflib as _dl
+    s = _THE_PREFIX_RE.sub('', raw.strip())
+    am_pm: str | None = None
+    m = _AM_PM_SUFFIX_RE.search(s)
+    if m:
+        am_pm = m.group(1).upper()
+        s = s[:m.start()].strip()
+    if not s:
+        return raw.strip(), am_pm
+
+    if known_boats:
+        s_lower = s.lower()
+        # Exact match
+        for boat in known_boats:
+            if s_lower == boat.lower():
+                return boat, am_pm
+        # Structured table may store "Dolphin AM" as the boat name — strip qualifier
+        for boat in known_boats:
+            base = _AM_PM_SUFFIX_RE.sub('', boat).strip()
+            if s_lower == base.lower():
+                return base, am_pm
+        # Fuzzy match against base names
+        bases = list({_AM_PM_SUFFIX_RE.sub('', b).strip() for b in known_boats})
+        hits = _dl.get_close_matches(s, bases, n=1, cutoff=0.75)
+        if hits:
+            return hits[0], am_pm
+
+    return s, am_pm  # low-confidence: use as-is
+
+
+def parse_text_reports(
+    blocks: list[str],
+    landing: str,
+    target_date: 'date | None',
+    known_boats: list[str] | None = None,
+) -> list[dict]:
+    """Parse called-in / returned-with narrative blocks into partial trip dicts.
+
+    Each block is tried against three templates in order: calledin, returned,
+    caught. The first template that matches AND yields at least one recognisable
+    species count produces one trip record. Dedup is by (date, boat, trip_length).
+
+    Anglers defaults to 1 when not found in text — caller should merge with the
+    corresponding structured trip (which has the real angler count) before insert.
+    """
+    scraped_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
+    today = target_date or date.today()
+    out: list[dict] = []
+    seen: set[tuple] = set()
+
+    for raw_block in blocks:
+        block = _BLOCK_PREFIX_RE.sub('', raw_block.strip())
+
+        for pattern, tmpl in _REPORT_TEMPLATES:
+            m = pattern.search(block)
+            if not m:
+                continue
+
+            counts_raw = m.group('counts').strip()
+            tracked = {sp: 0 for sp in P.TRACKED_SPECIES}
+            other: dict[str, int] = {}
+            found_any = False
+
+            for sm in _TEXT_SPECIES_RE.finditer(counts_raw):
+                after = counts_raw[sm.end(): sm.end() + 12].strip().lower()
+                if after.startswith('released'):
+                    continue
+                cnt = int(sm.group(1))
+                canon = P.normalize_species(sm.group(2))
+                if canon in tracked:
+                    tracked[canon] = max(tracked[canon], cnt)
+                    found_any = True
+                elif canon in P.EXTENDED_SPECIES_COLUMNS:
+                    other[canon] = max(other.get(canon, 0), cnt)
+                    found_any = True
+
+            if not found_any:
+                continue  # no species recognised — try next template
+
+            boat_name, am_pm = _split_boat_am_pm(m.group('boat_am').strip(), known_boats)
+
+            if am_pm == 'AM':
+                trip_length, tl_days, tl_raw = 'Half Day AM', 0.5, 'Half Day AM'
+            elif am_pm == 'PM':
+                trip_length, tl_days, tl_raw = 'Half Day PM', 0.5, 'Half Day PM'
+            else:
+                trip_length, tl_days, tl_raw = 'Full Day', 0.75, 'Full Day'
+
+            block_date = P.parse_date(block) or today
+            dedup_key = (block_date.isoformat(), boat_name.lower(), trip_length)
+            if dedup_key in seen:
+                break
+            seen.add(dedup_key)
+
+            ang_m = re.search(r'(\d+)\s+anglers?\b', counts_raw, re.I)
+            anglers = int(ang_m.group(1)) if ang_m else 1
+
+            col_counts, other_fish, unknowns = P.extract_extended_species(other)
+            is_preliminary = 0 if tmpl == 'returned' else 1
+            metrics = P.trophy_metrics(tracked, max(anglers, 1), tl_days)
+            moon = moon_info(datetime.combine(
+                block_date, datetime.min.time(), tzinfo=timezone.utc))
+
+            out.append({
+                'date':                     block_date.isoformat(),
+                'boat':                     boat_name,
+                'landing':                  landing,
+                'trip_type_raw':            tl_raw,
+                'trip_length':              trip_length,
+                'trip_length_days':         tl_days,
+                'anglers':                  anglers,
+                'bluefin':                  tracked['Bluefin'],
+                'yellowfin':                tracked['Yellowfin'],
+                'yellowtail':               tracked['Yellowtail'],
+                'dorado':                   tracked['Dorado'],
+                'skipjack':                 tracked['Skipjack'],
+                'bigeye':                   tracked['Bigeye'],
+                'albacore':                 tracked['Albacore'],
+                'trophy_count':             metrics.trophy_count,
+                'trophy_per_angler':        metrics.trophy_per_angler,
+                'trophy_per_angler_per_day': metrics.trophy_per_angler_per_day,
+                'other_species_json':       json.dumps(other),
+                'moon_phase':               moon.phase,
+                'moon_illum':               moon.illum,
+                'days_from_new':            moon.days_from_new,
+                'days_from_full':           moon.days_from_full,
+                'scraped_at':               scraped_at,
+                'source_url':               '',
+                **col_counts,
+                'other_fish':               other_fish,
+                'is_half_day':              1 if tl_days < P.MIN_TRIP_DAYS else 0,
+                'region':                   'san_diego',
+                'full_catch':               P.build_full_catch(tracked, other),
+                'source':  f'text_calledin_{"final" if not is_preliminary else "preliminary"}',
+                'is_preliminary':           is_preliminary,
+                'written_text':             raw_block[:500],
+                'reported_at':              scraped_at,
+                '_unknowns':                unknowns,
+            })
+            break  # first matching template wins
+
+    return out
+
+
+_LAST_SUCCESS_PATH = Path(__file__).resolve().parents[1] / 'logs' / 'last_success.json'
+
+
+def _write_last_success(landing: str) -> None:
+    _LAST_SUCCESS_PATH.parent.mkdir(exist_ok=True)
+    try:
+        data = json.loads(_LAST_SUCCESS_PATH.read_text(encoding='utf-8')) \
+               if _LAST_SUCCESS_PATH.exists() else {}
+    except Exception:
+        data = {}
+    data[landing] = datetime.now(timezone.utc).isoformat(timespec='seconds')
+    try:
+        _LAST_SUCCESS_PATH.write_text(json.dumps(data, indent=2), encoding='utf-8')
+    except Exception as exc:
+        log.debug('last_success.json write failed: %s', exc)
+
+
+def _apply_calledin_reports(
+    src: LandingSource,
+    trips: list[dict],
+    known_boats: list[str],
+    target_date: 'date | None',
+) -> int:
+    """Scan landing news pages for called-in reports; fill zero-count structured trips.
+
+    Returns the number of trips updated. Only updates trips whose trophy_count is
+    still 0 after the structured-table parse — richer text data wins over zeros,
+    but won't override a structured trip that already has real fish counts.
+    """
+    urls = [u for u in [src.main_url, src.news_url] if u]
+    if not urls:
+        return 0
+
+    all_blocks: list[str] = []
+    for url in urls:
+        html = _fetch_optional(url)
+        if html:
+            all_blocks.extend(_extract_text_blocks(html))
+
+    if not all_blocks:
+        return 0
+
+    text_trips = parse_text_reports(all_blocks, src.name, target_date, known_boats)
+    if not text_trips:
+        return 0
+
+    # Index structured trips by (normalised_boat_base, trip_length) so that
+    # "Dolphin AM" in the table matches "Dolphin"+"Half Day AM" from the text.
+    def _norm_key(boat: str, tl: str) -> tuple[str, str]:
+        base = _AM_PM_SUFFIX_RE.sub('', boat).strip().lower()
+        if boat.upper().endswith(' AM'):
+            tl = 'Half Day AM'
+        elif boat.upper().endswith(' PM'):
+            tl = 'Half Day PM'
+        return base, tl
+
+    trip_map: dict[tuple, dict] = {}
+    for t in trips:
+        trip_map[_norm_key(t['boat'], t['trip_length'])] = t
+
+    filled = 0
+    for tt in text_trips:
+        key = (tt['boat'].lower(), tt['trip_length'])
+        existing = trip_map.get(key)
+        if existing is None:
+            continue  # boat not in today's structured table — skip
+        if existing.get('trophy_count', 0) > 0:
+            continue  # structured data already has real counts
+        for sp in P.TRACKED_SPECIES:
+            existing[sp.lower()] = tt[sp.lower()] if sp.lower() in tt else tt.get(sp, 0)
+        existing['trophy_count']             = tt['trophy_count']
+        existing['trophy_per_angler']        = tt['trophy_per_angler']
+        existing['trophy_per_angler_per_day'] = tt['trophy_per_angler_per_day']
+        existing['full_catch']               = tt['full_catch']
+        existing['source']                   = tt['source']
+        existing['is_preliminary']           = tt['is_preliminary']
+        existing['written_text']             = tt.get('written_text')
+        existing['reported_at']              = tt.get('reported_at')
+        log.info('calledin_fill [%s]: %s %s — %s',
+                 src.name, tt['boat'], tt['trip_length'],
+                 (tt.get('written_text') or '')[:60])
+        filled += 1
+
+    return filled
+
 
 _FINAL_KEYWORDS = [
     'returned', 'returned home', 'docked', 'back at the dock',

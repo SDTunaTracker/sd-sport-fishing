@@ -14,9 +14,11 @@ from datetime import date
 # Canonical bucket -> length in days. Sub-3/4-day buckets are listed so we can
 # IDENTIFY them as half-day (in order to exclude), not include them.
 TRIP_LENGTHS_DAYS = {
-    "Twilight":  0.25,
-    "Half Day":  0.5,
-    "3/4 Day":   0.75,
+    "Twilight":    0.25,
+    "Half Day":    0.5,
+    "Half Day AM": 0.5,
+    "Half Day PM": 0.5,
+    "3/4 Day":     0.75,
     "Full Day":  0.75,
     "Overnight": 1.0,
     "1.5 Day":   1.5,
@@ -48,6 +50,10 @@ def parse_trip_length(raw: str) -> tuple[str | None, float | None]:
     # Check fractional-day labels BEFORE the numbered-day loop.
     # "1/2 day" contains "2 day" and "3/4 day" contains "4 day" — both would be
     # mis-parsed by the loop below because "/" isn't excluded by the lookbehind.
+    if re.search(r"\bhalf\s*day\s+am\b", s):
+        return "Half Day AM", 0.5
+    if re.search(r"\bhalf\s*day\s+pm\b", s):
+        return "Half Day PM", 0.5
     if re.search(r"\b1/2\s*day\b|\bhalf\s*day\b", s):
         return "Half Day", 0.5
     if re.search(r"\b3/4\s*day\b", s):
@@ -144,6 +150,10 @@ _EXTENDED_ALIASES: dict[str, str] = {
     "white seabass": "White Sea Bass",
     "wsb": "White Sea Bass",
     "california white seabass": "White Sea Bass",
+    # Mixed-bag variants seen in narrative reports ("20 mixed Rockfish")
+    "mixed rockfish": "Rockfish",
+    "mixed rock": "Rockfish",
+    "mixed bass": "Calico Bass",
     # Sculpin and Cabezon map to Rockfish (same bottom ecosystem)
     "sculpin": "Rockfish",
     "california scorpionfish": "Rockfish",
