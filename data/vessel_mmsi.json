@@ -79,8 +79,24 @@
     "338425851": {
       "name": "Fortune",
       "landing": "Fisherman's Landing"
+    },
+    "367655460": {
+      "name": "Native Sun",
+      "landing": "22nd Street Landing"
+    },
+    "368352260": {
+      "name": "Constitution",
+      "landing": "Fisherman's Landing"
+    },
+    "319160000": {
+      "name": "Islander",
+      "landing": "Fisherman's Landing"
+    },
+    "366746210": {
+      "name": "Grande",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-05-30T15:34:52.408164+00:00",
-  "_vessel_count": 18
+  "_last_discover_run": "2026-05-31T01:40:58.536547+00:00",
+  "_vessel_count": 22
 }
