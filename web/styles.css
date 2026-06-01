@@ -4675,3 +4675,21 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 @media (max-width: 640px) {
   .rating-legend-note { display: none; }
 }
+
+/* ── Rating pill badges (Today's Report table) ───────────────────────────── */
+/* WCAG AA: all pairs ≥ 4.5:1 contrast — dark text on light tinted background */
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font: 600 10px/14px var(--ss-font-sans);
+  white-space: nowrap;
+}
+.rb-fire  { background: rgba(34, 197,  94, 0.15); color: #14532D; }
+.rb-above { background: rgba(16, 185, 129, 0.12); color: #065F46; }
+.rb-avg   { background: rgba(148,163, 184, 0.15); color: #334155; }
+.rb-below { background: rgba(251,191,  36, 0.15); color: #78350F; }
+.rb-slow  { background: rgba(248,113, 113, 0.15); color: #9B1C1C; }
+.rb-new   { background: rgba(148,163, 184, 0.12); color: #475569; }

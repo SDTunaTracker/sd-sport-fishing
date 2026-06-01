@@ -254,8 +254,9 @@ const RATINGS = {
 
 function RatingBadge({ ratingKey }) {
   const r = RATINGS[ratingKey] || RATINGS.new;
+  const key = RATINGS[ratingKey] ? ratingKey : 'new';
   return (
-    <span style={{ color: r.color, fontWeight: 600, whiteSpace: 'nowrap', fontSize: 11 }}>
+    <span className={`rating-badge rb-${key}`}>
       {r.emoji} {r.short}
     </span>
   );
@@ -733,7 +734,7 @@ function HomeRatingBadge({ ratingKey }) {
     above: { bg: '#BBF7D0', color: '#14532D', text: 'Above Avg' },
     avg:   { bg: '#E2E8F0', color: '#334155', text: 'Average'   },
     below: { bg: '#FDE68A', color: '#78350F', text: 'Below Avg' },
-    slow:  { bg: '#E2E8F0', color: '#334155', text: 'Slow'      },
+    slow:  { bg: '#FEE2E2', color: '#9B1C1C', text: 'Slow'      },
     new:   { bg: '#E2E8F0', color: '#334155', text: 'New'       },
   };
   const r = MAP[ratingKey] || MAP.new;
