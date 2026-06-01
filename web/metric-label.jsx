@@ -25,7 +25,11 @@ function MetricLabel({ name, tooltip, learnMoreLink }) {
       <button
         className="metric-info-icon"
         onClick={e => { e.stopPropagation(); setShow(s => !s); }}
+        onFocus={() => setShow(true)}
+        onBlur={() => setShow(false)}
+        onKeyDown={e => { if (e.key === 'Escape') { setShow(false); e.currentTarget.blur(); } }}
         aria-label={`What is ${name}?`}
+        aria-expanded={show}
       >ⓘ</button>
       {show && (
         <div className="metric-tooltip">

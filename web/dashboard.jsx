@@ -261,6 +261,25 @@ function RatingBadge({ ratingKey }) {
   );
 }
 
+const RATING_ORDER = ['fire', 'above', 'avg', 'below', 'slow'];
+
+function RatingLegend() {
+  return (
+    <div className="rating-legend" aria-label="Rating legend">
+      <span className="rating-legend-label">Rating:</span>
+      {RATING_ORDER.map(key => {
+        const r = RATINGS[key];
+        return (
+          <span key={key} className="rating-legend-item" style={{ color: r.color }}>
+            {r.emoji} {r.short}
+          </span>
+        );
+      })}
+      <span className="rating-legend-note">vs. same-length trips · last 30 days</span>
+    </div>
+  );
+}
+
 function fmtDate(iso) {
   const [y, m, d] = iso.split('-');
   return `${+m}/${+d}/${String(+y).slice(-2)}`;
@@ -536,7 +555,7 @@ function TodayCatch({ navigate, settings, regions }) {
             <span className="sp-col" style={{color: SPECIES_COLORS.Dorado}}>Dorado</span>
             <span className="trophy-col">Tuna</span>
             <span className="anglers-col">Anglers</span>
-            <span>TPA/Day</span>
+            <MetricLabel name="TPA/Day" tooltip="Tuna Per Angler per Day — normalizes catches across trip lengths so a 1-day local trip and a 3-day offshore trip are on the same scale. Higher is better." />
             <span className="rating-col">Rating</span>
           </div>
           {returnedBoats.map((b, i) => {
@@ -581,6 +600,7 @@ function TodayCatch({ navigate, settings, regions }) {
               </div>
             );
           })}
+          <RatingLegend />
         </Panel>
       ) : null}
 
