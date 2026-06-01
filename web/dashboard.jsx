@@ -505,7 +505,7 @@ function TodayCatch({ navigate, settings, regions }) {
     <Fragment>
       <div className="today-banner">
         <div className="today-left">
-          <div className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</div>
+          <h2 className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</h2>
           <div className="today-date">{fmtDate(selectedDate)}</div>
           {timeStr && (
             <div style={{fontSize:11, color:'#94A3B8', marginTop:2, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap'}}>
@@ -775,9 +775,9 @@ function TopPerformersSection({ navigate, regions }) {
     <div className="home-section home-tp-section">
       <div className="home-report-hd">
         <div>
-          <div className="home-report-title">
+          <h2 className="home-report-title">
             This Month's Top Performers
-          </div>
+          </h2>
           <div className="home-report-sub">
             Boats in the top 25% of comparable same-length trips · last 30 days
           </div>
@@ -899,11 +899,11 @@ function HomeView({ navigate, settings, regions }) {
       {/* ── FEATURE CARDS ─────────────────────────────────────────────── */}
       <div className="home-cards">
         <div className="home-card" onClick={() => navigate('analytics', { subtab: 'overview' })}>
-          <div className="home-card-title">Analytics <span className="home-card-arrow">→</span></div>
+          <h2 className="home-card-title">Analytics <span className="home-card-arrow">→</span></h2>
           <div className="home-card-desc">Boat leaderboards, head-to-head &amp; 11 years of trends</div>
         </div>
         <div className="home-card" onClick={() => navigate('tripplanner')}>
-          <div className="home-card-title">Trip Planner <span className="home-card-arrow">→</span></div>
+          <h2 className="home-card-title">Trip Planner <span className="home-card-arrow">→</span></h2>
           <div className="home-card-desc">Compare &amp; find the best upcoming trips with open spots</div>
         </div>
       </div>
@@ -915,7 +915,7 @@ function HomeView({ navigate, settings, regions }) {
       <div className="home-section">
         <div className="home-report-hd">
           <div>
-            <div className="home-report-title">Today's Report</div>
+            <h2 className="home-report-title">Today's Report</h2>
             <div className="home-report-sub">
               {fmtDate(selectedDate)}{timeStr ? ` · Updated ${timeStr}` : ''}
             </div>

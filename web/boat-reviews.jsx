@@ -519,7 +519,7 @@ function ReviewsSection({ boat, landing }) {
   return (
     <div className="rv-section">
       <div className="rv-section-head">
-        <div className="rv-section-title">Angler Reviews</div>
+        <h2 className="rv-section-title">Angler Reviews</h2>
         <button className="rv-write-btn-primary" onClick={() => setShowModal(true)}>
           ⭐ Write a Review
         </button>
