@@ -87,8 +87,20 @@
     "367185130": {
       "name": "Spirit of Adventure",
       "landing": "H&M Landing"
+    },
+    "368370000": {
+      "name": "Apollo",
+      "landing": "Seaforth Sportfishing"
+    },
+    "366958230": {
+      "name": "Pegasus",
+      "landing": "Fisherman's Landing"
+    },
+    "367655460": {
+      "name": "Native Sun",
+      "landing": "22nd Street Landing"
     }
   },
-  "_last_discover_run": "2026-05-31T19:14:09.502418+00:00",
-  "_vessel_count": 20
+  "_last_discover_run": "2026-06-01T01:46:46.344563+00:00",
+  "_vessel_count": 23
 }
