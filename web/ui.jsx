@@ -513,17 +513,67 @@ function SkeletonRows({ count = 3, height = 42, className = '' }) {
 }
 
 function AppFooter() {
+  const lastScrape = window.SD?.META?.lastScrape;
+  const updatedStr = lastScrape
+    ? new Date(lastScrape).toLocaleString('en-US', {
+        month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+        timeZone: 'America/Los_Angeles', timeZoneName: 'short',
+      })
+    : null;
+
   return (
     <footer className="app-footer">
-      <span className="app-footer-copy">&copy; 2026 The Tuna Tracker</span>
-      <nav className="app-footer-links">
-        <a href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
-           className="app-footer-link">Contact</a>
-        <span className="app-footer-sep">·</span>
-        <span className="app-footer-link muted">About</span>
-        <span className="app-footer-sep">·</span>
-        <span className="app-footer-link muted">Privacy</span>
-      </nav>
+      <div className="app-footer-inner">
+        <div className="app-footer-brand">
+          <div className="app-footer-logo">🎣 The Tuna Tracker</div>
+          <p className="app-footer-blurb">
+            San Diego's most complete sportfishing analytics — daily fish counts,
+            boat leaderboards, and trip stats from all four major landings.
+            38,600+ trips tracked since 2015.
+          </p>
+          {updatedStr && (
+            <div className="app-footer-updated">Data updated {updatedStr}</div>
+          )}
+        </div>
+
+        <div className="app-footer-col">
+          <div className="app-footer-col-head">Navigate</div>
+          <a href="#sd/home"               className="app-footer-nav-link">Home</a>
+          <a href="#sd/today"              className="app-footer-nav-link">Today's Report</a>
+          <a href="#sd/forecast"           className="app-footer-nav-link">Forecast</a>
+          <a href="#sd/charts"             className="app-footer-nav-link">Charts</a>
+          <a href="#sd/boats"              className="app-footer-nav-link">Boats</a>
+          <a href="#sd/analytics/overview" className="app-footer-nav-link">Analytics</a>
+          <a href="#sd/tripplanner"        className="app-footer-nav-link">Trip Planner</a>
+        </div>
+
+        <div className="app-footer-col">
+          <div className="app-footer-col-head">Data Sources</div>
+          <span className="app-footer-data-item">H&amp;M Landing</span>
+          <span className="app-footer-data-item">Fisherman's Landing</span>
+          <span className="app-footer-data-item">Seaforth Sportfishing</span>
+          <span className="app-footer-data-item">Point Loma Sportfishing</span>
+          <div className="app-footer-data-note">
+            Reported daily from{' '}
+            <a href="https://fishcounts.com" target="_blank" rel="noopener noreferrer"
+               className="app-footer-ext-link">fishcounts.com</a>{' '}
+            &amp; landing sites.
+          </div>
+        </div>
+      </div>
+
+      <div className="app-footer-bottom">
+        <span>&copy; 2026 The Tuna Tracker</span>
+        <nav className="app-footer-links">
+          <a href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
+             className="app-footer-link">Contact</a>
+          <span className="app-footer-sep">·</span>
+          <span className="app-footer-link muted">About</span>
+          <span className="app-footer-sep">·</span>
+          <span className="app-footer-link muted">Privacy</span>
+        </nav>
+      </div>
     </footer>
   );
 }
