@@ -4645,6 +4645,51 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   }
 }
 
+/* ── P1-A: Microinteractions ─────────────────────────────────────────────── */
+
+/* Button: visible focus ring (keyboard nav) + subtle press state */
+.btn:focus-visible {
+  outline: 2px solid var(--tb-accent);
+  outline-offset: 2px;
+}
+.btn:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+
+/* Nav tabs: smooth color + underline transition + hover state */
+.tabbar a {
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.tabbar a:hover {
+  color: var(--tb-slate);
+}
+.tabbar a:focus-visible {
+  outline: 2px solid var(--tb-accent);
+  outline-offset: -2px;
+  border-radius: 3px;
+}
+
+/* Leaderboard bar rows: hover highlight (they're cursor: pointer but had no bg) */
+.bar-row {
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+.bar-row:hover {
+  background: var(--tb-foam);
+}
+
+/* Respect prefers-reduced-motion — collapse all transitions/animations to instant */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Rating legend (below Today's Report table) ──────────────────────────── */
 .rating-legend {
   display: flex;
