@@ -502,6 +502,16 @@ function OcLaComingSoon({ onSwitchRegion }) {
   );
 }
 
+function SkeletonRows({ count = 3, height = 42, className = '' }) {
+  return (
+    <div className={`skel-block${className ? ' ' + className : ''}`} aria-hidden="true" aria-busy="true">
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} className="skel-shimmer skel-row" style={height !== 42 ? { height } : undefined} />
+      ))}
+    </div>
+  );
+}
+
 function AppFooter() {
   return (
     <footer className="app-footer">
@@ -520,6 +530,6 @@ function AppFooter() {
 
 Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
-  AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel,
+  AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel, SkeletonRows,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
 });

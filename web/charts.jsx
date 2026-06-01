@@ -480,7 +480,7 @@ function exportWaypoints(waypoints, format) {
 
 function TidesPanel({ data, loading }) {
   if (loading) {
-    return <div className="tides-panel"><div className="tides-loading">Fetching tide data from NOAA...</div></div>;
+    return <div className="tides-panel"><SkeletonRows count={4} height={28} /></div>;
   }
   if (!data || !data.predictions || data.predictions.length === 0) {
     var err = data && data.error ? data.error.message : 'Unavailable';
