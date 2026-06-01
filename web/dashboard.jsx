@@ -576,7 +576,10 @@ function TodayCatch({ navigate, settings, regions }) {
                   <span className="sp-col" style={{fontWeight: b.Dorado > 0 ? 600 : 400, color: b.Dorado > 0 ? SPECIES_COLORS.Dorado : 'var(--tb-gray-3)'}}>{fmt.n(b.Dorado)}</span>
                   <span className="trophy-col" style={{fontWeight:600, color:'var(--tb-ink)'}}>{fmt.n(b.totalTuna)}</span>
                   <span className="anglers-col">{fmt.n(b.anglers)}</span>
-                  <span style={{fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>{fmt.tpa(b.trophyPerAnglerPerDay)}</span>
+                  <span style={{display:'inline-flex', alignItems:'center', gap:4, fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>
+                    {fmt.tpa(b.trophyPerAnglerPerDay)}
+                    {i === 0 && <span className="top-boat-chip" aria-label="Top boat by TPA/Day">★ Top</span>}
+                  </span>
                   <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
                   {hasFc && (
                     <span className="catch-expand-btn" title="Full catch"
@@ -961,10 +964,10 @@ function HomeView({ navigate, settings, regions }) {
                       color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)',
                       fontWeight: b.Bluefin > 0 ? 600 : 400,
                     }}>{fmt.n(b.Bluefin)}</td>
-                    <td style={{
-                      fontWeight: 700,
-                      color: i === 0 ? '#38BDF8' : 'var(--tb-ink)',
-                    }}>{fmt.tpa(b.trophyPerAnglerPerDay)}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--tb-ink)' }}>
+                      {fmt.tpa(b.trophyPerAnglerPerDay)}
+                      {i === 0 && <span className="top-boat-chip" aria-label="Top boat by TPA/Day">★ Top</span>}
+                    </td>
                     <td><HomeRatingBadge ratingKey={b.ratingKey}/></td>
                   </tr>
                 ))}

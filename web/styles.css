@@ -4693,3 +4693,17 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .rb-below { background: rgba(251,191,  36, 0.15); color: #78350F; }
 .rb-slow  { background: rgba(248,113, 113, 0.15); color: #9B1C1C; }
 .rb-new   { background: rgba(148,163, 184, 0.12); color: #475569; }
+
+/* ── Top-boat chip (explains the #1-ranked row highlight) ────────────────── */
+.top-boat-chip {
+  display: inline-flex;
+  align-items: center;
+  font: 600 9px/12px var(--ss-font-sans);
+  background: rgba(251, 191, 36, 0.18);
+  color: #d97706;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  padding: 1px 5px;
+  border-radius: 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
