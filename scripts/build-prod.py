@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 version    = sys.argv[1] if len(sys.argv) > 1 else "prod"
 build_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-build_sha  = os.environ.get("GITHUB_SHA", "local")[:7]
+build_sha  = os.environ.get("GITHUB_SHA")
 
 # Use abspath(__file__) so this works regardless of how/where the script is invoked.
 here = os.path.dirname(os.path.abspath(__file__))
@@ -39,11 +39,16 @@ text = re.sub(
 text = re.sub(r"\?v=[^\"'\s]+", f"?v={version}", text)
 
 # 4. Inject build metadata meta tags after <meta charset="utf-8">
-meta_tags = (
-    f'\n<meta name="build-time" content="{build_time}">'
-    f'\n<meta name="build-commit" content="{build_sha}">'
-)
-text = text.replace('<meta charset="utf-8">', f'<meta charset="utf-8">{meta_tags}', 1)
+# Strip any previously-injected build tags so re-runs never stack duplicates.
+text = re.sub(r'\n?<meta name="build-(?:time|commit)"[^>]*>', '', text)
+if build_sha:
+    # Only inject on the CI runner where GITHUB_SHA is set; local builds
+    # leave no build-commit tag so committed source stays clean.
+    meta_tags = (
+        f'\n<meta name="build-time" content="{build_time}">'
+        f'\n<meta name="build-commit" content="{build_sha[:7]}">'
+    )
+    text = text.replace('<meta charset="utf-8">', f'<meta charset="utf-8">{meta_tags}', 1)
 
 open(path, "w", encoding="utf-8").write(text)
 
@@ -51,7 +56,8 @@ open(path, "w", encoding="utf-8").write(text)
 assert "babel.min.js" not in text, "PATCH FAILED: Babel script tag not removed"
 assert 'type="text/babel"' not in text, "PATCH FAILED: type=text/babel still present"
 assert f"?v={version}" in text, "PATCH FAILED: version string not stamped"
-assert f'content="{build_time}"' in text, "PATCH FAILED: build-time meta not injected"
-assert f'content="{build_sha}"' in text, "PATCH FAILED: build-commit meta not injected"
+if build_sha:
+    assert f'content="{build_time}"' in text, "PATCH FAILED: build-time meta not injected"
+    assert f'content="{build_sha[:7]}"' in text, "PATCH FAILED: build-commit meta not injected"
 
-print(f"OK: patched web/index.html (version={version}, commit={build_sha}, time={build_time})")
+print(f"OK: patched web/index.html (version={version}, commit={build_sha[:7] if build_sha else 'none'}, time={build_time})")
