@@ -1,6 +1,77 @@
 // Analytics view — full filter controls, KPIs, charts, leaderboard
 
-// Mobile-only filter modal — local state, syncs to real filters on Apply
+// ── URL ↔ analytics-filter serialization ─────────────────────────────────────
+
+function _aFiltersToSearch(f) {
+  const df = window.DEFAULT_FILTERS;
+  const p  = new URLSearchParams();
+  const s  = (v) => Array.isArray(v) ? v.join(',') : String(v);
+  if (f.year       !== df.year)       p.set('year',    s(f.year));
+  if (f.month      !== df.month)      p.set('month',   s(f.month));
+  if (f.landing    !== df.landing)    p.set('landing', s(f.landing));
+  if (f.boat       !== df.boat)       p.set('boat',    s(f.boat));
+  if (f.tripLength !== df.tripLength) p.set('tripLen', s(f.tripLength));
+  if (f.species    !== df.species)    p.set('species', s(f.species));
+  if (f.minTrips   !== df.minTrips)   p.set('min',     String(f.minTrips));
+  return p.toString();
+}
+
+function _aSearchToFilters(search) {
+  const df = window.DEFAULT_FILTERS;
+  const p  = new URLSearchParams(search);
+  const r  = (k) => { const v = p.get(k); return v == null ? null : v.includes(',') ? v.split(',') : v; };
+  return {
+    ...df,
+    year:       r('year')    ?? df.year,
+    month:      r('month')   ?? df.month,
+    landing:    r('landing') ?? df.landing,
+    boat:       r('boat')    ?? df.boat,
+    tripLength: r('tripLen') ?? df.tripLength,
+    species:    r('species') ?? df.species,
+    minTrips:   p.has('min') ? +p.get('min') : df.minTrips,
+  };
+}
+
+// Hook: filter state owned by the analytics section, synced to the URL query
+// string so filters survive subtab switches and page refresh. Propagates
+// changes up via setPropFilters so the TweaksPanel quick-filters stay in sync.
+function useAnalyticsFilters(propFilters, setPropFilters) {
+  const { useState, useEffect, useRef, useCallback } = React;
+
+  const [filters, setFiltersRaw] = useState(() =>
+    window.location.search
+      ? _aSearchToFilters(window.location.search)
+      : { ...propFilters }
+  );
+
+  const prevPropRef = useRef(propFilters);
+
+  // Accept field-level changes driven externally (e.g. TweaksPanel year/species).
+  // Only applies the delta so URL-driven fields aren't overwritten wholesale.
+  useEffect(() => {
+    const prev = prevPropRef.current;
+    if (propFilters === prev) return;
+    prevPropRef.current = propFilters;
+    const delta = {};
+    Object.keys(propFilters).forEach(k => { if (propFilters[k] !== prev[k]) delta[k] = propFilters[k]; });
+    if (Object.keys(delta).length) setFiltersRaw(f => ({ ...f, ...delta }));
+  }, [propFilters]);
+
+  const setFilters = useCallback((next) => {
+    setFiltersRaw(prev => {
+      const f = typeof next === 'function' ? next(prev) : next;
+      const qs = _aFiltersToSearch(f);
+      history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+      prevPropRef.current = f; // prevent the effect above from re-echoing this update
+      setPropFilters(f);
+      return f;
+    });
+  }, [setPropFilters]);
+
+  return [filters, setFilters];
+}
+
+// ── Mobile-only filter modal — local state, syncs to real filters on Apply
 function AnalyticsMobileFilterModal({ open, onClose, filters, onApply, regions }) {
   const { useState, useEffect, useMemo } = React;
   const df = window.DEFAULT_FILTERS;
@@ -163,8 +234,9 @@ function StreakTracker({ navigate, regions }) {
   );
 }
 
-function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
+function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
   const { useMemo, useState } = React;
+  const [filters, setFilters] = useAnalyticsFilters(propFilters, setPropFilters);
 
   const SUBTABS = [
     { id: 'overview',    label: 'Overview' },
