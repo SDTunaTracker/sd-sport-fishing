@@ -4866,3 +4866,208 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   vertical-align: middle;
   white-space: nowrap;
 }
+
+/* ── AnalyticsFilterBar ──────────────────────────────────────────────────── */
+.afb-wrap { position: relative; }
+
+.afb-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 36px;
+}
+
+.afb-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font: 600 12px/16px var(--ss-font-sans);
+  border: 1px solid var(--tb-border-2);
+  background: #fff;
+  color: var(--tb-slate);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.afb-toggle:hover { border-color: var(--tb-gray-2); color: var(--tb-ink); }
+.afb-toggle.active { border-color: var(--tb-lime); color: var(--tb-ink); }
+.afb-toggle.open { background: var(--tb-foam); border-color: var(--tb-gray-2); }
+
+.afb-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.afb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px 0 10px;
+  border-radius: 12px;
+  background: var(--tb-accent-l);
+  color: var(--tb-accent-d);
+  font: 600 11px/16px var(--ss-font-sans);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.afb-chip-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--tb-accent-d);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+}
+.afb-chip-x:hover { opacity: 1; }
+
+.afb-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: 500 12px/16px var(--ss-font-sans);
+  color: var(--tb-slate);
+  padding: 0 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.afb-clear:hover { color: var(--tb-ink); text-decoration: underline; }
+
+/* Desktop: popover panel */
+.afb-overlay { display: none; }
+
+.afb-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 300;
+  background: #fff;
+  border: 1px solid var(--tb-border-2);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(27, 43, 59, 0.15);
+  min-width: 280px;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.afb-panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--tb-border-2);
+}
+
+.afb-panel-title {
+  font: 700 13px/18px var(--ss-font-sans);
+  color: var(--tb-ink);
+}
+
+.afb-panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--tb-slate);
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+.afb-panel-close:hover { color: var(--tb-ink); }
+
+.afb-panel-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+/* Make MultiSelect dropdowns fill the full panel width */
+.afb-panel-body .multiselect { width: 100%; }
+.afb-panel-body .multiselect-trigger { width: 100%; box-sizing: border-box; }
+
+.afb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.afb-field-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+.afb-field-inline .afb-label { flex: 1; }
+
+.afb-label {
+  font: 600 11px/14px var(--ss-font-sans);
+  color: var(--tb-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.afb-number {
+  width: 72px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--tb-border-2);
+  border-radius: 6px;
+  background: #fff;
+  font: 500 12px/16px var(--ss-font-sans);
+  color: var(--tb-ink);
+}
+.afb-number:focus { outline: none; border-color: var(--tb-accent-d); }
+
+.afb-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--tb-border-2);
+}
+
+/* Mobile: bottom sheet */
+@media (max-width: 768px) {
+  .afb-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(27, 43, 59, 0.45);
+    z-index: 400;
+  }
+
+  .afb-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    z-index: 401;
+    max-height: 85vh;
+  }
+
+  .afb-panel-body {
+    max-height: calc(85vh - 108px);
+  }
+}
