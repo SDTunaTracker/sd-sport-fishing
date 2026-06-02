@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 version    = sys.argv[1] if len(sys.argv) > 1 else "prod"
 build_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-build_sha  = os.environ.get("GITHUB_SHA")
+build_sha  = os.environ.get("GITHUB_SHA") or os.environ.get("CF_PAGES_COMMIT_SHA")
 
 # Use abspath(__file__) so this works regardless of how/where the script is invoked.
 here = os.path.dirname(os.path.abspath(__file__))

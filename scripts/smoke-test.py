@@ -80,9 +80,8 @@ if check_commit:
     deployed_sha = m.group(1) if m else None
 
     if not deployed_sha:
-        # Cloudflare Pages doesn't run build-prod.py so tag won't exist there
-        print(f"  WARN  build-commit meta not found at {base}")
-        print(f"        (expected if Cloudflare Pages has no build step)")
+        print(f"  FAIL  build-commit meta not found at {base}")
+        fail = True
     elif head_sha and not deployed_sha.startswith(head_sha):
         print(f"  FAIL  deployed commit {deployed_sha} != HEAD {head_sha}")
         fail = True
