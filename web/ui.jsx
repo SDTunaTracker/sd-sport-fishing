@@ -74,7 +74,17 @@ const REGION_OPTIONS = [
 ];
 const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
 
-function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirect }) {
+// Returns an onClick that lets real <a> nav links work as SPA navigation while
+// preserving native browser behavior for modified clicks (new tab, etc.).
+function spaLinkHandler(fn) {
+  return function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+    e.preventDefault();
+    fn();
+  };
+}
+
+function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onRegionsDirect }) {
   const [menuState, setMenuState] = React.useState('closed'); // 'closed' | 'open' | 'closing'
   const [regionOpen, setRegionOpen] = React.useState(false);
   const dropdownRef = React.useRef(null);
@@ -171,14 +181,17 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
               </div>
             )}
           </div>
-          {/* Nav tabs — desktop only */}
+          {/* Nav tabs — desktop only. Real <a href> links so search engines can
+              crawl them; onClick handles in-app SPA navigation. */}
           <div className="header-nav">
             {NAV.map(t => (
-              <div key={t.id}
-                   className={`tab${active === t.id ? ' sel' : ''}`}
-                   onClick={() => handleNavItem(t.id)}>
+              <a key={t.id}
+                 href={hrefFor ? hrefFor(t.id) : undefined}
+                 className={`tab${active === t.id ? ' sel' : ''}`}
+                 aria-current={active === t.id ? 'page' : undefined}
+                 onClick={spaLinkHandler(() => handleNavItem(t.id))}>
                 <i className={`fa-solid ${t.icon}`}></i>{t.label}
-              </div>
+              </a>
             ))}
           </div>
           {/* Auth button + hamburger — always grouped on the right */}
@@ -206,12 +219,14 @@ function AppHeader({ active, onNavigate, regions, onRegionToggle, onRegionsDirec
               </span>
             </div>
             {NAV.map(t => (
-              <div key={t.id}
-                   className={`mobile-menu-item${active === t.id ? ' sel' : ''}`}
-                   onClick={() => handleNavItem(t.id)}>
+              <a key={t.id}
+                 href={hrefFor ? hrefFor(t.id) : undefined}
+                 className={`mobile-menu-item${active === t.id ? ' sel' : ''}`}
+                 aria-current={active === t.id ? 'page' : undefined}
+                 onClick={spaLinkHandler(() => handleNavItem(t.id))}>
                 <i className={`fa-solid ${t.icon}`}></i>
                 <span>{t.label}</span>
-              </div>
+              </a>
             ))}
             <div className="mobile-menu-divider"></div>
             <a className="mobile-menu-item"
@@ -539,13 +554,13 @@ function AppFooter() {
 
         <div className="app-footer-col">
           <div className="app-footer-col-head">Navigate</div>
-          <a href="#sd/home"               className="app-footer-nav-link">Home</a>
-          <a href="#sd/today"              className="app-footer-nav-link">Today's Report</a>
-          <a href="#sd/forecast"           className="app-footer-nav-link">Forecast</a>
-          <a href="#sd/charts"             className="app-footer-nav-link">Charts</a>
-          <a href="#sd/boats"              className="app-footer-nav-link">Boats</a>
-          <a href="#sd/analytics/overview" className="app-footer-nav-link">Analytics</a>
-          <a href="#sd/tripplanner"        className="app-footer-nav-link">Trip Planner</a>
+          <a href="/sd/home"               className="app-footer-nav-link">Home</a>
+          <a href="/sd/today"              className="app-footer-nav-link">Today's Report</a>
+          <a href="/sd/forecast"           className="app-footer-nav-link">Forecast</a>
+          <a href="/sd/charts"             className="app-footer-nav-link">Charts</a>
+          <a href="/sd/boats"              className="app-footer-nav-link">Boats</a>
+          <a href="/sd/analytics/overview" className="app-footer-nav-link">Analytics</a>
+          <a href="/sd/tripplanner"        className="app-footer-nav-link">Trip Planner</a>
         </div>
 
         <div className="app-footer-col">

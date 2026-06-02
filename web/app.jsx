@@ -8,9 +8,12 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "includeZero": true
 }/*EDITMODE-END*/;
 
-// URL-hash routing: the hash is the source of truth for the active route,
-// so refreshing or bookmarking keeps you on the same page.
-// Format: #<region-prefix>/<view>[/<params>]  e.g. #sd/today, #ocla/analytics/overview
+// Path-based routing: the URL pathname is the source of truth for the active
+// route (e.g. /sd/today, /sd/analytics/overview, /sd/boat/<name>), so it is
+// crawlable by search engines and each view is its own real URL.
+// Legacy #hash URLs (old bookmarks, chatbot deep links) are auto-upgraded to
+// clean paths for backward compatibility.
+// Format: /<region-prefix>/<view>[/<params>]  e.g. /sd/today, /ocla/analytics/overview
 const HASH_VIEWS = {
   home: 'home', today: 'today', tripplanner: 'tripplanner',
   settings: 'account', admin: 'admin', forecast: 'forecast',
@@ -28,11 +31,15 @@ function extractRegionFromHash(raw) {
   return { regionIds: null, rest: raw };
 }
 
-function routeFromHash() {
-  const raw = window.location.hash.replace(/^#/, '');
+// Parse a route string (no leading '/' or '#'). A trailing ?query is preserved
+// in params.query but ignored for view detection.
+function parseRoute(raw) {
+  if (!raw) return { view: 'home', params: {}, hashRegions: null };
+  const qIdx = raw.indexOf('?');
+  const query = qIdx === -1 ? '' : raw.slice(qIdx + 1);
+  if (qIdx !== -1) raw = raw.slice(0, qIdx);
   const { regionIds, rest } = extractRegionFromHash(raw);
-  if (!rest) return { view: 'home', params: {}, hashRegions: regionIds };
-  if (rest === 'home') return { view: 'home', params: {}, hashRegions: regionIds };
+  if (!rest || rest === 'home') return { view: 'home', params: query ? { query } : {}, hashRegions: regionIds };
   const [seg, ...parts] = rest.split('/');
   const detail = parts.length ? decodeURIComponent(parts.join('/')) : '';
 
@@ -56,11 +63,21 @@ function routeFromHash() {
   if (seg === 'headtohead') return { view: 'analytics', params: { subtab: 'headtohead' },  hashRegions: regionIds };
   if (seg === 'moon')       return { view: 'analytics', params: { subtab: 'moon' },        hashRegions: regionIds };
 
-  if (HASH_VIEWS[seg]) return { view: HASH_VIEWS[seg], params: {}, hashRegions: regionIds };
+  if (HASH_VIEWS[seg]) return { view: HASH_VIEWS[seg], params: query ? { query } : {}, hashRegions: regionIds };
   return { view: 'today', params: {}, hashRegions: regionIds };
 }
 
-function hashFromRoute(view, params = {}, regions = ['san_diego']) {
+// Read the current route from the URL — prefer the pathname; fall back to a
+// legacy #hash so old bookmarked URLs still resolve.
+function rawFromLocation() {
+  const path = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (path) return path + (window.location.search || '');
+  return window.location.hash.replace(/^#/, '');
+}
+function routeFromLocation() { return parseRoute(rawFromLocation()); }
+
+// Build a clean path (e.g. /sd/today) from a route, including the region prefix.
+function pathFromRoute(view, params = {}, regions = ['san_diego']) {
   const prefix = window.regionsToHashPrefix ? window.regionsToHashPrefix(regions) : 'sd';
   let route;
   if (view === 'home') route = 'home';
@@ -69,11 +86,12 @@ function hashFromRoute(view, params = {}, regions = ['san_diego']) {
   else if (view === 'analytics') route = 'analytics/' + (params.subtab || 'overview');
   else if (view === 'boats') route = 'boats';
   else route = view;
-  return prefix + '/' + route;
+  return '/' + prefix + '/' + route;
 }
+window.ttPathFromRoute = pathFromRoute;
 
 function App() {
-  const [route, setRoute] = useS(() => routeFromHash());
+  const [route, setRoute] = useS(() => routeFromLocation());
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
   const [pageContext, setPageContext] = useS({ page: 'today', boat: null, date: null });
@@ -84,7 +102,7 @@ function App() {
   const [regions, setRegions] = useS(() => {
     // Feature flag: OC/LA is not public yet — lock to SD-only.
     if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) return ['san_diego'];
-    const initial = routeFromHash();
+    const initial = routeFromLocation();
     if (initial.hashRegions) return initial.hashRegions;
     try {
       const saved = JSON.parse(localStorage.getItem('tt_regions'));
@@ -148,17 +166,15 @@ function App() {
       : regions[0];
   }, [regions]);
 
-  // Update the region prefix in the URL hash without triggering a hashchange loop.
+  // Keep the URL path in sync with the active route + region prefix. navigate()
+  // already pushes the right path, so this is a no-op except when the region
+  // toggles (which changes the prefix without a navigation).
   useE(() => {
-    const currentHash = window.location.hash.replace(/^#/, '');
-    const { rest } = extractRegionFromHash(currentHash);
-    const prefix = window.regionsToHashPrefix ? window.regionsToHashPrefix(regions) : 'sd';
-    const viewPart = rest || 'today';
-    const newHash = prefix + '/' + viewPart;
-    if (currentHash !== newHash) {
-      history.replaceState(null, '', '#' + newHash);
+    const newPath = pathFromRoute(route.view, route.params || {}, regions);
+    if (window.location.pathname !== newPath) {
+      history.replaceState(null, '', newPath);
     }
-  }, [regions]);
+  }, [regions, route]);
 
   function setRegionsDirect(newRegions) {
     const cleaned = Array.isArray(newRegions) && newRegions.length > 0 ? newRegions : ['san_diego'];
@@ -199,10 +215,10 @@ function App() {
     document.body.classList.toggle('compact', tweaks.density === 'compact');
   }, [tweaks.density]);
 
-  // Keep route in sync when the hash changes; also update regions if hash has prefix.
+  // Keep route in sync with browser navigation (back/forward = popstate) and
+  // bridge any legacy #hash navigation to a clean path.
   useE(() => {
-    const onHashChange = () => {
-      const parsed = routeFromHash();
+    const applyParsed = (parsed) => {
       setRoute({ view: parsed.view, params: parsed.params });
       if (parsed.hashRegions) {
         setRegions(prev => {
@@ -214,8 +230,31 @@ function App() {
         });
       }
     };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    // On mount: if we arrived via a legacy #hash URL, upgrade it to a clean path.
+    if (window.location.hash) {
+      const h = window.location.hash.replace(/^#/, '');
+      if (h) {
+        const p = parseRoute(h);
+        history.replaceState(null, '', pathFromRoute(p.view, p.params, p.hashRegions || regions));
+      }
+    }
+    const onPop = () => applyParsed(routeFromLocation());
+    // Legacy bridge: other code (chatbot, account link) still does
+    // `window.location.hash = '#boat/X'`. Catch it, upgrade to a path, route.
+    const onHash = () => {
+      const h = window.location.hash.replace(/^#/, '');
+      if (!h) return;
+      const parsed = parseRoute(h);
+      history.replaceState(null, '', pathFromRoute(parsed.view, parsed.params, parsed.hashRegions || regions));
+      applyParsed(parsed);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('hashchange', onHash);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      window.removeEventListener('hashchange', onHash);
+    };
   }, []);
 
   // Fire page view tracking on every route change.
@@ -248,12 +287,11 @@ function App() {
   if (route.view === 'admin') return <AdminView />;
 
   const navigate = (view, params = {}) => {
-    const nextHash = hashFromRoute(view, params, regions);
-    if (window.location.hash.replace(/^#/, '') === nextHash) {
-      setRoute({ view, params }); // hash unchanged (e.g. re-click same tab) — update directly
-    } else {
-      window.location.hash = nextHash; // triggers hashchange -> setRoute
+    const nextPath = pathFromRoute(view, params, regions);
+    if (window.location.pathname !== nextPath) {
+      history.pushState(null, '', nextPath); // pushState does not fire popstate
     }
+    setRoute({ view, params });
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
@@ -294,6 +332,7 @@ function App() {
   return (
     <Fragment>
       <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
+                 hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
       <AppFooter/>

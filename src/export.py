@@ -762,13 +762,15 @@ def _write_sitemap(data_js_path: Path, boats: list[dict]) -> None:
         "H&M Landing", "Fisherman's Landing", "Seaforth Sportfishing",
         "Point Loma Sportfishing", "Oceanside Sea Center",
     }
+    # Path-based URLs (crawlable). Each view is a real indexable URL; the static
+    # host serves index.html for these paths via the 404.html SPA fallback.
     entries = [
-        (base + "/",                       "1.0", "daily"),
-        (base + "/#sd/today",              "0.9", "daily"),
-        (base + "/#sd/forecast",           "0.7", "weekly"),
-        (base + "/#sd/boats",              "0.8", "weekly"),
-        (base + "/#sd/analytics/overview", "0.7", "weekly"),
-        (base + "/#sd/tripplanner",        "0.6", "daily"),
+        (base + "/",                      "1.0", "daily"),
+        (base + "/sd/today",              "0.9", "daily"),
+        (base + "/sd/forecast",           "0.7", "weekly"),
+        (base + "/sd/boats",              "0.8", "weekly"),
+        (base + "/sd/analytics/overview", "0.7", "weekly"),
+        (base + "/sd/tripplanner",        "0.6", "daily"),
     ]
     seen: set[str] = set()
     for b in boats:
@@ -777,7 +779,7 @@ def _write_sitemap(data_js_path: Path, boats: list[dict]) -> None:
         if not name or name in seen or landing not in sd_landings:
             continue
         seen.add(name)
-        entries.append((f"{base}/#sd/boat/{quote(name)}", "0.5", "weekly"))
+        entries.append((f"{base}/sd/boat/{quote(name)}", "0.5", "weekly"))
 
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -792,3 +794,4 @@ def _write_sitemap(data_js_path: Path, boats: list[dict]) -> None:
         ]
     lines.append("</urlset>")
     (data_js_path.parent / "sitemap.xml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    # sitemap.xml uses path-based URLs (see entries above) for crawlable routes.

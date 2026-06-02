@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Tuna Tracker</title>
+<!--
+  SPA fallback for static hosting (GitHub Pages / Cloudflare Pages).
+  Deep paths like /sd/boat/Pegasus have no real file on the server, so the host
+  serves this 404 page. We stash the requested path and bounce to "/", where a
+  small snippet in index.html restores it via history.replaceState before React
+  mounts. Net effect: direct links and refreshes on any route load correctly.
+-->
+<script>
+  (function () {
+    try {
+      sessionStorage.setItem('tt_spa_redirect',
+        window.location.pathname + window.location.search + window.location.hash);
+    } catch (e) {}
+    window.location.replace('/');
+  })();
+</script>
+</head>
+<body></body>
+</html>

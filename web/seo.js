@@ -63,13 +63,22 @@
     el.textContent = JSON.stringify(data);
   }
 
+  function setCanonical(url) {
+    var el = document.querySelector('link[rel="canonical"]');
+    if (!el) { el = document.createElement('link'); el.setAttribute('rel', 'canonical'); document.head.appendChild(el); }
+    el.setAttribute('href', url);
+  }
+
   function clearJsonLd(id) { var el = document.getElementById(id); if (el) el.remove(); }
 
   // ── main update ──────────────────────────────────────────────────────────
 
   function update(view, params) {
     params = params || {};
-    var cfg, pageUrl = BASE + '/' + window.location.hash;
+    // Path-based canonical URL (e.g. https://thetunatracker.com/sd/today).
+    var path = window.location.pathname.replace(/\/+$/, '');
+    if (!path) path = '/';
+    var cfg, pageUrl = BASE + path;
 
     if (view === 'boat' && params.boat) {
       cfg = {
@@ -91,6 +100,7 @@
 
     document.title = cfg.title;
     setMeta('description', cfg.desc);
+    setCanonical(pageUrl);
 
     setMeta('og:title',       cfg.title,    'property');
     setMeta('og:description', cfg.desc,     'property');
@@ -117,8 +127,10 @@
     account: 'account', settings: 'account', boat: 'boat', landing: 'landing',
   };
 
-  function updateFromHash() {
-    var raw  = window.location.hash.replace(/^#/, '');
+  function updateFromLocation() {
+    // Prefer the pathname; fall back to a legacy #hash for old URLs.
+    var raw = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+    if (!raw) raw = window.location.hash.replace(/^#/, '');
     var slash = raw.indexOf('/');
     var first = slash === -1 ? raw : raw.slice(0, slash);
     var rest  = PREFIXES[first] && slash !== -1 ? raw.slice(slash + 1) : raw;
@@ -131,14 +143,16 @@
     update(view, params);
   }
 
-  window.addEventListener('hashchange', updateFromHash);
+  // Browser navigation (back/forward) + legacy hash changes.
+  window.addEventListener('popstate', updateFromLocation);
+  window.addEventListener('hashchange', updateFromLocation);
 
   // Primary update: fire from React's route-change useEffect via __updateMetaTags.
   // Fallback: run on DOMContentLoaded (after React's initial mount + any replaceState
-  // calls that don't fire hashchange) and immediately on script load for crawlers.
-  updateFromHash();
+  // calls that don't fire events) and immediately on script load for crawlers.
+  updateFromLocation();
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateFromHash);
+    document.addEventListener('DOMContentLoaded', updateFromLocation);
   }
 
   window.__updateMetaTags = update;
