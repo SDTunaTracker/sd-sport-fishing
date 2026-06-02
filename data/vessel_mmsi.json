@@ -99,8 +99,16 @@
     "367655460": {
       "name": "Native Sun",
       "landing": "22nd Street Landing"
+    },
+    "367038000": {
+      "name": "Ahra-Ahn",
+      "landing": "Long Beach Sportfishing"
+    },
+    "368426460": {
+      "name": "Endeavor",
+      "landing": "Ventura Harbor Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-01T01:46:46.344563+00:00",
-  "_vessel_count": 23
+  "_last_discover_run": "2026-06-02T00:25:09.736232+00:00",
+  "_vessel_count": 25
 }
