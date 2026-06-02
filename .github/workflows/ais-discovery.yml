@@ -50,12 +50,17 @@ jobs:
         run: |
           git config user.name "Tuna Tracker AIS Bot"
           git config user.email "bot@thetunatracker.com"
-          git add data/ais-discoveries.json data/vessel_mmsi.json
+          git add -A
           if git diff --staged --quiet; then
-            echo "No new discoveries to commit"
+            echo "nothing new to commit"
           else
             git commit -m "AIS discovery: $(date -u +%FT%TZ)"
-            git push
+            pushed=0
+            for i in $(seq 1 5); do
+              git pull --rebase origin main && git push origin main && { pushed=1; break; }
+              echo "push race, retry $i"; sleep $((RANDOM % 8 + 3))
+            done
+            [ "$pushed" = 1 ] || { echo "push still failing after retries"; exit 1; }
           fi
 
       - name: Summary
