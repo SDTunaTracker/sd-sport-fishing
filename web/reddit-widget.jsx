@@ -50,10 +50,10 @@ function CommunityReportsWidget() {
   return (
     <div className="rd-widget">
       <div className="rd-widget-head">
-        <div className="rd-widget-title">
+        <h2 className="rd-widget-title">
           <span className="rd-logo">🎣</span>
           From the Community
-        </div>
+        </h2>
         <span className="rd-widget-sub">Recent posts from Reddit</span>
       </div>
       <div className="rd-widget-list">

@@ -1029,7 +1029,7 @@ function SevenDaySection({ inDays, offDays }) {
   return (
     <div className="fc-section-card">
       <div className="fc-section-hd">
-        <span className="fc-section-title">7-Day Outlook</span>
+        <h2 className="fc-section-title">7-Day Outlook</h2>
         <div className="fc-seg-tabs">
           {['offshore','inshore'].map(t => (
             <button key={t} className={`fc-seg-tab${tab===t?' active':''}`}
@@ -1115,7 +1115,7 @@ function SpeciesTargetSection({ day }) {
 
   return (
     <div className="fc-section-card">
-      <div className="fc-section-title" style={{marginBottom:16}}>What to Target</div>
+      <h2 className="fc-section-title" style={{marginBottom:16}}>What to Target</h2>
       {species.map(({ key, name, color }) => {
         const s = day[key];
         return (

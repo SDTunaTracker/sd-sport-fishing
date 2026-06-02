@@ -180,7 +180,7 @@ function HotspotsWidget() {
   return (
     <div className="cm-widget">
       <div className="cm-widget-head">
-        <div className="cm-widget-title">📍 Where They're Biting</div>
+        <h2 className="cm-widget-title">📍 Where They're Biting</h2>
         <div className="cm-widget-sub">Location mentions weighted by report quality</div>
       </div>
       <div className="cm-hotspot-list">
@@ -221,7 +221,7 @@ function WeeklySummaryWidget() {
       <div className="cm-widget-head cm-weekly-head" onClick={() => setCollapsed(c => !c)}
            style={{ cursor: 'pointer' }}>
         <div>
-          <div className="cm-widget-title">📋 Week in Review — {weekLabel}</div>
+          <h2 className="cm-widget-title">📋 Week in Review — {weekLabel}</h2>
           <div className="cm-widget-sub">
             {ws.report_count} reports · Community mood: {ws.mood} {moodEmoji}
           </div>
@@ -406,7 +406,7 @@ function StillFishingSection({ trips }) {
     <div className="still-fishing-section">
       <div className="sf-header">
         <div>
-          <div className="sf-title">Still Fishing</div>
+          <h3 className="sf-title">Still Fishing</h3>
           <div className="sf-subtitle">Mid-trip reports — final counts post when boats return</div>
         </div>
       </div>
