@@ -19,7 +19,6 @@ function MoonView({ filters, setFilters, navigate, regions }) {
           <div className="sub">Lunar phase correlation with catch rates across {fmt.n(trips.length)} trips</div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       <Panel title="Moon Phase Correlation"
              meta={`Avg ${speciesLabel.toLowerCase()}/angler by lunar phase`}
              className="moon-panel"

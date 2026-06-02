@@ -71,91 +71,6 @@ function useAnalyticsFilters(propFilters, setPropFilters) {
   return [filters, setFilters];
 }
 
-// ── Mobile-only filter modal — local state, syncs to real filters on Apply
-function AnalyticsMobileFilterModal({ open, onClose, filters, onApply, regions }) {
-  const { useState, useEffect, useMemo } = React;
-  const df = window.DEFAULT_FILTERS;
-
-  const [year,       setYear]       = useState(filters.year);
-  const [month,      setMonth]      = useState(filters.month);
-  const [landing,    setLanding]    = useState(filters.landing);
-  const [boat,       setBoat]       = useState(filters.boat);
-  const [tripLength, setTripLength] = useState(filters.tripLength);
-  const [species,    setSpecies]    = useState(filters.species);
-  const [minTrips,   setMinTrips]   = useState(filters.minTrips);
-
-  useEffect(() => {
-    if (open) {
-      setYear(filters.year); setMonth(filters.month); setLanding(filters.landing);
-      setBoat(filters.boat); setTripLength(filters.tripLength);
-      setSpecies(filters.species); setMinTrips(filters.minTrips);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = e => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-
-  const handleReset = () => {
-    setYear(df.year); setMonth(df.month); setLanding(df.landing);
-    setBoat(df.boat); setTripLength(df.tripLength);
-    setSpecies(df.species); setMinTrips(df.minTrips);
-  };
-
-  const handleApply = () => {
-    onApply({ ...filters, year, month, landing, boat, tripLength, species, minTrips });
-    onClose();
-  };
-
-  if (!open) return null;
-
-  const SL = { font: '600 11px/14px var(--ss-font-sans)', textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--tb-slate)', marginBottom: 8 };
-  const YEARS = [...new Set(window.SD.TRIPS.map(t => t.year))].sort((a, b) => b - a).map(y => ({ value: String(y), label: String(y) }));
-  const _rl = (() => {
-    if (!regions || !window.getEffectiveRegion) return null;
-    const eff = window.getEffectiveRegion(regions);
-    return window.getLandingsForRegion ? window.getLandingsForRegion(eff) : null;
-  })();
-  const landingOptions = window.SD.LANDINGS.filter(l => !_rl || _rl.includes(l));
-  const boatOptions = [...window.SD.BOATS].filter(b => !_rl || _rl.includes(b.landing)).sort((a, b) => a.name.localeCompare(b.name)).map(b => b.name);
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2 style={{ margin: 0, font: '600 18px/22px var(--ss-font-sans)' }}>Filters</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
-        </div>
-        <div className="modal-body" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20, maxHeight: '72vh', overflowY: 'auto' }}>
-          <div><div style={SL}>Year</div>
-            <MultiSelect options={YEARS} value={year} onChange={setYear} allLabel="All Years"/></div>
-          <div><div style={SL}>Month</div>
-            <MultiSelect options={MONTH_NAMES.map((m, i) => ({ value: String(i + 1), label: m }))}
-                         value={month} onChange={setMonth} allLabel="All Months"/></div>
-          <div><div style={SL}>Landing</div>
-            <MultiSelect options={landingOptions} value={landing} onChange={setLanding} allLabel="All Landings"/></div>
-          <div><div style={SL}>Boat</div>
-            <MultiSelect options={boatOptions} value={boat} onChange={setBoat} allLabel="All Boats"/></div>
-          <div><div style={SL}>Trip Length</div>
-            <MultiSelect options={window.SD.TRIP_LENGTHS} value={tripLength} onChange={setTripLength} allLabel="All Lengths"/></div>
-          <div><div style={SL}>Species</div>
-            <MultiSelect options={window.SD.SPECIES} value={species} onChange={setSpecies} allLabel="All Tuna"/></div>
-          <div><div style={SL}>Min Trips</div>
-            <input type="number" min="0" max="100" value={minTrips} onChange={e => setMinTrips(+e.target.value || 0)}
-                   style={{ height: 32, border: '1px solid var(--tb-border-2)', borderRadius: 6, padding: '0 8px', font: '500 12px/16px var(--ss-font-sans)', width: 80 }}/></div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderTop: '1px solid var(--tb-border-2)', background: 'var(--tb-foam)', borderRadius: '0 0 12px 12px' }}>
-          <button className="btn ghost" onClick={handleReset}>Reset</button>
-          <button className="btn primary" onClick={handleApply}>Apply</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Streak Tracker ────────────────────────────────────────────────────────────
 function _streakCfg(goodCount) {
   if (goodCount >= 9) return { emoji: '🔥', label: 'On Fire',     color: '#22C55E', bg: 'rgba(34,197,94,0.12)' };
@@ -245,17 +160,12 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
     { id: 'moon',        label: 'Moon Phase' },
   ];
 
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const df = window.DEFAULT_FILTERS;
-  const activeFilterCount = [
-    filters.year !== df.year,
-    filters.month !== df.month,
-    filters.landing !== df.landing,
-    filters.boat !== df.boat,
-    filters.tripLength !== df.tripLength,
-    filters.species !== df.species,
-    filters.minTrips !== df.minTrips,
-  ].filter(Boolean).length;
+  const SUBTAB_FIELDS = {
+    overview:    ['year', 'month', 'landing', 'boat', 'tripLength', 'species', 'minTrips'],
+    headtohead:  ['year', 'month', 'landing', 'tripLength', 'species', 'minTrips'],
+    seasonality: ['year', 'landing', 'tripLength'],
+    moon:        ['year', 'landing', 'tripLength', 'species'],
+  };
 
   const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, settings, regions]);
   const prevTrips = useMemo(() => {
@@ -306,15 +216,17 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
         ))}
       </div>
 
+      {/* Shared filter bar — one instance for all subtabs */}
+      <div style={{padding: '10px 16px 0'}}>
+        <AnalyticsFilterBar
+          filters={filters}
+          setFilters={setFilters}
+          fields={SUBTAB_FIELDS[subtab] || SUBTAB_FIELDS.overview}
+          regions={regions}/>
+      </div>
+
       {/* Overview sub-tab */}
       {subtab === 'overview' && <Fragment>
-      <AnalyticsMobileFilterModal
-        open={mobileFilterOpen}
-        onClose={() => setMobileFilterOpen(false)}
-        filters={filters}
-        onApply={setFilters}
-        regions={regions}/>
-
       <Crumbs items={[{ label: 'Analytics' }, { label: 'Overview' }]}/>
       <div className="pagehead">
         <div>
@@ -325,15 +237,6 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
             {filters.species !== 'all' ? ` · ${filters.species} only` : ''}
           </div>
         </div>
-        <div className="actions">
-          <button className="btn secondary analytics-mobile-filter-btn" onClick={() => setMobileFilterOpen(true)}>
-            ⚙️ Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-          </button>
-        </div>
-      </div>
-
-      <div className="analytics-filterbar-desktop">
-        <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       </div>
 
       {isCustomSpecies && (

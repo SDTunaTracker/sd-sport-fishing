@@ -15,7 +15,6 @@ function SeasonalityView({ filters, setFilters, navigate, regions }) {
           <div className="sub">Monthly catch patterns across {fmt.n(trips.length)} trips</div>
         </div>
       </div>
-      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       <Panel title="Species Seasonality" meta="Total catch by month, all approved boats">
         <div className="chart-legend" style={{marginBottom: 8}}>
           {Object.entries(SPECIES_COLORS).map(([sp, c]) => (

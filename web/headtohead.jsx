@@ -56,8 +56,6 @@ function HeadToHead({ filters, setFilters, navigate, regions }) {
         </div>
       </div>
 
-      <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
-
       <div className="kpis">
         <KPI label="Matchups" value={fmt.n(totalMatchups)}
              ctx={`${fmt.n(tripsInMatchups)} trips compete`}/>
