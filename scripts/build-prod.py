@@ -9,9 +9,10 @@ What it does:
   1. Removes the @babel/standalone CDN script (esbuild pre-compiles JSX instead)
   2. Replaces type="text/babel" src="name.jsx?v=..." with src="dist/name.js?v=VERSION"
   3. Stamps all remaining ?v= query strings with VERSION
-  4. Injects build-time and build-commit meta tags
+  4. Stamps data.js ?v= with its MD5 content hash (overrides step 3 for data.js only)
+  5. Injects build-time and build-commit meta tags
 """
-import re, sys, os
+import hashlib, pathlib, re, sys, os
 from datetime import datetime, timezone
 
 version    = sys.argv[1] if len(sys.argv) > 1 else "prod"
@@ -38,7 +39,15 @@ text = re.sub(
 # 3. Stamp all remaining ?v= query strings (CSS, plain JS) with VERSION
 text = re.sub(r"\?v=[^\"'\s]+", f"?v={version}", text)
 
-# 4. Inject build metadata meta tags after <meta charset="utf-8">
+# 4. Stamp data.js with its content hash so the URL changes whenever the data changes.
+#    Must run AFTER step 3 (which would otherwise overwrite the hash with VERSION).
+data_js = pathlib.Path(os.path.normpath(os.path.join(here, "..", "web", "data.js")))
+if data_js.exists():
+    data_hash = hashlib.md5(data_js.read_bytes()).hexdigest()[:8]
+    text = re.sub(r'src="data\.js(\?v=[^"]*)?"', f'src="data.js?v={data_hash}"', text)
+    print(f"data.js hash: {data_hash}")
+
+# 5. Inject build metadata meta tags after <meta charset="utf-8">
 # Strip any previously-injected build tags so re-runs never stack duplicates.
 text = re.sub(r'\n?<meta name="build-(?:time|commit)"[^>]*>', '', text)
 if build_sha:
