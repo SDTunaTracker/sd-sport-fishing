@@ -1,88 +1,74 @@
 // Analytics view — full filter controls, KPIs, charts, leaderboard
 
-// Mobile-only filter modal — local state, syncs to real filters on Apply
-function AnalyticsMobileFilterModal({ open, onClose, filters, onApply, regions }) {
-  const { useState, useEffect, useMemo } = React;
+// ── URL ↔ analytics-filter serialization ─────────────────────────────────────
+
+function _aFiltersToSearch(f) {
   const df = window.DEFAULT_FILTERS;
+  const p  = new URLSearchParams();
+  const s  = (v) => Array.isArray(v) ? v.join(',') : String(v);
+  if (f.year       !== df.year)       p.set('year',    s(f.year));
+  if (f.month      !== df.month)      p.set('month',   s(f.month));
+  if (f.landing    !== df.landing)    p.set('landing', s(f.landing));
+  if (f.boat       !== df.boat)       p.set('boat',    s(f.boat));
+  if (f.tripLength !== df.tripLength) p.set('tripLen', s(f.tripLength));
+  if (f.species    !== df.species)    p.set('species', s(f.species));
+  if (f.minTrips   !== df.minTrips)   p.set('min',     String(f.minTrips));
+  return p.toString();
+}
 
-  const [year,       setYear]       = useState(filters.year);
-  const [month,      setMonth]      = useState(filters.month);
-  const [landing,    setLanding]    = useState(filters.landing);
-  const [boat,       setBoat]       = useState(filters.boat);
-  const [tripLength, setTripLength] = useState(filters.tripLength);
-  const [species,    setSpecies]    = useState(filters.species);
-  const [minTrips,   setMinTrips]   = useState(filters.minTrips);
-
-  useEffect(() => {
-    if (open) {
-      setYear(filters.year); setMonth(filters.month); setLanding(filters.landing);
-      setBoat(filters.boat); setTripLength(filters.tripLength);
-      setSpecies(filters.species); setMinTrips(filters.minTrips);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = e => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-
-  const handleReset = () => {
-    setYear(df.year); setMonth(df.month); setLanding(df.landing);
-    setBoat(df.boat); setTripLength(df.tripLength);
-    setSpecies(df.species); setMinTrips(df.minTrips);
+function _aSearchToFilters(search) {
+  const df = window.DEFAULT_FILTERS;
+  const p  = new URLSearchParams(search);
+  const r  = (k) => { const v = p.get(k); return v == null ? null : v.includes(',') ? v.split(',') : v; };
+  return {
+    ...df,
+    year:       r('year')    ?? df.year,
+    month:      r('month')   ?? df.month,
+    landing:    r('landing') ?? df.landing,
+    boat:       r('boat')    ?? df.boat,
+    tripLength: r('tripLen') ?? df.tripLength,
+    species:    r('species') ?? df.species,
+    minTrips:   p.has('min') ? +p.get('min') : df.minTrips,
   };
+}
 
-  const handleApply = () => {
-    onApply({ ...filters, year, month, landing, boat, tripLength, species, minTrips });
-    onClose();
-  };
+// Hook: filter state owned by the analytics section, synced to the URL query
+// string so filters survive subtab switches and page refresh. Propagates
+// changes up via setPropFilters so the TweaksPanel quick-filters stay in sync.
+function useAnalyticsFilters(propFilters, setPropFilters) {
+  const { useState, useEffect, useRef, useCallback } = React;
 
-  if (!open) return null;
-
-  const SL = { font: '600 11px/14px var(--ss-font-sans)', textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--tb-slate)', marginBottom: 8 };
-  const YEARS = [...new Set(window.SD.TRIPS.map(t => t.year))].sort((a, b) => b - a).map(y => ({ value: String(y), label: String(y) }));
-  const _rl = (() => {
-    if (!regions || !window.getEffectiveRegion) return null;
-    const eff = window.getEffectiveRegion(regions);
-    return window.getLandingsForRegion ? window.getLandingsForRegion(eff) : null;
-  })();
-  const landingOptions = window.SD.LANDINGS.filter(l => !_rl || _rl.includes(l));
-  const boatOptions = [...window.SD.BOATS].filter(b => !_rl || _rl.includes(b.landing)).sort((a, b) => a.name.localeCompare(b.name)).map(b => b.name);
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
-        <div className="modal-head">
-          <h2 style={{ margin: 0, font: '600 18px/22px var(--ss-font-sans)' }}>Filters</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
-        </div>
-        <div className="modal-body" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20, maxHeight: '72vh', overflowY: 'auto' }}>
-          <div><div style={SL}>Year</div>
-            <MultiSelect options={YEARS} value={year} onChange={setYear} allLabel="All Years"/></div>
-          <div><div style={SL}>Month</div>
-            <MultiSelect options={MONTH_NAMES.map((m, i) => ({ value: String(i + 1), label: m }))}
-                         value={month} onChange={setMonth} allLabel="All Months"/></div>
-          <div><div style={SL}>Landing</div>
-            <MultiSelect options={landingOptions} value={landing} onChange={setLanding} allLabel="All Landings"/></div>
-          <div><div style={SL}>Boat</div>
-            <MultiSelect options={boatOptions} value={boat} onChange={setBoat} allLabel="All Boats"/></div>
-          <div><div style={SL}>Trip Length</div>
-            <MultiSelect options={window.SD.TRIP_LENGTHS} value={tripLength} onChange={setTripLength} allLabel="All Lengths"/></div>
-          <div><div style={SL}>Species</div>
-            <MultiSelect options={window.SD.SPECIES} value={species} onChange={setSpecies} allLabel="All Tuna"/></div>
-          <div><div style={SL}>Min Trips</div>
-            <input type="number" min="0" max="100" value={minTrips} onChange={e => setMinTrips(+e.target.value || 0)}
-                   style={{ height: 32, border: '1px solid var(--tb-border-2)', borderRadius: 6, padding: '0 8px', font: '500 12px/16px var(--ss-font-sans)', width: 80 }}/></div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderTop: '1px solid var(--tb-border-2)', background: 'var(--tb-foam)', borderRadius: '0 0 12px 12px' }}>
-          <button className="btn ghost" onClick={handleReset}>Reset</button>
-          <button className="btn primary" onClick={handleApply}>Apply</button>
-        </div>
-      </div>
-    </div>
+  const [filters, setFiltersRaw] = useState(() =>
+    window.location.search
+      ? _aSearchToFilters(window.location.search)
+      : { ...propFilters }
   );
+
+  const prevPropRef = useRef(propFilters);
+
+  // Accept field-level changes driven externally (e.g. TweaksPanel year/species).
+  // Only applies the delta so URL-driven fields aren't overwritten wholesale.
+  useEffect(() => {
+    const prev = prevPropRef.current;
+    if (propFilters === prev) return;
+    prevPropRef.current = propFilters;
+    const delta = {};
+    Object.keys(propFilters).forEach(k => { if (propFilters[k] !== prev[k]) delta[k] = propFilters[k]; });
+    if (Object.keys(delta).length) setFiltersRaw(f => ({ ...f, ...delta }));
+  }, [propFilters]);
+
+  const setFilters = useCallback((next) => {
+    setFiltersRaw(prev => {
+      const f = typeof next === 'function' ? next(prev) : next;
+      const qs = _aFiltersToSearch(f);
+      history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+      prevPropRef.current = f; // prevent the effect above from re-echoing this update
+      setPropFilters(f);
+      return f;
+    });
+  }, [setPropFilters]);
+
+  return [filters, setFilters];
 }
 
 // ── Streak Tracker ────────────────────────────────────────────────────────────
@@ -163,8 +149,9 @@ function StreakTracker({ navigate, regions }) {
   );
 }
 
-function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
+function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
   const { useMemo, useState } = React;
+  const [filters, setFilters] = useAnalyticsFilters(propFilters, setPropFilters);
 
   const SUBTABS = [
     { id: 'overview',    label: 'Overview' },
@@ -173,17 +160,12 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
     { id: 'moon',        label: 'Moon Phase' },
   ];
 
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const df = window.DEFAULT_FILTERS;
-  const activeFilterCount = [
-    filters.year !== df.year,
-    filters.month !== df.month,
-    filters.landing !== df.landing,
-    filters.boat !== df.boat,
-    filters.tripLength !== df.tripLength,
-    filters.species !== df.species,
-    filters.minTrips !== df.minTrips,
-  ].filter(Boolean).length;
+  const SUBTAB_FIELDS = {
+    overview:    ['year', 'month', 'landing', 'boat', 'tripLength', 'species', 'minTrips'],
+    headtohead:  ['year', 'month', 'landing', 'tripLength', 'species', 'minTrips'],
+    seasonality: ['year', 'landing', 'tripLength'],
+    moon:        ['year', 'landing', 'tripLength', 'species'],
+  };
 
   const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, settings, regions]);
   const prevTrips = useMemo(() => {
@@ -234,15 +216,17 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
         ))}
       </div>
 
+      {/* Shared filter bar — one instance for all subtabs */}
+      <div style={{padding: '10px 16px 0'}}>
+        <AnalyticsFilterBar
+          filters={filters}
+          setFilters={setFilters}
+          fields={SUBTAB_FIELDS[subtab] || SUBTAB_FIELDS.overview}
+          regions={regions}/>
+      </div>
+
       {/* Overview sub-tab */}
       {subtab === 'overview' && <Fragment>
-      <AnalyticsMobileFilterModal
-        open={mobileFilterOpen}
-        onClose={() => setMobileFilterOpen(false)}
-        filters={filters}
-        onApply={setFilters}
-        regions={regions}/>
-
       <Crumbs items={[{ label: 'Analytics' }, { label: 'Overview' }]}/>
       <div className="pagehead">
         <div>
@@ -253,15 +237,6 @@ function AnalyticsView({ filters, setFilters, navigate, tweaks, settings, region
             {filters.species !== 'all' ? ` · ${filters.species} only` : ''}
           </div>
         </div>
-        <div className="actions">
-          <button className="btn secondary analytics-mobile-filter-btn" onClick={() => setMobileFilterOpen(true)}>
-            ⚙️ Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-          </button>
-        </div>
-      </div>
-
-      <div className="analytics-filterbar-desktop">
-        <FilterBar filters={filters} setFilters={setFilters} regions={regions}/>
       </div>
 
       {isCustomSpecies && (
