@@ -115,8 +115,16 @@
     "368121320": {
       "name": "Triton",
       "landing": "LA Waterfront Sportfishing"
+    },
+    "354149000": {
+      "name": "Poseidon",
+      "landing": "Fisherman's Landing"
+    },
+    "367330940": {
+      "name": "Dolphin",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-06-03T00:07:41.048837+00:00",
-  "_vessel_count": 27
+  "_last_discover_run": "2026-06-03T15:00:17.869519+00:00",
+  "_vessel_count": 29
 }
