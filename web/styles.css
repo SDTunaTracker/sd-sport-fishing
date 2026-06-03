@@ -3535,38 +3535,54 @@ body.chat-open {
   transform: translateY(-1px);
 }
 
-/* Top Performers section */
-.home-tp-section { border-top: 1px solid var(--ss-border-2); }
-.home-tp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
-  padding: 0 20px 20px;
+/* Top-5 leaderboard preview (homepage) */
+.home-top5-list {
+  padding: 0 20px 4px;
 }
-.home-tp-card {
-  background: var(--ss-clay);
-  border: 1px solid var(--ss-border-2);
-  border-radius: 10px;
-  padding: 12px 14px;
+.home-top5-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #F1F5F9;
   cursor: pointer;
-  transition: border-color 0.12s, transform 0.1s;
+  transition: background 0.1s;
+  border-radius: 6px;
+  margin: 0 -6px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
-.home-tp-card:hover {
-  border-color: #38BDF8;
-  transform: translateY(-1px);
+.home-top5-row:last-child { border-bottom: none; }
+.home-top5-row:hover { background: #F8FAFC; }
+.home-top5-rank {
+  font: 700 13px/18px var(--ss-font-mono, monospace);
+  color: var(--tb-gray-3);
+  min-width: 20px;
+  text-align: center;
+  flex-shrink: 0;
 }
-.home-tp-boat {
+.home-top5-rank.top3 { color: var(--ss-orange-500); }
+.home-top5-info {
+  flex: 1;
+  min-width: 0;
+}
+.home-top5-boat {
   font: 700 13px/18px var(--ss-font-sans);
   color: var(--ss-black);
-  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.home-tp-meta {
+.home-top5-meta {
   font: 400 11px/16px var(--ss-font-sans);
   color: var(--ss-slate);
-  margin-top: 4px;
+  margin-top: 1px;
+}
+.home-top5-val {
+  font: 700 14px/18px var(--ss-font-mono, monospace);
+  color: var(--tb-ink);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Feature cards — bold navy blocks echoing the hero */

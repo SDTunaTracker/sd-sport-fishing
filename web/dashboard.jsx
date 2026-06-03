@@ -748,54 +748,57 @@ function HomeRatingBadge({ ratingKey }) {
   );
 }
 
-function TopPerformersSection({ navigate, regions }) {
-  const tpMap = useMemo(() => {
-    try {
-      const now   = new Date();
-      const start = new Date(now); start.setDate(now.getDate() - 30);
-      const startISO = start.toISOString().slice(0, 10);
-      const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
-      const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : null;
-      const rl  = (eff && window.getLandingsForRegion) ? window.getLandingsForRegion(eff) : null;
-      const slice = raw.filter(t => t.date >= startISO && (!rl || rl.includes(t.landing)));
-      return SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates(slice) : {};
-    } catch(e) { return {}; }
-  }, [regions]);
+function HomeTop5({ navigate, settings, regions }) {
+  const currentYear = String(new Date().getFullYear());
 
-  const topBoats = useMemo(() => {
-    return Object.entries(tpMap)
-      .filter(([, d]) => d.tier === 'top' || d.tier === 'strong')
-      .sort((a, b) => b[1].rate - a[1].rate)
-      .slice(0, 8);
-  }, [tpMap]);
+  // preprocessTrips runs in a useEffect in app.jsx (post-mount), so SD_PROC_TRIPS
+  // is null on the first render. Guard synchronously so the leaderboard is correct immediately.
+  if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
 
-  if (topBoats.length === 0) return null;
+  const top5 = useMemo(() => {
+    const trips = SDA.filterTrips(DEFAULT_FILTERS, regions);
+    const { rows } = SDA.boatLeaderboard(trips, 'all', 5);
+    return rows.filter(r => r.tripCount >= 5).slice(0, 5);
+  }, [regions, settings]);
 
   return (
-    <div className="home-section home-tp-section">
+    <div className="home-section">
       <div className="home-report-hd">
         <div>
-          <h2 className="home-report-title">
-            This Month's Top Performers
-          </h2>
+          <h2 className="home-report-title">Top Boats</h2>
           <div className="home-report-sub">
-            Boats in the top 25% of comparable same-length trips · last 30 days
+            <MetricLabel {...METRIC_DEFINITIONS.tpaDay} /> ranking · {currentYear} season · min 5 trips
           </div>
         </div>
         <button className="home-full-report-btn" style={{whiteSpace:'nowrap'}}
                 onClick={() => navigate('boats')}>
-          All boats →
+          View full leaderboard →
         </button>
       </div>
-      <div className="home-tp-grid">
-        {topBoats.map(([boat, data]) => (
-          <div key={boat} className="home-tp-card" onClick={() => navigate('boat', { boat })}>
-            <div className="home-tp-boat">{boat}</div>
-            <TopPerformerBadge tier={data.tier} pct={data.rate} />
-            <div className="home-tp-meta">{data.wins}/{data.total} trips</div>
-          </div>
-        ))}
-      </div>
+
+      {top5.length === 0 ? (
+        <div className="home-report-empty">Not enough data yet</div>
+      ) : (
+        <div className="home-top5-list">
+          {top5.map((b, i) => (
+            <div key={b.boat} className="home-top5-row"
+                 onClick={() => navigate('boat', { boat: b.boat })}>
+              <span className={`home-top5-rank${i < 3 ? ' top3' : ''}`}>{i + 1}</span>
+              <div className="home-top5-info">
+                <div className="home-top5-boat">{b.boat}</div>
+                <div className="home-top5-meta">
+                  {(b.landing || '').replace(' Sportfishing', '').replace(' Landing', '')}
+                  {' · '}
+                  {b.tripCount} {b.tripCount === 1 ? 'trip' : 'trips'}
+                </div>
+              </div>
+              <span className="home-top5-val">
+                {b.avgTPAPerDay > 0 ? fmt.tpa(b.avgTPAPerDay) : '—'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -908,8 +911,8 @@ function HomeView({ navigate, settings, regions }) {
         </div>
       </div>
 
-      {/* ── THIS MONTH'S TOP PERFORMERS ──────────────────────────────── */}
-      <TopPerformersSection navigate={navigate} regions={regions}/>
+      {/* ── TOP BOATS LEADERBOARD ────────────────────────────────────── */}
+      <HomeTop5 navigate={navigate} settings={settings} regions={regions}/>
 
       {/* ── TODAY'S REPORT (inline preview) ───────────────────────────── */}
       <div className="home-section">
