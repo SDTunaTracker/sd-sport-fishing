@@ -676,8 +676,11 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     rows = conn.execute(
         "SELECT * FROM trips WHERE is_half_day = 0 ORDER BY date, id"
     ).fetchall()
-    trips = [_trip_to_js(r) for r in rows]
-    boats = _boats_from_trips(trips)
+    # all_rows includes is_preliminary=1 (still-fishing) for the Today widget.
+    # analytics TRIPS strip them — anglers unknown, TPA meaningless until confirmed.
+    all_rows = [_trip_to_js(r) for r in rows]
+    trips    = [t for t in all_rows if not t.get('isPreliminary')]
+    boats    = _boats_from_trips(trips)
     schedule_rows = conn.execute(
         "SELECT * FROM scheduled_trips ORDER BY departure_at, landing, boat"
     ).fetchall()
@@ -703,7 +706,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "MOON_PHASES": list(MOON_PHASES),
         "BOATS": boats,
         "TRIPS": trips,
-        "TODAY": _today_summary(trips),
+        "TODAY": _today_summary(all_rows),
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
         "FORECAST": forecast_payload,

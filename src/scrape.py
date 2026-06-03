@@ -356,27 +356,27 @@ def parse_page(html: str, landing: str, source_url: str,
 
 
 def scrape_landing(src: LandingSource, target_date: date | None = None,
+                   known_boats: list[str] | None = None,
                    ) -> tuple[list[dict], date | None, str]:
-    """Fetch + parse one landing. Returns (trips, page_date, raw_html)."""
+    """Fetch + parse one landing. Returns (trips, page_date, raw_html).
+
+    known_boats: all historically-seen boat names from the DB — passed in from
+    main.py so that multi-day boats not in today's structured table can still be
+    matched in narrative reports.
+    """
     html = _fetch(src)
-    raw_rows, page_date = _extract_rows(html)
+    _, page_date = _extract_rows(html)
     trips = parse_page(html, src.name, src.url, target_date=target_date, region=src.region)
 
-    # Identify boats whose fish-count cell was blank in the structured table.
-    blank_boats: set[str] = set()
-    for r in raw_rows:
-        if not r["fish_count_text"].strip():
-            if target_date is None or r["date"] == target_date:
-                blank_boats.add(r["boat"].strip())
-
     if src.main_url or src.news_url:
-        known_boats = [t['boat'] for t in trips]
-        if blank_boats:
-            log.debug("text_fallback: %d blank-count boat(s) at %s — scanning written updates",
-                      len(blank_boats), src.name)
-            _apply_text_fallback(src, trips, blank_boats, target_date)
+        # Verb-agnostic, boat-anchored harvest: fills blank structured trips
+        # and creates provisional records for boats not in today's table.
+        new_from_narrative = _harvest_narrative_reports(
+            src, trips, known_boats or [], target_date,
+        )
+        trips.extend(new_from_narrative)
         try:
-            n = _apply_calledin_reports(src, trips, known_boats, target_date)
+            n = _apply_calledin_reports(src, trips, [t['boat'] for t in trips], target_date)
             if n:
                 log.info("calledin_reports: filled %d trip(s) at %s", n, src.name)
         except Exception as exc:
@@ -387,12 +387,16 @@ def scrape_landing(src: LandingSource, target_date: date | None = None,
 
 
 def scrape_all(sources: Iterable[LandingSource] = SOURCES,
-               target_date: date | None = None) -> list[tuple[LandingSource, list[dict], date | None, str | None]]:
+               target_date: date | None = None,
+               known_boats: list[str] | None = None,
+               ) -> list[tuple[LandingSource, list[dict], date | None, str | None]]:
     """Scrape every landing. Each tuple is (source, trips, page_date, error_or_None)."""
     results = []
     for src in sources:
         try:
-            trips, page_date, _ = scrape_landing(src, target_date=target_date)
+            trips, page_date, _ = scrape_landing(
+                src, target_date=target_date, known_boats=known_boats,
+            )
             results.append((src, trips, page_date, None))
         except Exception as e:
             log.exception("scrape failed: %s", src.name)
@@ -400,18 +404,66 @@ def scrape_all(sources: Iterable[LandingSource] = SOURCES,
     return results
 
 
-# Matches "<count> [mixed] <species>" in free-form written reports.
-# Handles "12 bluefin tuna", "5 yellowtail", "20 mixed Rockfish", etc.
-_TEXT_SPECIES_RE = re.compile(
-    r'(\d+)\s+'
-    r'(?:mixed\s+)?'
-    r'(bluefin(?:\s+tuna)?|yellowfin(?:\s+tuna)?|yellowtail|'
-    r'dorado|mahi(?:-?mahi)?|'
-    r'albacore(?:\s+tuna)?|skipjack(?:\s+tuna)?|bigeye(?:\s+tuna)?|'
-    r'calico(?:\s+bass)?|halibut|rockfish|white\s+sea\s+bass|sheephead|'
-    r'bonito|barracuda|lingcod)',
+def _build_species_re() -> re.Pattern:
+    """Build species-matching regex from all parse.py aliases, longest-first.
+
+    Longest-first prevents 'Tuna' from short-circuiting 'Yellowfin Tuna'.
+    Any alias added to parse._SPECIES_ALIASES or _EXTENDED_ALIASES is
+    automatically included here without touching this file.
+    """
+    all_aliases = list(P._SPECIES_ALIASES.keys()) + list(P._EXTENDED_ALIASES.keys())
+    parts = sorted(set(all_aliases), key=len, reverse=True)
+    return re.compile(
+        r'(?<!\d)(\d+)\s+(?:mixed\s+)?(' + '|'.join(re.escape(a) for a in parts) + r')\b',
+        re.I,
+    )
+
+
+_TEXT_SPECIES_RE = _build_species_re()
+
+
+def _extract_pairs(text: str) -> tuple[dict, dict, list[tuple[str, int]]]:
+    """Harvest (count, species) pairs from free-form text.
+
+    Returns (tracked_counts, other_counts, unknowns).
+    A pair counts only when a digit sequence is *immediately* followed by a
+    known species token — so "tomorrow 6/2", "3 Day", "spots available" produce
+    nothing.  'Released' variants are skipped.
+    """
+    tracked: dict[str, int] = {sp: 0 for sp in P.TRACKED_SPECIES}
+    other:   dict[str, int] = {}
+    unknown: list[tuple[str, int]] = []
+
+    for m in _TEXT_SPECIES_RE.finditer(text):
+        after = text[m.end(): m.end() + 12].strip().lower()
+        if after.startswith('released'):
+            continue
+        cnt   = int(m.group(1))
+        canon = P.normalize_species(m.group(2))
+        if canon in tracked:
+            tracked[canon] = max(tracked[canon], cnt)
+        elif canon in P.EXTENDED_SPECIES_COLUMNS:
+            other[canon] = max(other.get(canon, 0), cnt)
+        else:
+            unknown.append((m.group(2).strip(), cnt))
+
+    return tracked, other, unknown
+
+
+_PROSE_TRIP_RE = re.compile(
+    r'\b(long\s+range|overnight|(?:1\.5|2\.5|[2-7])\s+day|full\s+day)\b',
     re.I,
 )
+
+
+def _trip_length_from_prose(text: str) -> tuple[str | None, float | None, str]:
+    """Return (bucket, days, raw_phrase) for the first trip-length phrase in text."""
+    m = _PROSE_TRIP_RE.search(text)
+    if not m:
+        return None, None, ''
+    raw = m.group(0)
+    bucket, days = P.parse_trip_length(raw)
+    return bucket, days, raw
 
 # ---------------------------------------------------------------------------
 # Called-in / returned-with text report parser
@@ -704,6 +756,7 @@ _FINAL_KEYWORDS = [
     'returned', 'returned home', 'docked', 'back at the dock',
     'wrapped up', 'wrap up', 'final count', 'final totals',
     'at the dock', 'tied up', 'now unloading', 'unloading',
+    'back down to', 'back in port', 'back to the dock',
 ]
 
 _PRELIMINARY_KEYWORDS = [
@@ -711,6 +764,8 @@ _PRELIMINARY_KEYWORDS = [
     'currently fishing', 'on the water', 'mid-trip',
     'morning report', 'check in', 'checking in', 'midday report',
     'reporting in', 'out on the water',
+    'checked in', 'checked in from', 'switching gears', 'stay tuned',
+    'still on the water', 'heading back', 'still out',
 ]
 
 
@@ -810,53 +865,163 @@ def _extract_boat_counts_from_text(text: str, boat_name: str) -> dict | None:
     return {"tracked": tracked, "other": other, "text": window.strip()}
 
 
-def _apply_text_fallback(src: LandingSource, trips: list[dict],
-                         blank_boats: set[str],
-                         target_date: date | None) -> None:
-    """Fill blank fish-count trips from written text on the landing's supplementary pages.
+def _harvest_narrative_reports(
+    src: LandingSource,
+    trips: list[dict],
+    all_boat_names: list[str],
+    target_date: 'date | None',
+) -> list[dict]:
+    """Verb-agnostic, boat-anchored harvest of narrative landing reports.
 
-    Mutates trip dicts in-place: updates species counts, recalculates trophy metrics,
-    and sets source='text_fallback' / is_preliminary / written_text.
+    A text block is a catch report when it:
+      (a) names a known boat (from all_boat_names ∪ today's structured trips), and
+      (b) contains ≥1 '<number> <known-species>' pairs.
+    Verb phrases are ignored entirely — only boat name + number-species pairs matter.
+
+    Two outcomes per matched block:
+      Fill  — boat in today's structured trips with trophy_count=0 and
+              source='fish_count_page': fill species counts in-place, preserving
+              the real anglers value from the structured row.
+      New   — boat not in today's structured trips: return a provisional trip
+              record (anglers=0, is_preliminary=1) for insertion.
+
+    Unrecognised '<number> <Word>' catches are logged at INFO so the species
+    alias tables can grow from real misses rather than silently dropping data.
     """
-    urls = [u for u in [src.main_url, src.news_url] if u]
-    if not urls:
-        return
+    if not (src.main_url or src.news_url):
+        return []
 
-    combined_text = ""
-    for url in urls:
+    today      = target_date or date.today()
+    scraped_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+    # Index today's structured trips by lowercase boat name for O(1) lookup.
+    structured: dict[str, dict] = {t['boat'].lower(): t for t in trips}
+
+    # Merge historical boat list with today's boats so boats that just started
+    # appearing (not yet in the DB) can still be matched.
+    combined = list({*all_boat_names, *(t['boat'] for t in trips)})
+    if not combined:
+        return []
+    boats_sorted = sorted(combined, key=len, reverse=True)       # longest-first
+    boat_canon: dict[str, str] = {b.lower(): b for b in boats_sorted}
+
+    # Optional leading "The "; named group captures only the boat name itself.
+    boat_re = re.compile(
+        r'(?:The\s+)?(?P<boat>' +
+        '|'.join(re.escape(b) for b in boats_sorted) +
+        r')\b',
+        re.I,
+    )
+
+    # Fetch text blocks from all landing supplementary pages.
+    blocks: list[str] = []
+    for url in [u for u in [src.main_url, src.news_url] if u]:
         html = _fetch_optional(url)
         if html:
-            blocks = _extract_text_blocks(html)
-            combined_text += "\n".join(blocks) + "\n"
+            blocks.extend(_extract_text_blocks(html))
+    if not blocks:
+        return []
 
-    if not combined_text:
-        return
+    new_trips: list[dict] = []
+    seen_new:  set[str]   = set()   # boat keys already emitted as new records
 
-    for trip in trips:
-        if trip["boat"] not in blank_boats:
+    for block in blocks:
+        m = boat_re.search(block)
+        if not m:
             continue
-        result = _extract_boat_counts_from_text(combined_text, trip["boat"])
-        if not result:
+
+        raw_boat  = m.group('boat')
+        boat_key  = raw_boat.lower()
+        boat_name = boat_canon.get(boat_key, raw_boat)
+
+        tracked, other, unknowns = _extract_pairs(block)
+        if not any(tracked.values()) and not any(other.values()):
+            continue  # no species counts — not a catch line
+
+        for sp_raw, cnt in unknowns:
+            log.info('unknown species [%s / %s]: "%s" ×%d — add to parse._EXTENDED_ALIASES if real',
+                     src.name, boat_name, sp_raw, cnt)
+
+        tl_bucket, tl_days, tl_raw = _trip_length_from_prose(block)
+        status         = classify_report_status(block)
+        is_preliminary = 1 if status == 'preliminary' else 0
+
+        # ── Fill: boat is in today's structured table with no catch yet ──────
+        existing = structured.get(boat_key)
+        if existing is not None:
+            if (existing.get('trophy_count', 0) == 0
+                    and existing.get('source') == 'fish_count_page'):
+                for sp in P.TRACKED_SPECIES:
+                    existing[sp.lower()] = tracked.get(sp, 0)
+                metrics = P.trophy_metrics(
+                    tracked,
+                    max(existing['anglers'], 1),
+                    existing['trip_length_days'],
+                )
+                existing['trophy_count']               = metrics.trophy_count
+                existing['trophy_per_angler']          = metrics.trophy_per_angler
+                existing['trophy_per_angler_per_day']  = metrics.trophy_per_angler_per_day
+                existing['full_catch']                 = P.build_full_catch(tracked, other)
+                existing['source']                     = 'text_fallback'
+                existing['is_preliminary']             = is_preliminary
+                existing['written_text']               = block[:500]
+                existing['reported_at']                = scraped_at
+                existing.setdefault('_unknowns', []).extend(unknowns)
+                log.info('text_fallback fill [%s] %s — %s', src.name, boat_name, block[:80])
+            continue   # whether filled or not, don't emit a new-trip record
+
+        # ── New: boat not in today's structured trips ─────────────────────────
+        if boat_key in seen_new:
             continue
+        seen_new.add(boat_key)
 
-        for sp in P.TRACKED_SPECIES:
-            trip[sp.lower()] = result["tracked"].get(sp, 0)
+        if tl_bucket is None:
+            tl_bucket, tl_days, tl_raw = 'Full Day', 0.75, 'Full Day'
 
-        tracked = result["tracked"]
-        metrics = P.trophy_metrics(tracked, trip["anglers"], trip["trip_length_days"])
-        trip["trophy_count"] = metrics.trophy_count
-        trip["trophy_per_angler"] = metrics.trophy_per_angler
-        trip["trophy_per_angler_per_day"] = metrics.trophy_per_angler_per_day
-        trip["full_catch"] = P.build_full_catch(tracked, result["other"])
+        col_counts, other_fish, _ = P.extract_extended_species(other)
+        trophy_total = sum(tracked.get(sp, 0) for sp in P.TROPHY_SPECIES)
+        moon = moon_info(datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc))
 
-        status = classify_report_status(result["text"])
-        trip["source"] = "text_preliminary" if status == "preliminary" else "text_final"
-        trip["is_preliminary"] = 1 if status == "preliminary" else 0
-        trip["written_text"] = result["text"][:1000]
-        trip["reported_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        new_trips.append({
+            'date':                      today.isoformat(),
+            'boat':                      boat_name,
+            'landing':                   src.name,
+            'trip_type_raw':             tl_raw,
+            'trip_length':               tl_bucket,
+            'trip_length_days':          tl_days,
+            'anglers':                   0,            # unknown — excluded from TPA
+            'bluefin':                   tracked.get('Bluefin',    0),
+            'yellowfin':                 tracked.get('Yellowfin',  0),
+            'yellowtail':                tracked.get('Yellowtail', 0),
+            'dorado':                    tracked.get('Dorado',     0),
+            'skipjack':                  tracked.get('Skipjack',   0),
+            'bigeye':                    tracked.get('Bigeye',     0),
+            'albacore':                  tracked.get('Albacore',   0),
+            'trophy_count':              trophy_total,
+            'trophy_per_angler':         0.0,
+            'trophy_per_angler_per_day': 0.0,
+            'other_species_json':        json.dumps({k: v for k, v in other.items() if v}),
+            'moon_phase':                moon.phase,
+            'moon_illum':                moon.illum,
+            'days_from_new':             moon.days_from_new,
+            'days_from_full':            moon.days_from_full,
+            'scraped_at':                scraped_at,
+            'source_url':                '',
+            **col_counts,
+            'other_fish':                other_fish,
+            'is_half_day':               1 if tl_days < P.MIN_TRIP_DAYS else 0,
+            'region':                    src.region,
+            'full_catch':                P.build_full_catch(tracked, other),
+            'source':                    'text_fallback',
+            'is_preliminary':            1,            # always; anglers unknown until structured row arrives
+            'written_text':              block[:500],
+            'reported_at':               scraped_at,
+            '_unknowns':                 unknowns,
+        })
+        log.info('text_fallback new [%s] %s trip=%s status=%s — %s',
+                 src.name, boat_name, tl_bucket, status, block[:80])
 
-        log.info("text_fallback [%s]: %s %s — %s",
-                 status, src.name, trip["boat"], result["text"][:80])
+    return new_trips
 
 
 def scan_written_updates(src: LandingSource,

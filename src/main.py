@@ -15,7 +15,7 @@ from pathlib import Path
 
 from . import db
 from .export import export
-from .scrape import SOURCES, scrape_all
+from .scrape import SOURCES, scrape_all, reconcile_daily_counts
 from .schedule import scrape_all_schedules
 from .backtest import daily_accuracy_update, weekly_recalibrate
 from .sst import fetch_daily_sst, insert_sst
@@ -42,7 +42,14 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         summary_lines.append("  WARNING: DB was corrupt — repaired automatically")
     with db.connect(DB_PATH) as conn:
         if not export_only:
-            for src, trips, page_date, err in scrape_all(SOURCES, target_date=target_date):
+            # Load all historically-seen boat names so _harvest_narrative_reports
+            # can match multi-day boats not in today's structured fish-count table.
+            known_boats_all = [
+                r['boat'] for r in conn.execute('SELECT DISTINCT boat FROM trips')
+            ]
+            for src, trips, page_date, err in scrape_all(
+                SOURCES, target_date=target_date, known_boats=known_boats_all,
+            ):
                 started = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 if err:
                     db.log_scrape(
@@ -75,6 +82,15 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 all_scheduled.extend(sched)
             db.replace_scheduled_trips(conn, all_scheduled)
             summary_lines.append(f"  scheduled_trips refreshed: {len(all_scheduled)} rows")
+
+            # Remove text_fallback rows that now have a real fish_count_page row.
+            try:
+                rec = reconcile_daily_counts(str(DB_PATH))
+                summary_lines.append(
+                    f"  Reconcile: {rec['matched']} text rows replaced, {rec['flagged']} flagged"
+                )
+            except Exception as e:
+                summary_lines.append(f"  Reconcile ERROR (non-fatal): {e}")
 
         # Segment stats — keep daily_segment_stats current after each scrape.
         try:
