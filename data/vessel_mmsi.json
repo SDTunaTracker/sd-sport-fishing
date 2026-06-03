@@ -107,8 +107,16 @@
     "368426460": {
       "name": "Endeavor",
       "landing": "Ventura Harbor Sportfishing"
+    },
+    "368215840": {
+      "name": "El Patron",
+      "landing": "Long Beach Sportfishing"
+    },
+    "368121320": {
+      "name": "Triton",
+      "landing": "LA Waterfront Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-02T00:25:09.736232+00:00",
-  "_vessel_count": 25
+  "_last_discover_run": "2026-06-03T00:07:41.048837+00:00",
+  "_vessel_count": 27
 }
