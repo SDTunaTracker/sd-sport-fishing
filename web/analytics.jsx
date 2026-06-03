@@ -167,6 +167,10 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
     moon:        ['year', 'landing', 'tripLength', 'species'],
   };
 
+  // preprocessTrips runs in a useEffect in app.jsx (post-mount), so SD_PROC_TRIPS
+  // is null on the first render. Guard synchronously so metrics are correct immediately.
+  if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
+
   const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, settings, regions]);
   const prevTrips = useMemo(() => {
     const f = { ...filters };

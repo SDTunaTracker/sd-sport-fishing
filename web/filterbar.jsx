@@ -235,8 +235,8 @@ function AnalyticsFilterBar({ filters, setFilters, fields, regions }) {
     return () => { document.body.style.overflow = prev; };
   }, [expanded]);
 
-  function open()  { setDraft({ ...filters }); setExpanded(true);  }
-  function close() { setExpanded(false); setDraft(null); }
+  function open()  { setDraft({ ...filters }); setExpanded(true);  document.body.classList.add('afb-open'); }
+  function close() { setExpanded(false); setDraft(null); document.body.classList.remove('afb-open'); }
 
   function apply() {
     if (draft) setFilters(draft);
