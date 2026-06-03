@@ -227,12 +227,26 @@ def _try_fl_boat_page(boat_name: str) -> dict | None:
                 img_url = _extract_bg_url(img_div.get("style", ""))
                 if img_url:
                     return {"photo_url": _make_absolute(img_url, url), "detail_url": url}
-            # Fallback: first non-logo img tag
+            # Fallback: <img src="graphics/boats/..._large.(jpg|jpeg|png)">
+            # FL boat pages serve photos as plain img tags with unpredictable
+            # filenames (e.g. constition_boat1, IMG_3201, ExceL_new2). Match
+            # the path pattern instead of guessing the filename.
+            _large_re = re.compile(
+                r'graphics/boats/.+_large\.(jpg|jpeg|png)', re.I
+            )
+            boat_lower = boat_name.lower()
+            best_img = None
             for img in soup.find_all("img"):
                 src = img.get("src", "")
-                if not src or any(s in src.lower() for s in ("logo", "icon", "nav", "header", "button")):
+                if not src or not _large_re.search(src):
                     continue
-                return {"photo_url": _make_absolute(src, url), "detail_url": url}
+                # Prefer the img whose alt text matches the boat name
+                if img.get("alt", "").lower() == boat_lower:
+                    best_img = src
+                    break
+                best_img = best_img or src
+            if best_img:
+                return {"photo_url": _make_absolute(best_img, url), "detail_url": url}
         except Exception:
             continue
     return None
