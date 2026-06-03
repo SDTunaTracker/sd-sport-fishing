@@ -284,3 +284,5 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
     </div>
   );
 }
+
+Object.assign(window, { MyAccountView });

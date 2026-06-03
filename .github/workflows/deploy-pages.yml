@@ -71,6 +71,7 @@ jobs:
           mkdir -p web/dist
           npx --yes esbuild web/*.jsx \
             --outdir=web/dist \
+            --format=iife \
             --loader:.jsx=jsx \
             --jsx-factory=React.createElement \
             --jsx-fragment=React.Fragment \

@@ -241,3 +241,8 @@ function SettingsView({ settings, onSettingsChange }) {
     </div>
   );
 }
+
+Object.assign(window, {
+  loadSettings, saveSettings, defaultSettings, isDefaultSpecies,
+  PRESETS, SPECIES_GROUPS, ALL_SPECIES, SettingsView,
+});
