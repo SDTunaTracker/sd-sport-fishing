@@ -141,6 +141,39 @@
   --ss-font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ss-font-display: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ss-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ── Type scale ── */
+  --tb-font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --tb-font-num:  'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --tb-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --tb-text-xs:   11px;
+  --tb-text-sm:   12px;
+  --tb-text-base: 14px;
+  --tb-text-lg:   16px;
+  --tb-text-xl:   20px;
+  --tb-lh-tight:  1.25;
+  --tb-lh-snug:   1.4;
+  --tb-lh-normal: 1.6;
+
+  /* ── Spacing scale (4px base) ── */
+  --tb-space-1:  4px;
+  --tb-space-2:  8px;
+  --tb-space-3: 12px;
+  --tb-space-4: 16px;
+  --tb-space-5: 20px;
+  --tb-space-6: 24px;
+  --tb-space-8: 32px;
+
+  /* ── Radius scale ── */
+  --tb-radius-sm:   4px;
+  --tb-radius-md:   8px;
+  --tb-radius-lg:  12px;
+  --tb-radius-full: 9999px;
+
+  /* ── Motion ── */
+  --tb-duration-fast: 120ms;
+  --tb-duration-base: 200ms;
+  --tb-easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Global select styling ── */
