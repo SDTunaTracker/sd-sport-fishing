@@ -1,0 +1,113 @@
+name: Purge Cloudflare Cache
+
+on:
+  # Feature pushes: committed web/ changes deploy to CF Pages immediately;
+  # this purges the edge cache so thetunatracker.com serves fresh bytes.
+  push:
+    branches: [main]
+  # Scrape commits: GitHub's GITHUB_TOKEN push does NOT re-trigger the push
+  # event above (anti-loop safeguard), so we listen for the scrape workflow
+  # finishing and purge after it commits fresh data.js + stamped index.html.
+  workflow_run:
+    workflows: ["Daily Scrape"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer purge supersedes an in-flight one.
+concurrency:
+  group: cf-purge
+  cancel-in-progress: true
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check for global name collisions in JSX files
+        run: |
+          # Names exported by ui.jsx into window — any other file defining these
+          # at the top level (outside an IIFE) would silently clobber them.
+          GLOBALS="fmt SPECIES_COLORS TROPHY_SPECIES MONTH_NAMES AppHeader SideNav Crumbs KPI Panel Sparkline VBarChart StackedBarChart LineChart Donut MoonGlyph"
+          FAIL=0
+          for name in $GLOBALS; do
+            hits=$(grep -rn --include="*.jsx" \
+              -E "^(function ${name}[( ]|const ${name}\s*=|var ${name}\s*=|let ${name}\s*=)" \
+              web/ | grep -v "web/ui.jsx" || true)
+            if [ -n "$hits" ]; then
+              echo "COLLISION: '$name' redefined outside ui.jsx:"
+              echo "$hits"
+              FAIL=1
+            fi
+          done
+          [ $FAIL -eq 0 ] || exit 1
+
+      - name: Purge Cloudflare cache
+        # Clears the CF edge cache so thetunatracker.com immediately serves the
+        # new CF Pages deployment. Requires two repository secrets:
+        #   CLOUDFLARE_ZONE_ID   — zone ID for thetunatracker.com
+        #   CLOUDFLARE_API_TOKEN — token with Zone → Cache Purge permission
+        # Skips silently if secrets are not configured.
+        if: ${{ env.CLOUDFLARE_ZONE_ID != '' }}
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "Purging Cloudflare cache for zone $CLOUDFLARE_ZONE_ID..."
+          RESULT=$(curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}')
+          echo "$RESULT"
+          echo "$RESULT" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('success') else 1)"
+
+      - name: Verify Cloudflare Pages build succeeded
+        # Polls the CF Pages API until the build for the current commit completes.
+        # Fails loudly if CF Pages rejected the build (e.g. 25 MiB file-size limit).
+        # Requires CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+        # Skips silently if CLOUDFLARE_ACCOUNT_ID is not configured.
+        if: ${{ env.CLOUDFLARE_ACCOUNT_ID != '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          PROJECT="sd-sport-fishing"
+          SHA=$(git rev-parse HEAD)
+          SHORT=${SHA:0:12}
+          echo "Waiting for Cloudflare Pages build for commit $SHORT..."
+          sleep 20
+          for i in $(seq 1 30); do
+            RESP=$(curl -s \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/deployments" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            STATUS=$(echo "$RESP" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for d in data.get('result', []):
+              sha = (d.get('deployment_trigger') or {}).get('metadata', {}).get('commit_hash', '')
+              if sha.startswith('$SHORT'):
+                  stage = d.get('latest_stage', {})
+                  print(stage.get('status', 'unknown'))
+                  sys.exit(0)
+          print('pending')
+          " 2>/dev/null || echo "pending")
+            echo "  attempt $i/30: $STATUS"
+            if [ "$STATUS" = "success" ]; then
+              echo "Cloudflare Pages build succeeded."
+              exit 0
+            fi
+            if [ "$STATUS" = "failure" ]; then
+              echo "Cloudflare Pages build FAILED for commit $SHORT."
+              echo "Check: https://dash.cloudflare.com/pages/project/$PROJECT"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for Cloudflare Pages build — check dashboard manually."
+        continue-on-error: true
