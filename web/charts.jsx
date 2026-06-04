@@ -146,6 +146,16 @@ var WIND_PARTICLE_COLORS = [
   'rgb(120,30,180)',  // 33     — deep purple
   'rgb(80,30,180)',   // 35+    — violet (storm)
 ];
+var WAVE_PARTICLE_COLORS = [
+  'rgb(59,130,246)',   // calm  — blue
+  'rgb(34,197,94)',    // 0.5m  — green
+  'rgb(163,230,53)',   // 1.0m  — lime
+  'rgb(234,179,8)',    // 1.5m  — yellow
+  'rgb(249,115,22)',   // 2.0m  — orange
+  'rgb(239,68,68)',    // 2.5m  — red
+  'rgb(168,85,247)',   // 3.0m+ — purple
+];
+
 var _WIND_NX = 9, _WIND_NY = 9;
 var _WIND_LO1 = -121.0, _WIND_LA1 = 35.0, _WIND_DX = 0.5, _WIND_DY = 0.5;
 // v2 busts any stale all-zero cache from the previous 81-request implementation
@@ -325,6 +335,90 @@ function getCachedCurrentGrid() {
       console.warn('Current grid fetch failed, using synthetic fallback:', err);
       return _syntheticCurrentGrid();
     });
+}
+
+// ── 14-day forecast time series (wind + waves) ───────────────────────────────
+
+var _SERIES_TTL = 3 * 3600000; // 3 h in-memory cache
+var _windSeries14d  = null;    // { ts, frames, hours }
+var _wavesSeries7d  = null;    // { ts, frames, hours }
+
+function _buildSeriesFrames(locs, getSpd, getDir, headerBuilder, negate) {
+  var nHours = ((locs[0].hourly || {}).time || []).length;
+  var hours  = (locs[0].hourly || {}).time || [];
+  var frames = [];
+  for (var t = 0; t < nHours; t++) {
+    var u = [], v = [];
+    locs.forEach(function(loc) {
+      var spd = (getSpd(loc) || [])[t] || 0;
+      var dir = (getDir(loc) || [])[t] || 0;
+      var rad = dir * Math.PI / 180;
+      var sign = negate ? -1 : 1;
+      u.push(sign * (spd * Math.sin(rad)));
+      v.push(sign * (spd * Math.cos(rad)));
+    });
+    frames.push([
+      { header: headerBuilder({ parameterNumber: 2 }), data: u },
+      { header: headerBuilder({ parameterNumber: 3 }), data: v },
+    ]);
+  }
+  return { frames: frames, hours: hours };
+}
+
+function _latlonArrays() {
+  var lats = [], lons = [];
+  for (var j = 0; j < _WIND_NY; j++)
+    for (var i = 0; i < _WIND_NX; i++) {
+      lats.push((_WIND_LA1 - j * _WIND_DY).toFixed(2));
+      lons.push((_WIND_LO1 + i * _WIND_DX).toFixed(2));
+    }
+  return '?latitude=' + lats.join(',') + '&longitude=' + lons.join(',');
+}
+
+function _fetchWindSeries14d() {
+  var url = 'https://api.open-meteo.com/v1/forecast' + _latlonArrays() +
+    '&hourly=windspeed_10m,winddirection_10m&forecast_days=14&wind_speed_unit=ms&timezone=UTC';
+  return fetch(url)
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(res) {
+      var locs = Array.isArray(res) ? res : [res];
+      return _buildSeriesFrames(locs,
+        function(l) { return (l.hourly || {}).windspeed_10m; },
+        function(l) { return (l.hourly || {}).winddirection_10m; },
+        _buildWindHeader, true); // wind = "from" → negate
+    });
+}
+
+function getCachedWindSeries14d() {
+  if (_windSeries14d && Date.now() - _windSeries14d.ts < _SERIES_TTL)
+    return Promise.resolve(_windSeries14d);
+  return _fetchWindSeries14d().then(function(d) {
+    _windSeries14d = { ts: Date.now(), frames: d.frames, hours: d.hours };
+    return _windSeries14d;
+  });
+}
+
+function _fetchWavesSeries7d() {
+  var url = 'https://marine-api.open-meteo.com/v1/marine' + _latlonArrays() +
+    '&hourly=wave_height,wave_direction&forecast_days=7&timezone=UTC';
+  return fetch(url)
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(res) {
+      var locs = Array.isArray(res) ? res : [res];
+      return _buildSeriesFrames(locs,
+        function(l) { return (l.hourly || {}).wave_height; },
+        function(l) { return (l.hourly || {}).wave_direction; },
+        _buildWindHeader, true); // wave_direction = "from" → negate
+    });
+}
+
+function getCachedWavesSeries7d() {
+  if (_wavesSeries7d && Date.now() - _wavesSeries7d.ts < _SERIES_TTL)
+    return Promise.resolve(_wavesSeries7d);
+  return _fetchWavesSeries7d().then(function(d) {
+    _wavesSeries7d = { ts: Date.now(), frames: d.frames, hours: d.hours };
+    return _wavesSeries7d;
+  });
 }
 
 // ── MUR SST canvas raster + thermal-front overlay ────────────────────────────
@@ -1092,6 +1186,54 @@ function buildCatchLayer(trips) {
   return group;
 }
 
+// ── ForecastSlider ────────────────────────────────────────────────────────────
+
+function ForecastSlider({ series, step, onStep, loading }) {
+  if (loading && !series) {
+    return (
+      <div className="forecast-slider-wrap">
+        <div className="forecast-slider-loading">⏳ Loading forecast series…</div>
+      </div>
+    );
+  }
+  if (!series) return null;
+
+  var maxStep   = series.frames.length - 1;
+  var isLowConf = step >= 168;
+  var hourStr   = series.hours[step] || '';
+  var dt        = new Date(hourStr.length === 13 ? hourStr + ':00:00Z' : hourStr + 'Z');
+  var dayLabel  = isNaN(dt) ? '' : dt.toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
+  var timeLabel = isNaN(dt) ? '' : dt.toLocaleTimeString('en-US', {
+    hour: 'numeric', hour12: true, timeZone: 'America/Los_Angeles' });
+  var nDays     = Math.ceil((maxStep + 1) / 24);
+  var nowStep   = new Date().getUTCHours(); // first 24 steps correspond to today
+
+  return (
+    <div className={'forecast-slider-wrap' + (isLowConf ? ' fsl-low-conf' : '')}>
+      <div className="forecast-slider-row">
+        <span className="fsl-time">
+          <span className="fsl-day">{dayLabel}</span>
+          <span className="fsl-hr">{timeLabel} PT</span>
+        </span>
+        {step === nowStep && <span className="fsl-now-badge">Now</span>}
+        {isLowConf && <span className="fsl-conf-badge">⚠ Lower confidence</span>}
+      </div>
+      <input type="range" className="forecast-slider-range" min={0} max={maxStep}
+        step={1} value={step} onInput={function(e) { onStep(+e.target.value); }} />
+      <div className="fsl-day-ticks">
+        {Array.from({ length: nDays }, function(_, i) {
+          var d = new Date(); d.setUTCDate(d.getUTCDate() + i); d.setUTCHours(0,0,0,0);
+          var label = i === 0 ? 'Today' : d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+          return (
+            <span key={i} className={'fsl-tick' + (i >= 7 ? ' fsl-tick-dim' : '')}>{label}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── ChartTypeTabs ─────────────────────────────────────────────────────────────
 
 function ChartTypeTabs({ active, onChange }) {
@@ -1223,6 +1365,9 @@ function ChartsView({ navigate }) {
   const [boatPositions, setBoats]     = React.useState([]);
   const [boatsError, setBoatsError]   = React.useState(false);
   const [showCatches, setShowCatches] = React.useState(false);
+  const [sliderStep, setSliderStep]   = React.useState(function() { return new Date().getUTCHours(); });
+  const [sliderSeries, setSliderSeries] = React.useState(null);  // {frames,hours}|null
+  const [sliderLoading, setSliderLoading] = React.useState(false);
 
   const mapRef          = React.useRef(null);
   const mapInstance     = React.useRef(null);
@@ -1239,7 +1384,8 @@ function ChartsView({ navigate }) {
   const murGridRef       = React.useRef(null);
   const murSSTLayerRef   = React.useRef(null);
   const murFrontLayerRef = React.useRef(null);
-  const catchLayerRef    = React.useRef(null);
+  const catchLayerRef      = React.useRef(null);
+  const sliderThrottleRef  = React.useRef(null);
   const [sstReadout, setSstReadout] = React.useState(null); // {sst,grad}|null
 
   React.useEffect(function() { chartTypeRef.current = chartType; }, [chartType]);
@@ -1299,6 +1445,12 @@ function ChartsView({ navigate }) {
   // Swap layers whenever chartType changes
   React.useEffect(function() {
     if (!mapInstance.current) return;
+
+    // Reset forecast slider
+    setSliderSeries(null);
+    setSliderLoading(false);
+    setSliderStep(new Date().getUTCHours());
+    clearTimeout(sliderThrottleRef.current);
 
     // Basemap
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
@@ -1367,6 +1519,15 @@ function ChartsView({ navigate }) {
           });
           vl.addTo(mapInstance.current);
           velocityLayerRef.current = vl;
+          // Background: load 14-day series for slider
+          setSliderLoading(true);
+          getCachedWindSeries14d().then(function(series) {
+            setSliderLoading(false);
+            if (!mapInstance.current || chartTypeRef.current !== 'wind') return;
+            var initStep = new Date().getUTCHours();
+            setSliderSeries(series);
+            setSliderStep(initStep);
+          }).catch(function() { setSliderLoading(false); });
         }).catch(function() { setCondLoading(false); });
       } else {
         fetchConditionsData('wind').then(function(data) {
@@ -1379,13 +1540,44 @@ function ChartsView({ navigate }) {
       }
     } else if (chartType === 'waves') {
       setCondLoading(true);
+      // Show arrow layer immediately while series loads in background
       fetchConditionsData('waves').then(function(data) {
         setCondLoading(false);
-        if (!mapInstance.current) return;
+        if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
         var layer = buildConditionsLayer('waves', data);
         layer.addTo(mapInstance.current);
         condGroupRef.current = layer;
       }).catch(function() { setCondLoading(false); });
+      // Background: load 7-day series; switch to velocity layer when ready
+      setSliderLoading(true);
+      getCachedWavesSeries7d().then(function(series) {
+        setSliderLoading(false);
+        if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
+        if (typeof L.velocityLayer !== 'function') return;
+        // Remove arrow layer, create velocity layer for scrubbing
+        if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
+        var initStep = new Date().getUTCHours();
+        var frame = series.frames[initStep] || series.frames[0];
+        var vl = L.velocityLayer({
+          displayValues: true,
+          displayOptions: {
+            velocityType: 'Swell', position: 'bottomleft',
+            emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm',
+          },
+          data: frame,
+          maxVelocity: 3.0,
+          velocityScale: 0.015,
+          particleAge: 80,
+          lineWidth: 2.0,
+          particleMultiplier: 0.003,
+          colorScale: WAVE_PARTICLE_COLORS,
+          opacity: 0.90,
+        });
+        vl.addTo(mapInstance.current);
+        velocityLayerRef.current = vl;
+        setSliderSeries(series);
+        setSliderStep(initStep);
+      }).catch(function() { setSliderLoading(false); });
     } else if (chartType === 'currents') {
       setCondLoading(true);
       if (typeof L.velocityLayer === 'function') {
@@ -1534,6 +1726,14 @@ function ChartsView({ navigate }) {
     });
   }, [waypoints]);
 
+  // Forecast slider: update velocity layer data when step or series changes
+  React.useEffect(function() {
+    if (!sliderSeries || !velocityLayerRef.current) return;
+    var frame = sliderSeries.frames[sliderStep];
+    if (!frame) return;
+    try { velocityLayerRef.current.setData(frame); } catch(e) {}
+  }, [sliderStep, sliderSeries]);
+
   // Catch overlay: add/remove when toggled; persists across tab changes
   React.useEffect(function() {
     if (!mapInstance.current) return;
@@ -1544,6 +1744,17 @@ function ChartsView({ navigate }) {
       catchLayerRef.current.addTo(mapInstance.current);
     }
   }, [showCatches]);
+
+  function handleSliderInput(val) {
+    setSliderStep(val); // update display immediately for smooth feel
+    clearTimeout(sliderThrottleRef.current);
+    sliderThrottleRef.current = setTimeout(function() {
+      if (!sliderSeries || !velocityLayerRef.current) return;
+      var frame = sliderSeries.frames[val];
+      if (!frame) return;
+      try { velocityLayerRef.current.setData(frame); } catch(e) {}
+    }, 80);
+  }
 
   function handleSave(wp) { var n = [wp].concat(waypoints); setWaypoints(n); persistWaypoints(n); }
   function handleDelete(id) { var n = waypoints.filter(function(wp) { return wp.id !== id; }); setWaypoints(n); persistWaypoints(n); }
@@ -1559,6 +1770,10 @@ function ChartsView({ navigate }) {
       <ChartTypeTabs active={chartType} onChange={setChartType} />
       {chartType === 'sst' && (
         <SstSourcePicker mode={sstMode} onChange={setSstMode} />
+      )}
+      {(chartType === 'wind' || chartType === 'waves') && (
+        <ForecastSlider series={sliderSeries} step={sliderStep}
+          onStep={handleSliderInput} loading={sliderLoading} />
       )}
 
       {showMap && (
