@@ -3915,6 +3915,27 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   color: var(--tb-slate, #475569);
 }
 .legend-label { white-space: nowrap; }
+.legend-front-key {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 8px; white-space: nowrap; font: 500 11px var(--ss-font-sans); color: var(--tb-slate);
+}
+.legend-front-swatch {
+  display: inline-block; width: 28px; height: 8px; border-radius: 4px;
+  background: linear-gradient(to right, #ffdc00, #ff8000, #ff2000);
+  border: 1px solid rgba(0,0,0,0.15);
+}
+/* SST hover readout panel */
+.sst-readout {
+  position: absolute; bottom: 48px; right: 12px; z-index: 1000;
+  background: rgba(15,30,43,0.88); color: #fff;
+  padding: 6px 12px; border-radius: 8px;
+  font: 600 13px/20px var(--ss-font-sans);
+  pointer-events: none; backdrop-filter: blur(4px);
+  display: flex; gap: 10px; align-items: center;
+}
+.sst-readout-temp { color: #fff; }
+.sst-readout-grad { font-weight: 400; color: #ffb428; font-size: 11px; }
+.sst-readout-na   { color: #94a3b8; font-size: 11px; }
 .legend-gradient-bar {
   flex: 1;
   max-width: 300px;

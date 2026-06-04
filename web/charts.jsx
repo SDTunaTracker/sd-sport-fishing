@@ -25,7 +25,7 @@ var SST_SOURCES = {
   },
   mur: {
     label: 'Gap-free (MUR)',
-    badge: 'Recommended',
+    badge: null,
     desc: 'JPL MUR multi-source composite — fuses satellite + in-situ data. No cloud gaps. ~2 day lag. Best for finding temperature breaks.',
     layer: function() {
       var d = new Date();
@@ -36,6 +36,12 @@ var SST_SOURCES = {
         { opacity: 0.80, attribution: 'NASA GIBS · JPL MUR', maxNativeZoom: 7 }
       );
     },
+  },
+  raster: {
+    label: 'Canvas + Fronts',
+    badge: 'New',
+    desc: 'Client-rendered 0.04° MUR grid — cloud-free, gap-free. Thermal fronts (orange/red) = SST gradient breaks where bait concentrates. Hover for readout. 3–6 day lag.',
+    layer: null, // handled async in ChartsView — not a tile layer
   },
 };
 
@@ -319,6 +325,204 @@ function getCachedCurrentGrid() {
       console.warn('Current grid fetch failed, using synthetic fallback:', err);
       return _syntheticCurrentGrid();
     });
+}
+
+// ── MUR SST canvas raster + thermal-front overlay ────────────────────────────
+
+var _MUR_RASTER_BBOX = { latMin: 30.0, latMax: 34.5, lonMin: -121.5, lonMax: -116.0 };
+var _MUR_RASTER_STRIDE = 4;           // every 4th 0.01° native cell → ~0.04° ≈ 4.4 km
+var _MUR_RASTER_CACHE_KEY = 'tt_mur_raster_v1';
+var _MUR_RASTER_CACHE_TTL = 22 * 3600000; // 22 h — MUR is daily, refresh once per day
+
+// SST color ramp: [°F, r, g, b] breakpoints
+var _SST_RAMP = [
+  [55,  0,  20, 180],   // deep blue
+  [60,  0,  80, 220],   // blue
+  [63, 20, 160, 220],   // cyan
+  [66, 80, 210, 120],   // green
+  [68,160, 230,  60],   // lime
+  [70,230, 230,  50],   // yellow
+  [72,255, 180,  40],   // orange
+  [74,255,  80,  20],   // red-orange
+  [76,200,  20,  20],   // red
+];
+
+function _sstRgb(f) {
+  var r = _SST_RAMP;
+  if (f <= r[0][0]) return [r[0][1], r[0][2], r[0][3]];
+  for (var i = 1; i < r.length; i++) {
+    if (f <= r[i][0]) {
+      var t = (f - r[i-1][0]) / (r[i][0] - r[i-1][0]);
+      return [
+        Math.round(r[i-1][1] + t*(r[i][1]-r[i-1][1])),
+        Math.round(r[i-1][2] + t*(r[i][2]-r[i-1][2])),
+        Math.round(r[i-1][3] + t*(r[i][3]-r[i-1][3])),
+      ];
+    }
+  }
+  var last = r[r.length-1];
+  return [last[1], last[2], last[3]];
+}
+
+function _fetchMURRasterGrid(dateStr) {
+  var t = dateStr + 'T09:00:00Z';
+  var b = _MUR_RASTER_BBOX, s = _MUR_RASTER_STRIDE;
+  var url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json' +
+    '?analysed_sst' +
+    '[(' + t + '):1:(' + t + ')]' +
+    '[(' + b.latMin + '):' + s + ':(' + b.latMax + ')]' +
+    '[(' + b.lonMin + '):' + s + ':(' + b.lonMax + ')]';
+  return fetch(url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('ERDDAP HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(d) {
+      var tbl = d.table || {};
+      var cols = tbl.columnNames || [];
+      var latI = cols.indexOf('latitude'), lonI = cols.indexOf('longitude'), sstI = cols.indexOf('analysed_sst');
+      if (sstI === -1) throw new Error('no analysed_sst column');
+      var rows = tbl.rows || [];
+      if (rows.length < 20) throw new Error('too few rows: ' + rows.length);
+
+      var latSet = Object.create(null), lonSet = Object.create(null);
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i][sstI] !== null) { latSet[rows[i][latI]] = true; lonSet[rows[i][lonI]] = true; }
+      }
+      var lats = Object.keys(latSet).map(Number).sort(function(a,b){return a-b;});
+      var lons = Object.keys(lonSet).map(Number).sort(function(a,b){return a-b;});
+      var ny = lats.length, nx = lons.length;
+      if (ny < 5 || nx < 5) throw new Error('grid too small: ' + ny + 'x' + nx);
+
+      var dlat = ny > 1 ? lats[1]-lats[0] : 0.04;
+      var dlon = nx > 1 ? lons[1]-lons[0] : 0.04;
+      var values = new Float32Array(ny * nx);
+      values.fill(NaN);
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (row[sstI] === null) continue;
+        var sst_c = row[sstI];
+        if (sst_c > 200) sst_c -= 273.15; // Kelvin guard
+        var li  = Math.round((row[latI] - lats[0]) / dlat);
+        var loi = Math.round((row[lonI] - lons[0]) / dlon);
+        if (li >= 0 && li < ny && loi >= 0 && loi < nx)
+          values[li * nx + loi] = sst_c * 9/5 + 32; // → °F
+      }
+      return { lats: lats, lons: lons, values: values, nx: nx, ny: ny, dlat: dlat, dlon: dlon, date: dateStr };
+    });
+}
+
+function _getCachedMURRasterGrid() {
+  try {
+    var c = JSON.parse(localStorage.getItem(_MUR_RASTER_CACHE_KEY) || 'null');
+    if (c && c.data && Date.now() - c.ts < _MUR_RASTER_CACHE_TTL) {
+      c.data.values = new Float32Array(c.data.values);
+      return Promise.resolve(c.data);
+    }
+  } catch(e) {}
+  var today = new Date();
+  function attempt(back) {
+    if (back > 9) return Promise.reject(new Error('MUR: no data in last 9 days'));
+    var d = new Date(today); d.setDate(d.getDate() - back);
+    return _fetchMURRasterGrid(d.toISOString().slice(0,10))
+      .then(function(data) {
+        try {
+          localStorage.setItem(_MUR_RASTER_CACHE_KEY, JSON.stringify({
+            ts: Date.now(),
+            data: { lats: data.lats, lons: data.lons, nx: data.nx, ny: data.ny,
+                    dlat: data.dlat, dlon: data.dlon, date: data.date,
+                    values: Array.from(data.values) },
+          }));
+        } catch(e) {}
+        return data;
+      })
+      .catch(function() { return attempt(back + 1); });
+  }
+  return attempt(3);
+}
+
+function _renderSSTCanvas(grid) {
+  var nx = grid.nx, ny = grid.ny;
+  var canvas = document.createElement('canvas');
+  canvas.width = nx; canvas.height = ny;
+  var ctx = canvas.getContext('2d');
+  var img = ctx.createImageData(nx, ny);
+  var px = img.data;
+  for (var row = 0; row < ny; row++) {
+    var li = ny - 1 - row; // canvas row 0 = top = north = high lat index
+    for (var col = 0; col < nx; col++) {
+      var v = grid.values[li * nx + col];
+      var p = (row * nx + col) * 4;
+      if (isNaN(v)) { px[p+3] = 0; continue; }
+      var rgb = _sstRgb(v);
+      px[p] = rgb[0]; px[p+1] = rgb[1]; px[p+2] = rgb[2]; px[p+3] = 215;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas;
+}
+
+function _renderFrontCanvas(grid) {
+  // Paint cells where |∇SST| exceeds threshold — the thermal-front layer
+  var nx = grid.nx, ny = grid.ny;
+  var canvas = document.createElement('canvas');
+  canvas.width = nx; canvas.height = ny;
+  var ctx = canvas.getContext('2d');
+  var img = ctx.createImageData(nx, ny);
+  var px = img.data;
+  // Thresholds in °F per grid cell (1 cell ≈ 4.4 km)
+  var FMIN = 0.8, FMAX = 4.0;
+  for (var row = 0; row < ny; row++) {
+    var li = ny - 1 - row;
+    for (var col = 0; col < nx; col++) {
+      var p = (row * nx + col) * 4;
+      if (li < 1 || li >= ny-1 || col < 1 || col >= nx-1) { px[p+3] = 0; continue; }
+      var here = grid.values[li * nx + col];
+      if (isNaN(here)) { px[p+3] = 0; continue; }
+      var n = grid.values[(li+1)*nx+col], s = grid.values[(li-1)*nx+col];
+      var e = grid.values[li*nx+(col+1)], w = grid.values[li*nx+(col-1)];
+      if (isNaN(n)||isNaN(s)||isNaN(e)||isNaN(w)) { px[p+3] = 0; continue; }
+      var dLat = (n-s)/2, dLon = (e-w)/2;
+      var grad = Math.sqrt(dLat*dLat + dLon*dLon);
+      if (grad < FMIN) { px[p+3] = 0; continue; }
+      var t = Math.min((grad - FMIN) / (FMAX - FMIN), 1.0);
+      // yellow → orange → red
+      px[p] = 255; px[p+1] = Math.round(220*(1-t)); px[p+2] = 0;
+      px[p+3] = Math.round(80 + t*160);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas;
+}
+
+function _buildMUROverlays(grid) {
+  var b = _MUR_RASTER_BBOX;
+  var bounds = L.latLngBounds([[b.latMin, b.lonMin], [b.latMax, b.lonMax]]);
+  return {
+    sst:   L.imageOverlay(_renderSSTCanvas(grid).toDataURL(), bounds, { opacity: 0.85, interactive: false }),
+    front: L.imageOverlay(_renderFrontCanvas(grid).toDataURL(), bounds, { opacity: 0.90, interactive: false }),
+  };
+}
+
+function _murGridReadout(grid, latlng) {
+  var lat = latlng.lat, lng = latlng.lng;
+  var b = _MUR_RASTER_BBOX;
+  if (lat < b.latMin || lat > b.latMax || lng < b.lonMin || lng > b.lonMax) return null;
+  var li  = Math.max(0, Math.min(grid.ny-1, Math.round((lat - grid.lats[0]) / grid.dlat)));
+  var loi = Math.max(0, Math.min(grid.nx-1, Math.round((lng - grid.lons[0]) / grid.dlon)));
+  var sst = grid.values[li * grid.nx + loi];
+  if (isNaN(sst)) return { sst: null, grad: null };
+  var grad = null;
+  if (li > 0 && li < grid.ny-1 && loi > 0 && loi < grid.nx-1) {
+    var n = grid.values[(li+1)*grid.nx+loi], s = grid.values[(li-1)*grid.nx+loi];
+    var e = grid.values[li*grid.nx+(loi+1)], w = grid.values[li*grid.nx+(loi-1)];
+    if (!isNaN(n)&&!isNaN(s)&&!isNaN(e)&&!isNaN(w)) {
+      var dLat=(n-s)/2, dLon=(e-w)/2;
+      // convert from °F/cell to °C/km (1 cell ≈ 4.4 km, 1°F = 0.556°C)
+      grad = Math.sqrt(dLat*dLat+dLon*dLon) * 0.556 / 4.4;
+    }
+  }
+  return { sst: sst, grad: grad };
 }
 
 // ── Conditions rendering ──────────────────────────────────────────────────────
@@ -815,7 +1019,7 @@ function SstSourcePicker({ mode, onChange }) {
   );
 }
 
-function ChartsHeader({ chartType, sstMode }) {
+function ChartsHeader({ chartType, sstMode, sstReadout }) {
   var sstSrc = SST_SOURCES[sstMode] || SST_SOURCES.mur;
   var titles = {
     sst:         { title: 'Sea Surface Temperature',    desc: sstSrc.desc + ' Bait concentrates at 1–2°F transitions in the 64–72°F range.' },
@@ -843,7 +1047,7 @@ function ChartsHeader({ chartType, sstMode }) {
 
 // ── ChartLegend ───────────────────────────────────────────────────────────────
 
-function ChartLegend({ type }) {
+function ChartLegend({ type, sstMode }) {
   var legends = {
     sst:         { gradient: 'linear-gradient(to right, #0033CC, #0099FF, #66CCFF, #99FF66, #FFCC00, #FF6600, #CC0000)', low: 'Cool (55°F)', high: 'Warm (75°F)' },
     chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear water', high: 'Rich bait zone' },
@@ -855,6 +1059,18 @@ function ChartLegend({ type }) {
     tides:       null,
     boats:       null,
   };
+  if (type === 'sst' && sstMode === 'raster') {
+    return (
+      <div className="chart-legend-bar">
+        <span className="legend-label">55°F</span>
+        <div className="legend-gradient-bar" style={{ background: 'linear-gradient(to right, #00148b, #0050dc, #14a0dc, #50d278, #a0e63c, #e6e632, #ffb428, #ff5014, #c81414)' }} />
+        <span className="legend-label">76°F</span>
+        <span className="legend-front-key">
+          <span className="legend-front-swatch"></span>Thermal front
+        </span>
+      </div>
+    );
+  }
   var config = legends[type];
   if (!config) return null;
   return (
@@ -893,6 +1109,11 @@ function ChartsView() {
   const chartTypeRef    = React.useRef(chartType);
   const sstModeRef      = React.useRef(sstMode);
   const waypointMarkers = React.useRef({});
+  // MUR raster refs — canvas-based SST + thermal-front overlays
+  const murGridRef       = React.useRef(null);
+  const murSSTLayerRef   = React.useRef(null);
+  const murFrontLayerRef = React.useRef(null);
+  const [sstReadout, setSstReadout] = React.useState(null); // {sst,grad}|null
 
   React.useEffect(function() { chartTypeRef.current = chartType; }, [chartType]);
   React.useEffect(function() { sstModeRef.current = sstMode; }, [sstMode]);
@@ -958,10 +1179,30 @@ function ChartsView() {
       attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19,
     }).addTo(mapInstance.current);
 
+    // Clear MUR canvas layers whenever tab switches
+    [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
+      if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
+    });
+    murGridRef.current = null;
+    setSstReadout(null);
+
     // Tile overlay (SST / chloro / bathymetry / satellite)
     if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
-    var overlay = getOverlayLayer(chartType, sstModeRef.current);
-    if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+    if (chartType === 'sst' && sstModeRef.current === 'raster') {
+      // canvas raster — handled below (same logic as sstMode effect)
+      setCondLoading(true);
+      _getCachedMURRasterGrid().then(function(grid) {
+        setCondLoading(false);
+        if (!mapInstance.current || chartTypeRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
+        murGridRef.current = grid;
+        var ovs = _buildMUROverlays(grid);
+        ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
+        ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
+      }).catch(function() { setCondLoading(false); });
+    } else {
+      var overlay = getOverlayLayer(chartType, sstModeRef.current);
+      if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+    }
 
     // Clear conditions (wind/wave arrows + velocity particles)
     if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
@@ -1068,14 +1309,53 @@ function ChartsView() {
     }
   }, [chartType]);
 
-  // Swap SST tile layer when user changes source (without reinitializing full tab)
+  // Swap SST layer when user changes source (tile ↔ canvas raster)
   React.useEffect(function() {
     if (chartTypeRef.current !== 'sst' || !mapInstance.current) return;
     localStorage.setItem('tt_sst_mode', sstMode);
+    // Clear both tile overlay and MUR canvas layers
     if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
-    var overlay = getOverlayLayer('sst', sstMode);
-    if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+    [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
+      if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
+    });
+    murGridRef.current = null;
+    setSstReadout(null);
+    if (sstMode === 'raster') {
+      setCondLoading(true);
+      _getCachedMURRasterGrid().then(function(grid) {
+        setCondLoading(false);
+        if (!mapInstance.current || chartTypeRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
+        murGridRef.current = grid;
+        var ovs = _buildMUROverlays(grid);
+        ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
+        ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
+      }).catch(function() { setCondLoading(false); });
+    } else {
+      var overlay = getOverlayLayer('sst', sstMode);
+      if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+    }
   }, [sstMode]);
+
+  // SST readout: update on hover when canvas raster is active
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    var throttle = 0;
+    function onMove(e) {
+      var now = Date.now();
+      if (now - throttle < 33) return; // ~30 fps
+      throttle = now;
+      if (chartTypeRef.current !== 'sst' || sstModeRef.current !== 'raster' || !murGridRef.current) return;
+      setSstReadout(_murGridReadout(murGridRef.current, e.latlng));
+    }
+    function onLeave() { setSstReadout(null); }
+    mapInstance.current.on('mousemove', onMove);
+    mapInstance.current.on('mouseout', onLeave);
+    return function() {
+      if (!mapInstance.current) return;
+      mapInstance.current.off('mousemove', onMove);
+      mapInstance.current.off('mouseout', onLeave);
+    };
+  }, []);
 
   // Boat polling effect
   React.useEffect(function() {
@@ -1134,7 +1414,7 @@ function ChartsView() {
 
   return (
     <div className="charts-view">
-      <ChartsHeader chartType={chartType} sstMode={sstMode} />
+      <ChartsHeader chartType={chartType} sstMode={sstMode} sstReadout={sstReadout} />
       <ChartTypeTabs active={chartType} onChange={setChartType} />
       {chartType === 'sst' && (
         <SstSourcePicker mode={sstMode} onChange={setSstMode} />
@@ -1145,7 +1425,9 @@ function ChartsView() {
           <div ref={mapRef} className="chart-map" />
           {condLoading && (
             <div className="cond-loading-overlay">
-              <div className="cond-loading-pill">Loading conditions…</div>
+              <div className="cond-loading-pill">
+                {chartType === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
+              </div>
             </div>
           )}
           {chartType === 'boats' && !boatsError && boatPositions.length > 0 && (
@@ -1154,6 +1436,20 @@ function ChartsView() {
             </div>
           )}
           {showBoatSetup && <BoatsSetupOverlay />}
+          {sstReadout && chartType === 'sst' && sstMode === 'raster' && (
+            <div className="sst-readout">
+              {sstReadout.sst !== null ? (
+                <React.Fragment>
+                  <span className="sst-readout-temp">{sstReadout.sst.toFixed(1)}°F</span>
+                  {sstReadout.grad !== null && (
+                    <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
+                  )}
+                </React.Fragment>
+              ) : (
+                <span className="sst-readout-na">No SST (land/cloud)</span>
+              )}
+            </div>
+          )}
           <WaypointsSidebar
             waypoints={waypoints} onSelect={handleSelect}
             onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
@@ -1166,7 +1462,7 @@ function ChartsView() {
         <TidesPanel data={tidesData} loading={condLoading} />
       )}
 
-      <ChartLegend type={chartType} />
+      <ChartLegend type={chartType} sstMode={sstMode} />
       <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
       {showModal && pendingLatLng && (
