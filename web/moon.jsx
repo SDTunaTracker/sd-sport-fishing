@@ -1,4 +1,5 @@
 // Moon Phase view — lunar phase correlation with catch rates
+const { useMemo } = React;
 function MoonView({ filters, setFilters, navigate, regions }) {
   const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const moonData = useMemo(() => SDA.moonAnalysis(trips, filters.species), [trips, filters.species]);

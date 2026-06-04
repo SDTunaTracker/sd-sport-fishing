@@ -1,4 +1,5 @@
 // Boat detail drill-down
+const { useEffect, useMemo } = React;
 function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
   const [detailTab, setDetailTab] = React.useState('overview');
   // Boat detail shows all history — no global filters applied here.

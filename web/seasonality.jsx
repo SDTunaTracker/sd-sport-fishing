@@ -1,4 +1,5 @@
 // Seasonality view — species catch patterns by month
+const { useMemo } = React;
 function SeasonalityView({ filters, setFilters, navigate, regions }) {
   const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const monthly = useMemo(() => SDA.monthlyTrend(trips, filters.species), [trips, filters.species]);

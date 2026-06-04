@@ -1,4 +1,5 @@
 // Boats — visual directory and discovery experience
+const { useState, useEffect, useMemo, useRef } = React;
 const _STATIC_LANDINGS_META = [
   { name: "H&M Landing",            lat: 32.7235, lng: -117.2276, googleRating: 4.3, googleCount: 850,  region: "san_diego" },
   { name: "Fisherman's Landing",     lat: 32.7250, lng: -117.2265, googleRating: 4.5, googleCount: 650,  region: "san_diego" },

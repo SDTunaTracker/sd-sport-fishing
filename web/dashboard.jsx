@@ -1,6 +1,6 @@
 // Today view — Today's Report (with date picker) + Current Year Leaderboard
 // ForecastWidget is intentionally above TodayCatch to surface conditions before catch data.
-const { useMemo, useState: useS } = React;
+const { useMemo, useState, useState: useS, useEffect } = React;
 
 function _fcScoreColor(s) {
   if (s == null) return 'var(--tb-gray-3)';

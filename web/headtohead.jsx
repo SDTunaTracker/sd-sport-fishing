@@ -1,6 +1,7 @@
 // Head-to-Head — leaderboard restricted to "apples-to-apples" matchups
 // (same date + same trip length + ≥2 boats), so the ranking isolates skill
 // from external factors like weather, moon, or whether the fish were biting.
+const { useState, useMemo } = React;
 function HeadToHead({ filters, setFilters, navigate, regions }) {
   const trips = useMemo(() => SDA.filterTrips(filters, regions), [filters, regions]);
   const matchups = useMemo(() => SDA.peerMatchups(trips, filters.species), [trips, filters.species]);
