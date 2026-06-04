@@ -8,7 +8,7 @@ function MoonView({ filters, setFilters, navigate, regions }) {
   const speciesLabel = speciesActive ? filters.species : 'Tuna';
 
   return (
-    <Fragment>
+    <React.Fragment>
       <Crumbs items={[
         { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'moon' }) },
         { label: 'Moon Phase' },
@@ -46,7 +46,7 @@ function MoonView({ filters, setFilters, navigate, regions }) {
           })()}
         </div>
       </Panel>
-    </Fragment>
+    </React.Fragment>
   );
 }
 
@@ -57,7 +57,7 @@ function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'moon', r
     { id: 'seasonality', label: 'Seasonality' },
   ];
   return (
-    <Fragment>
+    <React.Fragment>
       <div className="tabbar analytics-subtabbar">
         {SUBTABS.map(t => (
           <a key={t.id} className={subtab === t.id ? 'sel' : ''}
@@ -66,7 +66,7 @@ function SeasonalityMoonView({ filters, setFilters, navigate, subtab = 'moon', r
       </div>
       {subtab === 'seasonality' && <SeasonalityView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
       {subtab === 'moon'        && <MoonView        filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
-    </Fragment>
+    </React.Fragment>
   );
 }
 

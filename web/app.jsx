@@ -330,7 +330,7 @@ function App() {
     : route.view;
 
   return (
-    <Fragment>
+    <React.Fragment>
       <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
                  hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
@@ -367,7 +367,7 @@ function App() {
                        onChange={v => setFilters({ ...filters, species: v })}/>
         </TweakSection>
       </TweaksPanel>
-    </Fragment>
+    </React.Fragment>
   );
 }
 

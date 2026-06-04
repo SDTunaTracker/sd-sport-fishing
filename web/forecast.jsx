@@ -936,12 +936,12 @@ function FleetDepartures({ date, navigate }) {
               </div>
               <div className="fc-fleet-win">
                 {winRatePct != null
-                  ? <Fragment>
+                  ? <React.Fragment>
                       <span className="fc-fleet-win-pct" style={{ color: scoreColor(winRatePct / 10) }}>
                         {winRatePct}%
                       </span>
                       <span className="fc-fleet-win-label"><MetricLabel {...METRIC_DEFINITIONS.winRate} /></span>
-                    </Fragment>
+                    </React.Fragment>
                   : <span className="fc-fleet-win-pct" style={{ color: 'var(--tb-gray-3)' }}>—</span>
                 }
               </div>
@@ -1184,7 +1184,7 @@ function ForecastView({ navigate }) {
 
   if (!fc || !fc.today) {
     return (
-      <Fragment>
+      <React.Fragment>
         <div className="pagehead">
           <h1>Fishing Forecast</h1>
           <p style={{fontSize:14, color:'var(--tb-gray-3)', maxWidth:560, marginBottom:16, lineHeight:1.6}}>
@@ -1192,7 +1192,7 @@ function ForecastView({ navigate }) {
           </p>
         </div>
         <NoForecastData/>
-      </Fragment>
+      </React.Fragment>
     );
   }
 
@@ -1203,7 +1203,7 @@ function ForecastView({ navigate }) {
   const offDays  = fc.offshore?.sevenDay || [];
 
   return (
-    <Fragment>
+    <React.Fragment>
       <div className="pagehead">
         <h1>Fishing Forecast</h1>
       </div>
@@ -1222,7 +1222,7 @@ function ForecastView({ navigate }) {
 
       {/* Details accordion — power user content */}
       <DetailsAccordion fc={fc}/>
-    </Fragment>
+    </React.Fragment>
   );
 }
 

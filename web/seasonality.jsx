@@ -4,7 +4,7 @@ function SeasonalityView({ filters, setFilters, navigate, regions }) {
   const monthly = useMemo(() => SDA.monthlyTrend(trips, filters.species), [trips, filters.species]);
 
   return (
-    <Fragment>
+    <React.Fragment>
       <Crumbs items={[
         { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'seasonality' }) },
         { label: 'Seasonality' },
@@ -36,7 +36,7 @@ function SeasonalityView({ filters, setFilters, navigate, regions }) {
           formatY={v => fmt.n(Math.round(v))}
         />
       </Panel>
-    </Fragment>
+    </React.Fragment>
   );
 }
 

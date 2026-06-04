@@ -211,7 +211,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
   );
 
   return (
-    <Fragment>
+    <React.Fragment>
       {/* Sub-tab bar — always visible */}
       <div className="tabbar analytics-subtabbar">
         {SUBTABS.map(t => (
@@ -230,7 +230,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
       </div>
 
       {/* Overview sub-tab */}
-      {subtab === 'overview' && <Fragment>
+      {subtab === 'overview' && <React.Fragment>
       <Crumbs items={[{ label: 'Analytics' }, { label: 'Overview' }]}/>
       <div className="pagehead">
         <div>
@@ -273,7 +273,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
           {topBoats.length === 0 ? (
             <div className="muted-block">No boats meet the minimum trip threshold for these filters.</div>
           ) : (
-            <Fragment>
+            <React.Fragment>
               <div className="chart-legend" style={{marginBottom: 8}}>
                 <span className="ll"><span className="sw" style={{background:'var(--ss-darkseagreen-500)'}}></span>Consistent</span>
                 <span className="ll"><span className="sw" style={{background:'var(--ss-orange-500)'}}></span>Spike</span>
@@ -306,7 +306,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
                   );
                 })}
               </div>
-            </Fragment>
+            </React.Fragment>
           )}
         </Panel>
       </div>
@@ -380,7 +380,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
       <StreakTracker navigate={navigate} regions={regions}/>
 
-      </Fragment>}
+      </React.Fragment>}
 
       {/* Head-to-Head sub-tab */}
       {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
@@ -390,7 +390,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
       {/* Moon Phase sub-tab */}
       {subtab === 'moon' && <MoonView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
-    </Fragment>
+    </React.Fragment>
   );
 }
 

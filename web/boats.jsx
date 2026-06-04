@@ -289,7 +289,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
   const mapLandings = landingsMeta.filter(m => m.lat && m.lng && allByLanding[m.name]);
 
   return (
-    <Fragment>
+    <React.Fragment>
       <div className="pagehead">
         <div>
           <h1>Boats <span className="region-subtitle-badge">{regionLabel}</span></h1>
@@ -467,7 +467,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
           </div>
         </Panel>
       )}
-    </Fragment>
+    </React.Fragment>
   );
 }
 

@@ -71,7 +71,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
   }, [boat]);
 
   return (
-    <Fragment>
+    <React.Fragment>
       <Crumbs items={[
         { label: 'Boats', onClick: () => navigate('boats', {}) },
         { label: boat },
@@ -153,7 +153,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
             const landingMonthly = SDA.monthlyTrend(landingAvg, 'all');
             const max = Math.max(...monthly.map(m=>m.tpa), ...landingMonthly.map(m=>m.tpa), 0.001);
             return (
-              <Fragment>
+              <React.Fragment>
                 <div className="chart-legend" style={{marginBottom:6}}>
                   <span className="ll"><span className="sw" style={{background:'#008566'}}></span>{boat}</span>
                   <span className="ll"><span className="sw" style={{background:'#C9C6CE'}}></span>{meta.landing} avg</span>
@@ -183,7 +183,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
                     );
                   })}
                 </svg>
-              </Fragment>
+              </React.Fragment>
             );
           })()}
         </Panel>
@@ -296,7 +296,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
           const numStyle = { textAlign:'right' };
           const speciesHeaderStyle = (sp) => ({ ...numStyle, color: SPECIES_COLORS[sp] });
           return (
-            <Fragment>
+            <React.Fragment>
               <div style={headerStyle}>
                 <span>Date</span>
                 <span>Species Mix</span>
@@ -353,11 +353,11 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
                   );
                 })}
               </div>
-            </Fragment>
+            </React.Fragment>
           );
         })()}
       </Panel>}
-    </Fragment>
+    </React.Fragment>
   );
 }
 
@@ -380,7 +380,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
   const topBoat = boats[0];
 
   return (
-    <Fragment>
+    <React.Fragment>
       <Crumbs items={[
         { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'overview' }) },
         { label: landing },
@@ -461,7 +461,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
           data={monthly.map((m,i) => ({ label: MONTH_NAMES[i], value: m.tuna, color: m === bestMonth ? '#FF7705' : '#008566' }))}
           formatY={v => fmt.n(Math.round(v))}/>
       </Panel>
-    </Fragment>
+    </React.Fragment>
   );
 }
 
@@ -474,7 +474,7 @@ function LandingsView({ filters, setFilters, navigate, regions }) {
   const speciesLabel = speciesActive ? filters.species : 'Tuna';
 
   return (
-    <Fragment>
+    <React.Fragment>
       <Crumbs items={[
         { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'overview' }) },
         { label: 'Landings' },
@@ -539,7 +539,7 @@ function LandingsView({ filters, setFilters, navigate, regions }) {
           </tbody>
         </table>
       </Panel>
-    </Fragment>
+    </React.Fragment>
   );
 }
 

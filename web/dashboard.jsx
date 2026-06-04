@@ -502,7 +502,7 @@ function TodayCatch({ navigate, settings, regions }) {
   ].filter(s => summary[s.key] > 0);
 
   return (
-    <Fragment>
+    <React.Fragment>
       <div className="today-banner">
         <div className="today-left">
           <h2 className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</h2>
@@ -609,7 +609,7 @@ function TodayCatch({ navigate, settings, regions }) {
       ) : null}
 
       {isToday && <StillFishingSection trips={stillFishing}/>}
-    </Fragment>
+    </React.Fragment>
   );
 }
 
@@ -671,7 +671,7 @@ function TodayView({ navigate, settings, regions }) {
   const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
 
   return (
-    <Fragment>
+    <React.Fragment>
       <ReturnVisitToast navigate={navigate}/>
       <div className="pagehead">
         <div>
@@ -698,7 +698,7 @@ function TodayView({ navigate, settings, regions }) {
           {topBoats.length === 0 ? (
             <div className="muted-block">No data yet for {currentYear}.</div>
           ) : (
-            <Fragment>
+            <React.Fragment>
               <div style={{position: 'relative'}}>
                 {topBoats.map((b, i) => {
                   const wpct = (b.avgTPAPerDay / maxTPAPerDay) * 100;
@@ -721,11 +721,11 @@ function TodayView({ navigate, settings, regions }) {
                   );
                 })}
               </div>
-            </Fragment>
+            </React.Fragment>
           )}
         </Panel>
       </div>
-    </Fragment>
+    </React.Fragment>
   );
 }
 
@@ -850,7 +850,7 @@ function HomeView({ navigate, settings, regions }) {
   const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
 
   return (
-    <Fragment>
+    <React.Fragment>
       {/* ── HERO ──────────────────────────────────────────────────────── */}
       <div className="home-hero">
         <div className="home-hero-content">
@@ -985,7 +985,7 @@ function HomeView({ navigate, settings, regions }) {
           </button>
         </div>
       </div>
-    </Fragment>
+    </React.Fragment>
   );
 }
 

@@ -42,7 +42,7 @@ function HeadToHead({ filters, setFilters, navigate, regions }) {
   const speciesLabel = speciesActive ? filters.species : 'Tuna';
 
   return (
-    <Fragment>
+    <React.Fragment>
       <Crumbs items={[
         { label: 'Analytics', onClick: () => navigate('analytics', { subtab: 'overview' }) },
         { label: 'Head-to-Head' },
@@ -129,7 +129,7 @@ function HeadToHead({ filters, setFilters, navigate, regions }) {
           </div>
         )}
       </Panel>
-    </Fragment>
+    </React.Fragment>
   );
 }
 
