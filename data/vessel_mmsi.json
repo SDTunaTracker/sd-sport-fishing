@@ -131,8 +131,12 @@
     "338353534": {
       "name": "Eldorado",
       "landing": "Long Beach Sportfishing"
+    },
+    "338093000": {
+      "name": "New Lo-An",
+      "landing": "Point Loma Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-04T00:13:25.730296+00:00",
-  "_vessel_count": 31
+  "_last_discover_run": "2026-06-04T12:28:58.741303+00:00",
+  "_vessel_count": 32
 }
