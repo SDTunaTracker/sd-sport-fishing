@@ -694,7 +694,7 @@ function TodayView({ navigate, settings, regions }) {
       <div style={{marginTop: 20}}>
         <Panel title={`Top Boats — ${currentYear} Season`}
                meta="Ranked by avg tuna/angler/day · min 5 trips"
-               actions={<button className="btn sm ghost" onClick={() => navigate('analytics', { subtab: 'overview' })}>Full Analytics →</button>}>
+               actions={<Button variant="ghost" size="sm" onClick={() => navigate('analytics', { subtab: 'overview' })}>Full Analytics →</Button>}>
           {topBoats.length === 0 ? (
             <div className="muted-block">No data yet for {currentYear}.</div>
           ) : (
@@ -731,20 +731,20 @@ function TodayView({ navigate, settings, regions }) {
 
 // ── Home page ─────────────────────────────────────────────────────────────────
 
+const HOME_RATING_MAP = {
+  fire:  { bg: '#BBF7D0', color: '#14532D', text: 'On Fire'   },
+  above: { bg: '#BBF7D0', color: '#14532D', text: 'Above Avg' },
+  avg:   { bg: '#E2E8F0', color: '#334155', text: 'Average'   },
+  below: { bg: '#FDE68A', color: '#78350F', text: 'Below Avg' },
+  slow:  { bg: '#FEE2E2', color: '#9B1C1C', text: 'Slow'      },
+  new:   { bg: '#E2E8F0', color: '#334155', text: 'New'       },
+};
 function HomeRatingBadge({ ratingKey }) {
-  const MAP = {
-    fire:  { bg: '#BBF7D0', color: '#14532D', text: 'On Fire'   },
-    above: { bg: '#BBF7D0', color: '#14532D', text: 'Above Avg' },
-    avg:   { bg: '#E2E8F0', color: '#334155', text: 'Average'   },
-    below: { bg: '#FDE68A', color: '#78350F', text: 'Below Avg' },
-    slow:  { bg: '#FEE2E2', color: '#9B1C1C', text: 'Slow'      },
-    new:   { bg: '#E2E8F0', color: '#334155', text: 'New'       },
-  };
-  const r = MAP[ratingKey] || MAP.new;
+  const r = HOME_RATING_MAP[ratingKey] || HOME_RATING_MAP.new;
   return (
-    <span style={{ background: r.bg, color: r.color, fontWeight: 600, fontSize: 10, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+    <Badge style={{ background: r.bg, color: r.color, fontWeight: 600, border: 'none', whiteSpace: 'nowrap' }}>
       {r.text}
-    </span>
+    </Badge>
   );
 }
 
@@ -777,7 +777,7 @@ function HomeTop5({ navigate, settings, regions }) {
       </div>
 
       {top5.length === 0 ? (
-        <div className="home-report-empty">Not enough data yet</div>
+        <EmptyState>Not enough data yet</EmptyState>
       ) : (
         <div className="home-top5-list">
           {top5.map((b, i) => (
@@ -870,28 +870,14 @@ function HomeView({ navigate, settings, regions }) {
 
       {/* ── STATS BAR ─────────────────────────────────────────────────── */}
       <div className="home-stats-bar">
-        <div className="home-stat">
-          {trophyTotal === 0 ? (
-            <span className="home-stat-num" style={{color: 'var(--ss-slate)'}}>—</span>
-          ) : (
-            <span className="home-stat-num lime">{fmt.n(trophyTotal)}</span>
-          )}
-          <span className="home-stat-lbl">
-            {trophyTotal === 0 ? 'Boats Returning' : 'Tuna Today'}
-          </span>
-        </div>
-        <div className="home-stat">
-          <span className="home-stat-num">{boats.length}</span>
-          <span className="home-stat-lbl">{boats.length === 1 ? 'Boat Out' : 'Boats Out'}</span>
-        </div>
-        <div className="home-stat">
-          <span className="home-stat-num">{fmt.n(anglersTotal)}</span>
-          <span className="home-stat-lbl">{anglersTotal === 1 ? 'Angler' : 'Anglers'}</span>
-        </div>
-        <div className="home-stat">
-          <span className="home-stat-num">{landingCount}</span>
-          <span className="home-stat-lbl">{landingCount === 1 ? 'Landing' : 'Landings'}</span>
-        </div>
+        <StatTile
+          num={trophyTotal === 0 ? '—' : fmt.n(trophyTotal)}
+          label={trophyTotal === 0 ? 'Boats Returning' : 'Tuna Today'}
+          numColor={trophyTotal === 0 ? 'var(--tb-slate)' : 'var(--tb-lime)'}
+        />
+        <StatTile num={boats.length} label={boats.length === 1 ? 'Boat Out' : 'Boats Out'} />
+        <StatTile num={fmt.n(anglersTotal)} label={anglersTotal === 1 ? 'Angler' : 'Anglers'} />
+        <StatTile num={landingCount} label={landingCount === 1 ? 'Landing' : 'Landings'} />
         {timeStr && (
           <div className="home-stat-freshness">
             Updated {timeStr} · <FreshnessWidget regions={regions} compact/>
@@ -937,9 +923,9 @@ function HomeView({ navigate, settings, regions }) {
         {previewBoats.length > 0 && <TodaySummaryBanner summary={homePerfSummary}/>}
 
         {previewBoats.length === 0 ? (
-          <div className="home-report-empty">
+          <EmptyState>
             {selectedDate === TODAY_ISO ? 'No reports yet today — check back later.' : 'No reports for this date.'}
-          </div>
+          </EmptyState>
         ) : (
           <div className="home-report-table-wrap">
             <table className="home-report-table">
