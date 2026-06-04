@@ -113,7 +113,12 @@
 
   /* Map old SS-* tokens to new palette for backward compat */
   --ss-white: var(--tb-white);
+  --ss-surface: var(--tb-white);
+  --ss-bg: var(--tb-foam);
+  --ss-foam: var(--tb-foam);
   --ss-clay: var(--tb-foam);
+  --ss-border: var(--tb-border-2);
+  --ss-ink: var(--tb-ink);
   --ss-bg-muted: #F1F5F9;
   --ss-gray-1: var(--tb-gray-1);
   --ss-gray-2: var(--tb-gray-2);
@@ -5122,4 +5127,120 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 
   /* Hide chat FAB when the filter sheet is open so it doesn't overlap fields */
   .afb-open .chat-fab { display: none; pointer-events: none; }
+}
+
+/* ── Shared component library (A.2) ─────────────────────────────────────── */
+
+/* Card — settings/account-style section container */
+.card-section {
+  background: var(--tb-white);
+  border: 1px solid var(--tb-border-2);
+  border-radius: var(--tb-radius-lg);
+  padding: var(--tb-space-5) var(--tb-space-6);
+  margin-bottom: var(--tb-space-4);
+}
+.card-section-title {
+  font: 600 var(--tb-text-base)/20px var(--tb-font-body);
+  color: var(--tb-ink);
+  margin-bottom: var(--tb-space-1);
+}
+.card-section-desc {
+  font: 400 var(--tb-text-sm)/18px var(--tb-font-body);
+  color: var(--tb-slate);
+  margin: 0 0 var(--tb-space-4);
+}
+
+/* Chip — toggle pill for species/filter/preset selections */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px var(--tb-space-3);
+  border-radius: var(--tb-radius-full);
+  cursor: pointer;
+  font: 500 var(--tb-text-sm)/16px var(--tb-font-body);
+  border: 1px solid var(--tb-border-2);
+  background: var(--tb-white);
+  color: var(--tb-ink);
+  user-select: none;
+  transition: background var(--tb-duration-fast) var(--tb-easing),
+              border-color var(--tb-duration-fast) var(--tb-easing),
+              color var(--tb-duration-fast) var(--tb-easing);
+}
+.chip.active {
+  background: var(--tb-accent-d);
+  border-color: var(--tb-accent-d);
+  color: #fff;
+}
+.chip:hover:not(.active) { background: var(--tb-foam); }
+
+/* FieldLabel — uppercase metadata label */
+.field-label {
+  display: block;
+  font: 600 var(--tb-text-xs)/14px var(--tb-font-body);
+  color: var(--tb-gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--tb-space-2);
+}
+
+/* SectionTitle / SectionDesc */
+.section-title {
+  font: 600 var(--tb-text-base)/20px var(--tb-font-body);
+  color: var(--tb-ink);
+  margin-bottom: var(--tb-space-1);
+}
+.section-desc {
+  font: 400 var(--tb-text-sm)/18px var(--tb-font-body);
+  color: var(--tb-slate);
+  margin: 0 0 var(--tb-space-4);
+}
+
+/* Badge — non-interactive status pill */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--tb-space-2);
+  border-radius: var(--tb-radius-full);
+  font: 500 var(--tb-text-xs)/16px var(--tb-font-body);
+  background: var(--tb-foam);
+  color: var(--tb-slate);
+  border: 1px solid var(--tb-border-2);
+}
+
+/* EmptyState */
+.empty-state {
+  padding: var(--tb-space-8) var(--tb-space-4);
+  text-align: center;
+  font: 400 var(--tb-text-sm)/18px var(--tb-font-body);
+  color: var(--tb-gray-3);
+}
+
+/* Tooltip wrapper — CSS-based, no JS */
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.tooltip-wrap::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--tb-deep);
+  color: #fff;
+  font: 400 var(--tb-text-xs)/16px var(--tb-font-body);
+  padding: 4px var(--tb-space-2);
+  border-radius: var(--tb-radius-sm);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--tb-duration-fast) var(--tb-easing);
+  z-index: 100;
+}
+.tooltip-wrap:hover::after { opacity: 1; }
+.tooltip-wrap.tooltip-bottom::after {
+  bottom: auto;
+  top: calc(100% + 6px);
 }
