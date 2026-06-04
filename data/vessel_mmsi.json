@@ -135,8 +135,12 @@
     "338093000": {
       "name": "New Lo-An",
       "landing": "Point Loma Sportfishing"
+    },
+    "367169120": {
+      "name": "Toronado",
+      "landing": "Pierpoint Landing"
     }
   },
-  "_last_discover_run": "2026-06-04T12:28:58.741303+00:00",
-  "_vessel_count": 32
+  "_last_discover_run": "2026-06-04T21:49:21.340271+00:00",
+  "_vessel_count": 33
 }
