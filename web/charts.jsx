@@ -852,6 +852,11 @@ function _fmtSpeed(ms, sys)   { return sys === 'metric' ? ms.toFixed(1) + ' m/s'
 function _fmtSwell(m, sys)    { return sys === 'metric' ? m.toFixed(1) + ' m'   : (m * 3.28084).toFixed(1) + ' ft'; }
 function _fmtPressure(h, sys) { return sys === 'metric' ? Math.round(h) + ' hPa' : (h * 0.02953).toFixed(2) + ' inHg'; }
 
+// "Locate me" coverage: SoCal coast + offshore grounds (San Diego through the
+// Channel Islands / Ventura). A user whose location falls inside this box gets
+// a "you are here" point; outside it, we keep the default San Diego view.
+var _GEO_SUPPORTED_BBOX = { latMin: 31.0, latMax: 35.5, lonMin: -122.0, lonMax: -116.3 };
+
 // ── Conditions rendering ──────────────────────────────────────────────────────
 
 function windColor(kts) {
@@ -1655,6 +1660,7 @@ function ChartsView({ navigate, settings }) {
   const [sliderLoading, setSliderLoading] = React.useState(false);
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
+  const [geoNote, setGeoNote]       = React.useState(null);
 
   const mapRef           = React.useRef(null);
   const mapInstance      = React.useRef(null);
@@ -1684,12 +1690,18 @@ function ChartsView({ navigate, settings }) {
   const pressureDataRef  = React.useRef(null);
   const swellPeriodRef   = React.useRef(null);
   const unitSystemRef    = React.useRef(unitSystem);
+  const userLocMarkerRef = React.useRef(null);
 
   React.useEffect(function() { condLayersRef.current = condLayers; }, [condLayers]);
   React.useEffect(function() { baseLyrRef.current = baseLayer; }, [baseLayer]);
   React.useEffect(function() { sstModeRef.current = sstMode; }, [sstMode]);
   React.useEffect(function() { unitSystemRef.current = unitSystem; }, [unitSystem]);
   React.useEffect(function() { swellPeriodRef.current = swellPeriod; }, [swellPeriod]);
+  React.useEffect(function() {
+    if (!geoNote) return;
+    var t = setTimeout(function() { setGeoNote(null); }, 4500);
+    return function() { clearTimeout(t); };
+  }, [geoNote]);
 
   // Initialize map once
   React.useEffect(function() {
@@ -1716,6 +1728,106 @@ function ChartsView({ navigate, settings }) {
     };
     recenterControl.addTo(mapInstance.current);
 
+    // Build the tap/location popup HTML: coordinates (or a label) + a readout of
+    // every active layer's value at the point + the save-waypoint action.
+    function buildPointPopupHtml(lat, lng, label) {
+      var latlng = { lat: lat, lng: lng };
+      var sys = unitSystemRef.current || 'imperial';
+      var rows = '';
+      function addRow(icon, lbl, val) {
+        if (val == null) return;
+        rows += '<div class="popup-metric"><span class="popup-metric-label">' + icon + ' ' + lbl + '</span>'
+              + '<span class="popup-metric-val">' + val + '</span></div>';
+      }
+      if (baseLyrRef.current === 'sst' && sstModeRef.current === 'raster' && murGridRef.current) {
+        var sr = _murGridReadout(murGridRef.current, latlng);
+        if (sr) addRow('🌡️', 'SST', sr.sst == null ? 'land / cloud' : _fmtTemp(sr.sst, sys));
+      }
+      var cl = condLayersRef.current || {};
+      if (cl.wind && windDataRef.current) {
+        var w = _sampleVelGrid(windDataRef.current, latlng);
+        if (w) addRow('💨', 'Wind', _fmtSpeed(w.speed, sys) + ' from ' + _compass8(w.fromDir));
+      }
+      if (cl.waves && wavesDataRef.current) {
+        var swv = _sampleVelGrid(wavesDataRef.current, latlng);
+        if (swv) addRow('🌊', 'Swell', _fmtSwell(swv.speed, sys) + ' from ' + _compass8(swv.fromDir)
+              + (swellPeriodRef.current ? ' · ' + Math.round(swellPeriodRef.current) + 's' : ''));
+      }
+      if (cl.currents && currentsDataRef.current) {
+        var cu = _sampleVelGrid(currentsDataRef.current, latlng);
+        if (cu) addRow('🌀', 'Current', _fmtSpeed(cu.speed, sys) + ' → ' + _compass8(cu.toDir));
+      }
+      if (cl.pressure && pressureDataRef.current) {
+        var pv = _samplePressureGrid(pressureDataRef.current, latlng);
+        if (pv != null) addRow('🔵', 'Pressure', _fmtPressure(pv, sys));
+      }
+      var coords = label ? label : (lat.toFixed(4) + '°N,&nbsp;' + Math.abs(lng).toFixed(4) + '°W');
+      var metricsHtml = rows ? '<div class="popup-metrics">' + rows + '</div>' : '';
+      return '<div class="map-popup">'
+        + '<div class="popup-coords">' + coords + '</div>'
+        + metricsHtml
+        + '<button class="popup-save-waypoint" onclick="window.ttOpenWaypointModal(' + lat + ',' + lng + ')">+ Save as waypoint</button>'
+        + '</div>';
+    }
+
+    // ── "Locate me" geolocation ───────────────────────────────────────────────
+    function placeUserLocation(lat, lng, opts) {
+      opts = opts || {};
+      var b = _GEO_SUPPORTED_BBOX;
+      var inRegion = lat >= b.latMin && lat <= b.latMax && lng >= b.lonMin && lng <= b.lonMax;
+      if (!inRegion) { setGeoNote("You're outside the SoCal coverage area"); return; }
+      if (userLocMarkerRef.current) {
+        userLocMarkerRef.current.setLatLng([lat, lng]);
+      } else {
+        var icon = L.divIcon({
+          className: 'user-loc-marker',
+          html: '<div class="user-loc-pulse"></div><div class="user-loc-dot"></div>',
+          iconSize: [22, 22], iconAnchor: [11, 11],
+        });
+        userLocMarkerRef.current = L.marker([lat, lng], { icon: icon, zIndexOffset: 1000, keyboard: false })
+          .addTo(mapInstance.current);
+        userLocMarkerRef.current.bindPopup(function() {
+          var ll = userLocMarkerRef.current.getLatLng();
+          return buildPointPopupHtml(ll.lat, ll.lng, '📍 Your location');
+        }, { className: 'tt-popup' });
+      }
+      if (opts.pan && mapInstance.current) {
+        mapInstance.current.setView([lat, lng], Math.max(mapInstance.current.getZoom(), 9), { animate: true });
+      }
+      if (opts.openPopup && userLocMarkerRef.current) userLocMarkerRef.current.openPopup();
+    }
+
+    function requestGeolocate(opts) {
+      if (!navigator.geolocation) { if (opts && opts.manual) setGeoNote('Location not available on this device'); return; }
+      navigator.geolocation.getCurrentPosition(
+        function(pos) { placeUserLocation(pos.coords.latitude, pos.coords.longitude, opts); },
+        function(err) {
+          if (opts && opts.manual) setGeoNote(err && err.code === 1 ? 'Location permission denied' : "Couldn't get your location");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    }
+
+    var locateControl = L.control({ position: 'topright' });
+    locateControl.onAdd = function() {
+      var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control locate-control');
+      div.innerHTML = '<a href="#" title="Show my location">🧭 Locate me</a>';
+      L.DomEvent.on(div, 'click', function(e) {
+        L.DomEvent.preventDefault(e);
+        requestGeolocate({ pan: true, openPopup: true, manual: true });
+      });
+      return div;
+    };
+    locateControl.addTo(mapInstance.current);
+
+    // Auto-locate on open ONLY if the user already granted permission — no
+    // surprise prompt for first-time visitors (they use the button instead).
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' })
+        .then(function(status) { if (status.state === 'granted') requestGeolocate({ pan: true }); })
+        .catch(function() {});
+    }
+
     window.ttOpenWaypointModal = function(lat, lng) {
       mapInstance.current.closePopup();
       setPending({ lat: lat, lng: lng });
@@ -1725,53 +1837,16 @@ function ChartsView({ navigate, settings }) {
     window._ttCatchNav = function(boat) { if (navigate) navigate('boat', { boat: boat }); };
 
     mapInstance.current.on('click', function(e) {
-      var lat = e.latlng.lat, lng = e.latlng.lng;
-      var sys = unitSystemRef.current || 'imperial';
-      var rows = '';
-      function addRow(icon, label, val) {
-        if (val == null) return;
-        rows += '<div class="popup-metric"><span class="popup-metric-label">' + icon + ' ' + label + '</span>'
-              + '<span class="popup-metric-val">' + val + '</span></div>';
-      }
-      // Active base layer: SST (canvas-raster mode carries sampleable data).
-      if (baseLyrRef.current === 'sst' && sstModeRef.current === 'raster' && murGridRef.current) {
-        var sr = _murGridReadout(murGridRef.current, e.latlng);
-        if (sr) addRow('🌡️', 'SST', sr.sst == null ? 'land / cloud' : _fmtTemp(sr.sst, sys));
-      }
-      var cl = condLayersRef.current || {};
-      if (cl.wind && windDataRef.current) {
-        var w = _sampleVelGrid(windDataRef.current, e.latlng);
-        if (w) addRow('💨', 'Wind', _fmtSpeed(w.speed, sys) + ' from ' + _compass8(w.fromDir));
-      }
-      if (cl.waves && wavesDataRef.current) {
-        var sw = _sampleVelGrid(wavesDataRef.current, e.latlng);
-        if (sw) addRow('🌊', 'Swell', _fmtSwell(sw.speed, sys) + ' from ' + _compass8(sw.fromDir)
-              + (swellPeriodRef.current ? ' · ' + Math.round(swellPeriodRef.current) + 's' : ''));
-      }
-      if (cl.currents && currentsDataRef.current) {
-        var cu = _sampleVelGrid(currentsDataRef.current, e.latlng);
-        if (cu) addRow('🌀', 'Current', _fmtSpeed(cu.speed, sys) + ' → ' + _compass8(cu.toDir));
-      }
-      if (cl.pressure && pressureDataRef.current) {
-        var pv = _samplePressureGrid(pressureDataRef.current, e.latlng);
-        if (pv != null) addRow('🔵', 'Pressure', _fmtPressure(pv, sys));
-      }
-      var metricsHtml = rows ? '<div class="popup-metrics">' + rows + '</div>' : '';
       L.popup({ className: 'tt-popup' })
         .setLatLng(e.latlng)
-        .setContent(
-          '<div class="map-popup">' +
-            '<div class="popup-coords">' + lat.toFixed(4) + '°N,&nbsp;' + Math.abs(lng).toFixed(4) + '°W</div>' +
-            metricsHtml +
-            '<button class="popup-save-waypoint" onclick="window.ttOpenWaypointModal(' + lat + ',' + lng + ')">+ Save as waypoint</button>' +
-          '</div>'
-        )
+        .setContent(buildPointPopupHtml(e.latlng.lat, e.latlng.lng, null))
         .openOn(mapInstance.current);
     });
 
     return function() {
       delete window.ttOpenWaypointModal;
       delete window._ttCatchNav;
+      userLocMarkerRef.current = null;
       if (mapInstance.current) { mapInstance.current.remove(); mapInstance.current = null; }
     };
   }, []);
@@ -2231,6 +2306,8 @@ function ChartsView({ navigate, settings }) {
               🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
             </div>
           )}
+
+          {geoNote && <div className="geo-note-pill">{geoNote}</div>}
         </div>
 
         <WaypointsSidebar

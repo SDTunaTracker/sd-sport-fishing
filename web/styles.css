@@ -4553,7 +4553,8 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 }
 
 /* Recenter control — dark glass to match floating panel */
-.recenter-control a {
+.recenter-control a,
+.locate-control a {
   padding: 6px 10px;
   display: block;
   text-decoration: none;
@@ -4565,9 +4566,44 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   cursor: pointer;
   border: none;
 }
-.recenter-control a:hover {
+.recenter-control a:hover,
+.locate-control a:hover {
   background: rgba(14,165,233,0.25);
   color: #f1f5f9;
+}
+
+/* "You are here" marker — pulsing blue dot */
+.user-loc-marker { background: none; border: none; }
+.user-loc-dot {
+  position: absolute; top: 4px; left: 4px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #2563eb;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(37,99,235,0.6), 0 1px 4px rgba(0,0,0,0.4);
+}
+.user-loc-pulse {
+  position: absolute; top: 4px; left: 4px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(37,99,235,0.45);
+  animation: user-loc-pulse 2s ease-out infinite;
+}
+@keyframes user-loc-pulse {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  70%  { transform: scale(3.2); opacity: 0;   }
+  100% { transform: scale(3.2); opacity: 0;   }
+}
+
+/* Transient geolocation note (e.g. outside coverage / denied) */
+.geo-note-pill {
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(15, 30, 43, 0.9); color: #e2e8f0;
+  font: 600 12px var(--ss-font-sans, 'Inter', sans-serif);
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  backdrop-filter: blur(6px);
+  pointer-events: none; white-space: nowrap;
 }
 /* Also dark the Leaflet native zoom controls */
 .leaflet-bar a {
