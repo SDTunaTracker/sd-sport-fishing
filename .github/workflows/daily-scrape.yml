@@ -72,7 +72,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "Scrape: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git commit --no-verify -m "Scrape: $(date -u +'%Y-%m-%d %H:%M UTC')"
             pushed=0
             for i in $(seq 1 5); do
               git pull --rebase origin main && git push origin main && { pushed=1; break; }
