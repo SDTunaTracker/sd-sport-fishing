@@ -400,15 +400,25 @@ function getCachedWindSeries14d() {
 
 function _fetchWavesSeries7d() {
   var url = 'https://marine-api.open-meteo.com/v1/marine' + _latlonArrays() +
-    '&hourly=wave_height,wave_direction&forecast_days=7&timezone=UTC';
+    '&hourly=swell_wave_height,swell_wave_direction,swell_wave_period&forecast_days=7&timezone=UTC';
   return fetch(url)
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(res) {
       var locs = Array.isArray(res) ? res : [res];
-      return _buildSeriesFrames(locs,
-        function(l) { return (l.hourly || {}).wave_height; },
-        function(l) { return (l.hourly || {}).wave_direction; },
-        _buildWindHeader, true); // wave_direction = "from" → negate
+      var built = _buildSeriesFrames(locs,
+        function(l) { return (l.hourly || {}).swell_wave_height; },
+        function(l) { return (l.hourly || {}).swell_wave_direction; },
+        _buildWindHeader, true);
+      // Average swell period (seconds) per time step across all grid points
+      var periods = built.frames.map(function(_, t) {
+        var sum = 0, cnt = 0;
+        locs.forEach(function(loc) {
+          var p = ((loc.hourly || {}).swell_wave_period || [])[t];
+          if (p > 0) { sum += p; cnt++; }
+        });
+        return cnt > 0 ? sum / cnt : 0;
+      });
+      return { frames: built.frames, hours: built.hours, periods: periods };
     });
 }
 
@@ -416,8 +426,52 @@ function getCachedWavesSeries7d() {
   if (_wavesSeries7d && Date.now() - _wavesSeries7d.ts < _SERIES_TTL)
     return Promise.resolve(_wavesSeries7d);
   return _fetchWavesSeries7d().then(function(d) {
-    _wavesSeries7d = { ts: Date.now(), frames: d.frames, hours: d.hours };
+    _wavesSeries7d = { ts: Date.now(), frames: d.frames, hours: d.hours, periods: d.periods };
     return _wavesSeries7d;
+  });
+}
+
+// ── Single-frame swell grid for immediate animated display ───────────────────
+
+var _SWELL_CACHE_KEY = 'tt_swell_grid_v1', _SWELL_CACHE_TTL = 2 * 3600000;
+
+function _fetchSwellGrid() {
+  var hour = new Date().getUTCHours();
+  var url = 'https://marine-api.open-meteo.com/v1/marine' + _latlonArrays() +
+    '&hourly=swell_wave_height,swell_wave_direction,swell_wave_period&forecast_days=1&timezone=UTC';
+  return fetch(url)
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(res) {
+      var locs = Array.isArray(res) ? res : [res];
+      var u = [], v = [], pSum = 0, pCnt = 0;
+      locs.forEach(function(loc) {
+        var h = loc.hourly || {};
+        var spd = (h.swell_wave_height || [])[hour]   || 0;
+        var dir = (h.swell_wave_direction || [])[hour] || 0;
+        var per = (h.swell_wave_period || [])[hour]   || 0;
+        var rad = dir * Math.PI / 180;
+        u.push(-(spd * Math.sin(rad)));
+        v.push(-(spd * Math.cos(rad)));
+        if (per > 0) { pSum += per; pCnt++; }
+      });
+      return {
+        velocityData: [
+          { header: _buildWindHeader({ parameterNumber: 2 }), data: u },
+          { header: _buildWindHeader({ parameterNumber: 3 }), data: v },
+        ],
+        avgPeriod: pCnt > 0 ? pSum / pCnt : 0,
+      };
+    });
+}
+
+function getCachedSwellGrid() {
+  try {
+    var c = JSON.parse(localStorage.getItem(_SWELL_CACHE_KEY) || 'null');
+    if (c && Date.now() - c.ts < _SWELL_CACHE_TTL) return Promise.resolve(c.data);
+  } catch(e) {}
+  return _fetchSwellGrid().then(function(data) {
+    try { localStorage.setItem(_SWELL_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+    return data;
   });
 }
 
@@ -1294,7 +1348,7 @@ function ChartsHeader({ chartType, sstMode, sstReadout }) {
     bathymetry:  { title: 'Bathymetry (Ocean Depth)',   desc: 'Underwater structure — banks, ledges, and drop-offs hold fish year-round.' },
     satellite:   { title: 'Satellite Imagery',          desc: 'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.' },
     wind:        { title: 'Wind Conditions',            desc: 'Animated wind particle flow — Windy-style. Green = calm (<8 kt), yellow = moderate, red = rough (>28 kt). Data: Open-Meteo.' },
-    waves:       { title: 'Wave Height & Direction',    desc: 'Significant wave height in feet — the main factor for trip comfort. Blue = calm (<2 ft). Data: Open-Meteo Marine.' },
+    waves:       { title: 'Swell Height & Direction',    desc: 'Animated swell field — particles colored by height (blue=calm, red=rough 3m+), period readout in corner. Data: Open-Meteo Marine.' },
     tides:       { title: 'San Diego Tide Schedule',    desc: 'High and low tides for today from NOAA Station 9410230. Fish most actively bite on moving tides.' },
     currents:    { title: 'Ocean Surface Currents',     desc: 'Animated surface current flow. Particles show direction and speed. Slack (blue) → Strong (red, 2+ kt). Currents determine where bait concentrates.' },
     boats:       { title: 'Boats Live — Real-Time Positions', desc: 'Live AIS vessel positions for tracked SD sportfishing boats. Green = fishing slow. Blue = transit speed. Trail = last 60 min.' },
@@ -1320,7 +1374,7 @@ function ChartLegend({ type, sstMode }) {
     chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear water', high: 'Rich bait zone' },
     bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: 'Deep (6000 ft)', high: 'Shallow (0 ft)' },
     wind:        { gradient: 'linear-gradient(to right, rgb(255,255,255), rgb(140,180,255), rgb(80,220,100), rgb(255,220,50), rgb(255,130,30), rgb(240,50,50), rgb(160,30,140), rgb(80,30,180))', low: 'Calm (0 kt)', high: 'Storm (60+ kt)' },
-    waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)', low: 'Calm (0–2 ft)', high: 'Rough (8+ ft)' },
+    waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #a3e635, #eab308, #f97316, #ef4444, #a855f7)', low: 'Calm (0 m)', high: 'Rough (3+ m)' },
     currents:    { gradient: 'linear-gradient(to right, rgb(20,60,140), rgb(100,160,220), rgb(180,230,220), rgb(250,230,150), rgb(255,150,70), rgb(220,40,40))', low: 'Slack (0 kt)', high: 'Strong (2+ kt)' },
     satellite:   null,
     tides:       null,
@@ -1366,8 +1420,9 @@ function ChartsView({ navigate }) {
   const [boatsError, setBoatsError]   = React.useState(false);
   const [showCatches, setShowCatches] = React.useState(false);
   const [sliderStep, setSliderStep]   = React.useState(function() { return new Date().getUTCHours(); });
-  const [sliderSeries, setSliderSeries] = React.useState(null);  // {frames,hours}|null
+  const [sliderSeries, setSliderSeries] = React.useState(null);  // {frames,hours,periods?}|null
   const [sliderLoading, setSliderLoading] = React.useState(false);
+  const [swellPeriod, setSwellPeriod] = React.useState(null);    // seconds|null
 
   const mapRef          = React.useRef(null);
   const mapInstance     = React.useRef(null);
@@ -1446,10 +1501,11 @@ function ChartsView({ navigate }) {
   React.useEffect(function() {
     if (!mapInstance.current) return;
 
-    // Reset forecast slider
+    // Reset forecast slider + swell period
     setSliderSeries(null);
     setSliderLoading(false);
     setSliderStep(new Date().getUTCHours());
+    setSwellPeriod(null);
     clearTimeout(sliderThrottleRef.current);
 
     // Basemap
@@ -1540,41 +1596,71 @@ function ChartsView({ navigate }) {
       }
     } else if (chartType === 'waves') {
       setCondLoading(true);
-      // Show arrow layer immediately while series loads in background
-      fetchConditionsData('waves').then(function(data) {
-        setCondLoading(false);
-        if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
-        var layer = buildConditionsLayer('waves', data);
-        layer.addTo(mapInstance.current);
-        condGroupRef.current = layer;
-      }).catch(function() { setCondLoading(false); });
-      // Background: load 7-day series; switch to velocity layer when ready
+      // Immediate: animated swell velocity layer from single-hour grid
+      if (typeof L.velocityLayer === 'function') {
+        getCachedSwellGrid().then(function(result) {
+          setCondLoading(false);
+          if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: {
+              velocityType: 'Swell', position: 'bottomleft',
+              emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm',
+            },
+            data: result.velocityData,
+            maxVelocity: 3.5,
+            velocityScale: 0.012,
+            particleAge: 90,
+            lineWidth: 2.0,
+            particleMultiplier: 0.004,
+            colorScale: WAVE_PARTICLE_COLORS,
+            opacity: 0.92,
+          });
+          vl.addTo(mapInstance.current);
+          velocityLayerRef.current = vl;
+          if (result.avgPeriod > 0) setSwellPeriod(result.avgPeriod);
+        }).catch(function() {
+          setCondLoading(false);
+          // Fallback: arrow markers
+          fetchConditionsData('waves').then(function(data) {
+            if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
+            var layer = buildConditionsLayer('waves', data);
+            layer.addTo(mapInstance.current);
+            condGroupRef.current = layer;
+          }).catch(function() {});
+        });
+      } else {
+        fetchConditionsData('waves').then(function(data) {
+          setCondLoading(false);
+          if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
+          var layer = buildConditionsLayer('waves', data);
+          layer.addTo(mapInstance.current);
+          condGroupRef.current = layer;
+        }).catch(function() { setCondLoading(false); });
+      }
+      // Background: 7-day series for time slider
       setSliderLoading(true);
       getCachedWavesSeries7d().then(function(series) {
         setSliderLoading(false);
         if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
-        if (typeof L.velocityLayer !== 'function') return;
-        // Remove arrow layer, create velocity layer for scrubbing
-        if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
         var initStep = new Date().getUTCHours();
-        var frame = series.frames[initStep] || series.frames[0];
-        var vl = L.velocityLayer({
-          displayValues: true,
-          displayOptions: {
-            velocityType: 'Swell', position: 'bottomleft',
-            emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm',
-          },
-          data: frame,
-          maxVelocity: 3.0,
-          velocityScale: 0.015,
-          particleAge: 80,
-          lineWidth: 2.0,
-          particleMultiplier: 0.003,
-          colorScale: WAVE_PARTICLE_COLORS,
-          opacity: 0.90,
-        });
-        vl.addTo(mapInstance.current);
-        velocityLayerRef.current = vl;
+        // If velocity layer already exists, just update it; otherwise create it
+        if (velocityLayerRef.current && typeof velocityLayerRef.current.setData === 'function') {
+          var frame = series.frames[initStep] || series.frames[0];
+          try { velocityLayerRef.current.setData(frame); } catch(e) {}
+        } else if (typeof L.velocityLayer === 'function') {
+          if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
+          var frame = series.frames[initStep] || series.frames[0];
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
+            data: frame, maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90,
+            lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92,
+          });
+          vl.addTo(mapInstance.current);
+          velocityLayerRef.current = vl;
+        }
+        if (series.periods && series.periods[initStep] > 0) setSwellPeriod(series.periods[initStep]);
         setSliderSeries(series);
         setSliderStep(initStep);
       }).catch(function() { setSliderLoading(false); });
@@ -1810,6 +1896,11 @@ function ChartsView({ navigate }) {
               ) : (
                 <span className="sst-readout-na">No SST (land/cloud)</span>
               )}
+            </div>
+          )}
+          {swellPeriod != null && chartType === 'waves' && (
+            <div className="swell-period-readout">
+              ~{Math.round(swellPeriod)}s swell period
             </div>
           )}
           <WaypointsSidebar

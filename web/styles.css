@@ -3936,6 +3936,13 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .sst-readout-temp { color: #fff; }
 .sst-readout-grad { font-weight: 400; color: #ffb428; font-size: 11px; }
 .sst-readout-na   { color: #94a3b8; font-size: 11px; }
+.swell-period-readout {
+  position: absolute; bottom: 48px; right: 12px; z-index: 1000;
+  background: rgba(15,30,43,0.88); color: #93c5fd;
+  padding: 6px 12px; border-radius: 8px;
+  font: 600 13px/20px var(--ss-font-sans);
+  pointer-events: none; backdrop-filter: blur(4px);
+}
 .legend-gradient-bar {
   flex: 1;
   max-width: 300px;
