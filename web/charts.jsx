@@ -1288,33 +1288,78 @@ function ForecastSlider({ series, step, onStep, loading }) {
   );
 }
 
-// ── ChartTypeTabs ─────────────────────────────────────────────────────────────
+// ── LayerPanel ────────────────────────────────────────────────────────────────
+// Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
-function ChartTypeTabs({ active, onChange }) {
-  var tabs = [
-    { id: 'sst',         label: 'Sea Surface Temp', icon: '🌡️' },
-    { id: 'chlorophyll', label: 'Chlorophyll',      icon: '🌿' },
-    { id: 'bathymetry',  label: 'Depth',            icon: '⛰️' },
-    { id: 'satellite',   label: 'Satellite',        icon: '🛰️' },
-    { id: 'wind',        label: 'Wind',             icon: '💨' },
-    { id: 'waves',       label: 'Waves',            icon: '🌊' },
-    { id: 'tides',       label: 'Tides',            icon: '🌙' },
-    { id: 'currents',    label: 'Currents',         icon: '🌀' },
-    { id: 'boats',       label: 'Boats Live',       icon: '🚢', badge: 'LIVE' },
+function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode,
+                      onBase, onCond, onTides, onBoats, onCatches, onSstMode }) {
+  var bases = [
+    { id: 'sst',         icon: '🌡️', label: 'SST' },
+    { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
+    { id: 'bathymetry',  icon: '⛰️', label: 'Depth' },
+    { id: 'satellite',   icon: '🛰️', label: 'Satellite' },
+  ];
+  var conds = [
+    { id: 'wind',     icon: '💨', label: 'Wind' },
+    { id: 'waves',    icon: '🌊', label: 'Swell' },
+    { id: 'currents', icon: '🌀', label: 'Currents' },
   ];
   return (
-    <div className="chart-type-tabs">
-      {tabs.map(function(tab) {
-        return (
-          <button key={tab.id}
-            className={'chart-tab' + (active === tab.id ? ' active' : '') + (tab.badge ? ' chart-tab-live' : '')}
-            onClick={function() { onChange(tab.id); }}>
-            <span className="tab-icon">{tab.icon}</span>
-            {tab.label}
-            {tab.badge && <span className="tab-live-badge">{tab.badge}</span>}
+    <div className="layer-panel">
+      <div className="layer-group">
+        <div className="layer-group-label">Base</div>
+        <div className="layer-group-row">
+          {bases.map(function(b) {
+            var isActive = baseLayer === b.id;
+            return (
+              <button key={b.id} className={'layer-btn' + (isActive ? ' active' : '')}
+                onClick={function() { onBase(isActive ? null : b.id); }}>
+                <span className="layer-btn-icon">{b.icon}</span>{b.label}
+              </button>
+            );
+          })}
+        </div>
+        {baseLayer === 'sst' && (
+          <div className="layer-sst-subrow">
+            {Object.keys(SST_SOURCES).map(function(id) {
+              var src = SST_SOURCES[id];
+              return (
+                <button key={id} className={'layer-sst-btn' + (sstMode === id ? ' active' : '')}
+                  onClick={function() { onSstMode(id); }}>
+                  {src.label}{src.badge ? <span className="sst-picker-badge">{src.badge}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div className="layer-group">
+        <div className="layer-group-label">Conditions</div>
+        <div className="layer-group-row">
+          {conds.map(function(c) {
+            return (
+              <button key={c.id} className={'layer-btn' + (condLayers[c.id] ? ' active' : '')}
+                onClick={function() { onCond(c.id, !condLayers[c.id]); }}>
+                <span className="layer-btn-icon">{c.icon}</span>{c.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="layer-group">
+        <div className="layer-group-label">Overlays</div>
+        <div className="layer-group-row">
+          <button className={'layer-btn' + (showTides   ? ' active' : '')} onClick={function() { onTides(!showTides); }}>
+            <span className="layer-btn-icon">🌙</span>Tides
           </button>
-        );
-      })}
+          <button className={'layer-btn' + (showCatches ? ' active' : '')} onClick={function() { onCatches(!showCatches); }}>
+            <span className="layer-btn-icon">🎣</span>Catches
+          </button>
+          <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
+            <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1340,27 +1385,26 @@ function SstSourcePicker({ mode, onChange }) {
   );
 }
 
-function ChartsHeader({ chartType, sstMode, sstReadout }) {
+function ChartsHeader({ baseLayer, condLayers, sstMode }) {
   var sstSrc = SST_SOURCES[sstMode] || SST_SOURCES.mur;
-  var titles = {
-    sst:         { title: 'Sea Surface Temperature',    desc: sstSrc.desc + ' Bait concentrates at 1–2°F transitions in the 64–72°F range.' },
-    chlorophyll: { title: 'Chlorophyll Concentration',  desc: 'Phytoplankton density indicates feeding zones — bait fish gather at the edges of green plumes.' },
-    bathymetry:  { title: 'Bathymetry (Ocean Depth)',   desc: 'Underwater structure — banks, ledges, and drop-offs hold fish year-round.' },
-    satellite:   { title: 'Satellite Imagery',          desc: 'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.' },
-    wind:        { title: 'Wind Conditions',            desc: 'Animated wind particle flow — Windy-style. Green = calm (<8 kt), yellow = moderate, red = rough (>28 kt). Data: Open-Meteo.' },
-    waves:       { title: 'Swell Height & Direction',    desc: 'Animated swell field — particles colored by height (blue=calm, red=rough 3m+), period readout in corner. Data: Open-Meteo Marine.' },
-    tides:       { title: 'San Diego Tide Schedule',    desc: 'High and low tides for today from NOAA Station 9410230. Fish most actively bite on moving tides.' },
-    currents:    { title: 'Ocean Surface Currents',     desc: 'Animated surface current flow. Particles show direction and speed. Slack (blue) → Strong (red, 2+ kt). Currents determine where bait concentrates.' },
-    boats:       { title: 'Boats Live — Real-Time Positions', desc: 'Live AIS vessel positions for tracked SD sportfishing boats. Green = fishing slow. Blue = transit speed. Trail = last 60 min.' },
+  var descs = {
+    sst:         sstSrc.desc + ' Bait concentrates at 1–2°F transitions in the 64–72°F range.',
+    chlorophyll: 'Phytoplankton density indicates feeding zones — bait fish gather at the edges of green plumes.',
+    bathymetry:  'Underwater structure — banks, ledges, and drop-offs hold fish year-round.',
+    satellite:   'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.',
+    wind:        'Animated wind flow. Green = calm (<8 kt), yellow = moderate, red = rough. Data: Open-Meteo.',
+    waves:       'Animated swell field. Particles colored by height (blue=calm, red=rough 3m+). Data: Open-Meteo Marine.',
+    currents:    'Animated surface current flow. Particles show direction and speed. Data: HYCOM.',
   };
-  var c = titles[chartType] || titles.sst;
+  var cl = condLayers || {};
+  var primary = baseLayer || (cl.wind ? 'wind' : cl.waves ? 'waves' : cl.currents ? 'currents' : null);
+  var desc = primary ? (descs[primary] || '') : 'Select a base layer or condition from the panel below.';
   return (
     <div className="charts-header">
       <h1>Ocean Charts</h1>
       <p className="chart-subtitle">Southern California fishing grounds</p>
       <div className="chart-context">
-        <span className="chart-name">{c.title}</span>
-        <span className="chart-desc">{c.desc}</span>
+        <span className="chart-name chart-desc">{desc}</span>
       </div>
     </div>
   );
@@ -1406,44 +1450,51 @@ function ChartLegend({ type, sstMode }) {
 // ── ChartsView ────────────────────────────────────────────────────────────────
 
 function ChartsView({ navigate }) {
-  const [chartType, setChartType]     = React.useState('sst');
-  const [sstMode, setSstMode]         = React.useState(function() {
+  const [baseLayer, setBaseLayer]   = React.useState('sst');
+  const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false });
+  const [showTides, setShowTides]   = React.useState(false);
+  const [showBoats, setShowBoats]   = React.useState(false);
+  const [showCatches, setShowCatches] = React.useState(false);
+  const [sheetOpen, setSheetOpen]   = React.useState(false);
+  const [sstMode, setSstMode]       = React.useState(function() {
     return localStorage.getItem('tt_sst_mode') || 'mur';
   });
-  const [waypoints, setWaypoints]     = React.useState(loadWaypoints);
-  const [showModal, setShowModal]     = React.useState(false);
-  const [pendingLatLng, setPending]   = React.useState(null);
+  const [waypoints, setWaypoints]   = React.useState(loadWaypoints);
+  const [showModal, setShowModal]   = React.useState(false);
+  const [pendingLatLng, setPending] = React.useState(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const [tidesData, setTidesData]     = React.useState(null);
+  const [tidesData, setTidesData]   = React.useState(null);
   const [condLoading, setCondLoading] = React.useState(false);
-  const [boatPositions, setBoats]     = React.useState([]);
-  const [boatsError, setBoatsError]   = React.useState(false);
-  const [showCatches, setShowCatches] = React.useState(false);
-  const [sliderStep, setSliderStep]   = React.useState(function() { return new Date().getUTCHours(); });
-  const [sliderSeries, setSliderSeries] = React.useState(null);  // {frames,hours,periods?}|null
+  const [boatPositions, setBoats]   = React.useState([]);
+  const [boatsError, setBoatsError] = React.useState(false);
+  const [sliderStep, setSliderStep] = React.useState(function() { return new Date().getUTCHours(); });
+  const [sliderSeries, setSliderSeries] = React.useState(null);
   const [sliderLoading, setSliderLoading] = React.useState(false);
-  const [swellPeriod, setSwellPeriod] = React.useState(null);    // seconds|null
+  const [swellPeriod, setSwellPeriod] = React.useState(null);
+  const [sstReadout, setSstReadout] = React.useState(null);
 
-  const mapRef          = React.useRef(null);
-  const mapInstance     = React.useRef(null);
-  const basemapLayer    = React.useRef(null);
-  const overlayLayer    = React.useRef(null);
-  const condGroupRef    = React.useRef(null);
-  const boatLayerRef    = React.useRef(null);
-  const boatsPollRef    = React.useRef(null);
-  const velocityLayerRef = React.useRef(null);
-  const chartTypeRef    = React.useRef(chartType);
-  const sstModeRef      = React.useRef(sstMode);
-  const waypointMarkers = React.useRef({});
-  // MUR raster refs — canvas-based SST + thermal-front overlays
+  const mapRef           = React.useRef(null);
+  const mapInstance      = React.useRef(null);
+  const basemapLayer     = React.useRef(null);
+  const overlayLayer     = React.useRef(null);
+  const condGroupRef     = React.useRef(null);
+  const boatLayerRef     = React.useRef(null);
+  const boatsPollRef     = React.useRef(null);
+  const windVelRef       = React.useRef(null);
+  const wavesVelRef      = React.useRef(null);
+  const currentsVelRef   = React.useRef(null);
+  const condLayersRef    = React.useRef(condLayers);
+  const baseLyrRef       = React.useRef(baseLayer);
+  const sstModeRef       = React.useRef(sstMode);
+  const waypointMarkers  = React.useRef({});
   const murGridRef       = React.useRef(null);
   const murSSTLayerRef   = React.useRef(null);
   const murFrontLayerRef = React.useRef(null);
-  const catchLayerRef      = React.useRef(null);
-  const sliderThrottleRef  = React.useRef(null);
-  const [sstReadout, setSstReadout] = React.useState(null); // {sst,grad}|null
+  const catchLayerRef    = React.useRef(null);
+  const sliderThrottleRef = React.useRef(null);
 
-  React.useEffect(function() { chartTypeRef.current = chartType; }, [chartType]);
+  React.useEffect(function() { condLayersRef.current = condLayers; }, [condLayers]);
+  React.useEffect(function() { baseLyrRef.current = baseLayer; }, [baseLayer]);
   React.useEffect(function() { sstModeRef.current = sstMode; }, [sstMode]);
 
   // Initialize map once
@@ -1497,231 +1548,55 @@ function ChartsView({ navigate }) {
     };
   }, []);
 
-  // Swap layers whenever chartType changes
+  // Swap base layer (SST / chlorophyll / bathymetry / satellite)
   React.useEffect(function() {
     if (!mapInstance.current) return;
+    var cancelled = false;
 
-    // Reset forecast slider + swell period
     setSliderSeries(null);
     setSliderLoading(false);
     setSliderStep(new Date().getUTCHours());
     setSwellPeriod(null);
     clearTimeout(sliderThrottleRef.current);
 
-    // Basemap
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
-    var cartoUrl = (chartType === 'satellite')
+    var cartoUrl = (baseLayer === 'satellite')
       ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
       : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
     basemapLayer.current = L.tileLayer(cartoUrl, {
       attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19,
     }).addTo(mapInstance.current);
 
-    // Clear MUR canvas layers whenever tab switches
     [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
       if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
     });
     murGridRef.current = null;
     setSstReadout(null);
 
-    // Tile overlay (SST / chloro / bathymetry / satellite)
     if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
-    if (chartType === 'sst' && sstModeRef.current === 'raster') {
-      // canvas raster — handled below (same logic as sstMode effect)
+    if (baseLayer === 'sst' && sstModeRef.current === 'raster') {
       setCondLoading(true);
       _getCachedMURRasterGrid().then(function(grid) {
         setCondLoading(false);
-        if (!mapInstance.current || chartTypeRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
+        if (cancelled || !mapInstance.current || baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
         murGridRef.current = grid;
         var ovs = _buildMUROverlays(grid);
         ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
-      }).catch(function() { setCondLoading(false); });
-    } else {
-      var overlay = getOverlayLayer(chartType, sstModeRef.current);
+      }).catch(function() { if (!cancelled) setCondLoading(false); });
+    } else if (baseLayer) {
+      var overlay = getOverlayLayer(baseLayer, sstModeRef.current);
       if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
     }
 
-    // Clear conditions (wind/wave arrows + velocity particles)
-    if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
-    if (velocityLayerRef.current) { mapInstance.current.removeLayer(velocityLayerRef.current); velocityLayerRef.current = null; }
-    setTidesData(null);
+    return function() { cancelled = true; };
+  }, [baseLayer]);
 
-    // Async conditions
-    if (chartType === 'wind') {
-      setCondLoading(true);
-      if (typeof L.velocityLayer === 'function') {
-        getCachedWindGrid().then(function(data) {
-          setCondLoading(false);
-          if (!mapInstance.current || chartTypeRef.current !== 'wind') return;
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: {
-              velocityType: 'Wind',
-              position: 'bottomleft',
-              emptyString: 'No wind data',
-              angleConvention: 'bearingCW',
-              speedUnit: 'kt',
-            },
-            data: data,
-            maxVelocity: 35,
-            velocityScale: 0.008,
-            particleAge: 60,
-            lineWidth: 1.8,
-            particleMultiplier: 0.008,
-            frameRate: 30,
-            colorScale: WIND_PARTICLE_COLORS,
-            opacity: 0.95,
-          });
-          vl.addTo(mapInstance.current);
-          velocityLayerRef.current = vl;
-          // Background: load 14-day series for slider
-          setSliderLoading(true);
-          getCachedWindSeries14d().then(function(series) {
-            setSliderLoading(false);
-            if (!mapInstance.current || chartTypeRef.current !== 'wind') return;
-            var initStep = new Date().getUTCHours();
-            setSliderSeries(series);
-            setSliderStep(initStep);
-          }).catch(function() { setSliderLoading(false); });
-        }).catch(function() { setCondLoading(false); });
-      } else {
-        fetchConditionsData('wind').then(function(data) {
-          setCondLoading(false);
-          if (!mapInstance.current) return;
-          var layer = buildConditionsLayer('wind', data);
-          layer.addTo(mapInstance.current);
-          condGroupRef.current = layer;
-        }).catch(function() { setCondLoading(false); });
-      }
-    } else if (chartType === 'waves') {
-      setCondLoading(true);
-      // Immediate: animated swell velocity layer from single-hour grid
-      if (typeof L.velocityLayer === 'function') {
-        getCachedSwellGrid().then(function(result) {
-          setCondLoading(false);
-          if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: {
-              velocityType: 'Swell', position: 'bottomleft',
-              emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm',
-            },
-            data: result.velocityData,
-            maxVelocity: 3.5,
-            velocityScale: 0.012,
-            particleAge: 90,
-            lineWidth: 2.0,
-            particleMultiplier: 0.004,
-            colorScale: WAVE_PARTICLE_COLORS,
-            opacity: 0.92,
-          });
-          vl.addTo(mapInstance.current);
-          velocityLayerRef.current = vl;
-          if (result.avgPeriod > 0) setSwellPeriod(result.avgPeriod);
-        }).catch(function() {
-          setCondLoading(false);
-          // Fallback: arrow markers
-          fetchConditionsData('waves').then(function(data) {
-            if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
-            var layer = buildConditionsLayer('waves', data);
-            layer.addTo(mapInstance.current);
-            condGroupRef.current = layer;
-          }).catch(function() {});
-        });
-      } else {
-        fetchConditionsData('waves').then(function(data) {
-          setCondLoading(false);
-          if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
-          var layer = buildConditionsLayer('waves', data);
-          layer.addTo(mapInstance.current);
-          condGroupRef.current = layer;
-        }).catch(function() { setCondLoading(false); });
-      }
-      // Background: 7-day series for time slider
-      setSliderLoading(true);
-      getCachedWavesSeries7d().then(function(series) {
-        setSliderLoading(false);
-        if (!mapInstance.current || chartTypeRef.current !== 'waves') return;
-        var initStep = new Date().getUTCHours();
-        // If velocity layer already exists, just update it; otherwise create it
-        if (velocityLayerRef.current && typeof velocityLayerRef.current.setData === 'function') {
-          var frame = series.frames[initStep] || series.frames[0];
-          try { velocityLayerRef.current.setData(frame); } catch(e) {}
-        } else if (typeof L.velocityLayer === 'function') {
-          if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
-          var frame = series.frames[initStep] || series.frames[0];
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
-            data: frame, maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90,
-            lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92,
-          });
-          vl.addTo(mapInstance.current);
-          velocityLayerRef.current = vl;
-        }
-        if (series.periods && series.periods[initStep] > 0) setSwellPeriod(series.periods[initStep]);
-        setSliderSeries(series);
-        setSliderStep(initStep);
-      }).catch(function() { setSliderLoading(false); });
-    } else if (chartType === 'currents') {
-      setCondLoading(true);
-      if (typeof L.velocityLayer === 'function') {
-        getCachedCurrentGrid().then(function(data) {
-          setCondLoading(false);
-          if (!mapInstance.current || chartTypeRef.current !== 'currents') return;
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: {
-              velocityType: 'Ocean Current',
-              position: 'bottomleft',
-              emptyString: 'No current data',
-              angleConvention: 'bearingCW',
-              speedUnit: 'kt',
-            },
-            data: data,
-            maxVelocity: 1.0,
-            velocityScale: 0.02,
-            particleAge: 120,
-            lineWidth: 1.5,
-            particleMultiplier: 0.003,
-            colorScale: CURRENT_PARTICLE_COLORS,
-            opacity: 0.92,
-          });
-          vl.addTo(mapInstance.current);
-          velocityLayerRef.current = vl;
-        }).catch(function() { setCondLoading(false); });
-      } else {
-        setCondLoading(false);
-      }
-    } else if (chartType === 'tides') {
-      setCondLoading(true);
-      fetchTidesData().then(function(data) {
-        setCondLoading(false);
-        setTidesData(data);
-      }).catch(function() { setCondLoading(false); });
-    } else {
-      setCondLoading(false);
-    }
-
-    // Clear boat layer + poll when leaving boats tab
-    if (chartType !== 'boats') {
-      clearInterval(boatsPollRef.current);
-      boatsPollRef.current = null;
-      if (boatLayerRef.current) {
-        mapInstance.current.removeLayer(boatLayerRef.current);
-        boatLayerRef.current = null;
-      }
-      setBoats([]);
-      setBoatsError(false);
-    }
-  }, [chartType]);
-
-  // Swap SST layer when user changes source (tile ↔ canvas raster)
+  // Swap SST source (tile ↔ canvas raster) without changing base layer
   React.useEffect(function() {
-    if (chartTypeRef.current !== 'sst' || !mapInstance.current) return;
+    if (baseLyrRef.current !== 'sst' || !mapInstance.current) return;
     localStorage.setItem('tt_sst_mode', sstMode);
-    // Clear both tile overlay and MUR canvas layers
+    var cancelled = false;
     if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
     [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
       if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
@@ -1732,16 +1607,17 @@ function ChartsView({ navigate }) {
       setCondLoading(true);
       _getCachedMURRasterGrid().then(function(grid) {
         setCondLoading(false);
-        if (!mapInstance.current || chartTypeRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
+        if (cancelled || !mapInstance.current || baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
         murGridRef.current = grid;
         var ovs = _buildMUROverlays(grid);
         ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
-      }).catch(function() { setCondLoading(false); });
+      }).catch(function() { if (!cancelled) setCondLoading(false); });
     } else {
       var overlay = getOverlayLayer('sst', sstMode);
       if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
     }
+    return function() { cancelled = true; };
   }, [sstMode]);
 
   // SST readout: update on hover when canvas raster is active
@@ -1750,9 +1626,9 @@ function ChartsView({ navigate }) {
     var throttle = 0;
     function onMove(e) {
       var now = Date.now();
-      if (now - throttle < 33) return; // ~30 fps
+      if (now - throttle < 33) return;
       throttle = now;
-      if (chartTypeRef.current !== 'sst' || sstModeRef.current !== 'raster' || !murGridRef.current) return;
+      if (baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster' || !murGridRef.current) return;
       setSstReadout(_murGridReadout(murGridRef.current, e.latlng));
     }
     function onLeave() { setSstReadout(null); }
@@ -1765,10 +1641,158 @@ function ChartsView({ navigate }) {
     };
   }, []);
 
-  // Boat polling effect
+  // Wind condition layer
   React.useEffect(function() {
-    if (chartType !== 'boats' || !mapInstance.current) return;
+    if (!mapInstance.current) return;
+    var cancelled = false;
+    if (condLayers.wind) {
+      if (typeof L.velocityLayer === 'function') {
+        setCondLoading(true);
+        getCachedWindGrid().then(function(data) {
+          setCondLoading(false);
+          if (cancelled || !mapInstance.current || !condLayersRef.current.wind) return;
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: { velocityType: 'Wind', position: 'bottomleft', emptyString: 'No wind data', angleConvention: 'bearingCW', speedUnit: 'kt' },
+            data: data, maxVelocity: 35, velocityScale: 0.008, particleAge: 60,
+            lineWidth: 1.8, particleMultiplier: 0.008, frameRate: 30,
+            colorScale: WIND_PARTICLE_COLORS, opacity: 0.95,
+          });
+          vl.addTo(mapInstance.current);
+          windVelRef.current = vl;
+          setSliderLoading(true);
+          getCachedWindSeries14d().then(function(series) {
+            setSliderLoading(false);
+            if (cancelled || !mapInstance.current || !condLayersRef.current.wind) return;
+            var initStep = new Date().getUTCHours();
+            setSliderSeries(Object.assign({ type: 'wind' }, series));
+            setSliderStep(initStep);
+          }).catch(function() { if (!cancelled) setSliderLoading(false); });
+        }).catch(function() { if (!cancelled) setCondLoading(false); });
+      }
+    } else {
+      if (windVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
+      setSliderSeries(function(prev) { return (prev && prev.type === 'wind') ? null : prev; });
+    }
+    return function() { cancelled = true; };
+  }, [condLayers.wind]);
 
+  // Waves condition layer
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    var cancelled = false;
+    if (condLayers.waves) {
+      if (typeof L.velocityLayer === 'function') {
+        setCondLoading(true);
+        getCachedSwellGrid().then(function(result) {
+          setCondLoading(false);
+          if (cancelled || !mapInstance.current || !condLayersRef.current.waves) return;
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
+            data: result.velocityData, maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90,
+            lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92,
+          });
+          vl.addTo(mapInstance.current);
+          wavesVelRef.current = vl;
+          if (result.avgPeriod > 0) setSwellPeriod(result.avgPeriod);
+        }).catch(function() { if (!cancelled) setCondLoading(false); });
+        setSliderLoading(true);
+        getCachedWavesSeries7d().then(function(series) {
+          setSliderLoading(false);
+          if (cancelled || !mapInstance.current || !condLayersRef.current.waves) return;
+          var initStep = new Date().getUTCHours();
+          var tagged = Object.assign({ type: 'waves' }, series);
+          if (wavesVelRef.current && typeof wavesVelRef.current.setData === 'function') {
+            var frame = tagged.frames[initStep] || tagged.frames[0];
+            try { wavesVelRef.current.setData(frame); } catch(e) {}
+          } else if (typeof L.velocityLayer === 'function') {
+            if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
+            var frame2 = tagged.frames[initStep] || tagged.frames[0];
+            var vl2 = L.velocityLayer({
+              displayValues: true,
+              displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
+              data: frame2, maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90,
+              lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92,
+            });
+            vl2.addTo(mapInstance.current);
+            wavesVelRef.current = vl2;
+          }
+          if (tagged.periods && tagged.periods[initStep] > 0) setSwellPeriod(tagged.periods[initStep]);
+          if (!condLayersRef.current.wind) {
+            setSliderSeries(tagged);
+            setSliderStep(initStep);
+          }
+        }).catch(function() { if (!cancelled) setSliderLoading(false); });
+      } else {
+        setCondLoading(true);
+        fetchConditionsData('waves').then(function(data) {
+          setCondLoading(false);
+          if (cancelled || !mapInstance.current) return;
+          var layer = buildConditionsLayer('waves', data);
+          layer.addTo(mapInstance.current);
+          condGroupRef.current = layer;
+        }).catch(function() { if (!cancelled) setCondLoading(false); });
+      }
+    } else {
+      if (wavesVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(wavesVelRef.current); wavesVelRef.current = null; }
+      if (condGroupRef.current && mapInstance.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
+      setSwellPeriod(null);
+      setSliderSeries(function(prev) { return (prev && prev.type === 'waves') ? null : prev; });
+    }
+    return function() { cancelled = true; };
+  }, [condLayers.waves]);
+
+  // Currents condition layer
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    var cancelled = false;
+    if (condLayers.currents) {
+      if (typeof L.velocityLayer === 'function') {
+        setCondLoading(true);
+        getCachedCurrentGrid().then(function(data) {
+          setCondLoading(false);
+          if (cancelled || !mapInstance.current || !condLayersRef.current.currents) return;
+          var vl = L.velocityLayer({
+            displayValues: true,
+            displayOptions: { velocityType: 'Ocean Current', position: 'bottomleft', emptyString: 'No current data', angleConvention: 'bearingCW', speedUnit: 'kt' },
+            data: data, maxVelocity: 1.0, velocityScale: 0.02, particleAge: 120,
+            lineWidth: 1.5, particleMultiplier: 0.003, colorScale: CURRENT_PARTICLE_COLORS, opacity: 0.92,
+          });
+          vl.addTo(mapInstance.current);
+          currentsVelRef.current = vl;
+        }).catch(function() { if (!cancelled) setCondLoading(false); });
+      }
+    } else {
+      if (currentsVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(currentsVelRef.current); currentsVelRef.current = null; }
+    }
+    return function() { cancelled = true; };
+  }, [condLayers.currents]);
+
+  // Tides overlay
+  React.useEffect(function() {
+    if (showTides) {
+      setCondLoading(true);
+      fetchTidesData().then(function(data) {
+        setCondLoading(false);
+        setTidesData(data);
+      }).catch(function() { setCondLoading(false); });
+    } else {
+      setTidesData(null);
+    }
+  }, [showTides]);
+
+  // Boat positions overlay + polling
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    if (!showBoats) {
+      clearInterval(boatsPollRef.current);
+      boatsPollRef.current = null;
+      if (boatLayerRef.current) { mapInstance.current.removeLayer(boatLayerRef.current); boatLayerRef.current = null; }
+      setBoats([]);
+      setBoatsError(false);
+      return;
+    }
     function refreshBoats() {
       fetchBoatPositions()
         .then(function(data) {
@@ -1776,22 +1800,15 @@ function ChartsView({ navigate }) {
           setBoatsError(false);
           if (!mapInstance.current) return;
           if (boatLayerRef.current) mapInstance.current.removeLayer(boatLayerRef.current);
-          if (data.length > 0) {
-            boatLayerRef.current = buildBoatsLayer(data);
-            boatLayerRef.current.addTo(mapInstance.current);
-          } else {
-            boatLayerRef.current = null;
-          }
+          boatLayerRef.current = data.length > 0 ? buildBoatsLayer(data) : null;
+          if (boatLayerRef.current) boatLayerRef.current.addTo(mapInstance.current);
         })
-        .catch(function() {
-          setBoatsError(true);
-        });
+        .catch(function() { setBoatsError(true); });
     }
-
     refreshBoats();
     boatsPollRef.current = setInterval(refreshBoats, BOAT_POLL_MS);
     return function() { clearInterval(boatsPollRef.current); };
-  }, [chartType]);
+  }, [showBoats]);
 
   // Sync waypoint markers to state
   React.useEffect(function() {
@@ -1812,15 +1829,17 @@ function ChartsView({ navigate }) {
     });
   }, [waypoints]);
 
-  // Forecast slider: update velocity layer data when step or series changes
+  // Forecast slider: update velocity layer when step changes
   React.useEffect(function() {
-    if (!sliderSeries || !velocityLayerRef.current) return;
+    if (!sliderSeries) return;
+    var ref = sliderSeries.type === 'wind' ? windVelRef : wavesVelRef;
+    if (!ref.current) return;
     var frame = sliderSeries.frames[sliderStep];
     if (!frame) return;
-    try { velocityLayerRef.current.setData(frame); } catch(e) {}
+    try { ref.current.setData(frame); } catch(e) {}
   }, [sliderStep, sliderSeries]);
 
-  // Catch overlay: add/remove when toggled; persists across tab changes
+  // Catch overlay
   React.useEffect(function() {
     if (!mapInstance.current) return;
     if (catchLayerRef.current) { mapInstance.current.removeLayer(catchLayerRef.current); catchLayerRef.current = null; }
@@ -1832,13 +1851,15 @@ function ChartsView({ navigate }) {
   }, [showCatches]);
 
   function handleSliderInput(val) {
-    setSliderStep(val); // update display immediately for smooth feel
+    setSliderStep(val);
     clearTimeout(sliderThrottleRef.current);
     sliderThrottleRef.current = setTimeout(function() {
-      if (!sliderSeries || !velocityLayerRef.current) return;
+      if (!sliderSeries) return;
+      var ref = sliderSeries.type === 'wind' ? windVelRef : wavesVelRef;
+      if (!ref.current) return;
       var frame = sliderSeries.frames[val];
       if (!frame) return;
-      try { velocityLayerRef.current.setData(frame); } catch(e) {}
+      try { ref.current.setData(frame); } catch(e) {}
     }, 80);
   }
 
@@ -1846,76 +1867,112 @@ function ChartsView({ navigate }) {
   function handleDelete(id) { var n = waypoints.filter(function(wp) { return wp.id !== id; }); setWaypoints(n); persistWaypoints(n); }
   function handleSelect(wp) { if (mapInstance.current) mapInstance.current.setView([wp.lat, wp.lng], 9, { animate: true }); }
 
-  var showMap       = chartType !== 'tides';
+  function onCond(id, val) {
+    setCondLayers(function(prev) { var n = Object.assign({}, prev); n[id] = val; return n; });
+  }
+
   var workerReady   = !!(window.VESSEL_WORKER_URL || '').trim();
-  var showBoatSetup = chartType === 'boats' && !workerReady && boatsError;
+  var showBoatSetup = showBoats && !workerReady && boatsError;
+  var showSlider    = (condLayers.wind || condLayers.waves) && (sliderSeries || sliderLoading);
 
   return (
     <div className="charts-view">
-      <ChartsHeader chartType={chartType} sstMode={sstMode} sstReadout={sstReadout} />
-      <ChartTypeTabs active={chartType} onChange={setChartType} />
-      {chartType === 'sst' && (
-        <SstSourcePicker mode={sstMode} onChange={setSstMode} />
-      )}
-      {(chartType === 'wind' || chartType === 'waves') && (
+      <ChartsHeader baseLayer={baseLayer} condLayers={condLayers} sstMode={sstMode} />
+
+      <div className="layer-panel-desktop">
+        <LayerPanel
+          baseLayer={baseLayer} condLayers={condLayers}
+          showTides={showTides} showBoats={showBoats} showCatches={showCatches}
+          sstMode={sstMode}
+          onBase={setBaseLayer}
+          onCond={onCond}
+          onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
+          onSstMode={setSstMode}
+        />
+      </div>
+
+      {showSlider && (
         <ForecastSlider series={sliderSeries} step={sliderStep}
           onStep={handleSliderInput} loading={sliderLoading} />
       )}
 
-      {showMap && (
-        <div className="chart-map-container">
-          <div ref={mapRef} className="chart-map" />
-          {condLoading && (
-            <div className="cond-loading-overlay">
-              <div className="cond-loading-pill">
-                {chartType === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
-              </div>
+      <div className="chart-map-container">
+        <div ref={mapRef} className="chart-map" />
+
+        {condLoading && (
+          <div className="cond-loading-overlay">
+            <div className="cond-loading-pill">
+              {baseLayer === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
             </div>
-          )}
-          <button
-            className={'catch-toggle-pill' + (showCatches ? ' active' : '')}
-            onClick={function() { setShowCatches(!showCatches); }}
-          >
-            🎣 {showCatches ? 'Catches on' : 'Catches'}
-          </button>
-          {chartType === 'boats' && !boatsError && boatPositions.length > 0 && (
-            <div className="boats-count-pill">
-              🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
-            </div>
-          )}
-          {showBoatSetup && <BoatsSetupOverlay />}
-          {sstReadout && chartType === 'sst' && sstMode === 'raster' && (
-            <div className="sst-readout">
-              {sstReadout.sst !== null ? (
-                <React.Fragment>
-                  <span className="sst-readout-temp">{sstReadout.sst.toFixed(1)}°F</span>
-                  {sstReadout.grad !== null && (
-                    <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
-                  )}
-                </React.Fragment>
-              ) : (
-                <span className="sst-readout-na">No SST (land/cloud)</span>
-              )}
-            </div>
-          )}
-          {swellPeriod != null && chartType === 'waves' && (
-            <div className="swell-period-readout">
-              ~{Math.round(swellPeriod)}s swell period
-            </div>
-          )}
-          <WaypointsSidebar
-            waypoints={waypoints} onSelect={handleSelect}
-            onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
-            isOpen={sidebarOpen} onToggle={function() { setSidebarOpen(!sidebarOpen); }}
-          />
+          </div>
+        )}
+
+        <button className="layers-fab" aria-label="Open layer panel"
+          onClick={function() { setSheetOpen(true); }}>
+          ⊞ Layers
+        </button>
+
+        {sstReadout && baseLayer === 'sst' && sstMode === 'raster' && (
+          <div className="sst-readout">
+            {sstReadout.sst !== null ? (
+              <React.Fragment>
+                <span className="sst-readout-temp">{sstReadout.sst.toFixed(1)}°F</span>
+                {sstReadout.grad !== null && (
+                  <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
+                )}
+              </React.Fragment>
+            ) : (
+              <span className="sst-readout-na">No SST (land/cloud)</span>
+            )}
+          </div>
+        )}
+
+        {swellPeriod != null && condLayers.waves && (
+          <div className="swell-period-readout">
+            ~{Math.round(swellPeriod)}s swell period
+          </div>
+        )}
+
+        {showBoatSetup && <BoatsSetupOverlay />}
+        {showBoats && !boatsError && boatPositions.length > 0 && (
+          <div className="boats-count-pill">
+            🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
+          </div>
+        )}
+
+        <WaypointsSidebar
+          waypoints={waypoints} onSelect={handleSelect}
+          onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
+          isOpen={sidebarOpen} onToggle={function() { setSidebarOpen(!sidebarOpen); }}
+        />
+      </div>
+
+      {sheetOpen && (
+        <div className="layers-sheet-overlay"
+          onClick={function(e) { if (e.target === e.currentTarget) setSheetOpen(false); }}>
+          <div className="layers-sheet">
+            <div className="layers-sheet-handle" />
+            <LayerPanel
+              baseLayer={baseLayer} condLayers={condLayers}
+              showTides={showTides} showBoats={showBoats} showCatches={showCatches}
+              sstMode={sstMode}
+              onBase={setBaseLayer}
+              onCond={onCond}
+              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
+              onSstMode={setSstMode}
+            />
+            <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
+          </div>
         </div>
       )}
 
-      {chartType === 'tides' && (
-        <TidesPanel data={tidesData} loading={condLoading} />
-      )}
+      {showTides && <TidesPanel data={tidesData} loading={condLoading} />}
 
-      <ChartLegend type={chartType} sstMode={sstMode} />
+      {baseLayer && <ChartLegend type={baseLayer} sstMode={sstMode} />}
+      {condLayers.wind && <ChartLegend type="wind" />}
+      {condLayers.waves && <ChartLegend type="waves" />}
+      {condLayers.currents && <ChartLegend type="currents" />}
+
       <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
       {showModal && pendingLatLng && (

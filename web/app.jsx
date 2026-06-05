@@ -1,6 +1,38 @@
 // Main app — routing and tweaks wiring
 const { useState: useS, useEffect: useE } = React;
 
+// Lazy-load Leaflet + leaflet-velocity only when the charts route is first entered.
+// The script tags in index.html use type="text/javascript-deferred" so browsers
+// skip execution; we inject them dynamically here on first visit to charts.
+var _chartsLoadPromise = null;
+function _ensureChartsLoaded() {
+  if (_chartsLoadPromise) return _chartsLoadPromise;
+  if (window.L && window.L.velocityLayer) {
+    _chartsLoadPromise = Promise.resolve();
+    return _chartsLoadPromise;
+  }
+  function loadScript(id) {
+    return new Promise(function(resolve, reject) {
+      var el = document.getElementById(id);
+      if (!el) { resolve(); return; }
+      var src = el.getAttribute('src');
+      if (!src) { resolve(); return; }
+      if (document.querySelector('script[src="' + src + '"]:not([type])')) { resolve(); return; }
+      var s = document.createElement('script');
+      s.src = src;
+      var co = el.getAttribute('crossorigin');
+      if (co) s.crossOrigin = co;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  _chartsLoadPromise = loadScript('tt-leaflet-js')
+    .then(function() { return loadScript('tt-leaflet-vel-js'); })
+    .catch(function() {});
+  return _chartsLoadPromise;
+}
+
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "comfortable",
   "monthlyView": "tpa",
@@ -94,6 +126,9 @@ function App() {
   const [route, setRoute] = useS(() => routeFromLocation());
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
+  const [chartsReady, setChartsReady] = useS(function() {
+    return !!(window.L && window.L.velocityLayer);
+  });
   const [pageContext, setPageContext] = useS({ page: 'today', boat: null, date: null });
 
   // Clerk auth state — hook must be at top level.
@@ -257,6 +292,12 @@ function App() {
     };
   }, []);
 
+  // Lazy-load Leaflet when charts route is first visited.
+  useE(function() {
+    if (route.view !== 'charts' || chartsReady) return;
+    _ensureChartsLoaded().then(function() { setChartsReady(true); });
+  }, [route.view, chartsReady]);
+
   // Fire page view tracking on every route change.
   useE(() => {
     if (window.TTTrack) TTTrack.pageView(route.view);
@@ -319,7 +360,9 @@ function App() {
   } else if (route.view === 'forecast') {
     content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'charts') {
-    content = <ChartsView navigate={navigate}/>;
+    content = chartsReady
+      ? <ChartsView navigate={navigate}/>
+      : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
                               regions={regions} onRegionsDirect={setRegionsDirect}/>;
