@@ -23,6 +23,10 @@
       title: 'San Diego Sportfishing Boat Analytics & Performance | Tuna Tracker',
       desc:  'Detailed analytics on 34+ San Diego sportfishing boats: win rates, average tuna per angler, seasonality, and head-to-head comparisons across 11 years of data.'
     },
+    'analytics-finder': {
+      title: 'Find the Best San Diego Sportfishing Boat for Your Trip | Tuna Tracker',
+      desc:  'Pick your target species, trip length, and month — see which San Diego boats historically catch the most fish for those exact parameters.',
+    },
     tripplanner: {
       title: 'Find the Best San Diego Sportfishing Trip — Trip Planner | Tuna Tracker',
       desc:  'Compare upcoming San Diego sportfishing trips by boat, price, trip length, and moon phase. Find the best value trip with the highest historical win rate.'
@@ -109,7 +113,8 @@
       }
       setJsonLd('jld-entity', jldBoat);
     } else {
-      cfg = CONFIG[view] || CONFIG.today;
+      var cfgKey = (view === 'analytics' && params.subtab) ? 'analytics-' + params.subtab : view;
+      cfg = CONFIG[cfgKey] || CONFIG[view] || CONFIG.today;
       clearJsonLd('jld-entity');
     }
 
@@ -153,8 +158,9 @@
     var seg   = parts[0] || 'home';
     var view  = VIEW_MAP[seg] || 'today';
     var params = {};
-    if (seg === 'boat'    && parts[1]) params.boat    = decodeURIComponent(parts[1]);
-    if (seg === 'landing' && parts[1]) params.landing = decodeURIComponent(parts[1]);
+    if (seg === 'boat'      && parts[1]) params.boat    = decodeURIComponent(parts[1]);
+    if (seg === 'landing'   && parts[1]) params.landing = decodeURIComponent(parts[1]);
+    if (seg === 'analytics' && parts[1]) params.subtab  = parts[1];
     update(view, params);
   }
 

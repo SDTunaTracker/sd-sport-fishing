@@ -52,7 +52,7 @@ const HASH_VIEWS = {
   account: 'account', boats: 'boats', charts: 'charts',
 };
 
-const ANALYTICS_SUBTABS = ['overview', 'headtohead', 'seasonality', 'moon'];
+const ANALYTICS_SUBTABS = ['overview', 'finder', 'headtohead', 'seasonality', 'moon'];
 
 function extractRegionFromHash(raw) {
   if (!raw) return { regionIds: null, rest: '' };

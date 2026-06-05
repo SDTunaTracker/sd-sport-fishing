@@ -149,12 +149,196 @@ function StreakTracker({ navigate, regions }) {
   );
 }
 
+// ── Boat Finder ────────────────────────────────────────────────────────────────
+
+function FinpanelPill({ label, value, options, onChange }) {
+  return (
+    <label className="finder-param">
+      <span className="finder-param-label">{label}</span>
+      <select className="finder-param-select" value={value}
+              onChange={function(e) { onChange(e.target.value); }}>
+        {options.map(function(o) { return <option key={o.value} value={o.value}>{o.label}</option>; })}
+      </select>
+    </label>
+  );
+}
+
+function BoatFinderCard({ rank, row, winRates, streakMap, navigate }) {
+  const { useState, useEffect } = React;
+  const [saved, setSaved] = useState(function() {
+    return !!(window.getSavedBoats && window.getSavedBoats().has(row.boat));
+  });
+  useEffect(function() {
+    function sync() { setSaved(!!(window.getSavedBoats && window.getSavedBoats().has(row.boat))); }
+    window.addEventListener('tt-saved-boats-changed', sync);
+    return function() { window.removeEventListener('tt-saved-boats-changed', sync); };
+  }, [row.boat]);
+
+  var streak = streakMap[row.boat];
+  var wrWins = 0, wrTotal = 0;
+  Object.entries(winRates).forEach(function(kv) {
+    if (kv[0].split('|')[0] === row.boat && kv[1].winRate != null) {
+      wrWins  += kv[1].wins;
+      wrTotal += kv[1].matchupCount;
+    }
+  });
+  var wrPct = wrTotal > 0 ? Math.round(100 * wrWins / wrTotal) : null;
+  var cfg = streak ? _streakCfg(streak.goodCount) : null;
+
+  return (
+    <div className="finder-card">
+      <div className={'finder-rank' + (rank <= 3 ? ' top3' : '')}>{rank}</div>
+      <div className="finder-card-main">
+        <div className="finder-card-head">
+          <button className="finder-boat-name"
+                  onClick={function() { navigate('boat', { boat: row.boat }); }}>
+            {row.boat}
+          </button>
+          <span className="finder-landing">
+            {row.landing.replace(' Sportfishing','').replace(' Landing','')}
+          </span>
+        </div>
+        <div className="finder-stats">
+          <span className="finder-stat-primary">{fmt.tpa(row.avgTPA)} <span className="finder-stat-unit">tpa</span></span>
+          {wrPct != null && <span className="finder-stat">{wrPct}% win rate</span>}
+          <span className="finder-stat-dim">{row.tripCount} matching trip{row.tripCount !== 1 ? 's' : ''}</span>
+        </div>
+        {streak && (
+          <div className="finder-streak">
+            {streak.last10.map(function(d, i) {
+              return <span key={i} className="streak-dot"
+                           style={{background: d.good ? '#10B981' : '#EF4444'}}/>;
+            })}
+            {cfg && <span className="finder-streak-badge" style={{color: cfg.color}}>{cfg.emoji} {cfg.label}</span>}
+          </div>
+        )}
+      </div>
+      <div className="finder-card-actions">
+        <button className={'finder-save-btn' + (saved ? ' saved' : '')}
+                title={saved ? 'Remove from saved' : 'Save boat'}
+                onClick={function() { window.toggleSavedBoat && window.toggleSavedBoat(row.boat); }}>
+          {saved ? '✓' : '⭐'}
+        </button>
+        <button className="finder-view-btn"
+                onClick={function() { navigate('boat', { boat: row.boat }); }}>
+          View →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BoatFinder({ navigate, regions }) {
+  const { useState, useMemo } = React;
+  const MIN_TRIPS = 3;
+
+  var curMonth = String(new Date().getMonth() + 1);
+  const [selSpecies, setSelSpecies] = useState('all');
+  const [selLength,  setSelLength]  = useState('all');
+  const [selMonth,   setSelMonth]   = useState(curMonth);
+
+  var SPECIES_OPTS = [
+    { value: 'all',        label: 'Any trophy fish' },
+    { value: 'Bluefin',    label: 'Bluefin Tuna' },
+    { value: 'Yellowfin',  label: 'Yellowfin Tuna' },
+    { value: 'Yellowtail', label: 'Yellowtail' },
+    { value: 'Dorado',     label: 'Dorado' },
+  ];
+  var LENGTH_OPTS = [{ value: 'all', label: 'Any length' }].concat(
+    (window.SD.TRIP_LENGTHS || []).map(function(l) { return { value: l, label: l }; })
+  );
+  var MONTH_OPTS = [{ value: 'all', label: 'Any month' }].concat(
+    MONTH_NAMES.map(function(m, i) { return { value: String(i+1), label: m }; })
+  );
+
+  var _ALL = { year:'all', species:'all', landing:'all', month:'all', minTrips:0, includeZero:true, boat:'all' };
+
+  var matchingTrips = useMemo(function() {
+    return SDA.filterTrips(Object.assign({}, _ALL, {
+      species: selSpecies, tripLength: selLength, month: selMonth,
+    }), regions);
+  }, [selSpecies, selLength, selMonth, regions]);
+
+  var ranked = useMemo(function() {
+    return SDA.boatLeaderboard(matchingTrips, selSpecies, MIN_TRIPS).rows;
+  }, [matchingTrips, selSpecies]);
+
+  var eligible = ranked.filter(function(r) { return r.tripCount >= MIN_TRIPS; });
+
+  var streakMap = useMemo(function() {
+    var all = SDA.filterTrips(_ALL, regions);
+    var list = SDA.boatStreaks ? SDA.boatStreaks(all) : [];
+    var map = {};
+    list.forEach(function(b) { map[b.boat] = b; });
+    return map;
+  }, [regions]);
+
+  var winRates = useMemo(function() {
+    try { return SDA.boatWinRates ? SDA.boatWinRates() : {}; } catch(e) { return {}; }
+  }, []);
+
+  var matchLabel = [
+    selSpecies !== 'all' ? selSpecies : null,
+    selLength  !== 'all' ? selLength  : null,
+    selMonth   !== 'all' ? MONTH_NAMES[+selMonth - 1] : null,
+  ].filter(Boolean).join(' · ') || 'all trips';
+
+  return (
+    <React.Fragment>
+      <Crumbs items={[{ label: 'Analytics' }, { label: 'Find My Boat' }]}/>
+      <div className="pagehead">
+        <div>
+          <h1>Find My Boat</h1>
+          <div className="sub">Which boats historically perform best for your target trip?</div>
+        </div>
+      </div>
+
+      <div className="finder-panel">
+        <div className="finder-panel-title">I'm planning a trip to catch…</div>
+        <div className="finder-params">
+          <FinpanelPill label="Target species" value={selSpecies}
+                        options={SPECIES_OPTS} onChange={setSelSpecies}/>
+          <FinpanelPill label="Trip length" value={selLength}
+                        options={LENGTH_OPTS} onChange={setSelLength}/>
+          <FinpanelPill label="Month" value={selMonth}
+                        options={MONTH_OPTS} onChange={setSelMonth}/>
+        </div>
+      </div>
+
+      <div className="finder-summary">
+        <strong>{eligible.length}</strong> boat{eligible.length !== 1 ? 's' : ''} with {MIN_TRIPS}+ trips matching <em>{matchLabel}</em>
+        {matchingTrips.length > 0 && (
+          <span className="finder-summary-dim"> · {matchingTrips.length} qualifying trips in database</span>
+        )}
+      </div>
+
+      {eligible.length === 0 ? (
+        <div className="muted-block" style={{margin:'24px 16px'}}>
+          No boats have {MIN_TRIPS}+ trips matching these filters. Try widening your criteria (e.g., "Any month").
+        </div>
+      ) : (
+        <div className="finder-results">
+          {eligible.map(function(row, i) {
+            return (
+              <BoatFinderCard key={row.boat} rank={i+1} row={row}
+                winRates={winRates} streakMap={streakMap} navigate={navigate}/>
+            );
+          })}
+        </div>
+      )}
+    </React.Fragment>
+  );
+}
+
+// ── AnalyticsView ─────────────────────────────────────────────────────────────
+
 function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
   const { useMemo, useState } = React;
   const [filters, setFilters] = useAnalyticsFilters(propFilters, setPropFilters);
 
   const SUBTABS = [
     { id: 'overview',    label: 'Overview' },
+    { id: 'finder',      label: 'Find My Boat' },
     { id: 'headtohead',  label: 'Head-to-Head' },
     { id: 'seasonality', label: 'Seasonality' },
     { id: 'moon',        label: 'Moon Phase' },
@@ -162,6 +346,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
   const SUBTAB_FIELDS = {
     overview:    ['year', 'month', 'landing', 'boat', 'tripLength', 'species', 'minTrips'],
+    finder:      [], // finder manages its own filters inline
     headtohead:  ['year', 'month', 'landing', 'tripLength', 'species', 'minTrips'],
     seasonality: ['year', 'landing', 'tripLength'],
     moon:        ['year', 'landing', 'tripLength', 'species'],
@@ -381,6 +566,9 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
       <StreakTracker navigate={navigate} regions={regions}/>
 
       </React.Fragment>}
+
+      {/* Find My Boat sub-tab */}
+      {subtab === 'finder' && <BoatFinder navigate={navigate} regions={regions}/>}
 
       {/* Head-to-Head sub-tab */}
       {subtab === 'headtohead' && <HeadToHead filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
