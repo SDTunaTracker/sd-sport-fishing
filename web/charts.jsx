@@ -2093,6 +2093,17 @@ function ChartsView({ navigate, settings }) {
     var frame = sliderSeries.frames[sliderStep];
     if (!frame) return;
     try { ref.current.setData(frame); } catch(e) {}
+    // Keep the tap-readout data in sync with the forecast hour on display, so
+    // dragging the slider also moves the value shown when you tap the map.
+    if (sliderSeries.type === 'wind') {
+      windDataRef.current = frame;
+    } else {
+      wavesDataRef.current = frame;
+      if (sliderSeries.periods) {
+        var p = sliderSeries.periods[sliderStep];
+        if (p && p > 0) setSwellPeriod(p);
+      }
+    }
   }, [sliderStep, sliderSeries]);
 
   // Catch overlay
