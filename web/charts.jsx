@@ -2039,6 +2039,19 @@ function ChartsView({ navigate }) {
   var showBoatSetup = showBoats && !workerReady && boatsError;
   var showSlider    = (condLayers.wind || condLayers.waves) && (sliderSeries || sliderLoading);
 
+  // Summary of active layers, surfaced on the mobile "Map Layers" bar so the
+  // current selection is visible without opening the sheet.
+  var baseLabels = { sst: 'SST', chlorophyll: 'Chlorophyll', bathymetry: 'Depth', satellite: 'Satellite' };
+  var activeLayerLabels = [];
+  if (baseLayer) activeLayerLabels.push(baseLabels[baseLayer] || baseLayer);
+  if (condLayers.wind)     activeLayerLabels.push('Wind');
+  if (condLayers.waves)    activeLayerLabels.push('Swell');
+  if (condLayers.currents) activeLayerLabels.push('Currents');
+  if (condLayers.pressure) activeLayerLabels.push('Pressure');
+  if (showTides)           activeLayerLabels.push('Tides');
+  if (showCatches)         activeLayerLabels.push('Catches');
+  if (showBoats)           activeLayerLabels.push('Boats');
+
   return (
     <div className="charts-view">
       <ChartsHeader baseLayer={baseLayer} condLayers={condLayers} sstMode={sstMode} />
@@ -2061,48 +2074,60 @@ function ChartsView({ navigate }) {
       )}
 
       <div className="chart-map-container">
-        <div ref={mapRef} className="chart-map" />
+        <div className="chart-map-stage">
+          <div ref={mapRef} className="chart-map" />
 
-        {condLoading && (
-          <div className="cond-loading-overlay">
-            <div className="cond-loading-pill">
-              {baseLayer === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
+          {condLoading && (
+            <div className="cond-loading-overlay">
+              <div className="cond-loading-pill">
+                {baseLayer === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <button className="layers-fab" aria-label="Open layer panel"
+          {sstReadout && baseLayer === 'sst' && sstMode === 'raster' && (
+            <div className="sst-readout">
+              {sstReadout.sst !== null ? (
+                <React.Fragment>
+                  <span className="sst-readout-temp">{sstReadout.sst.toFixed(1)}°F</span>
+                  {sstReadout.grad !== null && (
+                    <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
+                  )}
+                </React.Fragment>
+              ) : (
+                <span className="sst-readout-na">No SST (land/cloud)</span>
+              )}
+            </div>
+          )}
+
+          {swellPeriod != null && condLayers.waves && (
+            <div className="swell-period-readout">
+              ~{Math.round(swellPeriod)}s swell period
+            </div>
+          )}
+
+          {showBoatSetup && <BoatsSetupOverlay />}
+          {showBoats && !boatsError && boatPositions.length > 0 && (
+            <div className="boats-count-pill">
+              🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
+            </div>
+          )}
+        </div>
+
+        {/* Mobile-only: full-width, always-visible bar that opens the layer sheet
+            and shows the current selection. Replaces the easy-to-miss corner FAB. */}
+        <button className="mobile-layers-bar" aria-label="Open map layers"
+          aria-expanded={sheetOpen}
           onClick={function() { setSheetOpen(true); }}>
-          ⊞ Layers
+          <span className="mobile-layers-bar-icon">⊞</span>
+          <span className="mobile-layers-bar-text">
+            <span className="mobile-layers-bar-title">Map Layers</span>
+            <span className="mobile-layers-bar-active">
+              {activeLayerLabels.length ? activeLayerLabels.join(' · ') : 'None selected'}
+            </span>
+          </span>
+          <span className="mobile-layers-bar-chevron">›</span>
         </button>
-
-        {sstReadout && baseLayer === 'sst' && sstMode === 'raster' && (
-          <div className="sst-readout">
-            {sstReadout.sst !== null ? (
-              <React.Fragment>
-                <span className="sst-readout-temp">{sstReadout.sst.toFixed(1)}°F</span>
-                {sstReadout.grad !== null && (
-                  <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
-                )}
-              </React.Fragment>
-            ) : (
-              <span className="sst-readout-na">No SST (land/cloud)</span>
-            )}
-          </div>
-        )}
-
-        {swellPeriod != null && condLayers.waves && (
-          <div className="swell-period-readout">
-            ~{Math.round(swellPeriod)}s swell period
-          </div>
-        )}
-
-        {showBoatSetup && <BoatsSetupOverlay />}
-        {showBoats && !boatsError && boatPositions.length > 0 && (
-          <div className="boats-count-pill">
-            🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
-          </div>
-        )}
 
         <WaypointsSidebar
           waypoints={waypoints} onSelect={handleSelect}
@@ -2114,8 +2139,9 @@ function ChartsView({ navigate }) {
       {sheetOpen && (
         <div className="layers-sheet-overlay"
           onClick={function(e) { if (e.target === e.currentTarget) setSheetOpen(false); }}>
-          <div className="layers-sheet">
+          <div className="layers-sheet" role="dialog" aria-label="Map layers">
             <div className="layers-sheet-handle" />
+            <div className="layers-sheet-title">Map Layers</div>
             <LayerPanel
               baseLayer={baseLayer} condLayers={condLayers}
               showTides={showTides} showBoats={showBoats} showCatches={showCatches}

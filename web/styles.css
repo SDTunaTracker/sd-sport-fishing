@@ -3953,26 +3953,62 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .layer-sst-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
 .layer-sst-btn .sst-picker-badge { font-size: 9px; }
 
-/* ── Layers FAB (mobile only) ──────────────────────────────────────────── */
+/* ── Map stage (positioning context for on-map overlays) ───────────────── */
+/* Wraps just the map + its overlays so absolutely-positioned readouts/pills
+   anchor to the map itself — not the taller container that also holds the
+   mobile layers bar and the collapsed waypoints panel below it. */
+.chart-map-stage { position: relative; }
 
-.layers-fab {
+/* ── Mobile layers bar (mobile only) ───────────────────────────────────── */
+/* Full-width, always-visible control that opens the layer sheet and shows the
+   current selection. Replaces the easy-to-miss corner FAB that overlapped the
+   waypoints panel and the floating chat button. */
+.mobile-layers-bar {
   display: none;
-  position: absolute;
-  bottom: 20px;
-  right: 12px;
-  z-index: 500;
-  padding: 10px 16px;
-  min-height: 44px;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 12px 16px;
+  min-height: 56px;
   background: var(--tb-ink, #0F2A4A);
   color: white;
   border: none;
-  border-radius: 24px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15,42,74,0.22);
   cursor: pointer;
-  align-items: center;
-  gap: 6px;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-layers-bar:active { background: #15355a; }
+.mobile-layers-bar-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mobile-layers-bar-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.mobile-layers-bar-title {
+  font: 700 14px var(--ss-font-sans);
+  letter-spacing: 0.01em;
+}
+.mobile-layers-bar-active {
+  font: 500 12px var(--ss-font-sans);
+  color: var(--tb-accent, #38BDF8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mobile-layers-bar-chevron {
+  font-size: 22px;
+  line-height: 1;
+  color: rgba(255,255,255,0.6);
+  flex-shrink: 0;
 }
 
 /* ── Layers bottom-sheet (mobile) ──────────────────────────────────────── */
@@ -4004,6 +4040,13 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   background: var(--tb-border-2, #E2E8F0);
   border-radius: 2px;
   margin: 0 auto 8px;
+}
+
+.layers-sheet-title {
+  font: 800 17px var(--ss-font-sans);
+  color: var(--tb-ink, #0F2A4A);
+  text-align: center;
+  margin-bottom: 4px;
 }
 
 .layers-sheet-close {
@@ -4323,19 +4366,22 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   .charts-view { padding: 16px; }
   .chart-map { height: 400px; }
   .layer-panel-desktop { display: none; }
-  .layers-fab { display: flex; }
+  .mobile-layers-bar { display: flex; }
   .layer-btn { min-height: 44px; padding: 8px 14px; }
+  /* Bottom-sheet layer toggles: bigger, easier-to-read groups */
+  .layers-sheet .layer-panel { border: none; padding: 4px 0 0; gap: 16px; }
+  .layers-sheet .layer-group-row { gap: 8px; }
+  .layers-sheet .layer-btn { font-size: 14px; }
   .chart-legend-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
   .legend-gradient-bar { width: 100%; max-width: none; }
-  /* On mobile, sidebar collapses below the map */
+  /* On mobile, sidebar collapses below the layers bar as a static stack */
   .wp-sidebar {
     position: static;
     width: 100%;
-    border-radius: 0 0 10px 10px;
-    border-top: none;
+    border-radius: 10px;
     max-height: 46px;
-    margin-top: -1px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   .wp-sidebar.open { max-height: 320px; }
 }
