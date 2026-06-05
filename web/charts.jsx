@@ -2176,3 +2176,46 @@ function ChartsView({ navigate }) {
 }
 
 window.ChartsView = ChartsView;
+
+// ── Idle pre-warm ────────────────────────────────────────────────────────────
+// Primes the default Charts data so the first-ever visit paints instantly,
+// before the user even taps the Charts tab. Called from app.jsx during idle.
+// Safe to run once; fetches are skipped when a fresh cache already exists.
+var _chartsPrewarmed = false;
+
+// Prefetch a 3×3 block of map tiles around the default San Diego view
+// (center 32.5,-118.5). new Image() warms the browser cache so the tile
+// layer reads straight from disk on first map mount.
+function _prewarmTiles(z, makeUrl) {
+  try {
+    var lat = 32.5, lon = -118.5;
+    var n = Math.pow(2, z);
+    var cx = Math.floor((lon + 180) / 360 * n);
+    var latRad = lat * Math.PI / 180;
+    var cy = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+    for (var dx = -1; dx <= 1; dx++) {
+      for (var dy = -1; dy <= 1; dy++) {
+        var x = cx + dx, y = cy + dy;
+        if (x < 0 || y < 0 || x >= n || y >= n) continue;
+        (new Image()).src = makeUrl(z, x, y);
+      }
+    }
+  } catch (e) {}
+}
+
+function _prewarmCharts() {
+  if (_chartsPrewarmed) return;
+  _chartsPrewarmed = true;
+
+  // 1. CARTO basemap tiles — the base layer for the default view.
+  var subs = 'abcd', si = 0;
+  _prewarmTiles(7, function(z, x, y) {
+    return 'https://' + subs[si++ % subs.length] +
+      '.basemaps.cartocdn.com/rastertiles/voyager/' + z + '/' + x + '/' + y + '.png';
+  });
+
+  // 2. SST grid — the default base-layer data (no-op if cache is still fresh).
+  try { _getCachedMURRasterGrid().catch(function() {}); } catch (e) {}
+}
+
+window.__ttPrewarmCharts = _prewarmCharts;
