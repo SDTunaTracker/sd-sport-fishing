@@ -310,6 +310,62 @@ def update_boat_photos_fishermans(conn: sqlite3.Connection) -> tuple[int, int, i
     return updated, failed, skipped
 
 
+# ── Point Loma Sportfishing ───────────────────────────────────────────────────
+
+def _pl_slugs(boat_name: str) -> list[str]:
+    base   = re.sub(r"[^a-z0-9\s]", "", boat_name.lower()).strip()
+    return list(dict.fromkeys([
+        re.sub(r"\s+", "", base),    # americanangler
+        re.sub(r"\s+", "-", base),   # american-angler
+        re.sub(r"\s+", "_", base),   # american_angler
+    ]))
+
+
+def _try_pl_boat_page(boat_name: str) -> dict | None:
+    """Try individual PL pages at /fleet/{slug}.php. Returns {photo_url, detail_url} or None."""
+    base = "https://www.pointlomasportfishing.com"
+    for slug in _pl_slugs(boat_name):
+        url = f"{base}/fleet/{slug}.php"
+        try:
+            r = requests.get(url, headers={"User-Agent": UA}, timeout=15, allow_redirects=True)
+            if r.status_code != 200:
+                continue
+            soup = BeautifulSoup(r.text, "lxml")
+            for img in soup.find_all("img"):
+                src = img.get("src", "")
+                if "/media/boats/" in src:
+                    return {"photo_url": _make_absolute(src, url), "detail_url": url}
+        except Exception:
+            continue
+    return None
+
+
+def update_boat_photos_pointloma(conn: sqlite3.Connection) -> tuple[int, int, int]:
+    db_boats = conn.execute(
+        "SELECT DISTINCT boat FROM trips WHERE landing = 'Point Loma Sportfishing'"
+    ).fetchall()
+    print(f"  Checking {len(db_boats)} PL boats")
+
+    updated = failed = skipped = 0
+    for row in db_boats:
+        boat_name = row["boat"]
+        result    = _try_pl_boat_page(boat_name)
+        time.sleep(0.5)
+        if not result:
+            print(f"    SKIP {boat_name} — no photo found")
+            skipped += 1
+            continue
+        local = download_boat_photo(boat_name, result["photo_url"])
+        if not local:
+            failed += 1
+            continue
+        _upsert_profile(conn, boat_name, "Point Loma Sportfishing", local, result["detail_url"])
+        print(f"    OK {boat_name}")
+        updated += 1
+
+    return updated, failed, skipped
+
+
 # ── Combined runner ───────────────────────────────────────────────────────────
 
 def update_all_boat_photos(conn: sqlite3.Connection) -> None:
@@ -317,6 +373,7 @@ def update_all_boat_photos(conn: sqlite3.Connection) -> None:
         ("H&M Landing",          update_boat_photos_hm),
         ("Seaforth Sportfishing", update_boat_photos_seaforth),
         ("Fisherman's Landing",   update_boat_photos_fishermans),
+        ("Point Loma Sportfishing", update_boat_photos_pointloma),
     ]:
         print(f"\n=== {label} ===")
         try:
@@ -331,7 +388,7 @@ def update_all_boat_photos(conn: sqlite3.Connection) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--landing", choices=["hm", "seaforth", "fishermans", "all"], default="all")
+    p.add_argument("--landing", choices=["hm", "seaforth", "fishermans", "pointloma", "all"], default="all")
     args = p.parse_args(argv)
 
     conn = sqlite3.connect(str(DB_PATH))
@@ -348,6 +405,10 @@ def main(argv: list[str] | None = None) -> int:
         elif args.landing == "fishermans":
             print("=== Fisherman's Landing ===")
             u, f, s = update_boat_photos_fishermans(conn)
+            print(f"=> updated={u}  failed={f}  skipped={s}")
+        elif args.landing == "pointloma":
+            print("=== Point Loma Sportfishing ===")
+            u, f, s = update_boat_photos_pointloma(conn)
             print(f"=> updated={u}  failed={f}  skipped={s}")
         else:
             update_all_boat_photos(conn)
