@@ -51,7 +51,11 @@ function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, tpData, fo
         {badge && <div className="boat-card-badge-overlay">{badge}</div>}
       </div>
       <div className="boat-card-body">
-        <div className="boat-card-name">{boat}</div>
+        <a className="boat-card-name"
+           href={`/sd/boat/${encodeURIComponent(boat)}`}
+           onClick={e => e.preventDefault()}>
+          {boat}
+        </a>
         {reviewData && reviewData.avgRating != null && (
           <StarRow rating={reviewData.avgRating} count={reviewData.count} />
         )}

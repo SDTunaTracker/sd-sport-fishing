@@ -753,6 +753,14 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         import logging
         logging.getLogger(__name__).warning("Sitemap generation failed: %s", e)
 
+    # Generate pre-rendered static HTML pages for boats, landings, and species.
+    try:
+        from .generate_pages import generate_all_pages
+        generate_all_pages(conn, out_path.parent, out_path.parent / "index.html")
+    except Exception as e:
+        import logging as _logging
+        _logging.getLogger(__name__).warning("Page generation failed: %s", e)
+
     return len(trips)
 
 
@@ -783,6 +791,20 @@ def _write_sitemap(data_js_path: Path, boats: list[dict]) -> None:
             continue
         seen.add(name)
         entries.append((f"{base}/sd/boat/{quote(name)}", "0.5", "weekly"))
+
+    # Landing pages
+    for landing, slug in [
+        ("H&M Landing", "hm-landing"),
+        ("Fisherman's Landing", "fishermans-landing"),
+        ("Seaforth Sportfishing", "seaforth"),
+        ("Point Loma Sportfishing", "point-loma"),
+        ("Oceanside Sea Center", "oceanside"),
+    ]:
+        entries.append((f"{base}/sd/landing/{slug}", "0.6", "weekly"))
+
+    # Species pages
+    for slug in ["bluefin-tuna", "yellowfin-tuna", "yellowtail", "dorado"]:
+        entries.append((f"{base}/sd/species/{slug}", "0.6", "weekly"))
 
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']

@@ -219,10 +219,11 @@ function BoatFinderCard({ rank, row, winRates, streakMap, navigate }) {
                 onClick={function() { window.toggleSavedBoat && window.toggleSavedBoat(row.boat); }}>
           {saved ? '✓' : '⭐'}
         </button>
-        <button className="finder-view-btn"
-                onClick={function() { navigate('boat', { boat: row.boat }); }}>
+        <a className="finder-view-btn"
+           href={`/sd/boat/${encodeURIComponent(row.boat)}`}
+           onClick={function(e) { e.preventDefault(); navigate('boat', { boat: row.boat }); }}>
           View →
-        </button>
+        </a>
       </div>
     </div>
   );
