@@ -1467,48 +1467,11 @@ function ForecastSlider({ series, step, onStep, loading }) {
   );
 }
 
-// ── MPA Data (CDFW SD-area MPAs, simplified polygons — approximate, for reference) ──
-var SD_MPA_GEOJSON = {
-  type: 'FeatureCollection',
-  features: [
-    { type: 'Feature',
-      properties: { name: 'Matlahuayl SMR', type: 'SMR', rules: 'No-take: all living marine resources protected. No take of any living or non-living marine resources.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.278,32.862],[-117.259,32.862],[-117.259,32.875],[-117.278,32.875],[-117.278,32.862]]] } },
-    { type: 'Feature',
-      properties: { name: 'La Jolla SMR', type: 'SMR', rules: 'No-take: all living marine resources protected. No recreational or commercial take.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.295,32.833],[-117.263,32.833],[-117.263,32.856],[-117.295,32.856],[-117.295,32.833]]] } },
-    { type: 'Feature',
-      properties: { name: 'La Jolla SMCA', type: 'SMCA', rules: 'Restricted take: recreational take of pelagic finfish allowed. No take of invertebrates or kelp. Check CDFW for current rules.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.322,32.820],[-117.258,32.820],[-117.258,32.858],[-117.322,32.858],[-117.322,32.820]]] } },
-    { type: 'Feature',
-      properties: { name: 'South La Jolla SMR', type: 'SMR', rules: 'No-take: all living marine resources protected.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.340,32.797],[-117.285,32.797],[-117.285,32.819],[-117.340,32.819],[-117.340,32.797]]] } },
-    { type: 'Feature',
-      properties: { name: 'South La Jolla SMCA', type: 'SMCA', rules: 'Restricted take: recreational pelagic finfish take allowed. Check CDFW for current regulations.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.360,32.793],[-117.274,32.793],[-117.274,32.825],[-117.360,32.825],[-117.360,32.793]]] } },
-    { type: 'Feature',
-      properties: { name: 'San Diego SMCA', type: 'SMCA', rules: 'Restricted take: pelagic finfish may be taken. Check CDFW regulations before fishing.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.290,32.694],[-117.253,32.694],[-117.253,32.730],[-117.290,32.730],[-117.290,32.694]]] } },
-    { type: 'Feature',
-      properties: { name: 'Cabrillo SMR', type: 'SMR', rules: 'No-take: all living marine resources protected.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.252,32.666],[-117.240,32.666],[-117.240,32.671],[-117.252,32.671],[-117.252,32.666]]] } },
-    { type: 'Feature',
-      properties: { name: 'Cabrillo SMCA', type: 'SMCA', rules: 'Restricted take: recreational fishing allowed for most pelagic species. Check CDFW regulations.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.262,32.670],[-117.238,32.670],[-117.238,32.683],[-117.262,32.683],[-117.262,32.670]]] } },
-    { type: 'Feature',
-      properties: { name: 'Tijuana River Mouth SMCA', type: 'SMCA', rules: 'Restricted take: check CDFW regulations. Proximity to international boundary — additional rules may apply.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.160,32.550],[-117.115,32.550],[-117.115,32.575],[-117.160,32.575],[-117.160,32.550]]] } },
-    { type: 'Feature',
-      properties: { name: "Swami's SMCA", type: 'SMCA', rules: 'Restricted take: recreational pelagic finfish take allowed outside the ecological preserve. Check CDFW.' },
-      geometry: { type: 'Polygon', coordinates: [[[-117.322,32.988],[-117.282,32.988],[-117.282,33.010],[-117.322,33.010],[-117.322,32.988]]] } },
-  ]
-};
-
 // ── LayerPanel ────────────────────────────────────────────────────────────────
 // Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
-function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, showMPA, sstMode,
-                      onBase, onCond, onTides, onBoats, onCatches, onMPA, onSstMode }) {
+function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode,
+                      onBase, onCond, onTides, onBoats, onCatches, onSstMode }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
     { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
@@ -1574,9 +1537,6 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
           </button>
           <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
             <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
-          </button>
-          <button className={'layer-btn' + (showMPA ? ' active' : '')} onClick={function() { onMPA(!showMPA); }}>
-            <span className="layer-btn-icon">🚫</span>MPA Zones
           </button>
         </div>
       </div>
@@ -1678,7 +1638,6 @@ function ChartsView({ navigate, settings }) {
   const [showTides, setShowTides]   = React.useState(false);
   const [showBoats, setShowBoats]   = React.useState(false);
   const [showCatches, setShowCatches] = React.useState(false);
-  const [showMPA, setShowMPA]       = React.useState(false);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
   const [sstMode, setSstMode]       = React.useState(function() {
     return localStorage.getItem('tt_sst_mode') || 'raster';
@@ -1716,7 +1675,6 @@ function ChartsView({ navigate, settings }) {
   const murSSTLayerRef   = React.useRef(null);
   const murFrontLayerRef = React.useRef(null);
   const catchLayerRef    = React.useRef(null);
-  const mpaLayerRef      = React.useRef(null);
   const sliderThrottleRef = React.useRef(null);
   // Raw, sampleable grid data for the tap-to-read popup (refs stay current
   // inside the stable map-click closure).
@@ -2159,46 +2117,6 @@ function ChartsView({ navigate, settings }) {
     }
   }, [showCatches]);
 
-  // MPA overlay
-  React.useEffect(function() {
-    if (!mapInstance.current) return;
-    if (mpaLayerRef.current) { mapInstance.current.removeLayer(mpaLayerRef.current); mpaLayerRef.current = null; }
-    if (!showMPA) return;
-    mpaLayerRef.current = L.geoJSON(SD_MPA_GEOJSON, {
-      style: function(feature) {
-        var noTake = feature.properties.type === 'SMR';
-        return {
-          color:       noTake ? '#ef4444' : '#f97316',
-          weight:      noTake ? 2.5 : 1.8,
-          fillColor:   noTake ? '#ef4444' : '#f97316',
-          fillOpacity: 0.16,
-          dashArray:   noTake ? null : '6,4',
-          interactive: true,
-        };
-      },
-      onEachFeature: function(feature, layer) {
-        var p = feature.properties;
-        var typeLabel = p.type === 'SMR'
-          ? '<span style="color:#ef4444;font-weight:700">■</span> State Marine Reserve — No-Take'
-          : '<span style="color:#f97316;font-weight:700">■</span> State Marine Conservation Area — Restricted';
-        var html =
-          '<div style="font:13px/1.6 -apple-system,sans-serif;max-width:240px">' +
-          '<b style="font-size:14px">' + p.name + '</b><br>' +
-          '<div style="font-size:11px;margin:2px 0 6px">' + typeLabel + '</div>' +
-          '<div style="font-size:12px;color:#334155;margin-bottom:6px">' + p.rules + '</div>' +
-          '<a href="https://wildlife.ca.gov/Conservation/Marine/MPAs" target="_blank" rel="noopener" ' +
-            'style="color:#0ea5e9;font-size:11px">Verify boundaries at CDFW.ca.gov →</a><br>' +
-          '<span style="color:#94a3b8;font-size:10px">Polygon is approximate — for reference only</span>' +
-          '</div>';
-        layer.bindPopup(html);
-        layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.32 }); });
-        layer.on('mouseout', function() {
-          if (mpaLayerRef.current) mpaLayerRef.current.resetStyle(layer);
-        });
-      }
-    }).addTo(mapInstance.current);
-  }, [showMPA]);
-
   function handleSliderInput(val) {
     setSliderStep(val);
     clearTimeout(sliderThrottleRef.current);
@@ -2236,7 +2154,6 @@ function ChartsView({ navigate, settings }) {
   if (showTides)           activeLayerLabels.push('Tides');
   if (showCatches)         activeLayerLabels.push('Catches');
   if (showBoats)           activeLayerLabels.push('Boats');
-  if (showMPA)             activeLayerLabels.push('MPA Zones');
 
   return (
     <div className="charts-view">
@@ -2270,11 +2187,11 @@ function ChartsView({ navigate, settings }) {
           <div className="layer-panel-desktop">
             <LayerPanel
               baseLayer={baseLayer} condLayers={condLayers}
-              showTides={showTides} showBoats={showBoats} showCatches={showCatches} showMPA={showMPA}
+              showTides={showTides} showBoats={showBoats} showCatches={showCatches}
               sstMode={sstMode}
               onBase={setBaseLayer}
               onCond={onCond}
-              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches} onMPA={setShowMPA}
+              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
               onSstMode={setSstMode}
             />
           </div>
@@ -2331,11 +2248,11 @@ function ChartsView({ navigate, settings }) {
             <div className="layers-sheet-title">Map Layers</div>
             <LayerPanel
               baseLayer={baseLayer} condLayers={condLayers}
-              showTides={showTides} showBoats={showBoats} showCatches={showCatches} showMPA={showMPA}
+              showTides={showTides} showBoats={showBoats} showCatches={showCatches}
               sstMode={sstMode}
               onBase={setBaseLayer}
               onCond={onCond}
-              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches} onMPA={setShowMPA}
+              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
               onSstMode={setSstMode}
             />
             <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
@@ -2351,7 +2268,7 @@ function ChartsView({ navigate, settings }) {
       {condLayers.currents && <ChartLegend type="currents" />}
       {condLayers.pressure && <ChartLegend type="pressure" />}
 
-      <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io{showMPA ? ' · MPA: CDFW (approx)' : ''}</div>
+      <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
       {showModal && pendingLatLng && (
         <WaypointModal latlng={pendingLatLng} onSave={handleSave}
@@ -2393,11 +2310,11 @@ function _prewarmCharts() {
   if (_chartsPrewarmed) return;
   _chartsPrewarmed = true;
 
-  // 1. CARTO basemap tiles — the base layer for the default view.
+  // 1. CARTO Dark Matter tiles — the actual basemap in use.
   var subs = 'abcd', si = 0;
   _prewarmTiles(7, function(z, x, y) {
     return 'https://' + subs[si++ % subs.length] +
-      '.basemaps.cartocdn.com/rastertiles/voyager/' + z + '/' + x + '/' + y + '.png';
+      '.basemaps.cartocdn.com/dark_matter_nolabels/' + z + '/' + x + '/' + y + '.png';
   });
 
   // 2. SST grid — the default base-layer data (no-op if cache is still fresh).
