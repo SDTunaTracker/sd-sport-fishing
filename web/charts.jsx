@@ -475,6 +475,144 @@ function getCachedSwellGrid() {
   });
 }
 
+// ── Pressure isobars ──────────────────────────────────────────────────────────
+
+// Same 9×9 grid extent as wind for easy comparison
+var _PRESS_NX = 9, _PRESS_NY = 9;
+var _PRESS_LO1 = -121.0, _PRESS_LA1 = 35.0, _PRESS_DX = 0.5, _PRESS_DY = 0.5;
+var _PRESS_CACHE_KEY = 'tt_pressure_v1', _PRESS_CACHE_TTL = 2 * 3600000;
+
+var _PRESS_LATS = (function() {
+  var a = []; for (var j = 0; j < _PRESS_NY; j++) a.push(_PRESS_LA1 - j * _PRESS_DY); return a;
+})();
+var _PRESS_LONS = (function() {
+  var a = []; for (var i = 0; i < _PRESS_NX; i++) a.push(_PRESS_LO1 + i * _PRESS_DX); return a;
+})();
+
+function _fetchPressureGrid() {
+  var lats = [], lons = [];
+  for (var j = 0; j < _PRESS_NY; j++) {
+    for (var i = 0; i < _PRESS_NX; i++) {
+      lats.push((_PRESS_LA1 - j * _PRESS_DY).toFixed(2));
+      lons.push((_PRESS_LO1 + i * _PRESS_DX).toFixed(2));
+    }
+  }
+  var hour = new Date().getUTCHours();
+  return fetch(
+    'https://api.open-meteo.com/v1/forecast' +
+    '?latitude=' + lats.join(',') + '&longitude=' + lons.join(',') +
+    '&hourly=surface_pressure&forecast_days=1&timezone=UTC'
+  ).then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function(results) {
+    var locs = Array.isArray(results) ? results : [results];
+    var grid = [];
+    for (var j = 0; j < _PRESS_NY; j++) {
+      grid[j] = [];
+      for (var i = 0; i < _PRESS_NX; i++) {
+        var loc = locs[j * _PRESS_NX + i] || {};
+        var h = (loc.hourly || {}).surface_pressure || [];
+        grid[j][i] = h[hour] || 1013;
+      }
+    }
+    return { grid: grid, lats: _PRESS_LATS, lons: _PRESS_LONS };
+  });
+}
+
+function getCachedPressureGrid() {
+  try {
+    var c = JSON.parse(localStorage.getItem(_PRESS_CACHE_KEY) || 'null');
+    if (c && Date.now() - c.ts < _PRESS_CACHE_TTL) return Promise.resolve(c.data);
+  } catch(e) {}
+  return _fetchPressureGrid().then(function(data) {
+    try { localStorage.setItem(_PRESS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+    return data;
+  });
+}
+
+// Marching squares: returns array of [[lat,lon],[lat,lon]] line segments
+function _isobarSegments(grid, lats, lons, level) {
+  var segs = [];
+  function lerp(a, b, va, vb) {
+    return Math.abs(vb - va) < 1e-9 ? a : a + (b - a) * (level - va) / (vb - va);
+  }
+  for (var r = 0; r < lats.length - 1; r++) {
+    for (var c = 0; c < lons.length - 1; c++) {
+      var tl = grid[r][c],   tr = grid[r][c+1];
+      var bl = grid[r+1][c], br = grid[r+1][c+1];
+      var cfg = ((tl >= level) ? 8:0) | ((tr >= level) ? 4:0) |
+                ((br >= level) ? 2:0) | ((bl >= level) ? 1:0);
+      if (cfg === 0 || cfg === 15) continue;
+      var top    = [lats[r],   lerp(lons[c], lons[c+1], tl, tr)];
+      var right  = [lerp(lats[r], lats[r+1], tr, br), lons[c+1]];
+      var bottom = [lats[r+1], lerp(lons[c], lons[c+1], bl, br)];
+      var left   = [lerp(lats[r], lats[r+1], tl, bl), lons[c]];
+      var avg = (tl + tr + br + bl) / 4;
+      switch (cfg) {
+        case 1:  segs.push([left, bottom]); break;
+        case 2:  segs.push([bottom, right]); break;
+        case 3:  segs.push([left, right]); break;
+        case 4:  segs.push([top, right]); break;
+        case 5:  if (avg >= level) { segs.push([top, left]); segs.push([right, bottom]); }
+                 else              { segs.push([top, right]); segs.push([left, bottom]); } break;
+        case 6:  segs.push([top, bottom]); break;
+        case 7:  segs.push([top, left]); break;
+        case 8:  segs.push([top, left]); break;
+        case 9:  segs.push([top, bottom]); break;
+        case 10: if (avg >= level) { segs.push([top, right]); segs.push([left, bottom]); }
+                 else              { segs.push([top, left]); segs.push([right, bottom]); } break;
+        case 11: segs.push([top, right]); break;
+        case 12: segs.push([left, right]); break;
+        case 13: segs.push([bottom, right]); break;
+        case 14: segs.push([left, bottom]); break;
+      }
+    }
+  }
+  return segs;
+}
+
+function _buildIsobarLayer(grid, lats, lons) {
+  var group = L.layerGroup();
+  var minP = Infinity, maxP = -Infinity;
+  for (var r = 0; r < lats.length; r++) {
+    for (var c = 0; c < lons.length; c++) {
+      if (grid[r][c] < minP) minP = grid[r][c];
+      if (grid[r][c] > maxP) maxP = grid[r][c];
+    }
+  }
+  var firstLevel = Math.ceil(minP / 4) * 4;
+  var lastLevel  = Math.floor(maxP / 4) * 4;
+
+  for (var level = firstLevel; level <= lastLevel; level += 4) {
+    var segs = _isobarSegments(grid, lats, lons, level);
+    if (segs.length === 0) continue;
+    var isMajor = (level % 8 === 0);
+    var color = level <= 1008 ? '#3b82f6' :   // low — blue
+                level >= 1020 ? '#dc2626' :   // high — red
+                '#64748b';                    // mid — slate
+    var weight = isMajor ? 2.5 : 1.5;
+    segs.forEach(function(seg) {
+      L.polyline(seg, {
+        color: color, weight: weight, opacity: 0.8,
+        smoothFactor: 1.5, lineCap: 'round', lineJoin: 'round',
+      }).addTo(group);
+    });
+    if (isMajor && segs.length > 0) {
+      var ls = segs[Math.floor(segs.length / 2)];
+      L.marker([(ls[0][0] + ls[1][0]) / 2, (ls[0][1] + ls[1][1]) / 2], {
+        icon: L.divIcon({
+          className: 'isobar-label',
+          html: '<span style="color:' + color + '">' + level + '</span>',
+          iconSize: [36, 16], iconAnchor: [18, 8],
+        }),
+        interactive: false,
+      }).addTo(group);
+    }
+  }
+  return group;
+}
+
 // ── MUR SST canvas raster + thermal-front overlay ────────────────────────────
 
 var _MUR_RASTER_BBOX = { latMin: 30.0, latMax: 34.5, lonMin: -121.5, lonMax: -116.0 };
@@ -1303,6 +1441,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
     { id: 'wind',     icon: '💨', label: 'Wind' },
     { id: 'waves',    icon: '🌊', label: 'Swell' },
     { id: 'currents', icon: '🌀', label: 'Currents' },
+    { id: 'pressure', icon: '🔵', label: 'Pressure' },
   ];
   return (
     <div className="layer-panel">
@@ -1395,9 +1534,10 @@ function ChartsHeader({ baseLayer, condLayers, sstMode }) {
     wind:        'Animated wind flow. Green = calm (<8 kt), yellow = moderate, red = rough. Data: Open-Meteo.',
     waves:       'Animated swell field. Particles colored by height (blue=calm, red=rough 3m+). Data: Open-Meteo Marine.',
     currents:    'Animated surface current flow. Particles show direction and speed. Data: HYCOM.',
+    pressure:    'Atmospheric pressure isobars (hPa). Tightly-spaced lines = strong winds. Blue = low pressure, red = high pressure. Data: Open-Meteo.',
   };
   var cl = condLayers || {};
-  var primary = baseLayer || (cl.wind ? 'wind' : cl.waves ? 'waves' : cl.currents ? 'currents' : null);
+  var primary = baseLayer || (cl.wind ? 'wind' : cl.waves ? 'waves' : cl.currents ? 'currents' : cl.pressure ? 'pressure' : null);
   var desc = primary ? (descs[primary] || '') : 'Select a base layer or condition from the panel below.';
   return (
     <div className="charts-header">
@@ -1421,6 +1561,7 @@ function ChartLegend({ type, sstMode }) {
     waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #a3e635, #eab308, #f97316, #ef4444, #a855f7)', low: 'Calm (0 m)', high: 'Rough (3+ m)' },
     currents:    { gradient: 'linear-gradient(to right, rgb(20,60,140), rgb(100,160,220), rgb(180,230,220), rgb(250,230,150), rgb(255,150,70), rgb(220,40,40))', low: 'Slack (0 kt)', high: 'Strong (2+ kt)' },
     satellite:   null,
+    pressure:    { gradient: 'linear-gradient(to right, #3b82f6, #64748b, #dc2626)', low: 'Low pressure', high: 'High pressure' },
     tides:       null,
     boats:       null,
   };
@@ -1451,7 +1592,7 @@ function ChartLegend({ type, sstMode }) {
 
 function ChartsView({ navigate }) {
   const [baseLayer, setBaseLayer]   = React.useState('sst');
-  const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false });
+  const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false, pressure: false });
   const [showTides, setShowTides]   = React.useState(false);
   const [showBoats, setShowBoats]   = React.useState(false);
   const [showCatches, setShowCatches] = React.useState(false);
@@ -1483,6 +1624,7 @@ function ChartsView({ navigate }) {
   const windVelRef       = React.useRef(null);
   const wavesVelRef      = React.useRef(null);
   const currentsVelRef   = React.useRef(null);
+  const pressureLayerRef = React.useRef(null);
   const condLayersRef    = React.useRef(condLayers);
   const baseLyrRef       = React.useRef(baseLayer);
   const sstModeRef       = React.useRef(sstMode);
@@ -1769,6 +1911,28 @@ function ChartsView({ navigate }) {
     return function() { cancelled = true; };
   }, [condLayers.currents]);
 
+  // Pressure isobar layer
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    var cancelled = false;
+    if (condLayers.pressure) {
+      setCondLoading(true);
+      getCachedPressureGrid().then(function(data) {
+        setCondLoading(false);
+        if (cancelled || !mapInstance.current || !condLayersRef.current.pressure) return;
+        if (pressureLayerRef.current) { mapInstance.current.removeLayer(pressureLayerRef.current); pressureLayerRef.current = null; }
+        pressureLayerRef.current = _buildIsobarLayer(data.grid, data.lats, data.lons);
+        pressureLayerRef.current.addTo(mapInstance.current);
+      }).catch(function() { if (!cancelled) setCondLoading(false); });
+    } else {
+      if (pressureLayerRef.current && mapInstance.current) {
+        mapInstance.current.removeLayer(pressureLayerRef.current);
+        pressureLayerRef.current = null;
+      }
+    }
+    return function() { cancelled = true; };
+  }, [condLayers.pressure]);
+
   // Tides overlay
   React.useEffect(function() {
     if (showTides) {
@@ -1972,6 +2136,7 @@ function ChartsView({ navigate }) {
       {condLayers.wind && <ChartLegend type="wind" />}
       {condLayers.waves && <ChartLegend type="waves" />}
       {condLayers.currents && <ChartLegend type="currents" />}
+      {condLayers.pressure && <ChartLegend type="pressure" />}
 
       <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
