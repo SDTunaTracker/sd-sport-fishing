@@ -1,5 +1,5 @@
 // The Tuna Tracker — app-shell service worker
-var CACHE = 'tt-shell-v1';
+var CACHE = 'tt-shell-v2';
 
 // Resources to pre-cache on install (app shell)
 var SHELL = [
@@ -33,6 +33,29 @@ self.addEventListener('fetch', function(e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url = req.url;
+
+  // Immutable, version-pinned CDN libraries (Leaflet, React): cache-first.
+  // These URLs never change for a given version, so a cached copy is always
+  // valid — this makes the map appear instantly on repeat visits and offline.
+  if (
+    url.indexOf('/leaflet/1.9.4/') !== -1 ||
+    url.indexOf('react@18.3.1') !== -1 ||
+    url.indexOf('react-dom@18.3.1') !== -1
+  ) {
+    e.respondWith(
+      caches.match(req).then(function(cached) {
+        if (cached) return cached;
+        return fetch(req).then(function(res) {
+          if (res && (res.status === 200 || res.type === 'opaque')) {
+            var clone = res.clone();
+            caches.open(CACHE).then(function(c) { c.put(req, clone); });
+          }
+          return res;
+        }).catch(function() { return caches.match(req); });
+      })
+    );
+    return;
+  }
 
   // Skip external API calls — always network
   if (

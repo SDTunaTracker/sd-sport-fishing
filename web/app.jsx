@@ -298,6 +298,17 @@ function App() {
     _ensureChartsLoaded().then(function() { setChartsReady(true); });
   }, [route.view, chartsReady]);
 
+  // Pre-warm the map library during idle time so the Charts view appears
+  // instantly when first opened — no "Loading map…" wait. The service worker
+  // caches the fetched library, so repeat visits load it straight from disk.
+  useE(function() {
+    if (window.L && window.L.velocityLayer) return;
+    var ric = window.requestIdleCallback || function(fn) { return setTimeout(fn, 1500); };
+    var cancel = window.cancelIdleCallback || clearTimeout;
+    var id = ric(function() { _ensureChartsLoaded(); }, { timeout: 4000 });
+    return function() { try { cancel(id); } catch (e) {} };
+  }, []);
+
   // Fire page view tracking on every route change.
   useE(() => {
     if (window.TTTrack) TTTrack.pageView(route.view);

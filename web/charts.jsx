@@ -2074,6 +2074,22 @@ function ChartsView({ navigate }) {
       )}
 
       <div className="chart-map-container">
+        {/* Mobile-only: full-width, always-visible bar above the map that opens
+            the layer sheet and shows the current selection. Replaces the
+            easy-to-miss corner FAB. */}
+        <button className="mobile-layers-bar" aria-label="Open map layers"
+          aria-expanded={sheetOpen}
+          onClick={function() { setSheetOpen(true); }}>
+          <span className="mobile-layers-bar-icon">⊞</span>
+          <span className="mobile-layers-bar-text">
+            <span className="mobile-layers-bar-title">Map Layers</span>
+            <span className="mobile-layers-bar-active">
+              {activeLayerLabels.length ? activeLayerLabels.join(' · ') : 'None selected'}
+            </span>
+          </span>
+          <span className="mobile-layers-bar-chevron">›</span>
+        </button>
+
         <div className="chart-map-stage">
           <div ref={mapRef} className="chart-map" />
 
@@ -2113,21 +2129,6 @@ function ChartsView({ navigate }) {
             </div>
           )}
         </div>
-
-        {/* Mobile-only: full-width, always-visible bar that opens the layer sheet
-            and shows the current selection. Replaces the easy-to-miss corner FAB. */}
-        <button className="mobile-layers-bar" aria-label="Open map layers"
-          aria-expanded={sheetOpen}
-          onClick={function() { setSheetOpen(true); }}>
-          <span className="mobile-layers-bar-icon">⊞</span>
-          <span className="mobile-layers-bar-text">
-            <span className="mobile-layers-bar-title">Map Layers</span>
-            <span className="mobile-layers-bar-active">
-              {activeLayerLabels.length ? activeLayerLabels.join(' · ') : 'None selected'}
-            </span>
-          </span>
-          <span className="mobile-layers-bar-chevron">›</span>
-        </button>
 
         <WaypointsSidebar
           waypoints={waypoints} onSelect={handleSelect}
