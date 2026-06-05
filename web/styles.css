@@ -5809,3 +5809,29 @@ button.btn-save-boat[data-saved="true"],
 #seo-static nav ol li + li::before { content: "›"; margin-right: 6px; }
 #seo-static a { color: var(--tb-accent); text-decoration: none; }
 #seo-static ul { font-size: 13px; padding-left: 20px; line-height: 1.8; }
+
+/* ─── Solunar windows widget ──────────────────────────────────────────── */
+.fc-sol-moon-badge { font: 600 12px var(--ss-font-sans); color: var(--tb-slate); }
+.fc-sol-ref-row {
+  display: flex; gap: 14px; font: 500 11px var(--ss-font-sans); color: var(--tb-slate);
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.fc-sol-windows { display: flex; flex-direction: column; border-top: 1px solid var(--tb-border); }
+.fc-sol-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-bottom: 1px solid var(--tb-border);
+  transition: background 0.1s;
+}
+.fc-sol-major { background: rgba(14,165,233,0.04); }
+.fc-sol-active { background: rgba(16,185,129,0.08) !important; border-left: 3px solid #10B981; }
+.fc-sol-passed { opacity: 0.42; }
+.fc-sol-icon { font-size: 15px; flex-shrink: 0; width: 22px; text-align: center; }
+.fc-sol-info { flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.fc-sol-label { font: 600 13px var(--ss-font-sans); color: var(--tb-ink); }
+.fc-sol-badge {
+  font: 700 9px var(--ss-font-sans); padding: 1px 6px; border-radius: 4px;
+  background: var(--tb-accent); color: #fff; letter-spacing: 0.04em; flex-shrink: 0;
+}
+.fc-sol-time { font: 500 12px var(--ss-font-sans); color: var(--tb-slate); flex-shrink: 0; white-space: nowrap; }
+.fc-sol-note { font: 400 11px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 10px; line-height: 1.5; }
+@media (max-width: 480px) { .fc-sol-ref-row { gap: 10px; } }
