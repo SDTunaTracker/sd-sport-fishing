@@ -139,8 +139,16 @@
     "367169120": {
       "name": "Toronado",
       "landing": "Pierpoint Landing"
+    },
+    "338208033": {
+      "name": "Freedom",
+      "landing": "22nd Street Landing"
+    },
+    "367185880": {
+      "name": "Excalibur",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-06-04T21:49:21.340271+00:00",
-  "_vessel_count": 33
+  "_last_discover_run": "2026-06-05T01:57:28.223507+00:00",
+  "_vessel_count": 35
 }
