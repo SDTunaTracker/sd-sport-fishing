@@ -3864,18 +3864,39 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   line-height: 1.5;
 }
 
-/* ── Layer panel (desktop inline / mobile sheet) ───────────────────────── */
+/* ── Layer panel (desktop floating overlay / mobile sheet) ─────────────── */
 
-.layer-panel-desktop { padding: 4px 20px 8px; }
+/* Desktop: float over the map, dark glass */
+.layer-panel-desktop {
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  z-index: 600;
+  width: 232px;
+  max-height: calc(100% - 90px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0;
+}
+.layer-panel-desktop::-webkit-scrollbar { display: none; }
 
 .layer-panel {
-  padding: 12px 16px;
+  padding: 12px 14px;
   background: var(--tb-surface, #fff);
   border: 1px solid var(--tb-border-2, #E2E8F0);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Dark glass variant inside the map container */
+.chart-map-container .layer-panel {
+  background: rgba(6, 14, 24, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: rgba(255,255,255,0.10);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
 }
 
 .layer-group { display: flex; flex-direction: column; gap: 6px; }
@@ -3887,19 +3908,20 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   letter-spacing: 0.06em;
   color: var(--tb-muted, #64748B);
 }
+.chart-map-container .layer-group-label { color: rgba(148,163,184,0.75); }
 
-.layer-group-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.layer-group-row { display: flex; flex-wrap: wrap; gap: 5px; }
 
 .layer-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 12px;
-  min-height: 36px;
+  padding: 5px 11px;
+  min-height: 34px;
   background: white;
   border: 1.5px solid var(--tb-border-2, #E2E8F0);
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--tb-ink, #0F2A4A);
   cursor: pointer;
@@ -3916,7 +3938,24 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   color: white;
 }
 
-.layer-btn-icon { font-size: 14px; line-height: 1; }
+/* Dark variants */
+.chart-map-container .layer-btn {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.13);
+  color: #cbd5e1;
+}
+.chart-map-container .layer-btn:hover {
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(56,189,248,0.55);
+  color: #f1f5f9;
+}
+.chart-map-container .layer-btn.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: white;
+}
+
+.layer-btn-icon { font-size: 13px; line-height: 1; }
 
 .layer-live-badge {
   font-size: 9px;
@@ -3940,11 +3979,11 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   background: white;
   border: 1.5px solid var(--tb-border-2, #E2E8F0);
   border-radius: 14px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--tb-ink, #0F2A4A);
   cursor: pointer;
@@ -3952,6 +3991,12 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 }
 .layer-sst-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
 .layer-sst-btn .sst-picker-badge { font-size: 9px; }
+.chart-map-container .layer-sst-btn {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.13);
+  color: #94a3b8;
+}
+.chart-map-container .layer-sst-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
 
 /* ── Map stage (positioning context for on-map overlays) ───────────────── */
 /* Wraps just the map + its overlays so absolutely-positioned readouts/pills
@@ -4064,7 +4109,7 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 
 .chart-map {
   width: 100%;
-  height: 600px;
+  height: 640px;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--tb-border-2);
@@ -4219,15 +4264,17 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
 .wp-popup-notes { margin: 4px 0 0; color: var(--tb-slate); font-size: 12px; }
 .wp-popup-content small { color: var(--tb-gray-3); font-size: 11px; display: block; margin-top: 4px; }
 
-/* Waypoints sidebar (absolute overlay on map) */
+/* Waypoints sidebar (absolute overlay on map) — dark glass */
 .wp-sidebar {
   position: absolute;
-  top: 12px; right: 12px;
-  width: 256px;
-  background: white;
+  top: 48px; right: 10px;
+  width: 240px;
+  background: rgba(6,14,24,0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-  border: 1px solid var(--tb-border-2);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.10);
   z-index: 800;
   overflow: hidden;
   max-height: 46px;
@@ -4240,59 +4287,59 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   height: 46px;
   cursor: pointer;
   user-select: none;
-  background: var(--tb-foam);
-  border-bottom: 1px solid var(--tb-border-2);
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   gap: 6px;
 }
-.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: var(--tb-ink); flex: 1; }
+.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: #e2e8f0; flex: 1; }
 .wp-sidebar-controls { display: flex; align-items: center; gap: 6px; }
-.wp-sidebar-chevron { font-size: 9px; color: var(--tb-gray-3); }
+.wp-sidebar-chevron { font-size: 9px; color: #64748b; }
 .wp-export-wrap { position: relative; }
 .wp-export-btn {
-  background: none; border: 1px solid var(--tb-border-2);
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
   border-radius: 5px; padding: 3px 7px;
-  font: 600 10px var(--ss-font-sans); color: var(--tb-slate);
+  font: 600 10px var(--ss-font-sans); color: #94a3b8;
   cursor: pointer;
 }
-.wp-export-btn:hover { background: var(--tb-sand, #EEF2F7); }
+.wp-export-btn:hover { background: rgba(255,255,255,0.14); color: #e2e8f0; }
 .wp-export-dropdown {
   position: absolute; right: 0; top: calc(100% + 4px);
-  background: white; border: 1px solid var(--tb-border-2);
-  border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+  background: #0f1f30; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   min-width: 150px; z-index: 10; overflow: hidden;
 }
 .wp-export-dropdown button {
   display: block; width: 100%; text-align: left;
   padding: 9px 12px; background: none; border: none;
-  font: 500 12px var(--ss-font-sans); color: var(--tb-ink); cursor: pointer;
+  font: 500 12px var(--ss-font-sans); color: #cbd5e1; cursor: pointer;
 }
-.wp-export-dropdown button:hover { background: var(--tb-foam); }
+.wp-export-dropdown button:hover { background: rgba(255,255,255,0.07); }
 .wp-sidebar-list { overflow-y: auto; max-height: 420px; }
 .wp-empty {
   padding: 16px 14px;
   font: 400 12px var(--ss-font-sans);
-  color: var(--tb-gray-3); line-height: 1.5;
+  color: #64748b; line-height: 1.5;
 }
 .wp-item {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--tb-border-2);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   cursor: pointer;
 }
-.wp-item:hover { background: var(--tb-foam); }
+.wp-item:hover { background: rgba(255,255,255,0.06); }
 .wp-item:last-child { border-bottom: none; }
 .wp-item-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
-.wp-item-name { font: 700 12px var(--ss-font-sans); color: var(--tb-ink); flex: 1; }
-.wp-item-coords { font: 400 11px var(--ss-font-sans); color: var(--tb-gray-3); margin-top: 2px; }
+.wp-item-name { font: 700 12px var(--ss-font-sans); color: #e2e8f0; flex: 1; }
+.wp-item-coords { font: 400 11px var(--ss-font-sans); color: #64748b; margin-top: 2px; }
 .wp-item-notes {
-  font: 400 11px var(--ss-font-sans); color: var(--tb-slate);
+  font: 400 11px var(--ss-font-sans); color: #94a3b8;
   margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .wp-item-delete {
-  background: none; border: none; color: var(--tb-gray-2);
+  background: none; border: none; color: #475569;
   cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; border-radius: 4px;
   flex-shrink: 0;
 }
-.wp-item-delete:hover { color: var(--tb-coral, #F87171); background: var(--tb-coral-l, #FEE2E2); }
+.wp-item-delete:hover { color: #f87171; background: rgba(248,113,113,0.12); }
 
 /* Waypoint save modal */
 .wp-modal-overlay {
@@ -4381,7 +4428,8 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
     border-radius: 10px;
     max-height: 46px;
     margin-top: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    backdrop-filter: none;
   }
   .wp-sidebar.open { max-height: 320px; }
 }
@@ -4479,20 +4527,32 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.4));
 }
 
-/* Recenter control */
+/* Recenter control — dark glass to match floating panel */
 .recenter-control a {
   padding: 6px 10px;
   display: block;
   text-decoration: none;
   font-size: 12px;
   font-weight: 600;
-  color: #374151;
+  color: #cbd5e1;
+  background: rgba(6,14,24,0.82);
   white-space: nowrap;
   cursor: pointer;
+  border: none;
 }
 .recenter-control a:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: rgba(14,165,233,0.25);
+  color: #f1f5f9;
+}
+/* Also dark the Leaflet native zoom controls */
+.leaflet-bar a {
+  background: rgba(6,14,24,0.82) !important;
+  color: #cbd5e1 !important;
+  border-bottom-color: rgba(255,255,255,0.10) !important;
+}
+.leaflet-bar a:hover {
+  background: rgba(14,165,233,0.25) !important;
+  color: #f1f5f9 !important;
 }
 
 .charts-map-loading {

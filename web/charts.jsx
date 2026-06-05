@@ -1598,7 +1598,7 @@ function ChartsView({ navigate }) {
   const [showCatches, setShowCatches] = React.useState(false);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
   const [sstMode, setSstMode]       = React.useState(function() {
-    return localStorage.getItem('tt_sst_mode') || 'mur';
+    return localStorage.getItem('tt_sst_mode') || 'raster';
   });
   const [waypoints, setWaypoints]   = React.useState(loadWaypoints);
   const [showModal, setShowModal]   = React.useState(false);
@@ -1644,7 +1644,9 @@ function ChartsView({ navigate }) {
     if (!mapRef.current || mapInstance.current) return;
 
     mapInstance.current = L.map(mapRef.current, {
-      center: [32.5, -118.5], zoom: 7, minZoom: 4, maxZoom: 12,
+      center: [32.5, -119.0], zoom: 7, minZoom: 4, maxZoom: 12,
+      maxBounds: [[22.0, -132.0], [42.0, -108.0]],
+      maxBoundsViscosity: 0.7,
     });
 
     addLandingPins(mapInstance.current);
@@ -1702,12 +1704,10 @@ function ChartsView({ navigate }) {
     clearTimeout(sliderThrottleRef.current);
 
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
-    var cartoUrl = (baseLayer === 'satellite')
-      ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
-    basemapLayer.current = L.tileLayer(cartoUrl, {
-      attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19,
-    }).addTo(mapInstance.current);
+    basemapLayer.current = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/dark_matter_nolabels/{z}/{x}/{y}{r}.png',
+      { attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19 }
+    ).addTo(mapInstance.current);
 
     [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
       if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
@@ -2056,18 +2056,6 @@ function ChartsView({ navigate }) {
     <div className="charts-view">
       <ChartsHeader baseLayer={baseLayer} condLayers={condLayers} sstMode={sstMode} />
 
-      <div className="layer-panel-desktop">
-        <LayerPanel
-          baseLayer={baseLayer} condLayers={condLayers}
-          showTides={showTides} showBoats={showBoats} showCatches={showCatches}
-          sstMode={sstMode}
-          onBase={setBaseLayer}
-          onCond={onCond}
-          onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
-          onSstMode={setSstMode}
-        />
-      </div>
-
       {showSlider && (
         <ForecastSlider series={sliderSeries} step={sliderStep}
           onStep={handleSliderInput} loading={sliderLoading} />
@@ -2092,6 +2080,18 @@ function ChartsView({ navigate }) {
 
         <div className="chart-map-stage">
           <div ref={mapRef} className="chart-map" />
+
+          <div className="layer-panel-desktop">
+            <LayerPanel
+              baseLayer={baseLayer} condLayers={condLayers}
+              showTides={showTides} showBoats={showBoats} showCatches={showCatches}
+              sstMode={sstMode}
+              onBase={setBaseLayer}
+              onCond={onCond}
+              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
+              onSstMode={setSstMode}
+            />
+          </div>
 
           {condLoading && (
             <div className="cond-loading-overlay">
