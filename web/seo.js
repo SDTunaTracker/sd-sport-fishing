@@ -81,18 +81,33 @@
     var cfg, pageUrl = BASE + path;
 
     if (view === 'boat' && params.boat) {
+      var boatMeta = (window.SD && window.SD.BOATS && window.SD.BOATS.find(function(b) { return b.name === params.boat; })) || null;
+      var landingName = (boatMeta && boatMeta.landing) || params.landing || 'San Diego Sportfishing';
       cfg = {
         title: params.boat + ' — Fish Counts, Reviews & Schedule | Tuna Tracker',
-        desc:  'View ' + params.boat + '\'s recent fish counts, win rate, and upcoming trip schedule' +
-               (params.landing ? ' at ' + params.landing : '') + '.',
+        desc:  'View ' + params.boat + '\'s recent fish counts, win rate, and upcoming trip schedule at ' + landingName + '.',
       };
-      setJsonLd('jld-entity', {
-        '@context': 'https://schema.org', '@type': 'Service',
+      var jldBoat = {
+        '@context': 'https://schema.org', '@type': 'LocalBusiness',
         name: params.boat,
-        provider: { '@type': 'Organization', name: params.landing || 'San Diego Sportfishing' },
-        areaServed: 'San Diego, California',
+        description: 'Sportfishing charter boat operating out of ' + landingName + ', San Diego.',
         url: pageUrl,
-      });
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'San Diego', addressRegion: 'CA', addressCountry: 'US',
+        },
+        parentOrganization: { '@type': 'Organization', name: landingName },
+      };
+      var rv = window.SD && window.SD.REVIEWS && window.SD.REVIEWS.summary && window.SD.REVIEWS.summary[params.boat];
+      if (rv && rv.total_reviews >= 3 && rv.avg_overall) {
+        jldBoat.aggregateRating = {
+          '@type': 'AggregateRating',
+          ratingValue: rv.avg_overall.toFixed(1),
+          reviewCount: rv.total_reviews,
+          bestRating: '5', worstRating: '1',
+        };
+      }
+      setJsonLd('jld-entity', jldBoat);
     } else {
       cfg = CONFIG[view] || CONFIG.today;
       clearJsonLd('jld-entity');

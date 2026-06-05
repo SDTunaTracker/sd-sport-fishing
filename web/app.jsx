@@ -365,7 +365,7 @@ function App() {
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
-                              regions={regions} onRegionsDirect={setRegionsDirect}/>;
+                              regions={regions} onRegionsDirect={setRegionsDirect} navigate={navigate}/>;
   }
 
   const headerActive = route.view === 'boat' ? 'boats'

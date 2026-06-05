@@ -2,7 +2,50 @@
 // Signed-out: shows sign-in CTAs + guest preferences.
 // Signed-in: shows Clerk UserProfile + cloud-synced preferences.
 
-function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect }) {
+function SavedBoatsSection({ navigate }) {
+  const { useEffect, useState } = React;
+  const [saved, setSaved] = useState(function() {
+    return [...window.getSavedBoats()];
+  });
+
+  useEffect(function() {
+    function sync() { setSaved([...window.getSavedBoats()]); }
+    window.addEventListener('tt-saved-boats-changed', sync);
+    return function() { window.removeEventListener('tt-saved-boats-changed', sync); };
+  }, []);
+
+  var card = {
+    background: 'var(--ss-surface, #fff)', border: '1px solid var(--ss-border, #e2e8f0)',
+    borderRadius: 10, padding: '20px 20px', marginBottom: 16,
+  };
+  var sectionTitle = { font: '600 14px/20px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 8 };
+
+  return (
+    <div style={card}>
+      <div style={sectionTitle}>Saved Boats</div>
+      {saved.length === 0 ? (
+        <p style={{ font: '400 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)', margin: 0 }}>
+          Open any boat profile and tap <strong>⭐ Save</strong> to add it here for quick access.
+        </p>
+      ) : (
+        <div className="saved-boats-list">
+          {saved.map(function(name) {
+            return (
+              <div key={name} className="saved-boat-row">
+                <button className="saved-boat-name" onClick={function() { navigate && navigate('boat', { boat: name }); }}>
+                  {name}
+                </button>
+                <button className="saved-boat-remove" title="Remove" onClick={function() { window.toggleSavedBoat(name); }}>×</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, navigate }) {
   const { useEffect, useState } = React;
   const { user, loaded, signIn, signUp, signOut, isSignedIn } = useAuth();
 
@@ -243,6 +286,8 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
             <button className="btn-acct-secondary" onClick={signIn}>Sign In</button>
           </div>
         </div>
+
+        <SavedBoatsSection navigate={navigate} />
       </div>
     );
   }
@@ -255,13 +300,7 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect })
       <RegionSection/>
       <SpeciesSection/>
 
-      {/* Favorite Boats — placeholder */}
-      <div style={{ ...card, opacity: 0.6 }}>
-        <div style={sectionTitle}>Favorite Boats</div>
-        <p style={{ ...sectionDesc, marginBottom: 0 }}>
-          Save boats to your favorites for quick access — coming soon.
-        </p>
-      </div>
+      <SavedBoatsSection navigate={navigate} />
 
       {/* Sign out */}
       <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>

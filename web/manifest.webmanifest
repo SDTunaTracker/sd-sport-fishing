@@ -1,0 +1,35 @@
+{
+  "name": "The Tuna Tracker",
+  "short_name": "Tuna Tracker",
+  "description": "San Diego sportfishing analytics — daily fish counts, boat rankings, and ocean conditions.",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "orientation": "any",
+  "categories": ["sports", "navigation"],
+  "icons": [
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today's Fish Counts",
+      "short_name": "Today",
+      "url": "/sd/today?source=pwa",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Boat Leaderboards",
+      "short_name": "Boats",
+      "url": "/sd/boats?source=pwa",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ocean Charts",
+      "short_name": "Charts",
+      "url": "/sd/charts?source=pwa",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    }
+  ]
+}

@@ -2,6 +2,12 @@
 const { useEffect, useMemo } = React;
 function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
   const [detailTab, setDetailTab] = React.useState('overview');
+  const [isSaved, setIsSaved] = React.useState(function() { return window.getSavedBoats().has(boat); });
+  useEffect(function() {
+    function sync() { setIsSaved(window.getSavedBoats().has(boat)); }
+    window.addEventListener('tt-saved-boats-changed', sync);
+    return function() { window.removeEventListener('tt-saved-boats-changed', sync); };
+  }, [boat]);
   // Boat detail shows all history — no global filters applied here.
   const _ALL = { year: 'all', species: 'all', landing: 'all', month: 'all', minTrips: 0, includeZero: true, boat: 'all' };
   const allTrips = useMemo(() => SDA.filterTrips(_ALL).filter(t => t.boat === boat), [boat]);
@@ -115,9 +121,12 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
           </div>
         </div>
         <div className="actions">
+          <button className="btn-save-boat" onClick={function() { window.toggleSavedBoat(boat); }}>
+            {isSaved ? '✓ Saved' : '⭐ Save'}
+          </button>
           <button className="btn primary" onClick={() => setDetailTab('reviews')}
                   style={{background:'#0F4C81', color:'#fff', border:'none', width:'100%', marginBottom:6}}>
-            ⭐ Write a Review
+            Write a Review
           </button>
           <button className="btn primary"><i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip</button>
         </div>

@@ -39,3 +39,20 @@ async function setUserPref(key, value) {
 
 window.getUserPref = getUserPref;
 window.setUserPref = setUserPref;
+
+// ── Saved boats (local-only watchlist) ───────────────────────────────────────
+
+function getSavedBoats() {
+  try { return new Set(JSON.parse(localStorage.getItem('tt_saved_boats') || '[]')); }
+  catch(e) { return new Set(); }
+}
+
+function toggleSavedBoat(name) {
+  var s = getSavedBoats();
+  if (s.has(name)) s.delete(name); else s.add(name);
+  localStorage.setItem('tt_saved_boats', JSON.stringify([...s]));
+  window.dispatchEvent(new Event('tt-saved-boats-changed'));
+}
+
+window.getSavedBoats  = getSavedBoats;
+window.toggleSavedBoat = toggleSavedBoat;
