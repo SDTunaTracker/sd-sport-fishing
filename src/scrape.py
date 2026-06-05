@@ -421,6 +421,12 @@ def _build_species_re() -> re.Pattern:
 
 _TEXT_SPECIES_RE = _build_species_re()
 
+# Species names that must never be treated as boat names.  These end up in the
+# historical DB after a misparse and would otherwise self-reinforce on every run.
+_BOAT_NAME_BLACKLIST = frozenset({
+    'Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Skipjack', 'Albacore', 'Bigeye',
+})
+
 
 def _extract_pairs(text: str) -> tuple[dict, dict, list[tuple[str, int]]]:
     """Harvest (count, species) pairs from free-form text.
@@ -464,6 +470,13 @@ def _trip_length_from_prose(text: str) -> tuple[str | None, float | None, str]:
     raw = m.group(0)
     bucket, days = P.parse_trip_length(raw)
     return bucket, days, raw
+
+
+# Boats known to run only one trip type.  Used as a fallback when the boat's
+# own text window contains no explicit trip-length phrase.
+BOAT_TRIP_LENGTH_DEFAULTS: dict[str, tuple[str, float, str]] = {
+    'lucky b sportfishing': ('Full Day', 0.75, 'Full Day'),
+}
 
 # ---------------------------------------------------------------------------
 # Called-in / returned-with text report parser
@@ -820,11 +833,18 @@ def _looks_like_fish_report(text: str) -> bool:
     return has_boat_keyword or has_status_keyword
 
 
-def _extract_boat_counts_from_text(text: str, boat_name: str) -> dict | None:
+def _extract_boat_counts_from_text(
+    text: str,
+    boat_name: str,
+    hard_stop: int | None = None,
+) -> dict | None:
     """Find boat_name in text and extract species counts from surrounding context.
 
     Returns {'tracked': {...}, 'other': {...}, 'text': str} or None if the boat
     isn't mentioned or no species counts are found near the mention.
+
+    hard_stop — absolute index in *text* where the window must end (used to
+    prevent counts from the immediately-following boat bleeding in).
     """
     text_lower = text.lower()
     boat_lower = boat_name.lower()
@@ -838,8 +858,12 @@ def _extract_boat_counts_from_text(text: str, boat_name: str) -> dict | None:
     if idx == -1:
         return None
 
-    # Extract a window: 80 chars before the name mention, 400 chars after.
-    window = text[max(0, idx - 80): idx + 400]
+    # Extract a window: 80 chars before the name mention, up to 400 chars after,
+    # but never past hard_stop (the next boat-name mention in the same block).
+    window_end = idx + 400
+    if hard_stop is not None:
+        window_end = min(window_end, hard_stop)
+    window = text[max(0, idx - 80): window_end]
 
     tracked = {sp: 0 for sp in P.TRACKED_SPECIES}
     other: dict[str, int] = {}
@@ -902,7 +926,10 @@ def _harvest_narrative_reports(
     combined = list({*all_boat_names, *(t['boat'] for t in trips)})
     if not combined:
         return []
-    boats_sorted = sorted(combined, key=len, reverse=True)       # longest-first
+    boats_sorted = sorted(
+        (b for b in combined if b not in _BOAT_NAME_BLACKLIST),
+        key=len, reverse=True,
+    )
     boat_canon: dict[str, str] = {b.lower(): b for b in boats_sorted}
 
     # Optional leading "The "; named group captures only the boat name itself.
@@ -934,15 +961,28 @@ def _harvest_narrative_reports(
         boat_key  = raw_boat.lower()
         boat_name = boat_canon.get(boat_key, raw_boat)
 
-        tracked, other, unknowns = _extract_pairs(block)
-        if not any(tracked.values()) and not any(other.values()):
-            continue  # no species counts — not a catch line
+        # Truncate the extraction window at the next boat-name mention so that
+        # counts from a subsequent boat in the same block can't bleed in.
+        next_boat_m = boat_re.search(block, m.end())
+        hard_stop = next_boat_m.start() if next_boat_m else None
 
+        # Extract counts from a window anchored to the boat-name mention only.
+        boat_result = _extract_boat_counts_from_text(block, boat_name, hard_stop=hard_stop)
+        if boat_result is None:
+            continue
+        tracked = boat_result['tracked']
+        other   = boat_result['other']
+        window  = boat_result['text']
+
+        # Unknowns: re-scan the same window for logging continuity.
+        _, _, unknowns = _extract_pairs(window)
         for sp_raw, cnt in unknowns:
             log.info('unknown species [%s / %s]: "%s" ×%d — add to parse._EXTENDED_ALIASES if real',
                      src.name, boat_name, sp_raw, cnt)
 
-        tl_bucket, tl_days, tl_raw = _trip_length_from_prose(block)
+        tl_bucket, tl_days, tl_raw = _trip_length_from_prose(window)
+        if tl_bucket is None and boat_key in BOAT_TRIP_LENGTH_DEFAULTS:
+            tl_bucket, tl_days, tl_raw = BOAT_TRIP_LENGTH_DEFAULTS[boat_key]
         status         = classify_report_status(block)
         is_preliminary = 1 if status == 'preliminary' else 0
 
