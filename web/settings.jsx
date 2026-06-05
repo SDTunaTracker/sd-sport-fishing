@@ -35,6 +35,7 @@ function defaultSettings() {
   return {
     trophySpecies: [...DEFAULT_TROPHY_SPECIES],
     tripLengthMethod: 'rounded',
+    unitSystem: 'imperial',
   };
 }
 

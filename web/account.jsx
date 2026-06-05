@@ -76,7 +76,12 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
     if (isSignedIn) {
       window.setUserPref('trophySpecies', next.trophySpecies);
       window.setUserPref('tripLengthMethod', next.tripLengthMethod);
+      window.setUserPref('unitSystem', next.unitSystem);
     }
+  }
+
+  function setUnitSystem(u) {
+    handleSettingsChange({ ...settings, unitSystem: u });
   }
 
   function toggleSpecies(sp) {
@@ -248,6 +253,27 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
                 <div>
                   <div style={{ font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-ink)' }}>{m.label}</div>
                   <div style={{ font: '400 12px/16px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 2 }}>{m.sub}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div style={card}>
+          <div style={sectionTitle}>Units</div>
+          <p style={sectionDesc}>Units for the chart readouts — tap a spot on the Ocean Charts map to see temperature, wind, swell, current, and pressure at that location.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { id: 'imperial', label: 'Imperial (US)', sub: 'Temp °F · wind & current kt · swell ft · pressure inHg' },
+              { id: 'metric',   label: 'Metric',        sub: 'Temp °C · wind & current m/s · swell m · pressure hPa' },
+            ].map(u => (
+              <label key={u.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+                <input type="radio" name="unitSystem" value={u.id}
+                       checked={(settings.unitSystem || 'imperial') === u.id} onChange={() => setUnitSystem(u.id)}
+                       style={{ marginTop: 3, accentColor: 'var(--ss-darkseagreen-500)', cursor: 'pointer' }}/>
+                <div>
+                  <div style={{ font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-ink)' }}>{u.label}</div>
+                  <div style={{ font: '400 12px/16px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 2 }}>{u.sub}</div>
                 </div>
               </label>
             ))}

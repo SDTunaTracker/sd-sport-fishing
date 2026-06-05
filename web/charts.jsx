@@ -811,6 +811,47 @@ function _murGridReadout(grid, latlng) {
   return { sst: sst, grad: grad };
 }
 
+// ── Point readout: sample active layers at a lat/lng for the tap popup ─────────
+
+// Sample a leaflet-velocity u/v grid pair ([{header,data:u},{header,data:v}])
+// at a lat/lng. Returns magnitude (m/s for wind/current, m for swell height)
+// plus the FROM bearing (wind/swell convention) and TO bearing (current flow).
+function _sampleVelGrid(pair, latlng) {
+  if (!pair || !pair[0] || !pair[1]) return null;
+  var h = pair[0].header, u = pair[0].data, v = pair[1].data;
+  var col = Math.round((latlng.lng - h.lo1) / h.dx);
+  var row = Math.round((h.la1 - latlng.lat) / h.dy);
+  if (col < 0 || col >= h.nx || row < 0 || row >= h.ny) return null;
+  var idx = row * h.nx + col;
+  var uu = u[idx], vv = v[idx];
+  if (uu == null || vv == null) return null;
+  var speed = Math.sqrt(uu * uu + vv * vv);
+  var toDir = (Math.atan2(uu, vv) * 180 / Math.PI + 360) % 360;
+  return { speed: speed, toDir: toDir, fromDir: (toDir + 180) % 360 };
+}
+
+// Sample the pressure scalar grid ({ grid:[row][col], lats, lons }).
+function _samplePressureGrid(p, latlng) {
+  if (!p || !p.grid || !p.lats || !p.lons) return null;
+  var dLon = p.lons.length > 1 ? p.lons[1] - p.lons[0] : 0.5;
+  var dLat = p.lats.length > 1 ? p.lats[0] - p.lats[1] : 0.5;
+  var col = Math.round((latlng.lng - p.lons[0]) / dLon);
+  var row = Math.round((p.lats[0] - latlng.lat) / dLat);
+  if (row < 0 || row >= p.lats.length || col < 0 || col >= p.lons.length) return null;
+  var val = p.grid[row] && p.grid[row][col];
+  return (val == null || isNaN(val)) ? null : val;
+}
+
+function _compass8(deg) {
+  return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8];
+}
+
+// Unit-aware formatters. Stored units: temp °F, wind/current m/s, swell m, pressure hPa.
+function _fmtTemp(f, sys)     { return sys === 'metric' ? ((f - 32) * 5 / 9).toFixed(1) + '°C' : f.toFixed(1) + '°F'; }
+function _fmtSpeed(ms, sys)   { return sys === 'metric' ? ms.toFixed(1) + ' m/s' : (ms * 1.94384).toFixed(1) + ' kt'; }
+function _fmtSwell(m, sys)    { return sys === 'metric' ? m.toFixed(1) + ' m'   : (m * 3.28084).toFixed(1) + ' ft'; }
+function _fmtPressure(h, sys) { return sys === 'metric' ? Math.round(h) + ' hPa' : (h * 0.02953).toFixed(2) + ' inHg'; }
+
 // ── Conditions rendering ──────────────────────────────────────────────────────
 
 function windColor(kts) {
@@ -1590,7 +1631,8 @@ function ChartLegend({ type, sstMode }) {
 
 // ── ChartsView ────────────────────────────────────────────────────────────────
 
-function ChartsView({ navigate }) {
+function ChartsView({ navigate, settings }) {
+  var unitSystem = (settings && settings.unitSystem) || 'imperial';
   const [baseLayer, setBaseLayer]   = React.useState('sst');
   const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false, pressure: false });
   const [showTides, setShowTides]   = React.useState(false);
@@ -1634,10 +1676,20 @@ function ChartsView({ navigate }) {
   const murFrontLayerRef = React.useRef(null);
   const catchLayerRef    = React.useRef(null);
   const sliderThrottleRef = React.useRef(null);
+  // Raw, sampleable grid data for the tap-to-read popup (refs stay current
+  // inside the stable map-click closure).
+  const windDataRef      = React.useRef(null);
+  const wavesDataRef     = React.useRef(null);
+  const currentsDataRef  = React.useRef(null);
+  const pressureDataRef  = React.useRef(null);
+  const swellPeriodRef   = React.useRef(null);
+  const unitSystemRef    = React.useRef(unitSystem);
 
   React.useEffect(function() { condLayersRef.current = condLayers; }, [condLayers]);
   React.useEffect(function() { baseLyrRef.current = baseLayer; }, [baseLayer]);
   React.useEffect(function() { sstModeRef.current = sstMode; }, [sstMode]);
+  React.useEffect(function() { unitSystemRef.current = unitSystem; }, [unitSystem]);
+  React.useEffect(function() { swellPeriodRef.current = swellPeriod; }, [swellPeriod]);
 
   // Initialize map once
   React.useEffect(function() {
@@ -1674,11 +1726,43 @@ function ChartsView({ navigate }) {
 
     mapInstance.current.on('click', function(e) {
       var lat = e.latlng.lat, lng = e.latlng.lng;
+      var sys = unitSystemRef.current || 'imperial';
+      var rows = '';
+      function addRow(icon, label, val) {
+        if (val == null) return;
+        rows += '<div class="popup-metric"><span class="popup-metric-label">' + icon + ' ' + label + '</span>'
+              + '<span class="popup-metric-val">' + val + '</span></div>';
+      }
+      // Active base layer: SST (canvas-raster mode carries sampleable data).
+      if (baseLyrRef.current === 'sst' && sstModeRef.current === 'raster' && murGridRef.current) {
+        var sr = _murGridReadout(murGridRef.current, e.latlng);
+        if (sr) addRow('🌡️', 'SST', sr.sst == null ? 'land / cloud' : _fmtTemp(sr.sst, sys));
+      }
+      var cl = condLayersRef.current || {};
+      if (cl.wind && windDataRef.current) {
+        var w = _sampleVelGrid(windDataRef.current, e.latlng);
+        if (w) addRow('💨', 'Wind', _fmtSpeed(w.speed, sys) + ' from ' + _compass8(w.fromDir));
+      }
+      if (cl.waves && wavesDataRef.current) {
+        var sw = _sampleVelGrid(wavesDataRef.current, e.latlng);
+        if (sw) addRow('🌊', 'Swell', _fmtSwell(sw.speed, sys) + ' from ' + _compass8(sw.fromDir)
+              + (swellPeriodRef.current ? ' · ' + Math.round(swellPeriodRef.current) + 's' : ''));
+      }
+      if (cl.currents && currentsDataRef.current) {
+        var cu = _sampleVelGrid(currentsDataRef.current, e.latlng);
+        if (cu) addRow('🌀', 'Current', _fmtSpeed(cu.speed, sys) + ' → ' + _compass8(cu.toDir));
+      }
+      if (cl.pressure && pressureDataRef.current) {
+        var pv = _samplePressureGrid(pressureDataRef.current, e.latlng);
+        if (pv != null) addRow('🔵', 'Pressure', _fmtPressure(pv, sys));
+      }
+      var metricsHtml = rows ? '<div class="popup-metrics">' + rows + '</div>' : '';
       L.popup({ className: 'tt-popup' })
         .setLatLng(e.latlng)
         .setContent(
           '<div class="map-popup">' +
             '<div class="popup-coords">' + lat.toFixed(4) + '°N,&nbsp;' + Math.abs(lng).toFixed(4) + '°W</div>' +
+            metricsHtml +
             '<button class="popup-save-waypoint" onclick="window.ttOpenWaypointModal(' + lat + ',' + lng + ')">+ Save as waypoint</button>' +
           '</div>'
         )
@@ -1802,6 +1886,7 @@ function ChartsView({ navigate }) {
           });
           vl.addTo(mapInstance.current);
           windVelRef.current = vl;
+          windDataRef.current = data;
           setSliderLoading(true);
           getCachedWindSeries14d().then(function(series) {
             setSliderLoading(false);
@@ -1814,6 +1899,7 @@ function ChartsView({ navigate }) {
       }
     } else {
       if (windVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
+      windDataRef.current = null;
       setSliderSeries(function(prev) { return (prev && prev.type === 'wind') ? null : prev; });
     }
     return function() { cancelled = true; };
@@ -1837,6 +1923,7 @@ function ChartsView({ navigate }) {
           });
           vl.addTo(mapInstance.current);
           wavesVelRef.current = vl;
+          wavesDataRef.current = result.velocityData;
           if (result.avgPeriod > 0) setSwellPeriod(result.avgPeriod);
         }).catch(function() { if (!cancelled) setCondLoading(false); });
         setSliderLoading(true);
@@ -1879,6 +1966,7 @@ function ChartsView({ navigate }) {
     } else {
       if (wavesVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(wavesVelRef.current); wavesVelRef.current = null; }
       if (condGroupRef.current && mapInstance.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
+      wavesDataRef.current = null;
       setSwellPeriod(null);
       setSliderSeries(function(prev) { return (prev && prev.type === 'waves') ? null : prev; });
     }
@@ -1903,10 +1991,12 @@ function ChartsView({ navigate }) {
           });
           vl.addTo(mapInstance.current);
           currentsVelRef.current = vl;
+          currentsDataRef.current = data;
         }).catch(function() { if (!cancelled) setCondLoading(false); });
       }
     } else {
       if (currentsVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(currentsVelRef.current); currentsVelRef.current = null; }
+      currentsDataRef.current = null;
     }
     return function() { cancelled = true; };
   }, [condLayers.currents]);
@@ -1923,12 +2013,14 @@ function ChartsView({ navigate }) {
         if (pressureLayerRef.current) { mapInstance.current.removeLayer(pressureLayerRef.current); pressureLayerRef.current = null; }
         pressureLayerRef.current = _buildIsobarLayer(data.grid, data.lats, data.lons);
         pressureLayerRef.current.addTo(mapInstance.current);
+        pressureDataRef.current = data;
       }).catch(function() { if (!cancelled) setCondLoading(false); });
     } else {
       if (pressureLayerRef.current && mapInstance.current) {
         mapInstance.current.removeLayer(pressureLayerRef.current);
         pressureLayerRef.current = null;
       }
+      pressureDataRef.current = null;
     }
     return function() { cancelled = true; };
   }, [condLayers.pressure]);
@@ -2105,7 +2197,7 @@ function ChartsView({ navigate }) {
             <div className="sst-readout">
               {sstReadout.sst !== null ? (
                 <React.Fragment>
-                  <span className="sst-readout-temp">{sstReadout.sst.toFixed(1)}°F</span>
+                  <span className="sst-readout-temp">{_fmtTemp(sstReadout.sst, unitSystem)}</span>
                   {sstReadout.grad !== null && (
                     <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
                   )}

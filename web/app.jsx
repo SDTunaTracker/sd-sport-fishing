@@ -192,6 +192,12 @@ function App() {
       saveSettings(next);
       setSettingsState(next);
     }
+    const savedUnits = window.getUserPref('unitSystem', null);
+    if (savedUnits) {
+      const next = { ...settings, unitSystem: savedUnits };
+      saveSettings(next);
+      setSettingsState(next);
+    }
   }, [isSignedIn, user && user.id]);
 
   // Sync effective region to global so filterTrips picks it up automatically.
@@ -374,7 +380,7 @@ function App() {
     content = <ForecastView navigate={navigate}/>;
   } else if (route.view === 'charts') {
     content = chartsReady
-      ? <ChartsView navigate={navigate}/>
+      ? <ChartsView navigate={navigate} settings={settings}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}

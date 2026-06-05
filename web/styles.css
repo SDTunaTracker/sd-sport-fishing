@@ -4237,6 +4237,31 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   text-transform: uppercase;
   margin-bottom: 10px;
 }
+/* Tap-to-read metric rows: value of each active layer at the clicked point */
+.popup-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--tb-border-2, #E2E8F0);
+}
+.popup-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.popup-metric-label {
+  font: 500 12px var(--ss-font-sans);
+  color: var(--tb-slate, #475569);
+  white-space: nowrap;
+}
+.popup-metric-val {
+  font: 700 12px var(--ss-font-sans);
+  color: var(--tb-ink, #0F2A4A);
+  white-space: nowrap;
+}
 .popup-save-waypoint {
   display: block; width: 100%;
   background: var(--tb-accent, #38BDF8);
