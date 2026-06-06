@@ -155,8 +155,20 @@
     "368437000": {
       "name": "Top Gun 80",
       "landing": "H&M Landing"
+    },
+    "338552995": {
+      "name": "Eldorado",
+      "landing": "Long Beach Sportfishing"
+    },
+    "367095040": {
+      "name": "Enterprise",
+      "landing": "Pierpoint Landing"
+    },
+    "368218520": {
+      "name": "Pacifica",
+      "landing": "Seaforth Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-05T20:31:24.498992+00:00",
-  "_vessel_count": 37
+  "_last_discover_run": "2026-06-06T01:54:20.908940+00:00",
+  "_vessel_count": 40
 }
