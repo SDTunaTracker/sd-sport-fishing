@@ -527,6 +527,30 @@ function SkeletonRows({ count = 3, height = 42, className = '' }) {
   );
 }
 
+function PageHeader({ eyebrow, title, sub }) {
+  return (
+    <div className="page-header">
+      {eyebrow && <div className="page-header-eyebrow">{eyebrow}</div>}
+      <h1 className="page-header-title">{title}</h1>
+      {sub && <div className="page-header-sub">{sub}</div>}
+    </div>
+  );
+}
+
+function SectionHeader({ eyebrow, title, linkLabel, onLink }) {
+  return (
+    <div className="section-header">
+      {eyebrow && <div className="section-header-eyebrow">{eyebrow}</div>}
+      <div className="section-header-row">
+        <h2 className="section-header-title">{title}</h2>
+        {linkLabel && (
+          <button className="section-header-link" onClick={onLink}>{linkLabel} →</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AppFooter() {
   const lastScrape = window.SD?.META?.lastScrape;
   const updatedStr = lastScrape
@@ -541,7 +565,7 @@ function AppFooter() {
     <footer className="app-footer">
       <div className="app-footer-inner">
         <div className="app-footer-brand">
-          <div className="app-footer-logo">🎣 The Tuna Tracker</div>
+          <div className="app-footer-logo">The Tuna Tracker</div>
           <p className="app-footer-blurb">
             San Diego's most complete sportfishing analytics — daily fish counts,
             boat leaderboards, and trip stats from all four major landings.
@@ -597,4 +621,5 @@ Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
   AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel, SkeletonRows,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
+  PageHeader, SectionHeader,
 });
