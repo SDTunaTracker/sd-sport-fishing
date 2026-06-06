@@ -3775,6 +3775,9 @@ a.app-footer-link:hover { color: var(--tb-accent-d); }
   }
   .app-footer-blurb { max-width: none; }
   .app-footer-bottom { padding: 12px 16px; }
+  /* Hide the redundant brand logo + marketing blurb on the mobile homepage. */
+  main[data-screen-label="home"] + .app-footer .app-footer-logo,
+  main[data-screen-label="home"] + .app-footer .app-footer-blurb { display: none; }
 }
 .mobile-menu-item[href] { text-decoration: none; display: flex; align-items: center; gap: 14px; }
 
