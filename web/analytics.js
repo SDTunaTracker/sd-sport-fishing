@@ -558,6 +558,84 @@
     return out;
   }
 
+  // Returns the best upcoming trip to book based on current-year boat rankings.
+  // Scans window.SD.SCHEDULE for trips departing within 14 days with open spots,
+  // scores by season rank percentile, and returns the top pick with display stats.
+  function computeTopTripToBook() {
+    const schedule = window.SD?.SCHEDULE || [];
+    if (!schedule.length) return null;
+
+    const now = Date.now();
+    const cutoff = now + 14 * 24 * 60 * 60 * 1000;
+    const year = new Date().getFullYear();
+
+    const upcoming = schedule.filter(t => {
+      if (!t.departureAt) return false;
+      const dep = new Date(t.departureAt).getTime();
+      if (dep <= now || dep > cutoff) return false;
+      const spots = t.openSpots ?? (t.capacity != null ? t.capacity - (t.reservedSpots || 0) : null);
+      if (spots != null && spots <= 0) return false;
+      if (t.tripStatus === 'full') return false;
+      return true;
+    });
+    if (!upcoming.length) return null;
+
+    const allTrips = window.SD_PROC_TRIPS || window.SD?.TRIPS;
+    if (!allTrips) return null;
+
+    const yearStart = `${year}-01-01`;
+    const yearTrips = allTrips.filter(t => t.date >= yearStart);
+    const { rows: lb } = boatLeaderboard(yearTrips, 'all', 3);
+    if (!lb.length) return null;
+
+    const rankMap = {};
+    lb.forEach((b, i) => {
+      rankMap[b.boat] = { rank: i + 1, total: lb.length, avgTPAPerDay: b.avgTPAPerDay, tripCount: b.tripCount };
+    });
+
+    let best = null, bestScore = -Infinity;
+    for (const trip of upcoming) {
+      const stat = rankMap[trip.boat];
+      if (!stat) continue;
+      const pct = 1 - (stat.rank - 1) / stat.total;
+      const dep = new Date(trip.departureAt).getTime();
+      const daysAway = (dep - now) / 86400000;
+      const score = pct - daysAway * 0.005;
+      if (score > bestScore) {
+        bestScore = score;
+        best = { trip, ...stat };
+      }
+    }
+    if (!best) return null;
+
+    const boatTrips = yearTrips
+      .filter(t => t.boat === best.trip.boat)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 10);
+    const recentTpa = boatTrips.length
+      ? boatTrips.reduce((s, t) => s + ((t.totalTuna || 0) / Math.max(1, t.anglers) / (t.calcDays || 1)), 0) / boatTrips.length
+      : best.avgTPAPerDay;
+
+    const winRates = boatWinRates();
+    const wrKey = `${best.trip.boat}|${best.trip.tripLength}`;
+    const wr = winRates[wrKey];
+    const openSpots = best.trip.openSpots ??
+      (best.trip.capacity != null ? best.trip.capacity - (best.trip.reservedSpots || 0) : null);
+
+    return {
+      boat:        best.trip.boat,
+      landing:     best.trip.landing,
+      tripLength:  best.trip.tripLength,
+      departureAt: best.trip.departureAt,
+      price:       best.trip.price,
+      openSpots,
+      recentTpa,
+      winRate:     wr?.winRate != null ? Math.round(wr.winRate * 100) : null,
+      rank:        best.rank,
+      total:       best.total,
+    };
+  }
+
   window.SDA = {
     preprocessTrips,
     filterTrips,
@@ -575,6 +653,7 @@
     boatWinRates,
     boatTopPerformerRates,
     boatStreaks,
+    computeTopTripToBook,
     median, mean, stddev, speciesField,
   };
 })();

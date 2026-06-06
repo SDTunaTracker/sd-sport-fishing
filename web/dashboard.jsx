@@ -804,173 +804,254 @@ function HomeTop5({ navigate, settings, regions }) {
 }
 
 function HomeView({ navigate, settings, regions }) {
-  // Trip count for credibility line
   const totalTrips = window.SD?.META?.tripCount || 0;
-  const roundedTrips = Math.floor(totalTrips / 100) * 100;
-  const tripDisplay = roundedTrips.toLocaleString() + '+';
+  const tripDisplay = (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+';
 
-  // Date list for the selected region
-  const dates = useMemo(() => {
+  // Most-recent date with data for this region
+  const reportDate = useMemo(() => {
     const raw = window.SD_PROC_TRIPS || window.SD.TRIPS;
     const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : null;
-    const rl = (eff && window.getLandingsForRegion) ? window.getLandingsForRegion(eff) : null;
+    const rl  = (eff && window.getLandingsForRegion) ? window.getLandingsForRegion(eff) : null;
     const filtered = rl ? raw.filter(t => rl.includes(t.landing)) : raw;
-    const set = [...new Set(filtered.map(t => t.date))];
-    return set.sort().reverse();
-  }, [regions, settings]);
-
-  const [selectedDate, setSelectedDate] = useS(
-    () => dates.includes(TODAY_ISO) ? TODAY_ISO : (dates[0] || TODAY_ISO)
-  );
+    const dates = [...new Set(filtered.map(t => t.date))].sort().reverse();
+    return dates.includes(TODAY_ISO) ? TODAY_ISO : (dates[0] || TODAY_ISO);
+  }, [regions]);
 
   const ratingData = useMemo(
-    () => SDA.fishingRating(selectedDate, regions),
-    [selectedDate, regions, settings]
+    () => SDA.fishingRating(reportDate, regions),
+    [reportDate, regions, settings]
   );
+  const latestBoats = ratingData.boats.filter(b => !b.isPreliminary).slice(0, 5);
 
-  const boats      = ratingData.boats;
-  const trophyTotal = boats.reduce((s, b) => s + (b.totalTuna || 0), 0);
-  const anglersTotal = boats.reduce((s, b) => s + b.anglers, 0);
-  const landingCount = new Set(boats.map(b => b.landing)).size;
-  const previewBoats = boats.filter(b => !b.isPreliminary).slice(0, 8);
+  // Season leaders (current year, min 5 trips)
+  const seasonLeaders = useMemo(() => {
+    if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
+    const trips = SDA.filterTrips(DEFAULT_FILTERS, regions);
+    const { rows } = SDA.boatLeaderboard(trips, 'all', 5);
+    return rows.filter(r => r.tripCount >= 5).slice(0, 4);
+  }, [regions, settings]);
 
-  const homePerfSummary = useMemo(() => {
-    const returned = boats.filter(b => !b.isPreliminary);
-    return getTodayPerformanceSummary(returned, window.SD_PROC_TRIPS || window.SD.TRIPS, selectedDate);
-  }, [ratingData, selectedDate]);
+  // Conditions from today's forecast
+  const fc = window.SD?.FORECAST?.today;
+  const sstRaw = fc?.sst_offshore ?? fc?.sst_nearshore;
+  const sstF = sstRaw != null ? Math.round(sstRaw) : null;
+  const sstHistory = (window.SD?.SST?.history || [])
+    .filter(h => h.location === 'Nearshore')
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const weekAgoISO = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const weekAgoEntry = sstHistory.find(h => h.date <= weekAgoISO);
+  const sstDelta = sstRaw != null && weekAgoEntry?.sst != null
+    ? parseFloat((sstRaw - weekAgoEntry.sst).toFixed(1)) : null;
+  const windKt  = fc?.wind_speed  != null ? Math.round(fc.wind_speed)  : null;
+  const moonPct = fc?.moon_phase  != null ? Math.round(fc.moon_phase)  : null;
+  const moonName = fc?.moon_phase_name || null;
 
-  const lastScrape = window.SD?.META?.lastScrape;
-  const timeStr = lastScrape
-    ? new Date(lastScrape).toLocaleTimeString('en-US', {
-        hour: 'numeric', minute: '2-digit',
-        timeZone: 'America/Los_Angeles', timeZoneName: 'short',
-      })
-    : null;
+  // Top trip to book
+  const topTrip = useMemo(() => SDA.computeTopTripToBook?.() || null, [settings]);
 
-  const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
+  function catchLine(b) {
+    const parts = [];
+    if (b.Bluefin    > 0) parts.push(`${b.Bluefin} Bluefin`);
+    if (b.Yellowfin  > 0) parts.push(`${b.Yellowfin} Yellowfin`);
+    if (b.Yellowtail > 0) parts.push(`${b.Yellowtail} Yellowtail`);
+    if (b.Dorado     > 0) parts.push(`${b.Dorado} Dorado`);
+    return parts.join(' · ') || 'No trophy fish';
+  }
+
+  function repChipClass(ratingKey, isFirst) {
+    if (isFirst) return 'hot';
+    if (ratingKey === 'fire' || ratingKey === 'above') return 'good';
+    if (ratingKey === 'slow') return 'slow';
+    return 'avg';
+  }
+
+  function repChipLabel(ratingKey, isFirst) {
+    if (isFirst) return '★ Top today';
+    return { fire: 'On fire', above: 'Above avg', avg: 'Average', below: 'Average', slow: 'Slow', new: 'Average' }[ratingKey] || 'Average';
+  }
+
+  function fmtDep(isoStr) {
+    if (!isoStr) return '';
+    return new Date(isoStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
 
   return (
     <React.Fragment>
       {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <div className="home-hero">
-        <div className="home-hero-content">
-          <div className="home-hero-badge">SAN DIEGO'S #1 SPORTFISHING ANALYTICS</div>
-          <h1 className="home-hero-h1">Stop guessing.<br/>Start catching.</h1>
-          <p className="home-hero-sub">
-            See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.
+      <section className="ch-hero">
+        <div className="ch-hero-in">
+          <div className="ch-kick">★ San Diego's #1 Sportfishing Analytics</div>
+          <h1 className="ch-h1">Stop guessing.<br/>Start catching.</h1>
+          <p className="ch-by">
+            See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.{' '}
+            <b>Trusted by {tripDisplay} trips since 2015.</b>
           </p>
-          <div className="home-cred">
-            <span className="home-cred-star">★</span>
-            {' Trusted data from '}
-            <span className="home-cred-count">{tripDisplay} trips</span>
-            {' since 2015'}
+        </div>
+      </section>
+
+      {/* ── STRIP: Latest reports + Season leaders ───────────────────── */}
+      <div className="ch-wrap">
+        <div className="ch-strip">
+          {/* Left: Latest reports */}
+          <div className="ch-feature">
+            <div className="ch-seclbl">
+              Latest reports <span className="ch-soft">· across all landings</span>
+            </div>
+            {latestBoats.length === 0 ? (
+              <div style={{padding:'24px 0', color:'var(--ch-muted)', fontSize:14}}>
+                No reports yet today — check back later.
+              </div>
+            ) : latestBoats.map((b, i) => (
+              <div key={b.boat + i} className="ch-rep"
+                   style={{cursor:'pointer'}}
+                   onClick={() => navigate('boat', { boat: b.boat })}>
+                <div className="ch-rep-l">
+                  <div className="ch-rep-nm">{b.boat}</div>
+                  <div className="ch-rep-sub">
+                    {shortName(b.landing)} · {b.tripLength} · {fmt.n(b.anglers)} anglers
+                    {b.reportedAt ? ` · ${timeAgo(b.reportedAt)}` : ''}
+                  </div>
+                  <div className="ch-rep-catch">{catchLine(b)}</div>
+                </div>
+                <span className={`ch-chip ${repChipClass(b.ratingKey, i === 0)}`}>
+                  {repChipLabel(b.ratingKey, i === 0)}
+                </span>
+              </div>
+            ))}
+            <button className="ch-more" onClick={() => navigate('today')}>
+              View all reports →
+            </button>
+          </div>
+
+          {/* Right: Season leaders */}
+          <div className="ch-lead">
+            <div className="ch-ll">Season leaders</div>
+            {seasonLeaders.length === 0 ? (
+              <div style={{color:'var(--ch-muted)', fontSize:13, paddingTop:12}}>Not enough data yet</div>
+            ) : seasonLeaders.map((b, i) => (
+              <div key={b.boat} className="ch-row"
+                   onClick={() => navigate('boat', { boat: b.boat })}>
+                <span className="ch-rk">{i + 1}</span>
+                <div>
+                  <div className="ch-row-nm">{b.boat}</div>
+                  <div className="ch-row-s">
+                    {(b.landing || '').replace(' Sportfishing', '').replace(' Landing', '')}
+                    {' · '}{b.tripCount} {b.tripCount === 1 ? 'trip' : 'trips'}
+                  </div>
+                </div>
+                <span className="ch-row-v">{fmt.tpa(b.avgTPAPerDay)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* ── STATS BAR ─────────────────────────────────────────────────── */}
-      <div className="home-stats-bar">
-        <StatTile
-          num={trophyTotal === 0 ? '—' : fmt.n(trophyTotal)}
-          label={trophyTotal === 0 ? 'Boats Returning' : 'Trophy Today'}
-          numColor={trophyTotal === 0 ? 'var(--tb-slate)' : 'var(--tb-lime)'}
-        />
-        <StatTile num={boats.length} label={boats.length === 1 ? 'Boat Out' : 'Boats Out'} />
-        <StatTile num={fmt.n(anglersTotal)} label={anglersTotal === 1 ? 'Angler' : 'Anglers'} />
-        <StatTile num={landingCount} label={landingCount === 1 ? 'Landing' : 'Landings'} />
-        {timeStr && (
-          <div className="home-stat-freshness">
-            Updated {timeStr} · <FreshnessWidget regions={regions} compact/>
-          </div>
-        )}
-      </div>
-
-      {/* ── FEATURE CARDS ─────────────────────────────────────────────── */}
-      <div className="home-cards">
-        <div className="home-card" onClick={() => navigate('analytics', { subtab: 'overview' })}>
-          <h2 className="home-card-title">Analytics <span className="home-card-arrow">→</span></h2>
-          <div className="home-card-desc">Boat leaderboards, head-to-head &amp; 11 years of trends</div>
-        </div>
-        <div className="home-card" onClick={() => navigate('tripplanner')}>
-          <h2 className="home-card-title">Trip Planner <span className="home-card-arrow">→</span></h2>
-          <div className="home-card-desc">Compare &amp; find the best upcoming trips with open spots</div>
-        </div>
-      </div>
-
-      {/* ── TOP BOATS LEADERBOARD ────────────────────────────────────── */}
-      <HomeTop5 navigate={navigate} settings={settings} regions={regions}/>
-
-      {/* ── TODAY'S REPORT (inline preview) ───────────────────────────── */}
-      <div className="home-section">
-        <div className="home-report-hd">
-          <div>
-            <h2 className="home-report-title">Today's Report</h2>
-            <div className="home-report-sub">
-              {fmtDate(selectedDate)}{timeStr ? ` · Updated ${timeStr}` : ''}
+      {/* ── CONDITIONS BAND ──────────────────────────────────────────── */}
+      <div className="ch-band">
+        <div className="ch-band-in">
+          <div className="ch-seclbl">On the water today</div>
+          <div className="ch-conds">
+            <div className="ch-cond">
+              <div className={`ch-cond-v${sstF != null && sstF >= 67 ? ' hot' : ''}`}>
+                {sstF != null ? `${sstF}°F` : '—'}
+                {sstDelta != null && (
+                  <span className={`ch-trend ${sstDelta > 0 ? 'up' : 'dn'}`}>
+                    {sstDelta > 0 ? ' ▲' : ' ▼'}
+                  </span>
+                )}
+              </div>
+              <div className="ch-cond-k">Water temp</div>
+              <div className="ch-cond-sub">
+                {sstDelta != null
+                  ? `${sstDelta > 0 ? 'Warming' : 'Cooling'} · ${sstDelta > 0 ? '+' : ''}${sstDelta}° this week`
+                  : 'Nearshore SST'}
+              </div>
+            </div>
+            <div className="ch-cond">
+              <div className="ch-cond-v">{windKt != null ? `${windKt}kt` : '—'}</div>
+              <div className="ch-cond-k">Wind</div>
+              <div className="ch-cond-sub">
+                {windKt == null ? 'No forecast data'
+                  : windKt <= 5  ? 'Calm · glassy'
+                  : windKt <= 10 ? 'Light · small chop'
+                  : windKt <= 15 ? 'Moderate · chop'
+                  : 'Windy · rough seas'}
+              </div>
+            </div>
+            <div className="ch-cond">
+              <div className="ch-cond-v">{moonPct != null ? `${moonPct}%` : '—'}</div>
+              <div className="ch-cond-k">Moon</div>
+              <div className="ch-cond-sub">{moonName || 'Moon phase'}</div>
             </div>
           </div>
-          <select className="home-date-sel"
-                  value={selectedDate}
-                  onChange={e => setSelectedDate(e.target.value)}>
-            {dates.map(dt => (
-              <option key={dt} value={dt}>
-                {fmtDate(dt)}{dt === TODAY_ISO ? ' (today)' : ''}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {previewBoats.length > 0 && <TodaySummaryBanner summary={homePerfSummary}/>}
-
-        {previewBoats.length === 0 ? (
-          <EmptyState>
-            {selectedDate === TODAY_ISO ? 'No reports yet today — check back later.' : 'No reports for this date.'}
-          </EmptyState>
-        ) : (
-          <div className="home-report-table-wrap">
-            <table className="home-report-table">
-              <thead>
-                <tr>
-                  <th>Boat</th>
-                  <th className="hrt-trip">Trip</th>
-                  <th className="hrt-bf">Trophy</th>
-                  <th>TPA/Day</th>
-                  <th>Rating</th>
-                </tr>
-              </thead>
-              <tbody>
-                {previewBoats.map((b, i) => (
-                  <tr key={i} className="hrt-row"
-                      onClick={() => navigate('boat', { boat: b.boat })}>
-                    <td>
-                      <div className="hrt-boat-name">{b.boat}</div>
-                      <div className="hrt-boat-landing">
-                        {(b.landing || '').replace(' Sportfishing', '').replace(' Landing', '')}
-                      </div>
-                    </td>
-                    <td className="hrt-trip">{b.tripLength}</td>
-                    <td className="hrt-bf" style={{
-                      color: b.totalTuna > 0 ? 'var(--tb-lime)' : 'var(--tb-gray-3)',
-                      fontWeight: b.totalTuna > 0 ? 600 : 400,
-                    }}>{fmt.n(b.totalTuna)}</td>
-                    <td style={{ fontWeight: 700, color: 'var(--tb-ink)' }}>
-                      {fmt.tpa(b.trophyPerAnglerPerDay)}
-                      {i === 0 && <span className="top-boat-chip" aria-label="Top boat by TPA/Day">★ Top</span>}
-                    </td>
-                    <td><HomeRatingBadge ratingKey={b.ratingKey}/></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="home-report-footer">
-          <button className="home-full-report-btn" onClick={() => navigate('today')}>
-            View full report &amp; all boats →
-          </button>
         </div>
       </div>
+
+      {/* ── TOP TRIP TO BOOK ──────────────────────────────────────────── */}
+      {topTrip && (
+        <div className="ch-bookband">
+          <div className="ch-bookband-in">
+            <div className="ch-bb-left">
+              <div className="ch-bb-eyebrow">★ Top trip to book · picked by the data</div>
+              <div className="ch-bb-boat">{topTrip.boat}</div>
+              <div className="ch-bb-meta">
+                {shortName(topTrip.landing)} · {topTrip.tripLength}
+                {topTrip.departureAt ? ` · departs ${fmtDep(topTrip.departureAt)}` : ''}
+                {topTrip.price ? ` · $${topTrip.price}` : ''}
+              </div>
+              <div className="ch-bb-stats">
+                <div>
+                  <div className="ch-bb-stat-v coral">{topTrip.recentTpa.toFixed(1)}</div>
+                  <div className="ch-bb-stat-k">fish per angler<br/>over last 10 trips</div>
+                </div>
+                {topTrip.winRate != null && (
+                  <div>
+                    <div className="ch-bb-stat-v">{topTrip.winRate}%</div>
+                    <div className="ch-bb-stat-k">outfished comparable<br/>boats this season</div>
+                  </div>
+                )}
+                <div>
+                  <div className="ch-bb-stat-v">#{topTrip.rank}</div>
+                  <div className="ch-bb-stat-k">ranked boat<br/>of {topTrip.total} this season</div>
+                </div>
+              </div>
+            </div>
+            <div className="ch-bb-right">
+              {topTrip.openSpots != null && topTrip.openSpots > 0 && (
+                <div className="ch-bb-spots">
+                  ● {topTrip.openSpots} spot{topTrip.openSpots === 1 ? '' : 's'} left
+                </div>
+              )}
+              <button className="ch-bb-cta" onClick={() => navigate('tripplanner')}>
+                Book this trip →
+              </button>
+              <div className="ch-bb-sub">Free to compare every open trip</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EXPLORE CARDS ────────────────────────────────────────────── */}
+      <div className="ch-wrap">
+        <div className="ch-explore">
+          <div className="ch-ec" onClick={() => navigate('analytics', { subtab: 'overview' })}>
+            <h3>Analytics <span className="ch-ec-ar">→</span></h3>
+            <p>Boat leaderboards, head-to-head matchups, and 11 years of catch trends.</p>
+          </div>
+          <div className="ch-ec" onClick={() => navigate('tripplanner')}>
+            <h3>Trip Planner <span className="ch-ec-ar">→</span></h3>
+            <p>Compare upcoming trips and find the best boats with open spots.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── EDITORIAL FOOTER ─────────────────────────────────────────── */}
+      <footer className="ch-foot">
+        <div className="ch-foot-in">
+          <b>The Tuna Tracker</b>
+          <span>· San Diego sportfishing analytics · H&amp;M · Fisherman's · Seaforth · Point Loma</span>
+        </div>
+      </footer>
     </React.Fragment>
   );
 }
