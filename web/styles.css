@@ -660,12 +660,12 @@ body.compact .dt td { padding: 7px 12px; }
 /* ───── Mobile (≤768px) ───── */
 @media (max-width: 768px) {
   /* General */
-  body { overflow-x: hidden; font-size: 14px; line-height: 1.6; background: #FFFFFF; }
+  body { overflow-x: hidden; font-size: 14px; line-height: 1.6; background: var(--bg); }
   .main-content { padding: 12px 12px 32px; max-width: 100%; }
 
   /* Page title */
   .pagehead { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
-  .pagehead h1 { font-size: 26px; line-height: 32px; font-weight: 800; }
+  .pagehead h1 { font-size: 26px; line-height: 32px; font-weight: 700; }
   .pagehead .actions { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
 
   /* Breadcrumbs */
