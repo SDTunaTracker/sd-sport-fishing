@@ -544,7 +544,7 @@ function TodayCatch({ navigate, settings, regions }) {
           {isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}
         </div>
       ) : returnedBoats.length > 0 ? (
-        <Panel title="Today's Report" meta="Sorted by tuna per angler (TPA) per day">
+        <Panel title="Today's Report" meta="Sorted by trophy fish per angler per day">
           <TodaySummaryBanner summary={perfSummary}/>
           <div className="today-boat-row today-boat-hd">
             <span>Boat</span>
@@ -554,7 +554,7 @@ function TodayCatch({ navigate, settings, regions }) {
             <span className="sp-col" style={{color: SPECIES_COLORS.Yellowfin}}>Yellowfin</span>
             <span className="sp-col" style={{color: SPECIES_COLORS.Yellowtail}}>Yellowtail</span>
             <span className="sp-col" style={{color: SPECIES_COLORS.Dorado}}>Dorado</span>
-            <span className="trophy-col">Tuna</span>
+            <span className="trophy-col">Trophy</span>
             <span className="anglers-col">Anglers</span>
             <MetricLabel name="TPA/Day" tooltip="Tuna Per Angler per Day — normalizes catches across trip lengths so a 1-day local trip and a 3-day offshore trip are on the same scale. Higher is better." />
             <span className="rating-col">Rating</span>
@@ -872,7 +872,7 @@ function HomeView({ navigate, settings, regions }) {
       <div className="home-stats-bar">
         <StatTile
           num={trophyTotal === 0 ? '—' : fmt.n(trophyTotal)}
-          label={trophyTotal === 0 ? 'Boats Returning' : 'Tuna Today'}
+          label={trophyTotal === 0 ? 'Boats Returning' : 'Trophy Today'}
           numColor={trophyTotal === 0 ? 'var(--tb-slate)' : 'var(--tb-lime)'}
         />
         <StatTile num={boats.length} label={boats.length === 1 ? 'Boat Out' : 'Boats Out'} />
@@ -933,7 +933,7 @@ function HomeView({ navigate, settings, regions }) {
                 <tr>
                   <th>Boat</th>
                   <th className="hrt-trip">Trip</th>
-                  <th className="hrt-bf">Bluefin</th>
+                  <th className="hrt-bf">Trophy</th>
                   <th>TPA/Day</th>
                   <th>Rating</th>
                 </tr>
@@ -950,9 +950,9 @@ function HomeView({ navigate, settings, regions }) {
                     </td>
                     <td className="hrt-trip">{b.tripLength}</td>
                     <td className="hrt-bf" style={{
-                      color: b.Bluefin > 0 ? SPECIES_COLORS.Bluefin : 'var(--tb-gray-3)',
-                      fontWeight: b.Bluefin > 0 ? 600 : 400,
-                    }}>{fmt.n(b.Bluefin)}</td>
+                      color: b.totalTuna > 0 ? 'var(--tb-lime)' : 'var(--tb-gray-3)',
+                      fontWeight: b.totalTuna > 0 ? 600 : 400,
+                    }}>{fmt.n(b.totalTuna)}</td>
                     <td style={{ fontWeight: 700, color: 'var(--tb-ink)' }}>
                       {fmt.tpa(b.trophyPerAnglerPerDay)}
                       {i === 0 && <span className="top-boat-chip" aria-label="Top boat by TPA/Day">★ Top</span>}
