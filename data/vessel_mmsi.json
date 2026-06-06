@@ -167,8 +167,24 @@
     "368218520": {
       "name": "Pacifica",
       "landing": "Seaforth Sportfishing"
+    },
+    "366447000": {
+      "name": "Royal Star",
+      "landing": "Fisherman's Landing"
+    },
+    "367076870": {
+      "name": "New Seaforth",
+      "landing": "Seaforth Sportfishing"
+    },
+    "338336818": {
+      "name": "Island Fox",
+      "landing": "Channel Islands Sportfishing"
+    },
+    "338394866": {
+      "name": "Bluefin",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-06-06T01:54:20.908940+00:00",
-  "_vessel_count": 40
+  "_last_discover_run": "2026-06-06T18:04:52.826634+00:00",
+  "_vessel_count": 44
 }
