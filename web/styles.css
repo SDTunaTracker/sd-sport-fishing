@@ -6108,6 +6108,28 @@ button.btn-save-boat[data-saved="true"],
   .ch-foot-in { padding: 20px 16px; }
 }
 
+/* ── LastUpdated freshness indicator ────────────────────────────── */
+.last-updated {
+  display: inline-flex; align-items: center; gap: 4px;
+  font: 500 11px/1 var(--mono); letter-spacing: 0.01em;
+  color: var(--faint); white-space: nowrap;
+  vertical-align: middle;
+}
+.last-updated.compact { font-size: 10.5px; }
+.last-updated.stale   { color: #D97706; }  /* amber */
+.last-updated.critical { color: #DC2626; } /* red */
+.last-updated.stale i,
+.last-updated.critical i { font-size: 9px; }
+
+/* Wrapper row in Today's Report banner */
+.today-meta-row {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-top: 3px;
+}
+
+/* ch-seclbl on the homepage gets flex so the LastUpdated sits inline */
+.ch-seclbl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
 /* ── Account & Settings page ─────────────────────────────────────── */
 .acct-wrap { max-width: 780px; margin: 0 auto; padding: 32px 26px 90px; }
 .acct-eyebrow { font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 8px; }

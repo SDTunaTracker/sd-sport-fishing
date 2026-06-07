@@ -617,6 +617,61 @@ function AppFooter() {
   );
 }
 
+// ── LastUpdated — scraper freshness indicator ────────────────────
+// Shows relative time + stale warning when data is old.
+// Source: window.SD.META.lastScrape (MAX(finished_at) from scrape_log WHERE status='ok')
+// Ticks every 60 s so the relative label advances without a page reload.
+// compact=true → shorter label, used inline next to section headings.
+
+function LastUpdated({ isoStr, compact }) {
+  // Tick state drives re-renders every minute
+  const [, setTick] = React.useState(0);
+  React.useEffect(function() {
+    var id = setInterval(function() { setTick(function(n) { return n + 1; }); }, 60000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  if (!isoStr) return null;
+
+  var d      = new Date(isoStr);
+  var ageMin = Math.round((Date.now() - d.getTime()) / 60000);
+
+  // Relative label
+  var rel;
+  if (ageMin < 1)       rel = 'just now';
+  else if (ageMin < 60) rel = ageMin + ' min ago';
+  else {
+    var hrs = Math.floor(ageMin / 60);
+    var rem = ageMin % 60;
+    rel = hrs + 'h' + (rem > 0 ? ' ' + rem + 'm' : '') + ' ago';
+  }
+
+  // Status tiers mirror the Python exporter thresholds
+  var status = ageMin < 90 ? 'fresh' : ageMin < 240 ? 'stale' : 'critical';
+  var isStale = status !== 'fresh';
+
+  // Exact local time for tooltip — labelled as "last pull from the landings"
+  var exact = d.toLocaleString('en-US', {
+    hour: 'numeric', minute: '2-digit',
+    timeZone: 'America/Los_Angeles', timeZoneName: 'short',
+    month: 'short', day: 'numeric',
+  });
+
+  var label = compact
+    ? (isStale ? rel + ' · stale' : rel)
+    : (isStale ? 'Updated ' + rel + ' · data may be stale' : 'Updated ' + rel);
+
+  return (
+    <span
+      className={'last-updated ' + status + (compact ? ' compact' : '')}
+      title={'Last pull from the landings: ' + exact}
+    >
+      {isStale && <i className="fa-solid fa-triangle-exclamation" aria-hidden="true"/>}
+      {label}
+    </span>
+  );
+}
+
 // ── Account-page shared primitives ──────────────────────────────
 
 function SettingsToggle({ on, onChange }) {
@@ -676,4 +731,5 @@ Object.assign(window, {
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
   PageHeader, SectionHeader,
   SettingsToggle, SettingsChip, SegmentedControl,
+  LastUpdated,
 });

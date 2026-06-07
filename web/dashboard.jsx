@@ -484,16 +484,6 @@ function TodayCatch({ navigate, settings, regions }) {
     const boats = isToday ? ratingData.boats.filter(b => !b.isPreliminary) : ratingData.boats;
     return getTodayPerformanceSummary(boats, window.SD_PROC_TRIPS || window.SD.TRIPS, selectedDate);
   }, [ratingData, selectedDate]);
-  const lastScrape = window.SD?.META?.lastScrape;
-  const timeStr = lastScrape
-    ? new Date(lastScrape).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZone: 'America/Los_Angeles',
-        timeZoneName: 'short'
-      })
-    : null;
-
   const activeSpecies = [
     { key: 'Bluefin',    color: SPECIES_COLORS.Bluefin },
     { key: 'Yellowfin',  color: SPECIES_COLORS.Yellowfin },
@@ -507,12 +497,10 @@ function TodayCatch({ navigate, settings, regions }) {
         <div className="today-left">
           <h2 className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</h2>
           <div className="today-date">{fmtDate(selectedDate)}</div>
-          {timeStr && (
-            <div style={{fontSize:11, color:'#94A3B8', marginTop:2, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap'}}>
-              Updated {timeStr}
-              <FreshnessWidget regions={regions} compact/>
-            </div>
-          )}
+          <div className="today-meta-row">
+            <LastUpdated isoStr={window.SD?.META?.lastScrape}/>
+            <FreshnessWidget regions={regions} compact/>
+          </div>
         </div>
 
         {ratingData.fleetRatingKey && (
@@ -693,7 +681,7 @@ function TodayView({ navigate, settings, regions }) {
 
       <div style={{marginTop: 20}}>
         <Panel title={`Top Boats — ${currentYear} Season`}
-               meta="Ranked by avg tuna/angler/day · min 5 trips"
+               meta={<React.Fragment>Ranked by avg tuna/angler/day · min 5 trips &nbsp;<LastUpdated isoStr={window.SD?.META?.lastScrape} compact/></React.Fragment>}
                actions={<Button variant="ghost" size="sm" onClick={() => navigate('analytics', { subtab: 'overview' })}>Full Analytics →</Button>}>
           {topBoats.length === 0 ? (
             <div className="muted-block">No data yet for {currentYear}.</div>
@@ -896,6 +884,7 @@ function HomeView({ navigate, settings, regions }) {
           <div className="ch-feature">
             <div className="ch-seclbl">
               Latest reports <span className="ch-soft">· across all landings</span>
+              <LastUpdated isoStr={window.SD?.META?.lastScrape} compact/>
             </div>
             {latestBoats.length === 0 ? (
               <div style={{padding:'24px 0', color:'var(--ch-muted)', fontSize:14}}>
