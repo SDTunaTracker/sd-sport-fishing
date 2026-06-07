@@ -183,8 +183,12 @@
     "338394866": {
       "name": "Bluefin",
       "landing": "Fisherman's Landing"
+    },
+    "367629440": {
+      "name": "Old Glory",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-06-07T01:43:32.543719+00:00",
-  "_vessel_count": 44
+  "_last_discover_run": "2026-06-07T18:54:53.133416+00:00",
+  "_vessel_count": 45
 }
