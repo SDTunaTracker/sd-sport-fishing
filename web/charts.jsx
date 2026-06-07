@@ -1897,7 +1897,7 @@ function ChartsView({ navigate, settings }) {
 
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
     basemapLayer.current = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_matter_nolabels/{z}/{x}/{y}{r}.png',
+      'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
       { attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19 }
     ).addTo(mapInstance.current);
 
@@ -2457,7 +2457,7 @@ function _prewarmCharts() {
   var subs = 'abcd', si = 0;
   _prewarmTiles(7, function(z, x, y) {
     return 'https://' + subs[si++ % subs.length] +
-      '.basemaps.cartocdn.com/dark_matter_nolabels/' + z + '/' + x + '/' + y + '.png';
+      '.basemaps.cartocdn.com/dark_nolabels/' + z + '/' + x + '/' + y + '.png';
   });
 
   // 2. SST grid — the default base-layer data (no-op if cache is still fresh).
