@@ -667,6 +667,15 @@ def _scrape_status_payload(conn: sqlite3.Connection) -> dict:
     return {"lastFullScrape": last_full, "landings": landings}
 
 
+def _health_payload(out_path: Path) -> dict | None:
+    """Read logs/health.json written by health.run_health_check(); None if absent."""
+    health_path = out_path.parents[1] / "logs" / "health.json"
+    try:
+        return json.loads(health_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
 def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | None = None) -> int:
     """Write data.js. Returns trip count written.
 
@@ -716,6 +725,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "BOAT_PROFILES": _boat_profiles_payload(conn),
         "ADMIN": _admin_payload(conn),
         "SCRAPE_STATUS": _scrape_status_payload(conn),
+        "HEALTH": _health_payload(out_path),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,
             "tripCount": len(trips),

@@ -13,7 +13,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from . import db
+from . import db, health
 from .export import export
 from .scrape import SOURCES, scrape_all, reconcile_daily_counts
 from .schedule import scrape_all_schedules
@@ -36,7 +36,9 @@ def _setup_logging(verbose: bool) -> None:
 
 
 def run(target_date: date | None, export_only: bool, hourly: bool = False) -> int:
+    run_start_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
     summary_lines: list[str] = []
+    health_exit = 0
     repaired = db.repair_if_corrupt(DB_PATH)
     if repaired:
         summary_lines.append("  WARNING: DB was corrupt — repaired automatically")
@@ -211,6 +213,19 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         except Exception as e:
             summary_lines.append(f"  Staleness check ERROR (non-fatal): {e}")
 
+        # Health check — per-run assertions + coverage cross-check + alerting.
+        # Skip in export-only mode: no scraping happened, so scrape_log checks
+        # would always fail and coverage gaps are unrelated to the export.
+        if not export_only:
+            sd_sources = [s for s in SOURCES if s.region == "san_diego"]
+            health_exit = health.run_health_check(
+                conn, run_start_iso, sd_sources, DATA_JS_PATH,
+            )
+            if health_exit != 0:
+                summary_lines.append(
+                    "  HEALTH CHECK FAILED — see logs/health.json and logs/health_alerts.log"
+                )
+
     # Rolling backup — written after a successful export so we always have a
     # clean recovery point that's at most one run old.
     try:
@@ -246,7 +261,7 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
     print("Daily run summary:")
     for line in summary_lines:
         print(line)
-    return 0
+    return health_exit
 
 
 def main(argv: list[str] | None = None) -> int:
