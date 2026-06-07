@@ -36,6 +36,9 @@ function defaultSettings() {
     trophySpecies: [...DEFAULT_TROPHY_SPECIES],
     tripLengthMethod: 'rounded',
     unitSystem: 'imperial',
+    tripTypeFilter: 'all',
+    windUnit: 'kt',
+    density: 'comfortable',
   };
 }
 

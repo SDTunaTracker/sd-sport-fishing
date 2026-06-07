@@ -617,9 +617,63 @@ function AppFooter() {
   );
 }
 
+// ── Account-page shared primitives ──────────────────────────────
+
+function SettingsToggle({ on, onChange }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={!!on}
+      className={'acct-tog' + (on ? ' on' : '')}
+      onClick={() => onChange && onChange(!on)}
+    />
+  );
+}
+
+function SettingsChip({ selected, onClick, removable, onRemove, add, children }) {
+  return (
+    <button
+      type="button"
+      className={'acct-chip' + (selected ? ' sel' : '') + (add ? ' add' : '')}
+      onClick={onClick}
+    >
+      {selected && <span className="acct-chip-dot" aria-hidden="true">●</span>}
+      <span>{children}</span>
+      {removable && (
+        <span
+          className="acct-chip-x"
+          role="button"
+          aria-label={'Remove ' + children}
+          onClick={e => { e.stopPropagation(); onRemove && onRemove(); }}
+        >×</span>
+      )}
+    </button>
+  );
+}
+
+function SegmentedControl({ options, value, onChange }) {
+  return (
+    <div className="acct-seg" role="group">
+      {options.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          className={'acct-seg-btn' + (value === opt.value ? ' on' : '')}
+          aria-pressed={value === opt.value}
+          onClick={() => onChange && onChange(opt.value)}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
   AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel, SkeletonRows,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
   PageHeader, SectionHeader,
+  SettingsToggle, SettingsChip, SegmentedControl,
 });

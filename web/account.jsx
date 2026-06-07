@@ -1,350 +1,468 @@
-// account.jsx — My Account page with Clerk auth integration.
-// Signed-out: shows sign-in CTAs + guest preferences.
-// Signed-in: shows Clerk UserProfile + cloud-synced preferences.
+// account.jsx — Account & Settings page (Coastal design system)
+// Free account unlocks personal/sticky features (follows, alerts, species, data export).
+// Anonymous users can still set Preferences (saved to localStorage).
 
-function SavedBoatsSection({ navigate }) {
-  const { useEffect, useState } = React;
-  const [saved, setSaved] = useState(function() {
-    return [...window.getSavedBoats()];
-  });
+const ALL_LANDINGS = ['Seaforth', "Fisherman's", 'H&M', 'Point Loma'];
 
-  useEffect(function() {
-    function sync() { setSaved([...window.getSavedBoats()]); }
-    window.addEventListener('tt-saved-boats-changed', sync);
-    return function() { window.removeEventListener('tt-saved-boats-changed', sync); };
-  }, []);
+const ACCOUNT_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Bigeye', 'Skipjack', 'Albacore'];
 
-  var card = {
-    background: 'var(--ss-surface, #fff)', border: '1px solid var(--ss-border, #e2e8f0)',
-    borderRadius: 10, padding: '20px 20px', marginBottom: 16,
-  };
-  var sectionTitle = { font: '600 14px/20px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 8 };
+function _getInitials(name) {
+  if (!name) return '?';
+  var parts = name.trim().split(/\s+/);
+  return parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : parts[0].slice(0, 2).toUpperCase();
+}
 
+function _exportCSV() {
+  var trips = window.SD && Array.isArray(window.SD.TRIPS) ? window.SD.TRIPS : [];
+  if (!trips.length) { alert('No trip data loaded yet — try again after the page data refreshes.'); return; }
+  var cols = ['date', 'boat', 'landing', 'trip_length', 'anglers',
+              'bluefin', 'yellowfin', 'yellowtail', 'dorado', 'skipjack', 'bigeye', 'albacore',
+              'trophy_count', 'trophy_per_angler', 'trophy_per_angler_per_day'];
+  var rows = [cols.join(',')].concat(trips.map(function(t) {
+    return cols.map(function(c) {
+      var v = t[c];
+      if (v == null) return '';
+      if (typeof v === 'string' && (v.includes(',') || v.includes('"')))
+        return '"' + v.replace(/"/g, '""') + '"';
+      return v;
+    }).join(',');
+  }));
+  var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'tuna-tracker-trips.csv'; a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function GatePrompt({ title, sub, onSignIn, onSignUp }) {
   return (
-    <div style={card}>
-      <div style={sectionTitle}>Saved Boats</div>
-      {saved.length === 0 ? (
-        <p style={{ font: '400 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)', margin: 0 }}>
-          Open any boat profile and tap <strong>⭐ Save</strong> to add it here for quick access.
-        </p>
-      ) : (
-        <div className="saved-boats-list">
-          {saved.map(function(name) {
-            return (
-              <div key={name} className="saved-boat-row">
-                <button className="saved-boat-name" onClick={function() { navigate && navigate('boat', { boat: name }); }}>
-                  {name}
-                </button>
-                <button className="saved-boat-remove" title="Remove" onClick={function() { window.toggleSavedBoat(name); }}>×</button>
-              </div>
-            );
-          })}
-        </div>
-      )}
+    <div className="acct-gate">
+      <div className="acct-gate-t">{title}</div>
+      {sub && <div className="acct-gate-s">{sub}</div>}
+      <div className="acct-gate-btns">
+        <button className="acct-btn coral" onClick={onSignUp}>Create free account</button>
+        <button className="acct-btn" onClick={onSignIn}>Sign in</button>
+      </div>
     </div>
   );
 }
 
 function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, navigate }) {
-  const { useEffect, useState } = React;
+  const { useEffect, useState, useRef } = React;
   const { user, loaded, signIn, signUp, signOut, isSignedIn } = useAuth();
 
+  // ── Followed boats ────────────────────────────────────────────
+  const [followedBoats, setFollowedBoatsState] = useState(function() {
+    return window.getFollowedBoats ? window.getFollowedBoats() : [];
+  });
+  const [addingBoat, setAddingBoat] = useState(false);
+  const [newBoat, setNewBoat] = useState('');
+  const addInputRef = useRef(null);
 
-  // ── Region helpers ──────────────────────────────────────────────
-  // Derive the three-way selection from the regions array.
-  const regionChoice =
-    regions.length >= 2               ? 'all_socal'  :
-    regions[0] === 'oc_la'            ? 'oc_la'      :
-                                        'san_diego';
+  useEffect(function() {
+    function sync() {
+      setFollowedBoatsState(window.getFollowedBoats ? window.getFollowedBoats() : []);
+    }
+    window.addEventListener('tt-saved-boats-changed', sync);
+    return function() { window.removeEventListener('tt-saved-boats-changed', sync); };
+  }, []);
 
-  const REGION_OPTIONS = [
-    { id: 'san_diego',  label: 'San Diego',             regions: ['san_diego'] },
-    { id: 'oc_la',      label: 'OC / LA',               regions: ['oc_la'] },
-    { id: 'all_socal',  label: 'All SoCal (both)',       regions: ['san_diego', 'oc_la'] },
-  ];
+  useEffect(function() {
+    if (addingBoat && addInputRef.current) addInputRef.current.focus();
+  }, [addingBoat]);
 
-  function setRegionChoice(optionId) {
-    const opt = REGION_OPTIONS.find(o => o.id === optionId);
-    if (!opt) return;
-    onRegionsDirect(opt.regions);
-    window.setUserPref('region_choice', optionId);
+  function unfollowBoat(name) {
+    var next = followedBoats.filter(function(b) { return b !== name; });
+    setFollowedBoatsState(next);
+    if (window.setFollowedBoats) window.setFollowedBoats(next);
   }
 
-  // ── Species helpers ─────────────────────────────────────────────
+  function commitAddBoat() {
+    var name = newBoat.trim();
+    if (name && !followedBoats.includes(name)) {
+      var next = [...followedBoats, name];
+      setFollowedBoatsState(next);
+      if (window.setFollowedBoats) window.setFollowedBoats(next);
+    }
+    setNewBoat(''); setAddingBoat(false);
+  }
+
+  // ── Followed landings ─────────────────────────────────────────
+  const [followedLandings, setFollowedLandingsState] = useState(function() {
+    return window.getFollowedLandings ? window.getFollowedLandings() : ['Seaforth', "Fisherman's"];
+  });
+
+  useEffect(function() {
+    function sync() {
+      setFollowedLandingsState(window.getFollowedLandings ? window.getFollowedLandings() : []);
+    }
+    window.addEventListener('tt-followed-landings-changed', sync);
+    return function() { window.removeEventListener('tt-followed-landings-changed', sync); };
+  }, []);
+
+  function toggleLanding(name) {
+    var set = new Set(followedLandings);
+    if (set.has(name)) set.delete(name); else set.add(name);
+    var next = [...set];
+    setFollowedLandingsState(next);
+    if (window.setFollowedLandings) window.setFollowedLandings(next);
+  }
+
+  // ── Alerts ────────────────────────────────────────────────────
+  const [alerts, setAlertsState] = useState(function() {
+    return window.getAlerts ? window.getAlerts() : { boatFinished: true, boatNewTrip: true, topTripSpots: true, weeklyReport: false, deliveryMethod: 'email' };
+  });
+
+  function setAlert(key, val) {
+    var next = Object.assign({}, alerts, { [key]: val });
+    setAlertsState(next);
+    if (window.setAlerts) window.setAlerts(next);
+  }
+
+  // ── Settings helpers ──────────────────────────────────────────
   function handleSettingsChange(next) {
     onSettingsChange(next);
     if (isSignedIn) {
-      window.setUserPref('trophySpecies', next.trophySpecies);
-      window.setUserPref('tripLengthMethod', next.tripLengthMethod);
-      window.setUserPref('unitSystem', next.unitSystem);
+      if (window.setUserPref) {
+        window.setUserPref('trophySpecies', next.trophySpecies);
+        window.setUserPref('tripLengthMethod', next.tripLengthMethod);
+        window.setUserPref('unitSystem', next.unitSystem);
+        window.setUserPref('tripTypeFilter', next.tripTypeFilter);
+        window.setUserPref('windUnit', next.windUnit);
+        window.setUserPref('density', next.density);
+      }
+    } else {
+      // Preferences persist for anonymous users too (localStorage via setUserPref)
+      if (window.setUserPref) {
+        window.setUserPref('tripTypeFilter', next.tripTypeFilter);
+        window.setUserPref('density', next.density);
+      }
     }
   }
 
-  function setUnitSystem(u) {
-    handleSettingsChange({ ...settings, unitSystem: u });
+  function setPref(key, val) {
+    handleSettingsChange(Object.assign({}, settings, { [key]: val }));
   }
 
   function toggleSpecies(sp) {
-    const next = settings.trophySpecies.includes(sp)
-      ? settings.trophySpecies.filter(s => s !== sp)
+    var next = settings.trophySpecies.includes(sp)
+      ? settings.trophySpecies.filter(function(s) { return s !== sp; })
       : [...settings.trophySpecies, sp];
     if (next.length === 0) return;
-    handleSettingsChange({ ...settings, trophySpecies: next });
+    handleSettingsChange(Object.assign({}, settings, { trophySpecies: next }));
   }
 
-  function applyPreset(preset) {
-    handleSettingsChange({ ...settings, trophySpecies: [...preset.species] });
+  // ── Region ────────────────────────────────────────────────────
+  var regionChoice =
+    regions && regions.length >= 2   ? 'all_socal' :
+    regions && regions[0] === 'oc_la' ? 'oc_la'    : 'san_diego';
+
+  function setRegion(val) {
+    var map = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    if (onRegionsDirect) onRegionsDirect(map[val] || ['san_diego']);
+    if (window.setUserPref) window.setUserPref('region_choice', val);
   }
 
-  function setMethod(m) {
-    handleSettingsChange({ ...settings, tripLengthMethod: m });
-  }
+  // ── Boat name suggestions ─────────────────────────────────────
+  var allBoatNames = window.SD && window.SD.BOATS
+    ? Object.keys(window.SD.BOATS).sort()
+    : [];
 
-  function resetAll() {
-    handleSettingsChange(defaultSettings());
-    onRegionsDirect(['san_diego']);
-    window.setUserPref('region_choice', 'san_diego');
-  }
+  var gateProps = { onSignIn: signIn, onSignUp: signUp };
 
-  // ── Shared styles ───────────────────────────────────────────────
-  const card = {
-    background: 'var(--ss-surface)', border: '1px solid var(--ss-border)',
-    borderRadius: 10, padding: '20px 24px', marginBottom: 16,
-  };
-  const sectionTitle = { font: '600 14px/20px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 4 };
-  const sectionDesc  = { font: '400 12px/18px var(--ss-font-sans)', color: 'var(--ss-slate)', marginBottom: 16 };
-  const fieldLabel   = {
-    font: '600 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)',
-    textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, display: 'block',
-  };
-  const radioRow = {
-    display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0',
-    cursor: 'pointer', font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-ink)',
-  };
-  const chipBase = {
-    display: 'inline-flex', alignItems: 'center', gap: 6,
-    padding: '5px 12px', borderRadius: 20, cursor: 'pointer',
-    font: '500 12px/16px var(--ss-font-sans)', border: '1px solid var(--ss-border)',
-    userSelect: 'none', transition: 'background 0.15s, border-color 0.15s',
-  };
-  const { trophySpecies, tripLengthMethod } = settings;
-  const isDefault = isDefaultSpecies(trophySpecies);
-
-  // ── Region section ──────────────────────────────────────────────
-  const showOcla = window.FEATURES && window.FEATURES.SHOW_OCLA;
-
-  function RegionSection() {
-    return (
-      <div style={card}>
-        <div style={sectionTitle}>Default Region</div>
-        <p style={sectionDesc}>Choose which region's data loads when you visit the site.</p>
-
-        <label style={{ ...radioRow, cursor: 'pointer' }}>
-          <input type="radio" name="regionChoice" value="san_diego"
-                 checked={regionChoice === 'san_diego'}
-                 onChange={() => setRegionChoice('san_diego')}
-                 style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
-          <span>San Diego</span>
-          <span style={{ font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)' }}>(default)</span>
-        </label>
-
-        {showOcla ? (
-          <React.Fragment>
-            <label style={{ ...radioRow, cursor: 'pointer' }}>
-              <input type="radio" name="regionChoice" value="oc_la"
-                     checked={regionChoice === 'oc_la'}
-                     onChange={() => setRegionChoice('oc_la')}
-                     style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
-              <span>OC / LA</span>
-            </label>
-            <label style={{ ...radioRow, cursor: 'pointer' }}>
-              <input type="radio" name="regionChoice" value="all_socal"
-                     checked={regionChoice === 'all_socal'}
-                     onChange={() => setRegionChoice('all_socal')}
-                     style={{ accentColor: 'var(--ss-darkseagreen-500)', width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }}/>
-              <span>All SoCal (both)</span>
-            </label>
-          </React.Fragment>
-        ) : (
-          <div style={{ ...radioRow, cursor: 'default', opacity: 0.55 }}>
-            <i className="fa-solid fa-lock" style={{ fontSize: 11, color: 'var(--ss-gray-3)', flexShrink: 0 }}/>
-            <span style={{ color: 'var(--ss-gray-3)' }}>OC / LA</span>
-            <span style={{ font: '400 10px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)', background: 'var(--ss-foam)', padding: '2px 8px', borderRadius: 10 }}>Coming Soon</span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ── Species section (shared) ────────────────────────────────────
-  function SpeciesSection() {
-    const methods = [
-      { id: 'rounded', label: 'Rounded (recommended)', sub: 'Full Day, Overnight, and 1.5-day trips all count as 1 day. 2.5-day counts as 2, etc.' },
-      { id: 'actual',  label: 'Actual trip length',    sub: 'Full Day = 0.75, Overnight = 1.0, 1.5-day = 1.5, 2.5-day = 2.5, etc.' },
-    ];
-    return (
-      <React.Fragment>
-        <div style={card}>
-          <div style={sectionTitle}>Trophy Species</div>
-          <p style={sectionDesc}>Choose which species count toward the "per angler per day" metric.</p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: 16 }}>
-            {PRESETS.map(p => {
-              const active = p.species.length === trophySpecies.length &&
-                p.species.every(sp => trophySpecies.includes(sp));
-              return (
-                <button key={p.label} onClick={() => applyPreset(p)} style={{
-                  padding: '4px 12px', borderRadius: 20, cursor: 'pointer',
-                  font: '500 11px/16px var(--ss-font-sans)',
-                  border: `1px solid ${active ? 'var(--ss-darkseagreen-500)' : 'var(--ss-border)'}`,
-                  background: active ? 'var(--ss-darkseagreen-500)' : 'var(--ss-bg)',
-                  color: active ? '#fff' : 'var(--ss-slate)',
-                }}>{p.label}</button>
-              );
-            })}
-          </div>
-
-          {SPECIES_GROUPS.map(group => (
-            <div key={group.label}>
-              <div style={{ font: '500 11px/16px var(--ss-font-sans)', color: 'var(--ss-gray-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, marginTop: 14 }}>
-                {group.label}
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 10px', marginBottom: 4 }}>
-                {group.species.map(sp => {
-                  const on = trophySpecies.includes(sp);
-                  return (
-                    <div key={sp} onClick={() => toggleSpecies(sp)} style={{
-                      ...chipBase,
-                      background: on ? 'var(--ss-darkseagreen-500)' : 'var(--ss-bg)',
-                      borderColor: on ? 'var(--ss-darkseagreen-500)' : 'var(--ss-border)',
-                      color: on ? '#fff' : 'var(--ss-ink)',
-                    }}>
-                      {on && <i className="fa-solid fa-check" style={{ fontSize: 10 }}/>}
-                      {sp}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-
-          {!isDefault && (
-            <div style={{
-              marginTop: 16, padding: '10px 14px', borderRadius: 8,
-              background: 'var(--ss-orange-50, #fff7ed)', border: '1px solid var(--ss-orange-200, #fed7aa)',
-              font: '400 12px/18px var(--ss-font-sans)', color: 'var(--ss-orange-700, #c2410c)',
-              display: 'flex', alignItems: 'flex-start', gap: 8,
-            }}>
-              <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: 2, flexShrink: 0 }}/>
-              <span>Custom species active — metrics show <b>{trophySpecies.join(', ')}</b>. Default: Bluefin, Yellowfin, Yellowtail, Dorado.</span>
-            </div>
-          )}
-        </div>
-
-        <div style={card}>
-          <div style={sectionTitle}>Per-Day Metric Calculation</div>
-          <p style={sectionDesc}>Controls the denominator used when calculating fish per angler per day.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {methods.map(m => (
-              <label key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                <input type="radio" name="tripLengthMethod" value={m.id}
-                       checked={tripLengthMethod === m.id} onChange={() => setMethod(m.id)}
-                       style={{ marginTop: 3, accentColor: 'var(--ss-darkseagreen-500)', cursor: 'pointer' }}/>
-                <div>
-                  <div style={{ font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-ink)' }}>{m.label}</div>
-                  <div style={{ font: '400 12px/16px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 2 }}>{m.sub}</div>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div style={card}>
-          <div style={sectionTitle}>Units</div>
-          <p style={sectionDesc}>Units for the chart readouts — tap a spot on the Ocean Charts map to see temperature, wind, swell, current, and pressure at that location.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { id: 'imperial', label: 'Imperial (US)', sub: 'Temp °F · wind & current kt · swell ft · pressure inHg' },
-              { id: 'metric',   label: 'Metric',        sub: 'Temp °C · wind & current m/s · swell m · pressure hPa' },
-            ].map(u => (
-              <label key={u.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                <input type="radio" name="unitSystem" value={u.id}
-                       checked={(settings.unitSystem || 'imperial') === u.id} onChange={() => setUnitSystem(u.id)}
-                       style={{ marginTop: 3, accentColor: 'var(--ss-darkseagreen-500)', cursor: 'pointer' }}/>
-                <div>
-                  <div style={{ font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-ink)' }}>{u.label}</div>
-                  <div style={{ font: '400 12px/16px var(--ss-font-sans)', color: 'var(--ss-slate)', marginTop: 2 }}>{u.sub}</div>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-      </React.Fragment>
-    );
-  }
-
-  // ── Loading state ───────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────
   if (!loaded) {
     return (
       <div style={{ padding: 60, textAlign: 'center' }}>
-        <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, color: 'var(--tb-lime)' }}/>
+        <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: 24, color: 'var(--accent)' }}/>
       </div>
     );
   }
 
-  // ── Signed-out state ────────────────────────────────────────────
-  if (!isSignedIn) {
-    return (
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
-        <h2 style={{ font: '700 20px/28px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 24 }}>My Account</h2>
+  return (
+    <div className="acct-wrap">
+      <div className="acct-eyebrow">Your account</div>
+      <h1 className="acct-h1">Account &amp; settings</h1>
 
-        <div style={{ ...card, textAlign: 'center', padding: '40px 32px' }}>
-          <i className="fa-solid fa-circle-user" style={{ fontSize: 48, color: 'var(--tb-lime)', marginBottom: 16, display: 'block' }}/>
-          <div style={{ font: '700 18px/26px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 8 }}>
-            Sign in to access your settings
+      {/* ── 1. Identity ────────────────────────────────────────── */}
+      {isSignedIn ? (
+        <div className="acct-card">
+          <div className="acct-id">
+            <div className="acct-avb" aria-hidden="true">
+              {_getInitials(user.fullName || user.firstName || '')}
+            </div>
+            <div className="acct-id-info">
+              <div className="acct-nm">{user.fullName || user.firstName || 'Account'}</div>
+              <div className="acct-em">{(user.primaryEmailAddress && user.primaryEmailAddress.emailAddress) || ''}</div>
+              <span className="acct-badge">● Free account</span>
+            </div>
+            <button className="acct-out" onClick={signOut}>Sign out</button>
           </div>
-          <p style={{ font: '400 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)', marginBottom: 24, maxWidth: 380, margin: '0 auto 24px' }}>
-            Region preferences, trophy species, and display settings are saved to your account
-            and sync across all your devices.
-          </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button className="btn-acct-primary" onClick={signUp}>Create Free Account</button>
-            <button className="btn-acct-secondary" onClick={signIn}>Sign In</button>
+          <div className="acct-freeline">
+            Your account saves your <b>followed boats, species, and alerts</b> across all your devices.
           </div>
         </div>
+      ) : (
+        <div className="acct-card acct-sign-card">
+          <div className="acct-sign-title">Follow boats. Get alerts. Save settings.</div>
+          <p className="acct-sign-sub">
+            A free account keeps your followed boats, target species, and preferences in sync across every device.
+          </p>
+          <div className="acct-sign-btns">
+            <button className="acct-btn coral" onClick={signUp}>Create free account</button>
+            <button className="acct-btn" onClick={signIn}>Sign in</button>
+          </div>
+        </div>
+      )}
 
-        <SavedBoatsSection navigate={navigate} />
+      {/* ── 2. Following ───────────────────────────────────────── */}
+      <div className="acct-card">
+        <div className="acct-sec-t">Boats you follow</div>
+        <div className="acct-sec-d">Followed boats get highlighted on Today and trigger your alerts.</div>
+
+        {isSignedIn ? (
+          <React.Fragment>
+            <div className="acct-chips">
+              {followedBoats.map(function(name) {
+                return (
+                  <SettingsChip
+                    key={name}
+                    selected
+                    removable
+                    onRemove={function() { unfollowBoat(name); }}
+                  >
+                    {name}
+                  </SettingsChip>
+                );
+              })}
+
+              {addingBoat ? (
+                <div className="acct-add-input-wrap">
+                  <input
+                    ref={addInputRef}
+                    id="acct-add-boat-input"
+                    list="acct-boat-list"
+                    className="acct-add-input"
+                    value={newBoat}
+                    onChange={function(e) { setNewBoat(e.target.value); }}
+                    onKeyDown={function(e) {
+                      if (e.key === 'Enter')  { commitAddBoat(); }
+                      if (e.key === 'Escape') { setAddingBoat(false); setNewBoat(''); }
+                    }}
+                    placeholder="Boat name…"
+                    aria-label="Enter boat name to follow"
+                  />
+                  <datalist id="acct-boat-list">
+                    {allBoatNames.map(function(n) { return <option key={n} value={n}/>; })}
+                  </datalist>
+                  <button className="acct-btn coral" onClick={commitAddBoat}>Add</button>
+                  <button className="acct-btn" onClick={function() { setAddingBoat(false); setNewBoat(''); }}>Cancel</button>
+                </div>
+              ) : (
+                <SettingsChip add onClick={function() { setAddingBoat(true); }}>＋ Follow a boat</SettingsChip>
+              )}
+            </div>
+
+            <div className="acct-sec-t" style={{ marginTop: 20 }}>Your landings</div>
+            <div className="acct-sec-d">Focus Today and the leaderboards on the landings you launch from.</div>
+            <div className="acct-chips">
+              {ALL_LANDINGS.map(function(name) {
+                return (
+                  <SettingsChip
+                    key={name}
+                    selected={followedLandings.includes(name)}
+                    onClick={function() { toggleLanding(name); }}
+                  >
+                    {name}
+                  </SettingsChip>
+                );
+              })}
+            </div>
+          </React.Fragment>
+        ) : (
+          <GatePrompt
+            title="Create a free account to follow boats"
+            sub="Takes 10 seconds. Followed boats are highlighted on Today's report."
+            {...gateProps}
+          />
+        )}
       </div>
-    );
-  }
 
-  // ── Signed-in state ─────────────────────────────────────────────
-  return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 16px' }}>
-      <h2 style={{ font: '700 20px/28px var(--ss-font-sans)', color: 'var(--ss-ink)', marginBottom: 24 }}>Preferences</h2>
+      {/* ── 3. Target species ──────────────────────────────────── */}
+      <div className="acct-card">
+        <div className="acct-sec-t">Target species</div>
+        <div className="acct-sec-d">Tailors the leaderboards, reports, and your trophy count to what you actually chase.</div>
 
-      <RegionSection/>
-      <SpeciesSection/>
+        {isSignedIn ? (
+          <div className="acct-chips">
+            {ACCOUNT_SPECIES.map(function(sp) {
+              return (
+                <SettingsChip
+                  key={sp}
+                  selected={settings.trophySpecies.includes(sp)}
+                  onClick={function() { toggleSpecies(sp); }}
+                >
+                  {sp}
+                </SettingsChip>
+              );
+            })}
+          </div>
+        ) : (
+          <GatePrompt
+            title="Sign in to customize target species"
+            sub="Leaderboards and trophy counts follow your species selection."
+            {...gateProps}
+          />
+        )}
+      </div>
 
-      <SavedBoatsSection navigate={navigate} />
+      {/* ── 4. Alerts ──────────────────────────────────────────── */}
+      <div className="acct-card">
+        <div className="acct-sec-t">Alerts &amp; notifications</div>
+        <div className="acct-sec-d">Tell us what's worth a ping.</div>
 
-      {/* Sign out */}
-      <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
-        <button onClick={resetAll} style={{
-          background: 'none', border: '1px solid var(--ss-border)', borderRadius: 6,
-          padding: '7px 16px', cursor: 'pointer',
-          font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)',
-        }}>
-          Reset to defaults
-        </button>
-        <button onClick={signOut} style={{
-          background: 'none', border: '1px solid var(--ss-border)', borderRadius: 6,
-          padding: '7px 16px', cursor: 'pointer',
-          font: '500 13px/20px var(--ss-font-sans)', color: 'var(--ss-slate)',
-        }}>
-          <i className="fa-solid fa-right-from-bracket" style={{ marginRight: 6, fontSize: 12 }}/>
-          Sign Out
-        </button>
+        {isSignedIn ? (
+          <React.Fragment>
+            {[
+              { key: 'boatFinished', t: 'A boat you follow finished a trip',
+                s: 'Get the fish counts as soon as a followed boat reports in' },
+              { key: 'boatNewTrip',  t: 'A boat you follow scheduled a new trip',
+                s: 'When a followed boat posts a new trip you can book' },
+              { key: 'topTripSpots', t: 'A top trip opens spots',
+                s: 'Open spots on a high-performing upcoming trip' },
+              { key: 'weeklyReport', t: 'Weekly bite report',
+                s: 'A Friday digest of the week on the water' },
+            ].map(function(row) {
+              return (
+                <div key={row.key} className="acct-row" role="group" aria-label={row.t}>
+                  <div className="acct-row-l">
+                    <div className="acct-row-t">{row.t}</div>
+                    <div className="acct-row-s">{row.s}</div>
+                  </div>
+                  <SettingsToggle
+                    on={!!alerts[row.key]}
+                    onChange={function(val) { setAlert(row.key, val); }}
+                  />
+                </div>
+              );
+            })}
+
+            <div className="acct-field" style={{ borderTop: '1px solid var(--line)', marginTop: 6 }}>
+              <label className="acct-field-l" htmlFor="acct-delivery-seg">
+                <div className="acct-field-t">Deliver by</div>
+              </label>
+              <SegmentedControl
+                value={alerts.deliveryMethod || 'email'}
+                onChange={function(v) { setAlert('deliveryMethod', v); }}
+                options={[
+                  { value: 'email', label: 'Email' },
+                  { value: 'push',  label: 'Push'  },
+                ]}
+              />
+            </div>
+          </React.Fragment>
+        ) : (
+          <GatePrompt
+            title="Sign in to set up alerts"
+            sub="Get notified when your boats report in or top trips open spots."
+            {...gateProps}
+          />
+        )}
+      </div>
+
+      {/* ── 5. Preferences ────────────────────────────────────── */}
+      <div className="acct-card">
+        <div className="acct-sec-t">Preferences</div>
+        <div className="acct-sec-d">Display &amp; defaults — saved for your next visit.</div>
+
+        <div className="acct-field">
+          <label className="acct-field-l" htmlFor="acct-region-select">
+            <div className="acct-field-t">Region</div>
+          </label>
+          <select
+            id="acct-region-select"
+            className="acct-select"
+            value={regionChoice}
+            onChange={function(e) { setRegion(e.target.value); }}
+          >
+            <option value="san_diego">San Diego</option>
+            <option value="oc_la" disabled={!(window.FEATURES && window.FEATURES.SHOW_OCLA)}>
+              OC / LA (soon)
+            </option>
+          </select>
+        </div>
+
+        <div className="acct-field">
+          <div className="acct-field-l">
+            <div className="acct-field-t">Trip type focus</div>
+            <div className="acct-field-s">how leaderboards weight trips</div>
+          </div>
+          <SegmentedControl
+            value={settings.tripTypeFilter || 'all'}
+            onChange={function(v) { setPref('tripTypeFilter', v); }}
+            options={[
+              { value: 'all',      label: 'All'        },
+              { value: 'local',    label: 'Local / day' },
+              { value: 'multiday', label: 'Multi-day'  },
+            ]}
+          />
+        </div>
+
+        <div className="acct-field">
+          <label className="acct-field-l">
+            <div className="acct-field-t">Water temp</div>
+          </label>
+          <SegmentedControl
+            value={(settings.unitSystem === 'metric') ? 'c' : 'f'}
+            onChange={function(v) { setPref('unitSystem', v === 'c' ? 'metric' : 'imperial'); }}
+            options={[{ value: 'f', label: '°F' }, { value: 'c', label: '°C' }]}
+          />
+        </div>
+
+        <div className="acct-field">
+          <label className="acct-field-l">
+            <div className="acct-field-t">Wind</div>
+          </label>
+          <SegmentedControl
+            value={settings.windUnit || 'kt'}
+            onChange={function(v) { setPref('windUnit', v); }}
+            options={[{ value: 'kt', label: 'kt' }, { value: 'mph', label: 'mph' }]}
+          />
+        </div>
+
+        <div className="acct-field">
+          <label className="acct-field-l">
+            <div className="acct-field-t">Density</div>
+          </label>
+          <SegmentedControl
+            value={settings.density || 'comfortable'}
+            onChange={function(v) { setPref('density', v); }}
+            options={[
+              { value: 'comfortable', label: 'Comfortable' },
+              { value: 'compact',     label: 'Compact'     },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* ── 6. Your data ──────────────────────────────────────── */}
+      <div className="acct-card">
+        <div className="acct-sec-t">Your data</div>
+        <div className="acct-sec-d">Export leaderboards and boat history — free.</div>
+
+        {isSignedIn ? (
+          <button className="acct-btn" onClick={_exportCSV}>
+            ⬇ Export CSV
+          </button>
+        ) : (
+          <GatePrompt
+            title="Sign in to export data"
+            sub="Download leaderboards and boat history as a spreadsheet."
+            {...gateProps}
+          />
+        )}
       </div>
     </div>
   );
