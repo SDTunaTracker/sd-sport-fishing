@@ -113,17 +113,29 @@ function fetchConditionsData(type) {
   return Promise.all(fetches).then(function(r) { return r.filter(Boolean); });
 }
 
+function _withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise(function(_, reject) {
+      setTimeout(function() { reject(new Error((label || 'fetch') + ' timed out')); }, ms);
+    }),
+  ]);
+}
+
 function fetchTidesData() {
   var d = new Date();
   var dt = String(d.getFullYear()) +
     String(d.getMonth() + 1).padStart(2, '0') +
     String(d.getDate()).padStart(2, '0');
-  return fetch(
-    'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?' +
-    'station=9410230&product=predictions&datum=MLLW&time_zone=lst_ldt' +
-    '&interval=hilo&units=english&application=tunatracker&format=json' +
-    '&begin_date=' + dt + '&end_date=' + dt
-  ).then(function(r) { return r.json(); });
+  return _withTimeout(
+    fetch(
+      'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?' +
+      'station=9410230&product=predictions&datum=MLLW&time_zone=lst_ldt' +
+      '&interval=hilo&units=english&application=tunatracker&format=json' +
+      '&begin_date=' + dt + '&end_date=' + dt
+    ).then(function(r) { return r.json(); }),
+    6000, 'tides'
+  );
 }
 
 // ── Wind particle grid (leaflet-velocity) ─────────────────────────────────────
@@ -232,7 +244,7 @@ function getCachedWindGrid() {
     var c = JSON.parse(localStorage.getItem(_WIND_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _WIND_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _fetchWindGrid()
+  return _withTimeout(_fetchWindGrid(), 6000, 'wind')
     .then(function(data) {
       try { localStorage.setItem(_WIND_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
       return data;
@@ -326,7 +338,7 @@ function getCachedCurrentGrid() {
     var c = JSON.parse(localStorage.getItem(_CURR_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _CURR_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _fetchCurrentGrid()
+  return _withTimeout(_fetchCurrentGrid(), 6000, 'currents')
     .then(function(data) {
       try { localStorage.setItem(_CURR_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
       return data;
@@ -392,7 +404,7 @@ function _fetchWindSeries14d() {
 function getCachedWindSeries14d() {
   if (_windSeries14d && Date.now() - _windSeries14d.ts < _SERIES_TTL)
     return Promise.resolve(_windSeries14d);
-  return _fetchWindSeries14d().then(function(d) {
+  return _withTimeout(_fetchWindSeries14d(), 6000, 'wind series').then(function(d) {
     _windSeries14d = { ts: Date.now(), frames: d.frames, hours: d.hours };
     return _windSeries14d;
   });
@@ -425,7 +437,7 @@ function _fetchWavesSeries7d() {
 function getCachedWavesSeries7d() {
   if (_wavesSeries7d && Date.now() - _wavesSeries7d.ts < _SERIES_TTL)
     return Promise.resolve(_wavesSeries7d);
-  return _fetchWavesSeries7d().then(function(d) {
+  return _withTimeout(_fetchWavesSeries7d(), 6000, 'waves series').then(function(d) {
     _wavesSeries7d = { ts: Date.now(), frames: d.frames, hours: d.hours, periods: d.periods };
     return _wavesSeries7d;
   });
@@ -469,7 +481,7 @@ function getCachedSwellGrid() {
     var c = JSON.parse(localStorage.getItem(_SWELL_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _SWELL_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _fetchSwellGrid().then(function(data) {
+  return _withTimeout(_fetchSwellGrid(), 6000, 'swell').then(function(data) {
     try { localStorage.setItem(_SWELL_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
     return data;
   });
@@ -525,7 +537,7 @@ function getCachedPressureGrid() {
     var c = JSON.parse(localStorage.getItem(_PRESS_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _PRESS_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _fetchPressureGrid().then(function(data) {
+  return _withTimeout(_fetchPressureGrid(), 6000, 'pressure').then(function(data) {
     try { localStorage.setItem(_PRESS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
     return data;
   });
@@ -710,7 +722,7 @@ function _getCachedMURRasterGrid() {
   function attempt(back) {
     if (back > 9) return Promise.reject(new Error('MUR: no data in last 9 days'));
     var d = new Date(today); d.setDate(d.getDate() - back);
-    return _fetchMURRasterGrid(d.toISOString().slice(0,10))
+    return _withTimeout(_fetchMURRasterGrid(d.toISOString().slice(0,10)), 10000, 'MUR SST')
       .then(function(data) {
         try {
           localStorage.setItem(_MUR_RASTER_CACHE_KEY, JSON.stringify({
@@ -1199,10 +1211,13 @@ function fetchBoatPositions() {
   var url = workerUrl
     ? workerUrl.replace(/\/$/, '') + '/vessels'
     : '/ais_positions.json';
-  return fetch(url, { cache: 'no-store' }).then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  });
+  return _withTimeout(
+    fetch(url, { cache: 'no-store' }).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }),
+    6000, 'boats'
+  );
 }
 
 function boatSpeedColor(kts) {
@@ -1653,6 +1668,7 @@ function ChartsView({ navigate, settings }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [tidesData, setTidesData]   = React.useState(null);
   const [condLoading, setCondLoading] = React.useState(false);
+  const [layerErrors, setLayerErrors] = React.useState({ wind: false, waves: false, currents: false, pressure: false, sst: false, tides: false });
   const [boatPositions, setBoats]   = React.useState([]);
   const [boatsError, setBoatsError] = React.useState(false);
   const [sliderStep, setSliderStep] = React.useState(function() { return new Date().getUTCHours(); });
@@ -1702,6 +1718,23 @@ function ChartsView({ navigate, settings }) {
     var t = setTimeout(function() { setGeoNote(null); }, 4500);
     return function() { clearTimeout(t); };
   }, [geoNote]);
+
+  function setLayerError(name, val) {
+    setLayerErrors(function(p) { var n = Object.assign({}, p); n[name] = val; return n; });
+  }
+
+  React.useEffect(function() {
+    function onVis() {
+      if (document.hidden) return;
+      // Re-trigger particle rendering when tab becomes visible again (rAF resumes)
+      [windVelRef, wavesVelRef, currentsVelRef].forEach(function(ref) {
+        if (!ref.current || !mapInstance.current) return;
+        try { if (typeof ref.current._startAnimation === 'function') ref.current._startAnimation(); } catch(e) {}
+      });
+    }
+    document.addEventListener('visibilitychange', onVis);
+    return function() { document.removeEventListener('visibilitychange', onVis); };
+  }, []);
 
   // Initialize map once
   React.useEffect(function() {
@@ -1876,6 +1909,7 @@ function ChartsView({ navigate, settings }) {
 
     if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
     if (baseLayer === 'sst' && sstModeRef.current === 'raster') {
+      setLayerError('sst', false);
       setCondLoading(true);
       _getCachedMURRasterGrid().then(function(grid) {
         setCondLoading(false);
@@ -1884,7 +1918,7 @@ function ChartsView({ navigate, settings }) {
         var ovs = _buildMUROverlays(grid);
         ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
-      }).catch(function() { if (!cancelled) setCondLoading(false); });
+      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); } });
     } else if (baseLayer) {
       var overlay = getOverlayLayer(baseLayer, sstModeRef.current);
       if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
@@ -1905,6 +1939,7 @@ function ChartsView({ navigate, settings }) {
     murGridRef.current = null;
     setSstReadout(null);
     if (sstMode === 'raster') {
+      setLayerError('sst', false);
       setCondLoading(true);
       _getCachedMURRasterGrid().then(function(grid) {
         setCondLoading(false);
@@ -1913,8 +1948,9 @@ function ChartsView({ navigate, settings }) {
         var ovs = _buildMUROverlays(grid);
         ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
-      }).catch(function() { if (!cancelled) setCondLoading(false); });
+      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); } });
     } else {
+      setLayerError('sst', false);
       var overlay = getOverlayLayer('sst', sstMode);
       if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
     }
@@ -1947,6 +1983,7 @@ function ChartsView({ navigate, settings }) {
     if (!mapInstance.current) return;
     var cancelled = false;
     if (condLayers.wind) {
+      setLayerError('wind', false);
       if (typeof L.velocityLayer === 'function') {
         setCondLoading(true);
         getCachedWindGrid().then(function(data) {
@@ -1970,11 +2007,12 @@ function ChartsView({ navigate, settings }) {
             setSliderSeries(Object.assign({ type: 'wind' }, series));
             setSliderStep(initStep);
           }).catch(function() { if (!cancelled) setSliderLoading(false); });
-        }).catch(function() { if (!cancelled) setCondLoading(false); });
+        }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('wind', true); } });
       }
     } else {
       if (windVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
       windDataRef.current = null;
+      setLayerError('wind', false);
       setSliderSeries(function(prev) { return (prev && prev.type === 'wind') ? null : prev; });
     }
     return function() { cancelled = true; };
@@ -1985,6 +2023,7 @@ function ChartsView({ navigate, settings }) {
     if (!mapInstance.current) return;
     var cancelled = false;
     if (condLayers.waves) {
+      setLayerError('waves', false);
       if (typeof L.velocityLayer === 'function') {
         setCondLoading(true);
         getCachedSwellGrid().then(function(result) {
@@ -2000,7 +2039,7 @@ function ChartsView({ navigate, settings }) {
           wavesVelRef.current = vl;
           wavesDataRef.current = result.velocityData;
           if (result.avgPeriod > 0) setSwellPeriod(result.avgPeriod);
-        }).catch(function() { if (!cancelled) setCondLoading(false); });
+        }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('waves', true); } });
         setSliderLoading(true);
         getCachedWavesSeries7d().then(function(series) {
           setSliderLoading(false);
@@ -2042,6 +2081,7 @@ function ChartsView({ navigate, settings }) {
       if (wavesVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(wavesVelRef.current); wavesVelRef.current = null; }
       if (condGroupRef.current && mapInstance.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
       wavesDataRef.current = null;
+      setLayerError('waves', false);
       setSwellPeriod(null);
       setSliderSeries(function(prev) { return (prev && prev.type === 'waves') ? null : prev; });
     }
@@ -2053,6 +2093,7 @@ function ChartsView({ navigate, settings }) {
     if (!mapInstance.current) return;
     var cancelled = false;
     if (condLayers.currents) {
+      setLayerError('currents', false);
       if (typeof L.velocityLayer === 'function') {
         setCondLoading(true);
         getCachedCurrentGrid().then(function(data) {
@@ -2067,11 +2108,12 @@ function ChartsView({ navigate, settings }) {
           vl.addTo(mapInstance.current);
           currentsVelRef.current = vl;
           currentsDataRef.current = data;
-        }).catch(function() { if (!cancelled) setCondLoading(false); });
+        }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('currents', true); } });
       }
     } else {
       if (currentsVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(currentsVelRef.current); currentsVelRef.current = null; }
       currentsDataRef.current = null;
+      setLayerError('currents', false);
     }
     return function() { cancelled = true; };
   }, [condLayers.currents]);
@@ -2081,6 +2123,7 @@ function ChartsView({ navigate, settings }) {
     if (!mapInstance.current) return;
     var cancelled = false;
     if (condLayers.pressure) {
+      setLayerError('pressure', false);
       setCondLoading(true);
       getCachedPressureGrid().then(function(data) {
         setCondLoading(false);
@@ -2089,7 +2132,7 @@ function ChartsView({ navigate, settings }) {
         pressureLayerRef.current = _buildIsobarLayer(data.grid, data.lats, data.lons);
         pressureLayerRef.current.addTo(mapInstance.current);
         pressureDataRef.current = data;
-      }).catch(function() { if (!cancelled) setCondLoading(false); });
+      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('pressure', true); } });
     } else {
       if (pressureLayerRef.current && mapInstance.current) {
         mapInstance.current.removeLayer(pressureLayerRef.current);
@@ -2103,13 +2146,15 @@ function ChartsView({ navigate, settings }) {
   // Tides overlay
   React.useEffect(function() {
     if (showTides) {
+      setLayerError('tides', false);
       setCondLoading(true);
       fetchTidesData().then(function(data) {
         setCondLoading(false);
         setTidesData(data);
-      }).catch(function() { setCondLoading(false); });
+      }).catch(function() { setCondLoading(false); setLayerError('tides', true); });
     } else {
       setTidesData(null);
+      setLayerError('tides', false);
     }
   }, [showTides]);
 
@@ -2210,7 +2255,17 @@ function ChartsView({ navigate, settings }) {
   function handleSelect(wp) { if (mapInstance.current) mapInstance.current.setView([wp.lat, wp.lng], 9, { animate: true }); }
 
   function onCond(id, val) {
-    setCondLayers(function(prev) { var n = Object.assign({}, prev); n[id] = val; return n; });
+    setCondLayers(function(prev) {
+      var n = Object.assign({}, prev);
+      n[id] = val;
+      // Only one velocity layer at a time — enabling one evicts the others
+      if (val && (id === 'wind' || id === 'waves' || id === 'currents')) {
+        if (id !== 'wind')     n.wind = false;
+        if (id !== 'waves')    n.waves = false;
+        if (id !== 'currents') n.currents = false;
+      }
+      return n;
+    });
   }
 
   var workerReady   = !!(window.VESSEL_WORKER_URL || '').trim();
@@ -2276,6 +2331,17 @@ function ChartsView({ navigate, settings }) {
               <div className="cond-loading-pill">
                 {baseLayer === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
               </div>
+            </div>
+          )}
+
+          {Object.keys(layerErrors).some(function(k) { return layerErrors[k]; }) && (
+            <div className="layer-error-pills">
+              {layerErrors.sst      && <span className="layer-error-pill">SST unavailable</span>}
+              {layerErrors.wind     && <span className="layer-error-pill">Wind unavailable</span>}
+              {layerErrors.waves    && <span className="layer-error-pill">Swell unavailable</span>}
+              {layerErrors.currents && <span className="layer-error-pill">Currents unavailable</span>}
+              {layerErrors.pressure && <span className="layer-error-pill">Pressure unavailable</span>}
+              {layerErrors.tides    && <span className="layer-error-pill">Tides unavailable</span>}
             </div>
           )}
 

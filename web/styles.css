@@ -4666,6 +4666,31 @@ a.app-footer-link:hover { color: var(--accent); }
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
+/* Layer error pills */
+.layer-error-pills {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 900;
+}
+
+.layer-error-pill {
+  background: rgba(30, 10, 10, 0.82);
+  color: #fca5a5;
+  font: 600 12px var(--mono, 'DM Mono', monospace);
+  padding: 5px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(239,68,68,0.35);
+  white-space: nowrap;
+}
+
 /* ── Wave 1: Tides panel ────────────────────────────────────────────────── */
 
 .tides-panel {
