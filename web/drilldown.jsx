@@ -115,7 +115,10 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
             {!profile?.photoUrl && <ReviewBadge boat={boat}/>}
           </div>
           <div className="sub">
-            {meta.landing} · {meta.lengths.join(', ')} · {allTrips.length} trips in scope
+            <button className="sub-landing-link" onClick={() => navigate('landing', { landing: meta.landing })}>
+              {meta.landing}
+            </button>
+            {' · '}{meta.lengths.join(', ')} · {allTrips.length} trips in scope
             {profile?.lengthFt && ` · ${profile.lengthFt} ft`}
             {profile?.yearBuilt && ` · Built ${profile.yearBuilt}`}
           </div>
@@ -124,11 +127,21 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
           <button className="btn-save-boat" onClick={function() { window.toggleSavedBoat(boat); }}>
             {isSaved ? '✓ Saved' : '⭐ Save'}
           </button>
+          <button className="btn ghost" onClick={() => navigate('tripplanner')}
+                  style={{width:'100%', marginBottom:6}}>
+            <i className="fa-solid fa-arrow-up-right-from-square"></i> Upcoming Trips
+          </button>
+          <button className="btn ghost" onClick={() => navigate('analytics', { subtab: 'headtohead' })}
+                  style={{width:'100%', marginBottom:6}}>
+            Head-to-Head
+          </button>
           <button className="btn primary" onClick={() => setDetailTab('reviews')}
                   style={{background:'#0F4C81', color:'#fff', border:'none', width:'100%', marginBottom:6}}>
             Write a Review
           </button>
-          <button className="btn primary"><i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip</button>
+          <button className="btn primary" onClick={() => navigate('tripplanner')}>
+            <i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip
+          </button>
         </div>
       </div>
 

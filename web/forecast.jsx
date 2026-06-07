@@ -1018,7 +1018,7 @@ function TodayHeroSection({ today, inshore, offshore }) {
 }
 
 // ─── 7-Day Section (Section 2) ───────────────────────────────────────────────
-function SevenDaySection({ inDays, offDays }) {
+function SevenDaySection({ inDays, offDays, navigate }) {
   const [tab, setTab] = useS('offshore');
   const [selIdx, setSelIdx] = useS(0);
   const days = tab === 'inshore' ? inDays : offDays;
@@ -1073,6 +1073,11 @@ function SevenDaySection({ inDays, offDays }) {
             {selDay.wind_speed != null && <span>💨 {Math.round(selDay.wind_speed)}kn</span>}
             <span>{moonEmoji(selDay.moon_phase)}</span>
           </div>
+          {selDay.overall_score >= 6.5 && navigate && (
+            <button className="fc-plan-trip-btn" onClick={() => navigate('tripplanner')}>
+              Plan a trip this day →
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -1215,7 +1220,7 @@ function ForecastView({ navigate }) {
       <FleetDepartures date={today.date} navigate={navigate}/>
 
       {/* Section 2: 7-day outlook */}
-      <SevenDaySection inDays={inDays} offDays={offDays}/>
+      <SevenDaySection inDays={inDays} offDays={offDays} navigate={navigate}/>
 
       {/* Section 3: Species target */}
       <SpeciesTargetSection day={today}/>

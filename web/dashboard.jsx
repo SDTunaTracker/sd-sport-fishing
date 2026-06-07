@@ -1025,7 +1025,9 @@ function HomeView({ navigate, settings, regions }) {
               <button className="ch-bb-cta" onClick={() => navigate('tripplanner')}>
                 Book this trip →
               </button>
-              <div className="ch-bb-sub">Free to compare every open trip</div>
+              <button className="ch-bb-sub ch-bb-research" onClick={() => navigate('boat', { boat: topTrip.boat })}>
+                Research {topTrip.boat} →
+              </button>
             </div>
           </div>
         </div>

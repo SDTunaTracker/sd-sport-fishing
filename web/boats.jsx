@@ -344,11 +344,12 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
             {mapLandings.map(meta => {
               const cnt = (byLanding[meta.name] || []).length;
               return (
-                <div key={meta.name} className="blanding-chip">
+                <button key={meta.name} className="blanding-chip blanding-chip-link"
+                  onClick={() => navigate('landing', { landing: meta.name })}>
                   <span className="blc-name">{meta.name}</span>
                   {meta.googleRating && <span className="blc-rating">⭐ {meta.googleRating}</span>}
                   <span className="blc-count">{cnt} boat{cnt !== 1 ? 's' : ''}</span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -369,7 +370,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
               <div key={lname} className="boats-landing-section">
                 <div className="boats-landing-header">
                   <div className="blh-left">
-                    <span className="blh-name">{lname}</span>
+                    <button className="blh-name blh-name-link" onClick={() => navigate('landing', { landing: lname })}>{lname}</button>
                     <span className="blh-count">{boats.length} boat{boats.length !== 1 ? 's' : ''}</span>
                   </div>
                   {meta && meta.googleRating && (
@@ -446,7 +447,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                       }}>{i + 1}</span>
                     </td>
                     <td><b>{b.boat}</b></td>
-                    <td>{b.landing}</td>
+                    <td><button className="sub-landing-link" onClick={e => { e.stopPropagation(); navigate('landing', { landing: b.landing }); }}>{b.landing}</button></td>
                     <td className="num">{fmt.n(b.tripCount)}</td>
                     <td className="num">{fmt.tpa(b.avgTPAPerDay)}</td>
                     <td className="num">{b.winRate != null ? `${Math.round(b.winRate * 100)}%` : '—'}</td>
