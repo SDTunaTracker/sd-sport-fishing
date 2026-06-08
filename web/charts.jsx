@@ -842,6 +842,67 @@ function _sampleVelGrid(pair, latlng) {
   return { speed: speed, toDir: toDir, fromDir: (toDir + 180) % 360 };
 }
 
+// ── Direction Indicator: static arrow renderer ─────────────────────────────────
+// A non-animated alternative to the particle layer — a screen-space grid of
+// rotated arrows colored by speed, sampled from the same [u,v] velocity grid.
+function _speedColor(scaleArr, t) {
+  if (!scaleArr || !scaleArr.length) return '#ffffff';
+  var i = Math.max(0, Math.min(scaleArr.length - 1, Math.round(t * (scaleArr.length - 1))));
+  return scaleArr[i];
+}
+function _condArrowScale(type) {
+  return type === 'wind' ? WIND_PARTICLE_COLORS : type === 'waves' ? WAVE_PARTICLE_COLORS : CURRENT_PARTICLE_COLORS;
+}
+var _COND_ARROW_MAX = { wind: 35, waves: 3.5, currents: 1.0 };
+
+function _condVelOptions(type, data) {
+  var base = { displayValues: true, data: data };
+  if (type === 'wind') return Object.assign(base, {
+    displayOptions: { velocityType: 'Wind', position: 'bottomleft', emptyString: 'No wind data', angleConvention: 'bearingCW', speedUnit: 'kt' },
+    maxVelocity: 35, velocityScale: 0.008, particleAge: 60, lineWidth: 1.8, particleMultiplier: 0.008, frameRate: 30, colorScale: WIND_PARTICLE_COLORS, opacity: 0.95 });
+  if (type === 'waves') return Object.assign(base, {
+    displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
+    maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90, lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92 });
+  return Object.assign(base, {
+    displayOptions: { velocityType: 'Ocean Current', position: 'bottomleft', emptyString: 'No current data', angleConvention: 'bearingCW', speedUnit: 'kt' },
+    maxVelocity: 1.0, velocityScale: 0.02, particleAge: 120, lineWidth: 1.5, particleMultiplier: 0.003, colorScale: CURRENT_PARTICLE_COLORS, opacity: 0.92 });
+}
+
+// Returns a Leaflet LayerGroup that draws arrows on a screen-space grid and
+// redraws on pan/zoom. Exposes setData() so the time-slider can update it.
+function createArrowLayer(map, data, scaleArr, maxVel) {
+  var group = L.layerGroup();
+  var _data = data;
+  function draw() {
+    group.clearLayers();
+    if (!map || !_data) return;
+    var size = map.getSize();
+    var spacing = 52;
+    var cols = Math.max(2, Math.floor(size.x / spacing));
+    var rows = Math.max(2, Math.floor(size.y / spacing));
+    for (var r = 0; r <= rows; r++) {
+      for (var c = 0; c <= cols; c++) {
+        var pt = L.point((c / cols) * size.x, (r / rows) * size.y);
+        var ll = map.containerPointToLatLng(pt);
+        var s = _sampleVelGrid(_data, ll);
+        if (!s || s.speed < 0.06) continue;
+        var t = Math.min(1, s.speed / maxVel);
+        var col = _speedColor(scaleArr, t);
+        var icon = L.divIcon({
+          className: 'cond-arrow',
+          html: '<div class="cond-arrow-glyph" style="transform:rotate(' + (s.toDir - 90).toFixed(0) + 'deg);color:' + col + '">&#10148;</div>',
+          iconSize: [16, 16], iconAnchor: [8, 8],
+        });
+        L.marker(ll, { icon: icon, interactive: false, keyboard: false }).addTo(group);
+      }
+    }
+  }
+  group.setData = function(d) { _data = d; draw(); };
+  group.on('add', function() { draw(); map.on('moveend zoomend', draw); });
+  group.on('remove', function() { map.off('moveend zoomend', draw); });
+  return group;
+}
+
 // Sample the pressure scalar grid ({ grid:[row][col], lats, lons }).
 function _samplePressureGrid(p, latlng) {
   if (!p || !p.grid || !p.lats || !p.lons) return null;
@@ -1498,8 +1559,8 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 // ── LayerPanel ────────────────────────────────────────────────────────────────
 // Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
-function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode,
-                      onBase, onCond, onTides, onBoats, onCatches, onSstMode }) {
+function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode, dirMode,
+                      onBase, onCond, onTides, onBoats, onCatches, onSstMode, onDirMode }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
     { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
@@ -1554,6 +1615,20 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
           })}
         </div>
       </div>
+      {onDirMode && (condLayers.wind || condLayers.waves || condLayers.currents) && (
+        <div className="layer-group">
+          <div className="layer-group-label">Direction Indicator</div>
+          <div className="layer-group-row">
+            {[{ id: 'particle', label: 'Particle' }, { id: 'arrow', label: 'Arrow' }, { id: 'none', label: 'None' }].map(function(d) {
+              return (
+                <button key={d.id} className={'layer-btn' + ((dirMode || 'particle') === d.id ? ' active' : '')}
+                  onClick={function() { onDirMode(d.id); }}>{d.label}</button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="layer-group">
         <div className="layer-group-label">Overlays</div>
         <div className="layer-group-row">
@@ -1774,6 +1849,9 @@ function ChartsView({ navigate, settings }) {
   const [sstMode, setSstMode]       = React.useState(function() {
     return localStorage.getItem('tt_sst_mode') || 'raster';
   });
+  const [dirMode, setDirMode]       = React.useState(function() {
+    return localStorage.getItem('tt_dir_mode') || 'particle';
+  });
   const [waypoints, setWaypoints]   = React.useState(loadWaypoints);
   const [showModal, setShowModal]   = React.useState(false);
   const [pendingLatLng, setPending] = React.useState(null);
@@ -1808,6 +1886,7 @@ function ChartsView({ navigate, settings }) {
   const condLayersRef    = React.useRef(condLayers);
   const baseLyrRef       = React.useRef(baseLayer);
   const sstModeRef       = React.useRef(sstMode);
+  const dirModeRef       = React.useRef(dirMode);
   const waypointMarkers  = React.useRef({});
   const murGridRef       = React.useRef(null);
   const murSSTLayerRef   = React.useRef(null);
@@ -1828,6 +1907,10 @@ function ChartsView({ navigate, settings }) {
   React.useEffect(function() { condLayersRef.current = condLayers; }, [condLayers]);
   React.useEffect(function() { baseLyrRef.current = baseLayer; }, [baseLayer]);
   React.useEffect(function() { sstModeRef.current = sstMode; }, [sstMode]);
+  React.useEffect(function() {
+    dirModeRef.current = dirMode;
+    try { localStorage.setItem('tt_dir_mode', dirMode); } catch (e) {}
+  }, [dirMode]);
   React.useEffect(function() { unitSystemRef.current = unitSystem; }, [unitSystem]);
   React.useEffect(function() { swellPeriodRef.current = swellPeriod; }, [swellPeriod]);
   React.useEffect(function() {
@@ -2130,25 +2213,30 @@ function ChartsView({ navigate, settings }) {
     };
   }, []);
 
+  // Build the active representation (particle / arrow / none) for a vector layer.
+  function makeCondLayer(type, data) {
+    if (!data || !mapInstance.current) return null;
+    var mode = dirModeRef.current || 'particle';
+    if (mode === 'none') return null;
+    if (mode === 'arrow') return createArrowLayer(mapInstance.current, data, _condArrowScale(type), _COND_ARROW_MAX[type]);
+    if (typeof L.velocityLayer !== 'function') return null;
+    return L.velocityLayer(_condVelOptions(type, data));
+  }
+
   // Wind condition layer
   React.useEffect(function() {
     if (!mapInstance.current) return;
     var cancelled = false;
     if (condLayers.wind) {
       setLayerError('wind', false);
-      if (typeof L.velocityLayer === 'function') {
+      {
         setCondLoading(true);
         getCachedWindGrid().then(function(data) {
           setCondLoading(false);
           if (cancelled || !mapInstance.current || !condLayersRef.current.wind) return;
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: { velocityType: 'Wind', position: 'bottomleft', emptyString: 'No wind data', angleConvention: 'bearingCW', speedUnit: 'kt' },
-            data: data, maxVelocity: 35, velocityScale: 0.008, particleAge: 60,
-            lineWidth: 1.8, particleMultiplier: 0.008, frameRate: 30,
-            colorScale: WIND_PARTICLE_COLORS, opacity: 0.95,
-          });
-          vl.addTo(mapInstance.current);
+          if (windVelRef.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
+          var vl = makeCondLayer('wind', data);
+          if (vl) vl.addTo(mapInstance.current);
           windVelRef.current = vl;
           windDataRef.current = data;
           setSliderLoading(true);
@@ -2167,8 +2255,11 @@ function ChartsView({ navigate, settings }) {
       setLayerError('wind', false);
       setSliderSeries(function(prev) { return (prev && prev.type === 'wind') ? null : prev; });
     }
-    return function() { cancelled = true; };
-  }, [condLayers.wind]);
+    return function() {
+      cancelled = true;
+      if (windVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
+    };
+  }, [condLayers.wind, dirMode]);
 
   // Waves condition layer
   React.useEffect(function() {
@@ -2176,18 +2267,14 @@ function ChartsView({ navigate, settings }) {
     var cancelled = false;
     if (condLayers.waves) {
       setLayerError('waves', false);
-      if (typeof L.velocityLayer === 'function') {
+      {
         setCondLoading(true);
         getCachedSwellGrid().then(function(result) {
           setCondLoading(false);
           if (cancelled || !mapInstance.current || !condLayersRef.current.waves) return;
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
-            data: result.velocityData, maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90,
-            lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92,
-          });
-          vl.addTo(mapInstance.current);
+          if (wavesVelRef.current) { mapInstance.current.removeLayer(wavesVelRef.current); wavesVelRef.current = null; }
+          var vl = makeCondLayer('waves', result.velocityData);
+          if (vl) vl.addTo(mapInstance.current);
           wavesVelRef.current = vl;
           wavesDataRef.current = result.velocityData;
           if (result.avgPeriod > 0) setSwellPeriod(result.avgPeriod);
@@ -2198,20 +2285,12 @@ function ChartsView({ navigate, settings }) {
           if (cancelled || !mapInstance.current || !condLayersRef.current.waves) return;
           var initStep = new Date().getUTCHours();
           var tagged = Object.assign({ type: 'waves' }, series);
+          var frame = tagged.frames[initStep] || tagged.frames[0];
           if (wavesVelRef.current && typeof wavesVelRef.current.setData === 'function') {
-            var frame = tagged.frames[initStep] || tagged.frames[0];
             try { wavesVelRef.current.setData(frame); } catch(e) {}
-          } else if (typeof L.velocityLayer === 'function') {
-            if (condGroupRef.current) { mapInstance.current.removeLayer(condGroupRef.current); condGroupRef.current = null; }
-            var frame2 = tagged.frames[initStep] || tagged.frames[0];
-            var vl2 = L.velocityLayer({
-              displayValues: true,
-              displayOptions: { velocityType: 'Swell', position: 'bottomleft', emptyString: 'No swell data', angleConvention: 'bearingCW', speedUnit: 'm' },
-              data: frame2, maxVelocity: 3.5, velocityScale: 0.012, particleAge: 90,
-              lineWidth: 2.0, particleMultiplier: 0.004, colorScale: WAVE_PARTICLE_COLORS, opacity: 0.92,
-            });
-            vl2.addTo(mapInstance.current);
-            wavesVelRef.current = vl2;
+          } else if (frame) {
+            var vl2 = makeCondLayer('waves', frame);
+            if (vl2) { vl2.addTo(mapInstance.current); wavesVelRef.current = vl2; }
           }
           if (tagged.periods && tagged.periods[initStep] > 0) setSwellPeriod(tagged.periods[initStep]);
           if (!condLayersRef.current.wind) {
@@ -2219,15 +2298,6 @@ function ChartsView({ navigate, settings }) {
             setSliderStep(initStep);
           }
         }).catch(function() { if (!cancelled) setSliderLoading(false); });
-      } else {
-        setCondLoading(true);
-        fetchConditionsData('waves').then(function(data) {
-          setCondLoading(false);
-          if (cancelled || !mapInstance.current) return;
-          var layer = buildConditionsLayer('waves', data);
-          layer.addTo(mapInstance.current);
-          condGroupRef.current = layer;
-        }).catch(function() { if (!cancelled) setCondLoading(false); });
       }
     } else {
       if (wavesVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(wavesVelRef.current); wavesVelRef.current = null; }
@@ -2237,8 +2307,11 @@ function ChartsView({ navigate, settings }) {
       setSwellPeriod(null);
       setSliderSeries(function(prev) { return (prev && prev.type === 'waves') ? null : prev; });
     }
-    return function() { cancelled = true; };
-  }, [condLayers.waves]);
+    return function() {
+      cancelled = true;
+      if (wavesVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(wavesVelRef.current); wavesVelRef.current = null; }
+    };
+  }, [condLayers.waves, dirMode]);
 
   // Currents condition layer
   React.useEffect(function() {
@@ -2246,18 +2319,14 @@ function ChartsView({ navigate, settings }) {
     var cancelled = false;
     if (condLayers.currents) {
       setLayerError('currents', false);
-      if (typeof L.velocityLayer === 'function') {
+      {
         setCondLoading(true);
         getCachedCurrentGrid().then(function(data) {
           setCondLoading(false);
           if (cancelled || !mapInstance.current || !condLayersRef.current.currents) return;
-          var vl = L.velocityLayer({
-            displayValues: true,
-            displayOptions: { velocityType: 'Ocean Current', position: 'bottomleft', emptyString: 'No current data', angleConvention: 'bearingCW', speedUnit: 'kt' },
-            data: data, maxVelocity: 1.0, velocityScale: 0.02, particleAge: 120,
-            lineWidth: 1.5, particleMultiplier: 0.003, colorScale: CURRENT_PARTICLE_COLORS, opacity: 0.92,
-          });
-          vl.addTo(mapInstance.current);
+          if (currentsVelRef.current) { mapInstance.current.removeLayer(currentsVelRef.current); currentsVelRef.current = null; }
+          var vl = makeCondLayer('currents', data);
+          if (vl) vl.addTo(mapInstance.current);
           currentsVelRef.current = vl;
           currentsDataRef.current = data;
         }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('currents', true); } });
@@ -2267,8 +2336,11 @@ function ChartsView({ navigate, settings }) {
       currentsDataRef.current = null;
       setLayerError('currents', false);
     }
-    return function() { cancelled = true; };
-  }, [condLayers.currents]);
+    return function() {
+      cancelled = true;
+      if (currentsVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(currentsVelRef.current); currentsVelRef.current = null; }
+    };
+  }, [condLayers.currents, dirMode]);
 
   // Pressure isobar layer
   React.useEffect(function() {
@@ -2463,11 +2535,11 @@ function ChartsView({ navigate, settings }) {
           <LayerPanel
             baseLayer={baseLayer} condLayers={condLayers}
             showTides={showTides} showBoats={showBoats} showCatches={showCatches}
-            sstMode={sstMode}
+            sstMode={sstMode} dirMode={dirMode}
             onBase={setBaseLayer}
             onCond={onCond}
             onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
-            onSstMode={setSstMode}
+            onSstMode={setSstMode} onDirMode={setDirMode}
           />
         </div>
 
@@ -2553,11 +2625,11 @@ function ChartsView({ navigate, settings }) {
             <LayerPanel
               baseLayer={baseLayer} condLayers={condLayers}
               showTides={showTides} showBoats={showBoats} showCatches={showCatches}
-              sstMode={sstMode}
+              sstMode={sstMode} dirMode={dirMode}
               onBase={setBaseLayer}
               onCond={onCond}
               onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
-              onSstMode={setSstMode}
+              onSstMode={setSstMode} onDirMode={setDirMode}
             />
             <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
           </div>
