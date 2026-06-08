@@ -189,76 +189,79 @@ async def listen(duration: int, db_boats: list) -> dict:
             ],
         }))
 
-        async for raw in ws:
-            if _shutdown or loop.time() > deadline:
-                break
+        try:
+            async for raw in ws:
+                if _shutdown or loop.time() > deadline:
+                    break
 
-            total_msgs += 1
-            try:
-                data     = json.loads(raw)
-                meta     = data.get('MetaData', {})
-                mmsi     = str(meta.get('MMSI', '')).strip()
-                ais_name = (
-                    meta.get('ShipName') or
-                    data.get('Message', {}).get('ShipStaticData', {}).get('Name', '')
-                ).strip()
-                lat = meta.get('latitude')
-                lng = meta.get('longitude')
+                total_msgs += 1
+                try:
+                    data     = json.loads(raw)
+                    meta     = data.get('MetaData', {})
+                    mmsi     = str(meta.get('MMSI', '')).strip()
+                    ais_name = (
+                        meta.get('ShipName') or
+                        data.get('Message', {}).get('ShipStaticData', {}).get('Name', '')
+                    ).strip()
+                    lat = meta.get('latitude')
+                    lng = meta.get('longitude')
 
-                if not mmsi:
-                    continue
+                    if not mmsi:
+                        continue
 
-                now_iso = datetime.now(timezone.utc).isoformat()
+                    now_iso = datetime.now(timezone.utc).isoformat()
 
-                # Track all vessels seen (even without a name)
-                if mmsi not in all_vessels:
-                    all_vessels[mmsi] = {
-                        'ais_name':   ais_name or '',
-                        'lat':        lat,
-                        'lng':        lng,
-                        'reports':    1,
-                        'first_seen': now_iso,
-                        'last_seen':  now_iso,
-                    }
-                else:
-                    v = all_vessels[mmsi]
-                    v['reports']  += 1
-                    v['last_seen'] = now_iso
-                    if lat:
-                        v['lat'] = lat
-                    if lng:
-                        v['lng'] = lng
-                    if ais_name and not v['ais_name']:
-                        v['ais_name'] = ais_name
+                    # Track all vessels seen (even without a name)
+                    if mmsi not in all_vessels:
+                        all_vessels[mmsi] = {
+                            'ais_name':   ais_name or '',
+                            'lat':        lat,
+                            'lng':        lng,
+                            'reports':    1,
+                            'first_seen': now_iso,
+                            'last_seen':  now_iso,
+                        }
+                    else:
+                        v = all_vessels[mmsi]
+                        v['reports']  += 1
+                        v['last_seen'] = now_iso
+                        if lat:
+                            v['lat'] = lat
+                        if lng:
+                            v['lng'] = lng
+                        if ais_name and not v['ais_name']:
+                            v['ais_name'] = ais_name
 
-                # Only try matching once per unique MMSI+name pair
-                if not ais_name or ais_name == '@@@@@@@@@@@@@@@@@@@@':
-                    continue
-                pair_key = f"{mmsi}:{ais_name}"
-                if pair_key in seen_names:
-                    continue
-                seen_names.add(pair_key)
+                    # Only try matching once per unique MMSI+name pair
+                    if not ais_name or ais_name == '@@@@@@@@@@@@@@@@@@@@':
+                        continue
+                    pair_key = f"{mmsi}:{ais_name}"
+                    if pair_key in seen_names:
+                        continue
+                    seen_names.add(pair_key)
 
-                if not db_boats:
-                    continue
+                    if not db_boats:
+                        continue
 
-                m = best_match(ais_name, db_boats)
-                if m:
-                    boat, landing, score = m
-                    matches[mmsi] = {
-                        'name':     boat,
-                        'landing':  landing,
-                        'ais_name': ais_name,
-                        'score':    round(score, 3),
-                        'lat':      lat,
-                        'lng':      lng,
-                    }
-                    # Tag in all_vessels
-                    all_vessels[mmsi]['matched_our_boat'] = boat
-                    print(f"  MATCH  {mmsi}  AIS:{ais_name!r:30s}  DB:{boat!r}  ({score:.0%})")
+                    m = best_match(ais_name, db_boats)
+                    if m:
+                        boat, landing, score = m
+                        matches[mmsi] = {
+                            'name':     boat,
+                            'landing':  landing,
+                            'ais_name': ais_name,
+                            'score':    round(score, 3),
+                            'lat':      lat,
+                            'lng':      lng,
+                        }
+                        # Tag in all_vessels
+                        all_vessels[mmsi]['matched_our_boat'] = boat
+                        print(f"  MATCH  {mmsi}  AIS:{ais_name!r:30s}  DB:{boat!r}  ({score:.0%})")
 
-            except Exception:
-                pass
+                except Exception:
+                    pass
+        except websockets.ConnectionClosedError as e:
+            print(f"  [warn] Connection closed by server: {e} — saving {total_msgs} messages received so far")
 
     return {
         'matches':        matches,

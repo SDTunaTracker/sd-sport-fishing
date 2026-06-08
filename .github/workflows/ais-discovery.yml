@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 130
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
     permissions:
       contents: write
 
@@ -32,7 +35,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install websockets
+        run: pip install "websockets>=13,<17"
 
       - name: Run AIS discovery
         env:
