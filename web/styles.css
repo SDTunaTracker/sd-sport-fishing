@@ -4592,6 +4592,10 @@ a.app-footer-link:hover { color: var(--accent); }
   }
   .chart-scalebar { top: 44%; }
   .chart-scalebar-grad { width: 24px; height: clamp(140px, 30vh, 240px); }
+  /* Bigger, higher-contrast map controls so they don't disappear into the map */
+  .recenter-control a, .locate-control a {
+    font-size: 13px; padding: 10px 13px; background: rgba(8,18,30,0.96);
+  }
   .chart-readout-grid { gap: 7px 16px; }
   .chart-readout-dock { padding: 12px 14px 10px; }
   .layer-btn { min-height: 44px; padding: 8px 14px; }
@@ -4710,16 +4714,33 @@ a.app-footer-link:hover { color: var(--accent); }
 /* Recenter control — dark glass to match floating panel */
 .recenter-control a,
 .locate-control a {
-  padding: 6px 10px;
+  padding: 7px 11px;
   display: block;
   text-decoration: none;
   font-size: 12px;
-  font-weight: 600;
-  color: #cbd5e1;
-  background: rgba(6,14,24,0.82);
+  font-weight: 700;
+  color: #f1f5f9;
+  background: rgba(8,18,30,0.92);
   white-space: nowrap;
   cursor: pointer;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* "Where you tapped" marker — target ring + center dot at the readout point */
+.tap-marker { background: none; border: none; }
+.tap-marker-dot {
+  position: absolute; top: 7px; left: 7px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #38bdf8; border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(56,189,248,0.7), 0 1px 4px rgba(0,0,0,0.5);
+}
+.tap-marker-ring {
+  position: absolute; top: 0; left: 0;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(56,189,248,0.85);
+  background: rgba(56,189,248,0.14);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.4);
 }
 .recenter-control a:hover,
 .locate-control a:hover {

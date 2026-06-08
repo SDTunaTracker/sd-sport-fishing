@@ -1823,6 +1823,7 @@ function ChartsView({ navigate, settings }) {
   const swellPeriodRef   = React.useRef(null);
   const unitSystemRef    = React.useRef(unitSystem);
   const userLocMarkerRef = React.useRef(null);
+  const tapMarkerRef     = React.useRef(null);
 
   React.useEffect(function() { condLayersRef.current = condLayers; }, [condLayers]);
   React.useEffect(function() { baseLyrRef.current = baseLayer; }, [baseLayer]);
@@ -1872,6 +1873,28 @@ function ChartsView({ navigate, settings }) {
   React.useEffect(function() {
     if (!(condLayers.wind || condLayers.waves)) setPlaying(false);
   }, [condLayers.wind, condLayers.waves]);
+
+  // Drop a marker on the map at the point whose specs are open in the readout
+  // dock, so the user can see exactly where the values apply. Cleared on close.
+  React.useEffect(function() {
+    if (!mapInstance.current || !window.L) return;
+    if (!tapReadout) {
+      if (tapMarkerRef.current) { mapInstance.current.removeLayer(tapMarkerRef.current); tapMarkerRef.current = null; }
+      return;
+    }
+    var ll = [tapReadout.lat, tapReadout.lng];
+    if (tapMarkerRef.current) {
+      tapMarkerRef.current.setLatLng(ll);
+    } else {
+      var icon = L.divIcon({
+        className: 'tap-marker',
+        html: '<div class="tap-marker-ring"></div><div class="tap-marker-dot"></div>',
+        iconSize: [22, 22], iconAnchor: [11, 11],
+      });
+      tapMarkerRef.current = L.marker(ll, { icon: icon, zIndexOffset: 900, keyboard: false, interactive: false })
+        .addTo(mapInstance.current);
+    }
+  }, [tapReadout]);
 
   // Initialize map once
   React.useEffect(function() {
@@ -2008,6 +2031,7 @@ function ChartsView({ navigate, settings }) {
       delete window.ttOpenWaypointModal;
       delete window._ttCatchNav;
       userLocMarkerRef.current = null;
+      tapMarkerRef.current = null;
       if (mapInstance.current) { mapInstance.current.remove(); mapInstance.current = null; }
     };
   }, []);
