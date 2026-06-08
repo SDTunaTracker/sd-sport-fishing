@@ -711,32 +711,50 @@ function _fetchMURRasterGrid(dateStr) {
 }
 
 function _getCachedMURRasterGrid() {
+  // P0.2: keep stale data as fallback; P0.4: parallel fetch, cap at 6 days back.
+  var staleData = null;
   try {
     var c = JSON.parse(localStorage.getItem(_MUR_RASTER_CACHE_KEY) || 'null');
-    if (c && c.data && Date.now() - c.ts < _MUR_RASTER_CACHE_TTL) {
+    if (c && c.data) {
       c.data.values = new Float32Array(c.data.values);
-      return Promise.resolve(c.data);
+      if (Date.now() - c.ts < _MUR_RASTER_CACHE_TTL) return Promise.resolve(c.data);
+      staleData = c.data; // Expired but usable as last-resort fallback
     }
   } catch(e) {}
+
   var today = new Date();
-  function attempt(back) {
-    if (back > 9) return Promise.reject(new Error('MUR: no data in last 9 days'));
+  // Fire days 2–6 back IN PARALLEL. MUR has a ~2-day lag; ERDDAP 503s are fast
+  // so parallel cuts worst-case wall time from ~70 s → 8 s.
+  var candidates = [2, 3, 4, 5, 6].map(function(back) {
     var d = new Date(today); d.setDate(d.getDate() - back);
-    return _withTimeout(_fetchMURRasterGrid(d.toISOString().slice(0,10)), 10000, 'MUR SST')
-      .then(function(data) {
+    return _withTimeout(_fetchMURRasterGrid(d.toISOString().slice(0, 10)), 8000, 'MUR SST')
+      .then(function(data) { return data; })
+      .catch(function() { return null; });
+  });
+
+  return Promise.all(candidates).then(function(results) {
+    // Take the freshest (lowest index = most recent) successful result.
+    for (var i = 0; i < results.length; i++) {
+      if (results[i]) {
+        var best = results[i];
         try {
           localStorage.setItem(_MUR_RASTER_CACHE_KEY, JSON.stringify({
             ts: Date.now(),
-            data: { lats: data.lats, lons: data.lons, nx: data.nx, ny: data.ny,
-                    dlat: data.dlat, dlon: data.dlon, date: data.date,
-                    values: Array.from(data.values) },
+            data: { lats: best.lats, lons: best.lons, nx: best.nx, ny: best.ny,
+                    dlat: best.dlat, dlon: best.dlon, date: best.date,
+                    values: Array.from(best.values) },
           }));
         } catch(e) {}
-        return data;
-      })
-      .catch(function() { return attempt(back + 1); });
-  }
-  return attempt(3);
+        return best;
+      }
+    }
+    // All parallel fetches failed — serve stale grid rather than showing "unavailable".
+    if (staleData) {
+      staleData._stale = true;
+      return staleData;
+    }
+    throw new Error('MUR: no SST data available');
+  });
 }
 
 function _renderSSTCanvas(grid) {
@@ -1492,6 +1510,18 @@ function ForecastSlider({ series, step, onStep, loading }) {
 
 function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode,
                       onBase, onCond, onTides, onBoats, onCatches, onSstMode }) {
+  var anyCondActive    = Object.values(condLayers).some(Boolean);
+  var anyOverlayActive = showTides || showBoats || showCatches;
+  var [condOpen,    setCondOpen]    = React.useState(anyCondActive);
+  var [overlayOpen, setOverlayOpen] = React.useState(anyOverlayActive);
+
+  React.useEffect(function() {
+    if (Object.values(condLayers).some(Boolean)) setCondOpen(true);
+  }, [condLayers]);
+  React.useEffect(function() {
+    if (showTides || showBoats || showCatches) setOverlayOpen(true);
+  }, [showTides, showBoats, showCatches]);
+
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
     { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
@@ -1534,31 +1564,47 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
         )}
       </div>
       <div className="layer-group">
-        <div className="layer-group-label">Conditions</div>
-        <div className="layer-group-row">
-          {conds.map(function(c) {
-            return (
-              <button key={c.id} className={'layer-btn' + (condLayers[c.id] ? ' active' : '')}
-                onClick={function() { onCond(c.id, !condLayers[c.id]); }}>
-                <span className="layer-btn-icon">{c.icon}</span>{c.label}
-              </button>
-            );
-          })}
+        <div className="layer-group-header" onClick={function() { setCondOpen(!condOpen); }}>
+          <div className="layer-group-label">
+            Conditions
+            {anyCondActive && <span className="layer-group-active-dot" />}
+          </div>
+          <span className="layer-group-toggle">{condOpen ? '▾' : '›'}</span>
         </div>
+        {condOpen && (
+          <div className="layer-group-row">
+            {conds.map(function(c) {
+              return (
+                <button key={c.id} className={'layer-btn' + (condLayers[c.id] ? ' active' : '')}
+                  onClick={function() { onCond(c.id, !condLayers[c.id]); }}>
+                  <span className="layer-btn-icon">{c.icon}</span>{c.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div className="layer-group">
-        <div className="layer-group-label">Overlays</div>
-        <div className="layer-group-row">
-          <button className={'layer-btn' + (showTides   ? ' active' : '')} onClick={function() { onTides(!showTides); }}>
-            <span className="layer-btn-icon">🌙</span>Tides
-          </button>
-          <button className={'layer-btn' + (showCatches ? ' active' : '')} onClick={function() { onCatches(!showCatches); }}>
-            <span className="layer-btn-icon">🎣</span>Catches
-          </button>
-          <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
-            <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
-          </button>
+        <div className="layer-group-header" onClick={function() { setOverlayOpen(!overlayOpen); }}>
+          <div className="layer-group-label">
+            Overlays
+            {anyOverlayActive && <span className="layer-group-active-dot" />}
+          </div>
+          <span className="layer-group-toggle">{overlayOpen ? '▾' : '›'}</span>
         </div>
+        {overlayOpen && (
+          <div className="layer-group-row">
+            <button className={'layer-btn' + (showTides   ? ' active' : '')} onClick={function() { onTides(!showTides); }}>
+              <span className="layer-btn-icon">🌙</span>Tides
+            </button>
+            <button className={'layer-btn' + (showCatches ? ' active' : '')} onClick={function() { onCatches(!showCatches); }}>
+              <span className="layer-btn-icon">🎣</span>Catches
+            </button>
+            <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
+              <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1613,38 +1659,58 @@ function ChartsHeader({ baseLayer, condLayers, sstMode }) {
 
 // ── ChartLegend ───────────────────────────────────────────────────────────────
 
-function ChartLegend({ type, sstMode }) {
+function ChartLegend({ type, sstMode, dataInfo }) {
   var legends = {
-    sst:         { gradient: 'linear-gradient(to right, #0033CC, #0099FF, #66CCFF, #99FF66, #FFCC00, #FF6600, #CC0000)', low: 'Cool (55°F)', high: 'Warm (75°F)' },
-    chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear water', high: 'Rich bait zone' },
-    bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: 'Deep (6000 ft)', high: 'Shallow (0 ft)' },
-    wind:        { gradient: 'linear-gradient(to right, rgb(255,255,255), rgb(140,180,255), rgb(80,220,100), rgb(255,220,50), rgb(255,130,30), rgb(240,50,50), rgb(160,30,140), rgb(80,30,180))', low: 'Calm (0 kt)', high: 'Storm (60+ kt)' },
-    waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #a3e635, #eab308, #f97316, #ef4444, #a855f7)', low: 'Calm (0 m)', high: 'Rough (3+ m)' },
-    currents:    { gradient: 'linear-gradient(to right, rgb(20,60,140), rgb(100,160,220), rgb(180,230,220), rgb(250,230,150), rgb(255,150,70), rgb(220,40,40))', low: 'Slack (0 kt)', high: 'Strong (2+ kt)' },
+    sst:         { gradient: 'linear-gradient(to right, #0033CC, #0099FF, #66CCFF, #99FF66, #FFCC00, #FF6600, #CC0000)', low: '55°F', high: '75°F' },
+    chlorophyll: { gradient: 'linear-gradient(to right, #2C3E80, #3DA2FF, #6BD5C5, #B8E060, #FFD500, #FF7300, #C72200)', low: 'Clear', high: 'Rich bait' },
+    bathymetry:  { gradient: 'linear-gradient(to right, #003366, #0066CC, #66CCFF, #CCEEFF, #e8f4f8)', low: '6000 ft', high: '0 ft' },
+    wind:        { gradient: 'linear-gradient(to right, rgb(255,255,255), rgb(140,180,255), rgb(80,220,100), rgb(255,220,50), rgb(255,130,30), rgb(240,50,50), rgb(160,30,140), rgb(80,30,180))', low: '0 kt', high: '60+ kt' },
+    waves:       { gradient: 'linear-gradient(to right, #3b82f6, #22c55e, #a3e635, #eab308, #f97316, #ef4444, #a855f7)', low: '0 m', high: '3+ m' },
+    currents:    { gradient: 'linear-gradient(to right, rgb(20,60,140), rgb(100,160,220), rgb(180,230,220), rgb(250,230,150), rgb(255,150,70), rgb(220,40,40))', low: '0 kt', high: '2+ kt' },
     satellite:   null,
-    pressure:    { gradient: 'linear-gradient(to right, #3b82f6, #64748b, #dc2626)', low: 'Low pressure', high: 'High pressure' },
+    pressure:    { gradient: 'linear-gradient(to right, #3b82f6, #64748b, #dc2626)', low: 'Low', high: 'High' },
     tides:       null,
     boats:       null,
   };
+  var typeLabels = {
+    sst: 'SST', chlorophyll: 'Chlorophyll', bathymetry: 'Depth',
+    wind: 'Wind', waves: 'Swell', currents: 'Currents', pressure: 'Pressure',
+  };
+
   if (type === 'sst' && sstMode === 'raster') {
+    var staleMsg = dataInfo && dataInfo.stale ? ' · stale' : '';
+    var dateStr  = dataInfo && dataInfo.date ? dataInfo.date.slice(5) : null; // MM-DD
     return (
       <div className="chart-legend-bar">
         <span className="legend-label">55°F</span>
         <div className="legend-gradient-bar" style={{ background: 'linear-gradient(to right, #00148b, #0050dc, #14a0dc, #50d278, #a0e63c, #e6e632, #ffb428, #ff5014, #c81414)' }} />
         <span className="legend-label">76°F</span>
         <span className="legend-front-key">
-          <span className="legend-front-swatch"></span>Thermal front
+          <span className="legend-front-swatch"></span>Front
         </span>
+        {dataInfo && (
+          <span className={'legend-data-info' + (dataInfo.stale ? ' stale' : '')}>
+            {dataInfo.source}{dateStr ? ' · ' + dateStr : ''}{staleMsg}
+          </span>
+        )}
       </div>
     );
   }
+
   var config = legends[type];
   if (!config) return null;
+  var label = typeLabels[type] || type;
   return (
     <div className="chart-legend-bar">
+      <span className="legend-type-label">{label}</span>
       <span className="legend-label">{config.low}</span>
       <div className="legend-gradient-bar" style={{ background: config.gradient }} />
       <span className="legend-label">{config.high}</span>
+      {dataInfo && (
+        <span className={'legend-data-info' + (dataInfo.stale ? ' stale' : '')}>
+          {dataInfo.source}{dataInfo.date ? ' · ' + dataInfo.date.slice(5) : ''}
+        </span>
+      )}
     </div>
   );
 }
@@ -1660,7 +1726,7 @@ function ChartsView({ navigate, settings }) {
   const [showCatches, setShowCatches] = React.useState(false);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
   const [sstMode, setSstMode]       = React.useState(function() {
-    return localStorage.getItem('tt_sst_mode') || 'raster';
+    return localStorage.getItem('tt_sst_mode') || 'mur';
   });
   const [waypoints, setWaypoints]   = React.useState(loadWaypoints);
   const [showModal, setShowModal]   = React.useState(false);
@@ -1677,6 +1743,7 @@ function ChartsView({ navigate, settings }) {
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
   const [geoNote, setGeoNote]       = React.useState(null);
+  const [sstDataInfo, setSstDataInfo] = React.useState(null); // { source, date, stale }
 
   const mapRef           = React.useRef(null);
   const mapInstance      = React.useRef(null);
@@ -1915,13 +1982,23 @@ function ChartsView({ navigate, settings }) {
         setCondLoading(false);
         if (cancelled || !mapInstance.current || baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
         murGridRef.current = grid;
+        setSstDataInfo({ source: 'JPL MUR · Canvas', date: grid.date, stale: !!grid._stale });
         var ovs = _buildMUROverlays(grid);
         ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
-      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); } });
+      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); setSstDataInfo(null); } });
     } else if (baseLayer) {
       var overlay = getOverlayLayer(baseLayer, sstModeRef.current);
       if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+      if (baseLayer === 'sst') {
+        var td = new Date();
+        var mode = sstModeRef.current;
+        if (mode === 'mur') td.setDate(td.getDate() - 2);
+        else td.setDate(td.getDate() - 1);
+        setSstDataInfo({ source: mode === 'mur' ? 'JPL MUR · GIBS' : 'MODIS Aqua · GIBS', date: td.toISOString().slice(0, 10), stale: false });
+      } else {
+        setSstDataInfo(null);
+      }
     }
 
     return function() { cancelled = true; };
@@ -1945,12 +2022,16 @@ function ChartsView({ navigate, settings }) {
         setCondLoading(false);
         if (cancelled || !mapInstance.current || baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
         murGridRef.current = grid;
+        setSstDataInfo({ source: 'JPL MUR · Canvas', date: grid.date, stale: !!grid._stale });
         var ovs = _buildMUROverlays(grid);
         ovs.sst.addTo(mapInstance.current); murSSTLayerRef.current = ovs.sst;
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
-      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); } });
+      }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); setSstDataInfo(null); } });
     } else {
       setLayerError('sst', false);
+      var td2 = new Date();
+      if (sstMode === 'mur') td2.setDate(td2.getDate() - 2); else td2.setDate(td2.getDate() - 1);
+      setSstDataInfo({ source: sstMode === 'mur' ? 'JPL MUR · GIBS' : 'MODIS Aqua · GIBS', date: td2.toISOString().slice(0, 10), stale: false });
       var overlay = getOverlayLayer('sst', sstMode);
       if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
     }
@@ -2374,6 +2455,12 @@ function ChartsView({ navigate, settings }) {
           )}
 
           {geoNote && <div className="geo-note-pill">{geoNote}</div>}
+
+          {(function() {
+            var t = baseLayer || (condLayers.wind ? 'wind' : condLayers.waves ? 'waves' : condLayers.currents ? 'currents' : condLayers.pressure ? 'pressure' : null);
+            if (!t) return null;
+            return <ChartLegend type={t} sstMode={sstMode} dataInfo={t === baseLayer ? sstDataInfo : null} />;
+          })()}
         </div>
 
         <WaypointsSidebar
@@ -2404,12 +2491,6 @@ function ChartsView({ navigate, settings }) {
       )}
 
       {showTides && <TidesPanel data={tidesData} loading={condLoading} />}
-
-      {baseLayer && <ChartLegend type={baseLayer} sstMode={sstMode} />}
-      {condLayers.wind && <ChartLegend type="wind" />}
-      {condLayers.waves && <ChartLegend type="waves" />}
-      {condLayers.currents && <ChartLegend type="currents" />}
-      {condLayers.pressure && <ChartLegend type="pressure" />}
 
       <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
@@ -2460,8 +2541,13 @@ function _prewarmCharts() {
       '.basemaps.cartocdn.com/dark_nolabels/' + z + '/' + x + '/' + y + '.png';
   });
 
-  // 2. SST grid — the default base-layer data (no-op if cache is still fresh).
-  try { _getCachedMURRasterGrid().catch(function() {}); } catch (e) {}
+  // 2. MUR GIBS tiles — default SST layer (gap-free, 2-day lag).
+  var murD = new Date();
+  murD.setDate(murD.getDate() - 2);
+  var murDt = murD.toISOString().slice(0, 10);
+  _prewarmTiles(7, function(z, x, y) {
+    return 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GHRSST_L4_MUR_Sea_Surface_Temperature/default/' + murDt + '/GoogleMapsCompatible_Level7/' + z + '/' + y + '/' + x + '.png';
+  });
 }
 
 window.__ttPrewarmCharts = _prewarmCharts;

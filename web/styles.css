@@ -3897,7 +3897,7 @@ a.app-footer-link:hover { color: var(--accent); }
   position: absolute;
   top: 70px;
   left: 10px;
-  z-index: 600;
+  z-index: 1100;
   width: 232px;
   max-height: calc(100% - 90px);
   overflow-y: auto;
@@ -3937,6 +3937,20 @@ a.app-footer-link:hover { color: var(--accent); }
 .chart-map-container .layer-group-label { color: rgba(148,163,184,0.75); }
 
 .layer-group-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.layer-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin-bottom: 0;
+}
+.layer-group-toggle {
+  font-size: 11px; color: #64748b;
+  transition: transform 0.15s; flex-shrink: 0;
+}
+.layer-group-active-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: #0ea5e9; border-radius: 50%;
+  margin-left: 5px; vertical-align: middle;
+}
+.chart-map-container .layer-group-active-dot { background: #38bdf8; }
 
 .layer-btn {
   display: flex;
@@ -4143,18 +4157,41 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 
 .chart-legend-bar {
+  position: absolute;
+  bottom: 8px;
+  left: 14px;
+  right: 14px;
+  z-index: 1100;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: var(--tb-foam, #F8FAFC);
-  border: 1px solid var(--tb-border-2, #E2E8F0);
+  gap: 10px;
+  padding: 7px 12px;
+  background: rgba(6, 14, 24, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 8px;
   font: 500 11px var(--ss-font-sans);
-  color: var(--tb-slate, #475569);
+  color: #e2e8f0;
+  pointer-events: none;
 }
-.legend-label { white-space: nowrap; }
+.legend-label { white-space: nowrap; color: #cbd5e1; }
+.legend-type-label {
+  font: 600 11px var(--ss-font-sans);
+  color: #e2e8f0;
+  white-space: nowrap;
+  margin-right: 2px;
+}
+.legend-data-info {
+  margin-left: auto;
+  font: 400 10px var(--mono, 'DM Mono', monospace);
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+.legend-data-info.stale { color: #f59e0b; }
 .legend-front-key {
   display: inline-flex; align-items: center; gap: 6px;
   margin-left: 8px; white-space: nowrap; font: 500 11px var(--ss-font-sans); color: var(--tb-slate);
@@ -4166,7 +4203,7 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 /* SST hover readout panel */
 .sst-readout {
-  position: absolute; bottom: 48px; right: 12px; z-index: 1000;
+  position: absolute; bottom: 48px; right: 12px; z-index: 1100;
   background: rgba(15,30,43,0.88); color: #fff;
   padding: 6px 12px; border-radius: 8px;
   font: 600 13px/20px var(--ss-font-sans);
@@ -4194,7 +4231,7 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 
 .swell-period-readout {
-  position: absolute; bottom: 48px; right: 12px; z-index: 1000;
+  position: absolute; bottom: 48px; right: 12px; z-index: 1100;
   background: rgba(15,30,43,0.88); color: #93c5fd;
   padding: 6px 12px; border-radius: 8px;
   font: 600 13px/20px var(--ss-font-sans);
@@ -4202,11 +4239,9 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 .legend-gradient-bar {
   flex: 1;
-  max-width: 300px;
-  height: 14px;
-  border-radius: 7px;
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+  min-width: 80px;
+  height: 8px;
+  border-radius: 4px;
 }
 
 .chart-attribution {
@@ -4318,7 +4353,7 @@ a.app-footer-link:hover { color: var(--accent); }
 /* Waypoints sidebar (absolute overlay on map) — dark glass */
 .wp-sidebar {
   position: absolute;
-  top: 48px; right: 10px;
+  top: 72px; right: 10px;
   width: 240px;
   background: rgba(6,14,24,0.86);
   backdrop-filter: blur(14px);
@@ -4326,7 +4361,7 @@ a.app-footer-link:hover { color: var(--accent); }
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.45);
   border: 1px solid rgba(255,255,255,0.10);
-  z-index: 800;
+  z-index: 1100;
   overflow: hidden;
   max-height: 46px;
   transition: max-height 0.22s ease;
@@ -4342,7 +4377,7 @@ a.app-footer-link:hover { color: var(--accent); }
   border-bottom: 1px solid rgba(255,255,255,0.08);
   gap: 6px;
 }
-.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: #e2e8f0; flex: 1; }
+.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: #e2e8f0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wp-sidebar-controls { display: flex; align-items: center; gap: 6px; }
 .wp-sidebar-chevron { font-size: 9px; color: #64748b; }
 .wp-export-wrap { position: relative; }
@@ -4470,8 +4505,7 @@ a.app-footer-link:hover { color: var(--accent); }
   .layers-sheet .layer-panel { border: none; padding: 4px 0 0; gap: 16px; }
   .layers-sheet .layer-group-row { gap: 8px; }
   .layers-sheet .layer-btn { font-size: 14px; }
-  .chart-legend-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .legend-gradient-bar { width: 100%; max-width: none; }
+  .chart-legend-bar { left: 8px; right: 8px; bottom: 6px; gap: 6px; }
   /* On mobile, sidebar collapses below the layers bar as a static stack */
   .wp-sidebar {
     position: static;
@@ -4622,7 +4656,7 @@ a.app-footer-link:hover { color: var(--accent); }
 /* Transient geolocation note (e.g. outside coverage / denied) */
 .geo-note-pill {
   position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 1100;
   background: rgba(15, 30, 43, 0.9); color: #e2e8f0;
   font: 600 12px var(--ss-font-sans, 'Inter', sans-serif);
   padding: 7px 14px; border-radius: 20px;
@@ -4677,7 +4711,7 @@ a.app-footer-link:hover { color: var(--accent); }
 /* Layer error pills */
 .layer-error-pills {
   position: absolute;
-  bottom: 36px;
+  bottom: 64px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -4685,7 +4719,7 @@ a.app-footer-link:hover { color: var(--accent); }
   justify-content: center;
   gap: 6px;
   pointer-events: none;
-  z-index: 900;
+  z-index: 1100;
 }
 
 .layer-error-pill {
@@ -4990,7 +5024,7 @@ a.app-footer-link:hover { color: var(--accent); }
   border: 1px solid rgba(255,255,255,0.12);
   box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   pointer-events: none;
-  z-index: 900;
+  z-index: 1100;
   white-space: nowrap;
 }
 
