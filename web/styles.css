@@ -3917,7 +3917,7 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 
 /* Dark glass variant inside the map container */
-.chart-map-container .layer-panel {
+.chart-map-stage .layer-panel {
   background: rgba(6, 14, 24, 0.86);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -3934,7 +3934,7 @@ a.app-footer-link:hover { color: var(--accent); }
   letter-spacing: 0.06em;
   color: var(--tb-muted, #64748B);
 }
-.chart-map-container .layer-group-label { color: rgba(148,163,184,0.75); }
+.chart-map-stage .layer-group-label { color: rgba(148,163,184,0.75); }
 
 .layer-group-row { display: flex; flex-wrap: wrap; gap: 5px; }
 
@@ -3965,17 +3965,17 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 
 /* Dark variants */
-.chart-map-container .layer-btn {
+.chart-map-stage .layer-btn {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.13);
   color: #cbd5e1;
 }
-.chart-map-container .layer-btn:hover {
+.chart-map-stage .layer-btn:hover {
   background: rgba(255,255,255,0.13);
   border-color: rgba(56,189,248,0.55);
   color: #f1f5f9;
 }
-.chart-map-container .layer-btn.active {
+.chart-map-stage .layer-btn.active {
   background: #0ea5e9;
   border-color: #0ea5e9;
   color: white;
@@ -4017,12 +4017,12 @@ a.app-footer-link:hover { color: var(--accent); }
 }
 .layer-sst-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
 .layer-sst-btn .sst-picker-badge { font-size: 9px; }
-.chart-map-container .layer-sst-btn {
+.chart-map-stage .layer-sst-btn {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.13);
   color: #94a3b8;
 }
-.chart-map-container .layer-sst-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
+.chart-map-stage .layer-sst-btn.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
 
 /* ── Map stage (positioning context for on-map overlays) ───────────────── */
 /* Wraps just the map + its overlays so absolutely-positioned readouts/pills
@@ -4214,6 +4214,120 @@ a.app-footer-link:hover { color: var(--accent); }
   font: 400 10px var(--ss-font-sans);
   color: var(--tb-gray-3, #94A3B8);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Immersive "Surfline-style" charts layout — the map fills the viewport and
+   every control floats over it.
+   ══════════════════════════════════════════════════════════════════════════ */
+.charts-immersive {
+  padding: 0;
+  max-width: none;
+  margin: -16px -16px -32px;            /* cancel .main-content padding → full-bleed */
+  height: calc(100vh - 48px);           /* fill the viewport below the 48px site header */
+  height: calc(100dvh - 48px);
+  position: relative;
+  overflow: hidden;
+  background: #0b1722;
+}
+.charts-immersive .chart-map-stage { position: relative; width: 100%; height: 100%; }
+.charts-immersive .chart-map {
+  width: 100%; height: 100%;
+  border: none; border-radius: 0; box-shadow: none;
+}
+.charts-immersive .layer-panel-desktop { top: 12px; left: 12px; }
+
+/* Floating data-source credit, bottom-right, subtle */
+.charts-immersive .chart-attribution {
+  position: absolute; right: 8px; bottom: 4px; margin: 0; z-index: 450;
+  font-size: 9px; color: rgba(226,232,240,0.62);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7); pointer-events: none;
+}
+
+/* Push the hover/transient pills to the top so they clear the bottom dock */
+.charts-immersive .sst-readout {
+  top: 12px; bottom: auto; right: auto; left: 50%; transform: translateX(-50%);
+}
+.charts-immersive .boats-count-pill { top: 12px; }
+.charts-immersive .geo-note-pill { top: 56px; bottom: auto; }
+
+/* ── Left-edge vertical color scale ─────────────────────────────────────── */
+.chart-scalebar {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  z-index: 500;
+  display: flex; flex-direction: column; align-items: stretch;
+  background: rgba(6,14,24,0.6);
+  border-radius: 0 12px 12px 0;
+  padding: 5px 8px 9px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.32);
+}
+.chart-scalebar.collapsed { padding: 4px; }
+.chart-scalebar-toggle {
+  background: none; border: none; color: #cbd5e1;
+  font-size: 14px; line-height: 1; cursor: pointer; padding: 2px;
+  align-self: flex-end;
+}
+.chart-scalebar-toggle:hover { color: #fff; }
+.chart-scalebar-unit {
+  font: 700 10px var(--ss-font-sans); color: #cbd5e1;
+  text-align: center; margin-bottom: 4px; letter-spacing: 0.02em;
+}
+.chart-scalebar-grad {
+  width: 26px; height: clamp(170px, 42vh, 340px);
+  border-radius: 6px;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+  padding: 5px 0;
+}
+.chart-scalebar-tick {
+  font: 700 10px var(--ss-font-sans); color: #fff; white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.8);
+}
+
+/* ── Bottom stack: docked readout panel + timeline ──────────────────────── */
+.chart-bottom-stack {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 600;
+  display: flex; flex-direction: column;
+  pointer-events: none;
+}
+.chart-bottom-stack > * { pointer-events: auto; }
+
+/* ── Docked readout panel (Surfline-style) ──────────────────────────────── */
+.chart-readout-dock {
+  position: relative;
+  background: linear-gradient(to bottom, rgba(8,18,30,0.74), rgba(8,18,30,0.94));
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255,255,255,0.09);
+  color: #e8eef5;
+  padding: 14px 18px 12px;
+}
+.chart-readout-close {
+  position: absolute; top: 10px; right: 12px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.12); color: #e8eef5;
+  border: none; font-size: 18px; line-height: 1; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.chart-readout-close:hover { background: rgba(255,255,255,0.22); }
+.chart-readout-title {
+  font: 700 15px var(--ss-font-sans); color: #fff;
+  margin: 0 38px 11px 0; letter-spacing: 0.01em;
+}
+.chart-readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 26px; }
+.chart-readout-item { display: flex; align-items: center; gap: 8px; font: 600 13px var(--ss-font-sans); }
+.chart-readout-ico { font-size: 15px; flex-shrink: 0; }
+.chart-readout-lbl { color: #94a3b8; }
+.chart-readout-val { color: #fff; font-weight: 700; margin-left: auto; }
+.chart-readout-empty { color: #94a3b8; font: 500 13px var(--ss-font-sans); padding: 2px 0 6px; }
+.chart-readout-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);
+}
+.chart-readout-coords { font: 500 12px var(--ss-font-sans); color: #93c5fd; }
+.chart-readout-save {
+  background: #0ea5e9; color: #04293b; border: none; border-radius: 8px;
+  padding: 7px 14px; font: 700 12px var(--ss-font-sans); cursor: pointer; white-space: nowrap;
+}
+.chart-readout-save:hover { background: #38bdf8; }
 
 /* ── Charts Phase 2.5/4: map container, markers, popups, waypoints ────────── */
 
@@ -4465,6 +4579,21 @@ a.app-footer-link:hover { color: var(--accent); }
   .chart-map { height: 400px; }
   .layer-panel-desktop { display: none; }
   .mobile-layers-bar { display: flex; }
+
+  /* Immersive: fill viewport, float the layers bar over the map */
+  .charts-immersive { padding: 0; max-width: none; margin: -12px -12px -32px; height: calc(100vh - 48px); height: calc(100dvh - 48px); }
+  .charts-immersive .mobile-layers-bar {
+    position: absolute; top: 10px; left: 10px; right: 10px; width: auto; margin: 0;
+    z-index: 600; min-height: 48px; padding: 8px 14px; border-radius: 12px;
+    background: rgba(8,18,30,0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .charts-immersive .wp-sidebar {
+    position: absolute; top: 64px; right: 10px; left: auto; width: 210px; margin: 0;
+  }
+  .chart-scalebar { top: 44%; }
+  .chart-scalebar-grad { width: 24px; height: clamp(140px, 30vh, 240px); }
+  .chart-readout-grid { gap: 7px 16px; }
+  .chart-readout-dock { padding: 12px 14px 10px; }
   .layer-btn { min-height: 44px; padding: 8px 14px; }
   /* Bottom-sheet layer toggles: bigger, easier-to-read groups */
   .layers-sheet .layer-panel { border: none; padding: 4px 0 0; gap: 16px; }
@@ -5704,25 +5833,30 @@ a.app-footer-link:hover { color: var(--accent); }
 
 /* ── Forecast time slider ────────────────────────────────────────────────── */
 
-.forecast-slider-wrap {
-  background: #1e293b;
+/* ── Docked timeline scrubber (bottom of the immersive map) ─────────────── */
+.chart-timeline-dock {
+  background: linear-gradient(to bottom, rgba(8,18,30,0.84), rgba(8,18,30,0.96));
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   color: #e2e8f0;
-  padding: 9px 16px 10px;
+  padding: 8px 16px 9px;
+  border-top: 1px solid rgba(255,255,255,0.08);
   font: 600 12px/1 var(--tb-font-body);
-  border-top: 1px solid rgba(255,255,255,0.07);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
-.forecast-slider-wrap.fsl-low-conf { background: #1a1a2e; }
+.chart-timeline-dock.fsl-low-conf { background: linear-gradient(to bottom, rgba(40,30,12,0.86), rgba(36,26,8,0.96)); }
+.chart-timeline-head { display: flex; align-items: center; gap: 12px; margin-bottom: 7px; }
+.chart-timeline-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.ctl-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(255,255,255,0.10); color: #e2e8f0; border: none; cursor: pointer;
+  font-size: 14px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.ctl-btn:hover { background: rgba(255,255,255,0.2); }
+.ctl-play { background: #0ea5e9; color: #04293b; font-size: 12px; }
+.ctl-play:hover { background: #38bdf8; }
+.chart-timeline-time { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 
 .forecast-slider-loading { color: #94a3b8; font-size: 12px; text-align: center; padding: 4px 0; }
 
-.forecast-slider-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.fsl-time  { display: flex; gap: 8px; align-items: baseline; }
 .fsl-day   { font-weight: 700; color: #e2e8f0; font-size: 12px; }
 .fsl-hr    { font-weight: 400; color: #94a3b8; font-size: 11px; }
 
@@ -5758,7 +5892,7 @@ a.app-footer-link:hover { color: var(--accent); }
 .fsl-tick-dim { color: #374151; }
 
 @media (max-width: 768px) {
-  .forecast-slider-wrap { padding: 8px 12px 9px; }
+  .chart-timeline-dock { padding: 8px 12px 9px; }
   .fsl-day-ticks { font-size: 9px; }
 }
 

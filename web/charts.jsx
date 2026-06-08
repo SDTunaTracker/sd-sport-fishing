@@ -1441,10 +1441,10 @@ function buildCatchLayer(trips) {
 
 // ── ForecastSlider ────────────────────────────────────────────────────────────
 
-function ForecastSlider({ series, step, onStep, loading }) {
+function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStepBack, onStepFwd }) {
   if (loading && !series) {
     return (
-      <div className="forecast-slider-wrap">
+      <div className="chart-timeline-dock">
         <div className="forecast-slider-loading">⏳ Loading forecast series…</div>
       </div>
     );
@@ -1463,14 +1463,22 @@ function ForecastSlider({ series, step, onStep, loading }) {
   var nowStep   = new Date().getUTCHours(); // first 24 steps correspond to today
 
   return (
-    <div className={'forecast-slider-wrap' + (isLowConf ? ' fsl-low-conf' : '')}>
-      <div className="forecast-slider-row">
-        <span className="fsl-time">
+    <div className={'chart-timeline-dock' + (isLowConf ? ' fsl-low-conf' : '')}>
+      <div className="chart-timeline-head">
+        <div className="chart-timeline-controls">
+          <button className="ctl-btn" onClick={onStepBack} aria-label="Step back" title="Step back">‹</button>
+          <button className="ctl-btn ctl-play" onClick={onPlay}
+            aria-label={playing ? 'Pause' : 'Play'} title={playing ? 'Pause' : 'Play'}>
+            {playing ? '❚❚' : '▶'}
+          </button>
+          <button className="ctl-btn" onClick={onStepFwd} aria-label="Step forward" title="Step forward">›</button>
+        </div>
+        <span className="chart-timeline-time">
           <span className="fsl-day">{dayLabel}</span>
           <span className="fsl-hr">{timeLabel} PT</span>
+          {step === nowStep && <span className="fsl-now-badge">Now</span>}
+          {isLowConf && <span className="fsl-conf-badge">⚠ Lower confidence</span>}
         </span>
-        {step === nowStep && <span className="fsl-now-badge">Now</span>}
-        {isLowConf && <span className="fsl-conf-badge">⚠ Lower confidence</span>}
       </div>
       <input type="range" className="forecast-slider-range" min={0} max={maxStep}
         step={1} value={step} onInput={function(e) { onStep(+e.target.value); }} />
@@ -1649,6 +1657,110 @@ function ChartLegend({ type, sstMode }) {
   );
 }
 
+// ── ChartScaleBar (Surfline-style left-edge vertical color scale) ───────────────
+
+// Returns a vertical-gradient + range config for the active layer. Numeric
+// layers get evenly-spaced tick values (in the user's units); qualitative ones
+// fall back to top/bottom text labels.
+function _scaleConfig(layer, unitSystem) {
+  var metric = unitSystem === 'metric';
+  switch (layer) {
+    case 'sst':
+      return metric
+        ? { grad: '#c81414,#ff5014,#ffb428,#e6e632,#a0e63c,#50d278,#14a0dc,#0050dc,#00148b', max: 24, min: 13, unit: '°C', steps: 6 }
+        : { grad: '#c81414,#ff5014,#ffb428,#e6e632,#a0e63c,#50d278,#14a0dc,#0050dc,#00148b', max: 76, min: 55, unit: '°F', steps: 6 };
+    case 'chlorophyll':
+      return { grad: '#C72200,#FF7300,#FFD500,#B8E060,#6BD5C5,#3DA2FF,#2C3E80', topLabel: 'Rich', botLabel: 'Clear', unit: 'chl' };
+    case 'bathymetry':
+      return { grad: '#e8f4f8,#CCEEFF,#66CCFF,#0066CC,#003366', topLabel: 'Shore', botLabel: 'Deep', unit: '' };
+    case 'wind':
+      return { grad: 'rgb(80,30,180),rgb(160,30,140),rgb(240,50,50),rgb(255,130,30),rgb(255,220,50),rgb(80,220,100),rgb(140,180,255),rgb(255,255,255)',
+               max: metric ? 110 : 60, min: 0, unit: metric ? 'km/h' : 'kt', steps: 6 };
+    case 'waves':
+      return metric
+        ? { grad: '#a855f7,#ef4444,#f97316,#eab308,#a3e635,#22c55e,#3b82f6', max: 4, min: 0, unit: 'm', steps: 5 }
+        : { grad: '#a855f7,#ef4444,#f97316,#eab308,#a3e635,#22c55e,#3b82f6', max: 13, min: 0, unit: 'ft', steps: 5 };
+    case 'currents':
+      return { grad: 'rgb(220,40,40),rgb(255,150,70),rgb(250,230,150),rgb(180,230,220),rgb(100,160,220),rgb(20,60,140)',
+               max: 2, min: 0, unit: 'kt', steps: 5 };
+    case 'pressure':
+      return { grad: '#dc2626,#64748b,#3b82f6', topLabel: 'High', botLabel: 'Low', unit: 'hPa' };
+    default: return null;
+  }
+}
+
+function ChartScaleBar({ baseLayer, condLayers, unitSystem, collapsed, onToggle }) {
+  var cl = condLayers || {};
+  var layer = baseLayer || (cl.wind ? 'wind' : cl.waves ? 'waves' : cl.currents ? 'currents' : cl.pressure ? 'pressure' : null);
+  var cfg = layer ? _scaleConfig(layer, unitSystem) : null;
+  if (!cfg) return null;
+  var ticks = [];
+  if (cfg.max != null) {
+    for (var i = 0; i < cfg.steps; i++) {
+      ticks.push(Math.round(cfg.max - (cfg.max - cfg.min) * i / (cfg.steps - 1)));
+    }
+  }
+  return (
+    <div className={'chart-scalebar' + (collapsed ? ' collapsed' : '')}>
+      <button className="chart-scalebar-toggle" onClick={onToggle}
+        aria-label={collapsed ? 'Show scale' : 'Hide scale'} title={collapsed ? 'Show scale' : 'Hide scale'}>
+        {collapsed ? '⊞' : '‹'}
+      </button>
+      {!collapsed && (
+        <div className="chart-scalebar-body">
+          {cfg.unit ? <div className="chart-scalebar-unit">{cfg.unit}</div> : null}
+          <div className="chart-scalebar-grad" style={{ background: 'linear-gradient(to bottom, ' + cfg.grad + ')' }}>
+            {ticks.length
+              ? ticks.map(function(t, i) { return <span key={i} className="chart-scalebar-tick">{t}</span>; })
+              : (
+                <React.Fragment>
+                  <span className="chart-scalebar-tick">{cfg.topLabel}</span>
+                  <span className="chart-scalebar-tick">{cfg.botLabel}</span>
+                </React.Fragment>
+              )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ChartReadoutDock (Surfline-style docked bottom readout) ─────────────────────
+
+function ChartReadoutDock({ readout, onClose, onSave }) {
+  if (!readout) return null;
+  var rows = readout.rows || [];
+  return (
+    <div className="chart-readout-dock" role="dialog" aria-label="Point conditions">
+      <button className="chart-readout-close" onClick={onClose} aria-label="Close readout">×</button>
+      <div className="chart-readout-title">{readout.label || readout.coords}</div>
+      {rows.length ? (
+        <div className="chart-readout-grid">
+          {rows.map(function(r, i) {
+            return (
+              <div key={i} className="chart-readout-item">
+                <span className="chart-readout-ico">{r.icon}</span>
+                <span className="chart-readout-lbl">{r.label}</span>
+                <span className="chart-readout-val">{r.val}</span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="chart-readout-empty">
+          Turn on SST, Wind, or Swell from Map Layers to read values at this point.
+        </div>
+      )}
+      <div className="chart-readout-foot">
+        <span className="chart-readout-coords">📍 {readout.coords}</span>
+        <button className="chart-readout-save" onClick={function() { onSave(readout.lat, readout.lng); }}>
+          + Save waypoint
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── ChartsView ────────────────────────────────────────────────────────────────
 
 function ChartsView({ navigate, settings }) {
@@ -1677,6 +1789,10 @@ function ChartsView({ navigate, settings }) {
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
   const [geoNote, setGeoNote]       = React.useState(null);
+  const [tapReadout, setTapReadout] = React.useState(null);
+  const [scaleCollapsed, setScaleCollapsed] = React.useState(false);
+  const [playing, setPlaying]       = React.useState(false);
+  const playRef = React.useRef(null);
 
   const mapRef           = React.useRef(null);
   const mapInstance      = React.useRef(null);
@@ -1736,6 +1852,27 @@ function ChartsView({ navigate, settings }) {
     return function() { document.removeEventListener('visibilitychange', onVis); };
   }, []);
 
+  // Keep a live ref of the slider step for the play loop's interval closure.
+  const sliderStepRef = React.useRef(sliderStep);
+  React.useEffect(function() { sliderStepRef.current = sliderStep; }, [sliderStep]);
+
+  // Timeline playback: advance one frame at a time, looping at the end.
+  React.useEffect(function() {
+    if (!playing) return;
+    if (!sliderSeries) { setPlaying(false); return; }
+    var max = sliderSeries.frames.length - 1;
+    playRef.current = setInterval(function() {
+      var next = sliderStepRef.current >= max ? 0 : sliderStepRef.current + 1;
+      handleSliderInput(next);
+    }, 800);
+    return function() { clearInterval(playRef.current); };
+  }, [playing, sliderSeries]);
+
+  // Stop playback if the forecast layers (and thus the timeline) go away.
+  React.useEffect(function() {
+    if (!(condLayers.wind || condLayers.waves)) setPlaying(false);
+  }, [condLayers.wind, condLayers.waves]);
+
   // Initialize map once
   React.useEffect(function() {
     if (!mapRef.current || mapInstance.current) return;
@@ -1761,17 +1898,13 @@ function ChartsView({ navigate, settings }) {
     };
     recenterControl.addTo(mapInstance.current);
 
-    // Build the tap/location popup HTML: coordinates (or a label) + a readout of
-    // every active layer's value at the point + the save-waypoint action.
-    function buildPointPopupHtml(lat, lng, label) {
+    // Sample every active layer at a point and return a structured readout for
+    // the docked bottom panel: { lat, lng, label, coords, rows:[{icon,label,val}] }.
+    function buildPointReadout(lat, lng, label) {
       var latlng = { lat: lat, lng: lng };
       var sys = unitSystemRef.current || 'imperial';
-      var rows = '';
-      function addRow(icon, lbl, val) {
-        if (val == null) return;
-        rows += '<div class="popup-metric"><span class="popup-metric-label">' + icon + ' ' + lbl + '</span>'
-              + '<span class="popup-metric-val">' + val + '</span></div>';
-      }
+      var rows = [];
+      function addRow(icon, lbl, val) { if (val != null) rows.push({ icon: icon, label: lbl, val: val }); }
       if (baseLyrRef.current === 'sst' && sstModeRef.current === 'raster' && murGridRef.current) {
         var sr = _murGridReadout(murGridRef.current, latlng);
         if (sr) addRow('🌡️', 'SST', sr.sst == null ? 'land / cloud' : _fmtTemp(sr.sst, sys));
@@ -1779,11 +1912,11 @@ function ChartsView({ navigate, settings }) {
       var cl = condLayersRef.current || {};
       if (cl.wind && windDataRef.current) {
         var w = _sampleVelGrid(windDataRef.current, latlng);
-        if (w) addRow('💨', 'Wind', _fmtSpeed(w.speed, sys) + ' from ' + _compass8(w.fromDir));
+        if (w) addRow('💨', 'Wind', _fmtSpeed(w.speed, sys) + ' ' + _compass8(w.fromDir));
       }
       if (cl.waves && wavesDataRef.current) {
         var swv = _sampleVelGrid(wavesDataRef.current, latlng);
-        if (swv) addRow('🌊', 'Swell', _fmtSwell(swv.speed, sys) + ' from ' + _compass8(swv.fromDir)
+        if (swv) addRow('🌊', 'Swell', _fmtSwell(swv.speed, sys) + ' ' + _compass8(swv.fromDir)
               + (swellPeriodRef.current ? ' · ' + Math.round(swellPeriodRef.current) + 's' : ''));
       }
       if (cl.currents && currentsDataRef.current) {
@@ -1794,13 +1927,11 @@ function ChartsView({ navigate, settings }) {
         var pv = _samplePressureGrid(pressureDataRef.current, latlng);
         if (pv != null) addRow('🔵', 'Pressure', _fmtPressure(pv, sys));
       }
-      var coords = label ? label : (lat.toFixed(4) + '°N,&nbsp;' + Math.abs(lng).toFixed(4) + '°W');
-      var metricsHtml = rows ? '<div class="popup-metrics">' + rows + '</div>' : '';
-      return '<div class="map-popup">'
-        + '<div class="popup-coords">' + coords + '</div>'
-        + metricsHtml
-        + '<button class="popup-save-waypoint" onclick="window.ttOpenWaypointModal(' + lat + ',' + lng + ')">+ Save as waypoint</button>'
-        + '</div>';
+      return {
+        lat: lat, lng: lng, label: label || null,
+        coords: lat.toFixed(4) + '°N, ' + Math.abs(lng).toFixed(4) + '°W',
+        rows: rows,
+      };
     }
 
     // ── "Locate me" geolocation ───────────────────────────────────────────────
@@ -1819,15 +1950,15 @@ function ChartsView({ navigate, settings }) {
         });
         userLocMarkerRef.current = L.marker([lat, lng], { icon: icon, zIndexOffset: 1000, keyboard: false })
           .addTo(mapInstance.current);
-        userLocMarkerRef.current.bindPopup(function() {
+        userLocMarkerRef.current.on('click', function() {
           var ll = userLocMarkerRef.current.getLatLng();
-          return buildPointPopupHtml(ll.lat, ll.lng, '📍 Your location');
-        }, { className: 'tt-popup' });
+          setTapReadout(buildPointReadout(ll.lat, ll.lng, '📍 Your location'));
+        });
       }
       if (opts.pan && mapInstance.current) {
         mapInstance.current.setView([lat, lng], Math.max(mapInstance.current.getZoom(), 9), { animate: true });
       }
-      if (opts.openPopup && userLocMarkerRef.current) userLocMarkerRef.current.openPopup();
+      if (opts.openReadout) setTapReadout(buildPointReadout(lat, lng, '📍 Your location'));
     }
 
     function requestGeolocate(opts) {
@@ -1847,7 +1978,7 @@ function ChartsView({ navigate, settings }) {
       div.innerHTML = '<a href="#" title="Show my location">🧭 Locate me</a>';
       L.DomEvent.on(div, 'click', function(e) {
         L.DomEvent.preventDefault(e);
-        requestGeolocate({ pan: true, openPopup: true, manual: true });
+        requestGeolocate({ pan: true, openReadout: true, manual: true });
       });
       return div;
     };
@@ -1870,10 +2001,7 @@ function ChartsView({ navigate, settings }) {
     window._ttCatchNav = function(boat) { if (navigate) navigate('boat', { boat: boat }); };
 
     mapInstance.current.on('click', function(e) {
-      L.popup({ className: 'tt-popup' })
-        .setLatLng(e.latlng)
-        .setContent(buildPointPopupHtml(e.latlng.lat, e.latlng.lng, null))
-        .openOn(mapInstance.current);
+      setTapReadout(buildPointReadout(e.latlng.lat, e.latlng.lng, null));
     });
 
     return function() {
@@ -2285,19 +2413,14 @@ function ChartsView({ navigate, settings }) {
   if (showCatches)         activeLayerLabels.push('Catches');
   if (showBoats)           activeLayerLabels.push('Boats');
 
+  var maxSliderStep = sliderSeries ? sliderSeries.frames.length - 1 : 0;
+
   return (
-    <div className="charts-view">
-      <ChartsHeader baseLayer={baseLayer} condLayers={condLayers} sstMode={sstMode} />
+    <div className="charts-view charts-immersive">
+      <div className="chart-map-stage">
+        <div ref={mapRef} className="chart-map" />
 
-      {showSlider && (
-        <ForecastSlider series={sliderSeries} step={sliderStep}
-          onStep={handleSliderInput} loading={sliderLoading} />
-      )}
-
-      <div className="chart-map-container">
-        {/* Mobile-only: full-width, always-visible bar above the map that opens
-            the layer sheet and shows the current selection. Replaces the
-            easy-to-miss corner FAB. */}
+        {/* Mobile-only: floating bar that opens the layer sheet + shows selection. */}
         <button className="mobile-layers-bar" aria-label="Open map layers"
           aria-expanded={sheetOpen}
           onClick={function() { setSheetOpen(true); }}>
@@ -2311,76 +2434,90 @@ function ChartsView({ navigate, settings }) {
           <span className="mobile-layers-bar-chevron">›</span>
         </button>
 
-        <div className="chart-map-stage">
-          <div ref={mapRef} className="chart-map" />
-
-          <div className="layer-panel-desktop">
-            <LayerPanel
-              baseLayer={baseLayer} condLayers={condLayers}
-              showTides={showTides} showBoats={showBoats} showCatches={showCatches}
-              sstMode={sstMode}
-              onBase={setBaseLayer}
-              onCond={onCond}
-              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
-              onSstMode={setSstMode}
-            />
-          </div>
-
-          {condLoading && (
-            <div className="cond-loading-overlay">
-              <div className="cond-loading-pill">
-                {baseLayer === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
-              </div>
-            </div>
-          )}
-
-          {Object.keys(layerErrors).some(function(k) { return layerErrors[k]; }) && (
-            <div className="layer-error-pills">
-              {layerErrors.sst      && <span className="layer-error-pill">SST unavailable</span>}
-              {layerErrors.wind     && <span className="layer-error-pill">Wind unavailable</span>}
-              {layerErrors.waves    && <span className="layer-error-pill">Swell unavailable</span>}
-              {layerErrors.currents && <span className="layer-error-pill">Currents unavailable</span>}
-              {layerErrors.pressure && <span className="layer-error-pill">Pressure unavailable</span>}
-              {layerErrors.tides    && <span className="layer-error-pill">Tides unavailable</span>}
-            </div>
-          )}
-
-          {sstReadout && baseLayer === 'sst' && sstMode === 'raster' && (
-            <div className="sst-readout">
-              {sstReadout.sst !== null ? (
-                <React.Fragment>
-                  <span className="sst-readout-temp">{_fmtTemp(sstReadout.sst, unitSystem)}</span>
-                  {sstReadout.grad !== null && (
-                    <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
-                  )}
-                </React.Fragment>
-              ) : (
-                <span className="sst-readout-na">No SST (land/cloud)</span>
-              )}
-            </div>
-          )}
-
-          {swellPeriod != null && condLayers.waves && (
-            <div className="swell-period-readout">
-              ~{Math.round(swellPeriod)}s swell period
-            </div>
-          )}
-
-          {showBoatSetup && <BoatsSetupOverlay />}
-          {showBoats && !boatsError && boatPositions.length > 0 && (
-            <div className="boats-count-pill">
-              🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
-            </div>
-          )}
-
-          {geoNote && <div className="geo-note-pill">{geoNote}</div>}
+        {/* Desktop: floating dark-glass layer panel */}
+        <div className="layer-panel-desktop">
+          <LayerPanel
+            baseLayer={baseLayer} condLayers={condLayers}
+            showTides={showTides} showBoats={showBoats} showCatches={showCatches}
+            sstMode={sstMode}
+            onBase={setBaseLayer}
+            onCond={onCond}
+            onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
+            onSstMode={setSstMode}
+          />
         </div>
+
+        {/* Left-edge vertical color scale */}
+        <ChartScaleBar baseLayer={baseLayer} condLayers={condLayers} unitSystem={unitSystem}
+          collapsed={scaleCollapsed} onToggle={function() { setScaleCollapsed(!scaleCollapsed); }} />
+
+        {condLoading && (
+          <div className="cond-loading-overlay">
+            <div className="cond-loading-pill">
+              {baseLayer === 'sst' && sstMode === 'raster' ? 'Loading SST grid…' : 'Loading conditions…'}
+            </div>
+          </div>
+        )}
+
+        {Object.keys(layerErrors).some(function(k) { return layerErrors[k]; }) && (
+          <div className="layer-error-pills">
+            {layerErrors.sst      && <span className="layer-error-pill">SST unavailable</span>}
+            {layerErrors.wind     && <span className="layer-error-pill">Wind unavailable</span>}
+            {layerErrors.waves    && <span className="layer-error-pill">Swell unavailable</span>}
+            {layerErrors.currents && <span className="layer-error-pill">Currents unavailable</span>}
+            {layerErrors.pressure && <span className="layer-error-pill">Pressure unavailable</span>}
+            {layerErrors.tides    && <span className="layer-error-pill">Tides unavailable</span>}
+          </div>
+        )}
+
+        {/* Live SST under the cursor (desktop hover) */}
+        {sstReadout && baseLayer === 'sst' && sstMode === 'raster' && (
+          <div className="sst-readout">
+            {sstReadout.sst !== null ? (
+              <React.Fragment>
+                <span className="sst-readout-temp">{_fmtTemp(sstReadout.sst, unitSystem)}</span>
+                {sstReadout.grad !== null && (
+                  <span className="sst-readout-grad">∇{sstReadout.grad.toFixed(2)} °C/km</span>
+                )}
+              </React.Fragment>
+            ) : (
+              <span className="sst-readout-na">No SST (land/cloud)</span>
+            )}
+          </div>
+        )}
+
+        {showBoatSetup && <BoatsSetupOverlay />}
+        {showBoats && !boatsError && boatPositions.length > 0 && (
+          <div className="boats-count-pill">
+            🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
+          </div>
+        )}
+
+        {geoNote && <div className="geo-note-pill">{geoNote}</div>}
 
         <WaypointsSidebar
           waypoints={waypoints} onSelect={handleSelect}
           onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
           isOpen={sidebarOpen} onToggle={function() { setSidebarOpen(!sidebarOpen); }}
         />
+
+        {/* Bottom stack: docked readout panel + timeline scrubber, floating over the map */}
+        <div className="chart-bottom-stack">
+          <ChartReadoutDock readout={tapReadout}
+            onClose={function() { setTapReadout(null); }}
+            onSave={function(lat, lng) { if (window.ttOpenWaypointModal) window.ttOpenWaypointModal(lat, lng); }} />
+
+          {showSlider && (
+            <ForecastSlider series={sliderSeries} step={sliderStep}
+              onStep={handleSliderInput} loading={sliderLoading}
+              playing={playing}
+              onPlay={function() { setPlaying(function(p) { return !p; }); }}
+              onStepBack={function() { setPlaying(false); handleSliderInput(Math.max(0, sliderStep - 1)); }}
+              onStepFwd={function() { setPlaying(false); handleSliderInput(Math.min(maxSliderStep, sliderStep + 1)); }} />
+          )}
+        </div>
+
+        <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AISStream.io</div>
       </div>
 
       {sheetOpen && (
@@ -2404,14 +2541,6 @@ function ChartsView({ navigate, settings }) {
       )}
 
       {showTides && <TidesPanel data={tidesData} loading={condLoading} />}
-
-      {baseLayer && <ChartLegend type={baseLayer} sstMode={sstMode} />}
-      {condLayers.wind && <ChartLegend type="wind" />}
-      {condLayers.waves && <ChartLegend type="waves" />}
-      {condLayers.currents && <ChartLegend type="currents" />}
-      {condLayers.pressure && <ChartLegend type="pressure" />}
-
-      <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AIS: AISStream.io</div>
 
       {showModal && pendingLatLng && (
         <WaypointModal latlng={pendingLatLng} onSave={handleSave}
