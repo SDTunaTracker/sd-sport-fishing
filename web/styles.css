@@ -4176,6 +4176,11 @@ a.app-footer-link:hover { color: var(--accent); }
 .sst-readout-temp { color: #fff; }
 .sst-readout-grad { font-weight: 400; color: #ffb428; font-size: 11px; }
 .sst-readout-na   { color: #94a3b8; font-size: 11px; }
+.sst-grid-date-pill {
+  position: absolute; bottom: 64px; right: 14px; z-index: 1100;
+  font: 400 10px var(--ss-font-mono, monospace); color: #64748b;
+  pointer-events: none;
+}
 /* ── Isobar labels ────────────────────────────────────────────────────────── */
 .isobar-label {
   background: transparent !important;

@@ -40,7 +40,7 @@ var SST_SOURCES = {
   raster: {
     label: 'Canvas + Fronts',
     badge: 'New',
-    desc: 'Client-rendered 0.04° MUR grid — cloud-free, gap-free. Thermal fronts (orange/red) = SST gradient breaks where bait concentrates. Hover for readout. 3–6 day lag.',
+    desc: 'Client-rendered 0.04° MUR grid — cloud-free, gap-free. Thermal fronts (orange/red) = SST gradient breaks where bait concentrates. Hover for °F readout.',
     layer: null, // handled async in ChartsView — not a tile layer
   },
 };
@@ -628,9 +628,8 @@ function _buildIsobarLayer(grid, lats, lons) {
 // ── MUR SST canvas raster + thermal-front overlay ────────────────────────────
 
 var _MUR_RASTER_BBOX = { latMin: 30.0, latMax: 34.5, lonMin: -121.5, lonMax: -116.0 };
-var _MUR_RASTER_STRIDE = 4;           // every 4th 0.01° native cell → ~0.04° ≈ 4.4 km
-var _MUR_RASTER_CACHE_KEY = 'tt_mur_raster_v1';
-var _MUR_RASTER_CACHE_TTL = 22 * 3600000; // 22 h — MUR is daily, refresh once per day
+var _SST_GRID_CACHE_KEY = 'tt_sst_grid_v1';
+var _SST_GRID_CACHE_TTL = 22 * 3600000; // 22 h — daily data, refresh once per day
 
 // SST color ramp: [°F, r, g, b] breakpoints
 var _SST_RAMP = [
@@ -662,81 +661,52 @@ function _sstRgb(f) {
   return [last[1], last[2], last[3]];
 }
 
-function _fetchMURRasterGrid(dateStr) {
-  var t = dateStr + 'T09:00:00Z';
-  var b = _MUR_RASTER_BBOX, s = _MUR_RASTER_STRIDE;
-  var url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json' +
-    '?analysed_sst' +
-    '[(' + t + '):1:(' + t + ')]' +
-    '[(' + b.latMin + '):' + s + ':(' + b.latMax + ')]' +
-    '[(' + b.lonMin + '):' + s + ':(' + b.lonMax + ')]';
-  return fetch(url)
-    .then(function(r) {
-      if (!r.ok) throw new Error('ERDDAP HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function(d) {
-      var tbl = d.table || {};
-      var cols = tbl.columnNames || [];
-      var latI = cols.indexOf('latitude'), lonI = cols.indexOf('longitude'), sstI = cols.indexOf('analysed_sst');
-      if (sstI === -1) throw new Error('no analysed_sst column');
-      var rows = tbl.rows || [];
-      if (rows.length < 20) throw new Error('too few rows: ' + rows.length);
-
-      var latSet = Object.create(null), lonSet = Object.create(null);
-      for (var i = 0; i < rows.length; i++) {
-        if (rows[i][sstI] !== null) { latSet[rows[i][latI]] = true; lonSet[rows[i][lonI]] = true; }
-      }
-      var lats = Object.keys(latSet).map(Number).sort(function(a,b){return a-b;});
-      var lons = Object.keys(lonSet).map(Number).sort(function(a,b){return a-b;});
-      var ny = lats.length, nx = lons.length;
-      if (ny < 5 || nx < 5) throw new Error('grid too small: ' + ny + 'x' + nx);
-
-      var dlat = ny > 1 ? lats[1]-lats[0] : 0.04;
-      var dlon = nx > 1 ? lons[1]-lons[0] : 0.04;
-      var values = new Float32Array(ny * nx);
-      values.fill(NaN);
-      for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        if (row[sstI] === null) continue;
-        var sst_c = row[sstI];
-        if (sst_c > 200) sst_c -= 273.15; // Kelvin guard
-        var li  = Math.round((row[latI] - lats[0]) / dlat);
-        var loi = Math.round((row[lonI] - lons[0]) / dlon);
-        if (li >= 0 && li < ny && loi >= 0 && loi < nx)
-          values[li * nx + loi] = sst_c * 9/5 + 32; // → °F
-      }
-      return { lats: lats, lons: lons, values: values, nx: nx, ny: ny, dlat: dlat, dlon: dlon, date: dateStr };
-    });
-}
-
-function _getCachedMURRasterGrid() {
+// Loads the server-side SST grid (web/sst_grid.json, raw °C) and converts
+// to an in-memory Float32Array in °F for the existing canvas renderer.
+// Falls back to a stale localStorage cache rather than ever hard-failing.
+function _loadSSTGrid() {
+  var staleCache = null;
   try {
-    var c = JSON.parse(localStorage.getItem(_MUR_RASTER_CACHE_KEY) || 'null');
-    if (c && c.data && Date.now() - c.ts < _MUR_RASTER_CACHE_TTL) {
+    var c = JSON.parse(localStorage.getItem(_SST_GRID_CACHE_KEY) || 'null');
+    if (c && c.data) {
       c.data.values = new Float32Array(c.data.values);
-      return Promise.resolve(c.data);
+      if (Date.now() - c.ts < _SST_GRID_CACHE_TTL) return Promise.resolve(c.data);
+      staleCache = c.data;
     }
   } catch(e) {}
-  var today = new Date();
-  function attempt(back) {
-    if (back > 9) return Promise.reject(new Error('MUR: no data in last 9 days'));
-    var d = new Date(today); d.setDate(d.getDate() - back);
-    return _withTimeout(_fetchMURRasterGrid(d.toISOString().slice(0,10)), 10000, 'MUR SST')
-      .then(function(data) {
-        try {
-          localStorage.setItem(_MUR_RASTER_CACHE_KEY, JSON.stringify({
-            ts: Date.now(),
-            data: { lats: data.lats, lons: data.lons, nx: data.nx, ny: data.ny,
-                    dlat: data.dlat, dlon: data.dlon, date: data.date,
-                    values: Array.from(data.values) },
-          }));
-        } catch(e) {}
-        return data;
-      })
-      .catch(function() { return attempt(back + 1); });
-  }
-  return attempt(3);
+  return fetch('/sst_grid.json', { cache: 'no-store' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('sst_grid.json HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(json) {
+      var raw = json.values_c;
+      var values = new Float32Array(json.ny * json.nx);
+      values.fill(NaN);
+      for (var i = 0; i < raw.length; i++) {
+        if (raw[i] !== null) values[i] = raw[i] * 9 / 5 + 32; // °C → °F
+      }
+      var grid = {
+        lats: json.lats, lons: json.lons,
+        ny: json.ny, nx: json.nx,
+        dlat: json.dlat, dlon: json.dlon,
+        date: json.date,
+        values: values,
+      };
+      try {
+        localStorage.setItem(_SST_GRID_CACHE_KEY, JSON.stringify({
+          ts: Date.now(),
+          data: { lats: grid.lats, lons: grid.lons, ny: grid.ny, nx: grid.nx,
+                  dlat: grid.dlat, dlon: grid.dlon, date: grid.date,
+                  values: Array.from(grid.values) },
+        }));
+      } catch(e) {}
+      return grid;
+    })
+    .catch(function() {
+      if (staleCache) return staleCache;
+      throw new Error('SST grid unavailable');
+    });
 }
 
 function _renderSSTCanvas(grid) {
@@ -1847,7 +1817,7 @@ function ChartsView({ navigate, settings }) {
   const [showCatches, setShowCatches] = React.useState(false);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
   const [sstMode, setSstMode]       = React.useState(function() {
-    return localStorage.getItem('tt_sst_mode') || 'raster';
+    return localStorage.getItem('tt_sst_mode') || 'mur';
   });
   const [dirMode, setDirMode]       = React.useState(function() {
     return localStorage.getItem('tt_dir_mode') || 'particle';
@@ -1866,6 +1836,7 @@ function ChartsView({ navigate, settings }) {
   const [sliderLoading, setSliderLoading] = React.useState(false);
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
+  const [sstGridDate, setSstGridDate] = React.useState(null);
   const [geoNote, setGeoNote]       = React.useState(null);
   const [tapReadout, setTapReadout] = React.useState(null);
   const [scaleCollapsed, setScaleCollapsed] = React.useState(false);
@@ -2146,8 +2117,9 @@ function ChartsView({ navigate, settings }) {
     if (baseLayer === 'sst' && sstModeRef.current === 'raster') {
       setLayerError('sst', false);
       setCondLoading(true);
-      _getCachedMURRasterGrid().then(function(grid) {
+      _loadSSTGrid().then(function(grid) {
         setCondLoading(false);
+        setSstGridDate(grid.date);
         if (cancelled || !mapInstance.current || baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
         murGridRef.current = grid;
         var ovs = _buildMUROverlays(grid);
@@ -2176,8 +2148,9 @@ function ChartsView({ navigate, settings }) {
     if (sstMode === 'raster') {
       setLayerError('sst', false);
       setCondLoading(true);
-      _getCachedMURRasterGrid().then(function(grid) {
+      _loadSSTGrid().then(function(grid) {
         setCondLoading(false);
+        setSstGridDate(grid.date);
         if (cancelled || !mapInstance.current || baseLyrRef.current !== 'sst' || sstModeRef.current !== 'raster') return;
         murGridRef.current = grid;
         var ovs = _buildMUROverlays(grid);
@@ -2582,6 +2555,10 @@ function ChartsView({ navigate, settings }) {
           </div>
         )}
 
+        {baseLayer === 'sst' && sstMode === 'raster' && sstGridDate && !layerErrors.sst && (
+          <div className="sst-grid-date-pill">Canvas · {sstGridDate}</div>
+        )}
+
         {showBoatSetup && <BoatsSetupOverlay />}
         {showBoats && !boatsError && boatPositions.length > 0 && (
           <div className="boats-count-pill">
@@ -2685,8 +2662,8 @@ function _prewarmCharts() {
       '.basemaps.cartocdn.com/dark_nolabels/' + z + '/' + x + '/' + y + '.png';
   });
 
-  // 2. SST grid — the default base-layer data (no-op if cache is still fresh).
-  try { _getCachedMURRasterGrid().catch(function() {}); } catch (e) {}
+  // 2. SST grid — prime the cache for the canvas raster layer.
+  try { _loadSSTGrid().catch(function() {}); } catch (e) {}
 }
 
 window.__ttPrewarmCharts = _prewarmCharts;
