@@ -1472,11 +1472,14 @@ function buildCatchLayer(trips) {
 
 // ── ForecastSlider ────────────────────────────────────────────────────────────
 
-function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStepBack, onStepFwd }) {
+function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStepBack, onStepFwd, prefetchFrames }) {
   if (loading && !series) {
     return (
       <div className="chart-timeline-dock">
-        <div className="forecast-slider-loading">⏳ Loading forecast series…</div>
+        <div className="fsl-prefetch-wrap">
+          <div className="fsl-prefetch-label">Pre-fetching wind frames…</div>
+          <div className="fsl-prefetch-bar"><div className="fsl-prefetch-fill fsl-prefetch-indeterminate" /></div>
+        </div>
       </div>
     );
   }
@@ -1486,30 +1489,37 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
   var isLowConf = step >= 168;
   var hourStr   = series.hours[step] || '';
   var dt        = new Date(hourStr.length === 13 ? hourStr + ':00:00Z' : hourStr + 'Z');
-  var dayLabel  = isNaN(dt) ? '' : dt.toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
-  var timeLabel = isNaN(dt) ? '' : dt.toLocaleTimeString('en-US', {
-    hour: 'numeric', hour12: true, timeZone: 'America/Los_Angeles' });
-  var nDays     = Math.ceil((maxStep + 1) / 24);
-  var nowStep   = new Date().getUTCHours(); // first 24 steps correspond to today
+
+  // 'Thu Jun 12 · 2:00 PM PDT' — consistent with LastUpdated timestamp format
+  var dtLabel = '';
+  if (!isNaN(dt.getTime())) {
+    var dayPart  = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
+    var timePart = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles', timeZoneName: 'short' });
+    dtLabel = dayPart + ' · ' + timePart;
+  }
+
+  var nDays   = Math.ceil((maxStep + 1) / 24);
+  var nowStep = new Date().getUTCHours();
 
   return (
     <div className={'chart-timeline-dock' + (isLowConf ? ' fsl-low-conf' : '')}>
       <div className="chart-timeline-head">
         <div className="chart-timeline-controls">
-          <button className="ctl-btn" onClick={onStepBack} aria-label="Step back" title="Step back">‹</button>
+          <button className="ctl-btn" onClick={onStepBack} aria-label="Step back" title="Step back">&#x2039;</button>
           <button className="ctl-btn ctl-play" onClick={onPlay}
             aria-label={playing ? 'Pause' : 'Play'} title={playing ? 'Pause' : 'Play'}>
             {playing ? '❚❚' : '▶'}
           </button>
-          <button className="ctl-btn" onClick={onStepFwd} aria-label="Step forward" title="Step forward">›</button>
+          <button className="ctl-btn" onClick={onStepFwd} aria-label="Step forward" title="Step forward">&#x203a;</button>
         </div>
         <span className="chart-timeline-time">
-          <span className="fsl-day">{dayLabel}</span>
-          <span className="fsl-hr">{timeLabel} PT</span>
+          <span className="fsl-dt">{dtLabel}</span>
           {step === nowStep && <span className="fsl-now-badge">Now</span>}
-          {isLowConf && <span className="fsl-conf-badge">⚠ Lower confidence</span>}
+          {isLowConf && <span className="fsl-conf-badge">&#9888; Lower confidence</span>}
         </span>
+        {prefetchFrames > 0 && (
+          <span className="fsl-frames-badge">{prefetchFrames} frames cached</span>
+        )}
       </div>
       <input type="range" className="forecast-slider-range" min={0} max={maxStep}
         step={1} value={step} onInput={function(e) { onStep(+e.target.value); }} />
@@ -1834,6 +1844,7 @@ function ChartsView({ navigate, settings }) {
   const [sliderStep, setSliderStep] = React.useState(function() { return new Date().getUTCHours(); });
   const [sliderSeries, setSliderSeries] = React.useState(null);
   const [sliderLoading, setSliderLoading] = React.useState(false);
+  const [windPrefetchFrames, setWindPrefetchFrames] = React.useState(0);
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
   const [sstGridDate, setSstGridDate] = React.useState(null);
@@ -2216,6 +2227,7 @@ function ChartsView({ navigate, settings }) {
           getCachedWindSeries14d().then(function(series) {
             setSliderLoading(false);
             if (cancelled || !mapInstance.current || !condLayersRef.current.wind) return;
+            setWindPrefetchFrames(series.frames.length);
             var initStep = new Date().getUTCHours();
             setSliderSeries(Object.assign({ type: 'wind' }, series));
             setSliderStep(initStep);
@@ -2226,6 +2238,7 @@ function ChartsView({ navigate, settings }) {
       if (windVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
       windDataRef.current = null;
       setLayerError('wind', false);
+      setWindPrefetchFrames(0);
       setSliderSeries(function(prev) { return (prev && prev.type === 'wind') ? null : prev; });
     }
     return function() {
@@ -2467,7 +2480,7 @@ function ChartsView({ navigate, settings }) {
 
   var workerReady   = !!(window.VESSEL_WORKER_URL || '').trim();
   var showBoatSetup = showBoats && !workerReady && boatsError;
-  var showSlider    = (condLayers.wind || condLayers.waves) && (sliderSeries || sliderLoading);
+  var showSlider    = condLayers.wind && (sliderSeries || sliderLoading);
 
   // Summary of active layers, surfaced on the mobile "Map Layers" bar so the
   // current selection is visible without opening the sheet.
@@ -2584,6 +2597,7 @@ function ChartsView({ navigate, settings }) {
             <ForecastSlider series={sliderSeries} step={sliderStep}
               onStep={handleSliderInput} loading={sliderLoading}
               playing={playing}
+              prefetchFrames={windPrefetchFrames}
               onPlay={function() { setPlaying(function(p) { return !p; }); }}
               onStepBack={function() { setPlaying(false); handleSliderInput(Math.max(0, sliderStep - 1)); }}
               onStepFwd={function() { setPlaying(false); handleSliderInput(Math.min(maxSliderStep, sliderStep + 1)); }} />

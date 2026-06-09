@@ -5903,6 +5903,32 @@ main[data-screen-label="charts"] + .app-footer { display: none; }
 
 .forecast-slider-loading { color: #94a3b8; font-size: 12px; text-align: center; padding: 4px 0; }
 
+/* Pre-fetch progress bar (shown while wind series is loading) */
+.fsl-prefetch-wrap { padding: 2px 0 4px; }
+.fsl-prefetch-label { color: #64748b; font-size: 11px; font-weight: 400; margin-bottom: 5px; }
+.fsl-prefetch-bar {
+  height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+}
+.fsl-prefetch-fill { height: 100%; border-radius: 2px; background: #0ea5e9; }
+.fsl-prefetch-indeterminate {
+  width: 38%;
+  animation: fsl-prefetch-slide 1.1s ease-in-out infinite;
+}
+@keyframes fsl-prefetch-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(370%); }
+}
+
+/* Timestamp: 'Thu Jun 12 · 2:00 PM PDT' */
+.fsl-dt { font-weight: 700; color: #e2e8f0; font-size: 12px; }
+
+/* Frame-count badge (right-aligned, faint) */
+.fsl-frames-badge {
+  margin-left: auto; flex-shrink: 0;
+  color: #334155; font-size: 10px; font-family: var(--font-mono, 'DM Mono', monospace);
+  font-weight: 400;
+}
+
 .fsl-day   { font-weight: 700; color: #e2e8f0; font-size: 12px; }
 .fsl-hr    { font-weight: 400; color: #94a3b8; font-size: 11px; }
 
