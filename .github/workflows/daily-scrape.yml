@@ -129,34 +129,11 @@ jobs:
               print('WARNING: all ERDDAP attempts failed — keeping existing sst_grid.json')
           PYEOF
 
-      - name: Stamp index.html with data.js hash and build commit
-        run: |
-          python3 - <<'EOF'
-          import hashlib, os, re, pathlib, datetime
-          web      = pathlib.Path("web")
-          data_js  = web / "data.js"
-          index    = web / "index.html"
-          if not data_js.exists() or not index.exists():
-              print("Skipping stamp — missing files"); raise SystemExit(0)
-          data_hash  = hashlib.md5(data_js.read_bytes()).hexdigest()[:8]
-          sha        = (os.environ.get("GITHUB_SHA") or "")[:7]
-          build_time = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-          text = index.read_text(encoding="utf-8")
-          text = re.sub(r'src="data\.js(\?v=[^"]*)?"', f'src="data.js?v={data_hash}"', text)
-          text = re.sub(r'\n?<meta name="build-(time|commit)"[^>]*>', '', text)
-          if sha:
-              tags = (f'\n<meta name="build-time" content="{build_time}">'
-                      f'\n<meta name="build-commit" content="{sha}">')
-              text = text.replace('<meta charset="utf-8">', f'<meta charset="utf-8">{tags}', 1)
-          index.write_text(text, encoding="utf-8")
-          print(f"Stamped index.html: data.js?v={data_hash}  commit={sha or 'none'}")
-          EOF
-
       - name: Commit and push updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tracker.db web/data.js web/index.html web/sitemap.xml web/sd web/sst_grid.json
+          git add tracker.db web/data.js web/sitemap.xml web/sd web/sst_grid.json
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
