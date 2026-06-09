@@ -29,14 +29,21 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
+// respondWith MUST always receive a real Response — undefined causes
+// "Failed to convert value to 'Response'" and breaks navigation.
+function _cacheOrError(req) {
+  return caches.match(req).then(function(r) { return r || Response.error(); });
+}
+function _cacheRootOrError() {
+  return caches.match('/').then(function(r) { return r || Response.error(); });
+}
+
 self.addEventListener('fetch', function(e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url = req.url;
 
   // Immutable, version-pinned CDN libraries (Leaflet, React): cache-first.
-  // These URLs never change for a given version, so a cached copy is always
-  // valid — this makes the map appear instantly on repeat visits and offline.
   if (
     url.indexOf('/leaflet/1.9.4/') !== -1 ||
     url.indexOf('react@18.3.1') !== -1 ||
@@ -51,7 +58,7 @@ self.addEventListener('fetch', function(e) {
             caches.open(CACHE).then(function(c) { c.put(req, clone); });
           }
           return res;
-        }).catch(function() { return caches.match(req); });
+        }).catch(function() { return _cacheOrError(req); });
       })
     );
     return;
@@ -74,9 +81,7 @@ self.addEventListener('fetch', function(e) {
   // HTML navigation: network-first, fall back to cached root
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req).catch(function() {
-        return caches.match('/');
-      })
+      fetch(req).catch(_cacheRootOrError)
     );
     return;
   }
@@ -92,7 +97,7 @@ self.addEventListener('fetch', function(e) {
             caches.open(CACHE).then(function(c) { c.put(req, clone); });
           }
           return res;
-        }).catch(function() { return caches.match(req); });
+        }).catch(function() { return _cacheOrError(req); });
       })
     );
     return;
@@ -102,20 +107,21 @@ self.addEventListener('fetch', function(e) {
   if (url.endsWith('.png') || url.endsWith('.ico') || url.endsWith('.css') || url.endsWith('.webmanifest')) {
     e.respondWith(
       caches.match(req).then(function(cached) {
-        return cached || fetch(req).then(function(res) {
+        if (cached) return cached;
+        return fetch(req).then(function(res) {
           if (res && res.status === 200) {
             var clone = res.clone();
             caches.open(CACHE).then(function(c) { c.put(req, clone); });
           }
           return res;
-        });
+        }).catch(function() { return Response.error(); });
       })
     );
     return;
   }
 
-  // Everything else: network-first
+  // Everything else: network-first, fall back to cache, never undefined
   e.respondWith(
-    fetch(req).catch(function() { return caches.match(req); })
+    fetch(req).catch(function() { return _cacheOrError(req); })
   );
 });

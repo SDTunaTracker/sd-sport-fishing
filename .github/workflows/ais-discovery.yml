@@ -49,6 +49,46 @@ jobs:
             --boats-file data/boat-mmsi.json \
             --append
 
+      - name: Generate ais_positions.json
+        run: |
+          python - <<'EOF'
+          import json
+          from pathlib import Path
+
+          disc_path = Path('data/ais-discoveries.json')
+          mmsi_path = Path('data/vessel_mmsi.json')
+          out_path  = Path('web/ais_positions.json')
+
+          discoveries = json.loads(disc_path.read_text()) if disc_path.exists() else {}
+          mmsi_data   = json.loads(mmsi_path.read_text()) if mmsi_path.exists() else {}
+          known       = mmsi_data.get('vessels', {})
+          obs         = discoveries.get('all_observed_vessels', {})
+
+          positions = []
+          for mmsi, v in obs.items():
+              boat_name = v.get('matched_our_boat')
+              if not boat_name:
+                  continue
+              lat, lng = v.get('lat'), v.get('lng')
+              if lat is None or lng is None:
+                  continue
+              positions.append({
+                  'mmsi':       mmsi,
+                  'name':       boat_name,
+                  'landing':    known.get(mmsi, {}).get('landing', ''),
+                  'lat':        lat,
+                  'lng':        lng,
+                  'sog':        None,
+                  'cog':        None,
+                  'heading':    None,
+                  'updated_at': v.get('last_seen', ''),
+                  'trail':      [],
+              })
+
+          out_path.write_text(json.dumps(positions, indent=2))
+          print(f"Generated {out_path}: {len(positions)} vessels")
+          EOF
+
       - name: Commit discoveries
         run: |
           git config user.name "Tuna Tracker AIS Bot"
