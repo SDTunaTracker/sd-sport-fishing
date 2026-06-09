@@ -122,20 +122,21 @@ function _withTimeout(promise, ms, label) {
   ]);
 }
 
-function fetchTidesData() {
-  var d = new Date();
-  var dt = String(d.getFullYear()) +
-    String(d.getMonth() + 1).padStart(2, '0') +
-    String(d.getDate()).padStart(2, '0');
+function fetchTidesData(dateKey) {
+  if (!dateKey) dateKey = _pacificDateKey(Date.now());
+  if (_tidesCache[dateKey]) return Promise.resolve(_tidesCache[dateKey]);
   return _withTimeout(
     fetch(
       'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?' +
       'station=9410230&product=predictions&datum=MLLW&time_zone=lst_ldt' +
       '&interval=hilo&units=english&application=tunatracker&format=json' +
-      '&begin_date=' + dt + '&end_date=' + dt
+      '&begin_date=' + dateKey + '&end_date=' + dateKey
     ).then(function(r) { return r.json(); }),
     6000, 'tides'
-  );
+  ).then(function(data) {
+    _tidesCache[dateKey] = data;
+    return data;
+  });
 }
 
 // ── Wind particle grid (leaflet-velocity) ─────────────────────────────────────
@@ -354,6 +355,14 @@ function getCachedCurrentGrid() {
 var _SERIES_TTL = 3 * 3600000; // 3 h in-memory cache
 var _windSeries14d  = null;    // { ts, frames, hours }
 var _wavesSeries7d  = null;    // { ts, frames, hours }
+var _tidesCache     = {};      // keyed by YYYYMMDD — predictions last ~1 yr, no TTL needed
+
+// Returns the Pacific date as YYYYMMDD string (for NOAA tides API begin_date/end_date)
+function _pacificDateKey(utcMs) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(utcMs)).replace(/-/g, '');
+}
 
 function _buildSeriesFrames(locs, getSpd, getDir, headerBuilder, negate) {
   var nHours = ((locs[0].hourly || {}).time || []).length;
@@ -1057,7 +1066,7 @@ function exportWaypoints(waypoints, format) {
 
 // ── TidesPanel ────────────────────────────────────────────────────────────────
 
-function TidesPanel({ data, loading }) {
+function TidesPanel({ data, loading, scrubberMs }) {
   if (loading) {
     return <div className="tides-panel"><SkeletonRows count={4} height={28} /></div>;
   }
@@ -1066,7 +1075,8 @@ function TidesPanel({ data, loading }) {
     return <div className="tides-panel"><div className="tides-error">Tide data unavailable — {err}</div></div>;
   }
 
-  var now = new Date();
+  // When scrubber is active, "now" is the scrubbed time so past/future/next are relative to it
+  var now = scrubberMs ? new Date(scrubberMs) : new Date();
   var preds = data.predictions.map(function(p) {
     return {
       t: p.t, v: parseFloat(p.v), type: p.type,
@@ -1093,7 +1103,7 @@ function TidesPanel({ data, loading }) {
     <div className="tides-panel">
       <div className="tides-station-row">
         <span className="tides-station">San Diego — NOAA Station 9410230</span>
-        <span className="tides-date">{now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+        <span className="tides-date">{now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' })}</span>
       </div>
       <div className="tides-summary">
         <div className="tides-summary-item">
@@ -1114,7 +1124,7 @@ function TidesPanel({ data, loading }) {
         )}
       </div>
       <div className="tides-schedule">
-        <div className="tides-schedule-title">Today's tide schedule</div>
+        <div className="tides-schedule-title">{scrubberMs ? now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' }) + ' tide schedule' : "Today's tide schedule"}</div>
         {preds.map(function(p, i) {
           var isNext = next && p.t === next.t;
           return (
@@ -1472,12 +1482,14 @@ function buildCatchLayer(trips) {
 
 // ── ForecastSlider ────────────────────────────────────────────────────────────
 
-function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStepBack, onStepFwd, prefetchFrames }) {
+function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStepBack, onStepFwd, layerType }) {
+  var typeLabel = layerType === 'waves' ? 'swell' : 'wind';
+
   if (loading && !series) {
     return (
       <div className="chart-timeline-dock">
         <div className="fsl-prefetch-wrap">
-          <div className="fsl-prefetch-label">Pre-fetching wind frames…</div>
+          <div className="fsl-prefetch-label">Pre-fetching {typeLabel} frames…</div>
           <div className="fsl-prefetch-bar"><div className="fsl-prefetch-fill fsl-prefetch-indeterminate" /></div>
         </div>
       </div>
@@ -1486,6 +1498,8 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
   if (!series) return null;
 
   var maxStep   = series.frames.length - 1;
+  var nFrames   = maxStep + 1;
+  var nDays     = Math.ceil(nFrames / 24);
   var isLowConf = step >= 168;
   var hourStr   = series.hours[step] || '';
   var dt        = new Date(hourStr.length === 13 ? hourStr + ':00:00Z' : hourStr + 'Z');
@@ -1498,7 +1512,6 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
     dtLabel = dayPart + ' · ' + timePart;
   }
 
-  var nDays   = Math.ceil((maxStep + 1) / 24);
   var nowStep = new Date().getUTCHours();
 
   return (
@@ -1517,9 +1530,7 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
           {step === nowStep && <span className="fsl-now-badge">Now</span>}
           {isLowConf && <span className="fsl-conf-badge">&#9888; Lower confidence</span>}
         </span>
-        {prefetchFrames > 0 && (
-          <span className="fsl-frames-badge">{prefetchFrames} frames cached</span>
-        )}
+        <span className="fsl-frames-badge">{nDays}d · {nFrames} frames</span>
       </div>
       <input type="range" className="forecast-slider-range" min={0} max={maxStep}
         step={1} value={step} onInput={function(e) { onStep(+e.target.value); }} />
@@ -1844,7 +1855,6 @@ function ChartsView({ navigate, settings }) {
   const [sliderStep, setSliderStep] = React.useState(function() { return new Date().getUTCHours(); });
   const [sliderSeries, setSliderSeries] = React.useState(null);
   const [sliderLoading, setSliderLoading] = React.useState(false);
-  const [windPrefetchFrames, setWindPrefetchFrames] = React.useState(0);
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
   const [sstGridDate, setSstGridDate] = React.useState(null);
@@ -1921,6 +1931,19 @@ function ChartsView({ navigate, settings }) {
   // Keep a live ref of the slider step for the play loop's interval closure.
   const sliderStepRef = React.useRef(sliderStep);
   React.useEffect(function() { sliderStepRef.current = sliderStep; }, [sliderStep]);
+
+  // Current scrubber timestamp (UTC ms) — null when no series is loaded
+  var scrubberMs = React.useMemo(function() {
+    if (!sliderSeries || !sliderSeries.hours) return null;
+    var h = sliderSeries.hours[sliderStep] || '';
+    if (!h) return null;
+    var ms = new Date(h.length === 13 ? h + ':00:00Z' : h + 'Z').getTime();
+    return isNaN(ms) ? null : ms;
+  }, [sliderStep, sliderSeries]);
+
+  // Pacific calendar date for the current scrubber position (YYYYMMDD)
+  // Changes only at day boundaries — safe as a useEffect dependency for tides refetch
+  var scrubberDayKey = scrubberMs ? _pacificDateKey(scrubberMs) : null;
 
   // Timeline playback: advance one frame at a time, looping at the end.
   React.useEffect(function() {
@@ -2227,7 +2250,6 @@ function ChartsView({ navigate, settings }) {
           getCachedWindSeries14d().then(function(series) {
             setSliderLoading(false);
             if (cancelled || !mapInstance.current || !condLayersRef.current.wind) return;
-            setWindPrefetchFrames(series.frames.length);
             var initStep = new Date().getUTCHours();
             setSliderSeries(Object.assign({ type: 'wind' }, series));
             setSliderStep(initStep);
@@ -2238,7 +2260,6 @@ function ChartsView({ navigate, settings }) {
       if (windVelRef.current && mapInstance.current) { mapInstance.current.removeLayer(windVelRef.current); windVelRef.current = null; }
       windDataRef.current = null;
       setLayerError('wind', false);
-      setWindPrefetchFrames(0);
       setSliderSeries(function(prev) { return (prev && prev.type === 'wind') ? null : prev; });
     }
     return function() {
@@ -2353,20 +2374,23 @@ function ChartsView({ navigate, settings }) {
     return function() { cancelled = true; };
   }, [condLayers.pressure]);
 
-  // Tides overlay
+  // Tides overlay — refetches when tides is enabled or the scrubber crosses a day boundary.
+  // fetchTidesData() caches by date so day-boundary re-triggers are near-instant after first load.
   React.useEffect(function() {
-    if (showTides) {
-      setLayerError('tides', false);
-      setCondLoading(true);
-      fetchTidesData().then(function(data) {
-        setCondLoading(false);
-        setTidesData(data);
-      }).catch(function() { setCondLoading(false); setLayerError('tides', true); });
-    } else {
+    if (!showTides) {
       setTidesData(null);
       setLayerError('tides', false);
+      return;
     }
-  }, [showTides]);
+    setLayerError('tides', false);
+    var dateKey = scrubberDayKey || undefined;
+    var prevData = _tidesCache[dateKey || _pacificDateKey(Date.now())];
+    if (!prevData) setCondLoading(true);
+    fetchTidesData(dateKey).then(function(data) {
+      setCondLoading(false);
+      setTidesData(data);
+    }).catch(function() { setCondLoading(false); setLayerError('tides', true); });
+  }, [showTides, scrubberDayKey]);
 
   // Boat positions overlay + polling
   React.useEffect(function() {
@@ -2480,7 +2504,7 @@ function ChartsView({ navigate, settings }) {
 
   var workerReady   = !!(window.VESSEL_WORKER_URL || '').trim();
   var showBoatSetup = showBoats && !workerReady && boatsError;
-  var showSlider    = condLayers.wind && (sliderSeries || sliderLoading);
+  var showSlider    = (condLayers.wind || condLayers.waves) && (sliderSeries || sliderLoading);
 
   // Summary of active layers, surfaced on the mobile "Map Layers" bar so the
   // current selection is visible without opening the sheet.
@@ -2597,7 +2621,7 @@ function ChartsView({ navigate, settings }) {
             <ForecastSlider series={sliderSeries} step={sliderStep}
               onStep={handleSliderInput} loading={sliderLoading}
               playing={playing}
-              prefetchFrames={windPrefetchFrames}
+              layerType={sliderSeries ? sliderSeries.type : (condLayers.wind ? 'wind' : 'waves')}
               onPlay={function() { setPlaying(function(p) { return !p; }); }}
               onStepBack={function() { setPlaying(false); handleSliderInput(Math.max(0, sliderStep - 1)); }}
               onStepFwd={function() { setPlaying(false); handleSliderInput(Math.min(maxSliderStep, sliderStep + 1)); }} />
@@ -2627,7 +2651,7 @@ function ChartsView({ navigate, settings }) {
         </div>
       )}
 
-      {showTides && <TidesPanel data={tidesData} loading={condLoading} />}
+      {showTides && <TidesPanel data={tidesData} loading={condLoading} scrubberMs={scrubberMs} />}
 
       {showModal && pendingLatLng && (
         <WaypointModal latlng={pendingLatLng} onSave={handleSave}
