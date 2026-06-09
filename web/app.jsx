@@ -331,6 +331,17 @@ function App() {
     if (window.__updateMetaTags) window.__updateMetaTags(route.view, route.params || {});
   }, [route.view, route.params?.boat, route.params?.subtab]);
 
+  // Lock the document scroll context when the full-bleed Charts map is active.
+  useE(() => {
+    const root = document.documentElement;
+    if (route.view === 'charts') {
+      root.classList.add('charts-open');
+    } else {
+      root.classList.remove('charts-open');
+    }
+    return () => root.classList.remove('charts-open');
+  }, [route.view]);
+
   // Keep pageContext in sync with route and regions for the chatbot.
   useE(() => {
     setPageContext({

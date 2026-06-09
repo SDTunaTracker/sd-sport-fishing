@@ -3897,7 +3897,7 @@ a.app-footer-link:hover { color: var(--accent); }
   position: absolute;
   top: 70px;
   left: 10px;
-  z-index: 600;
+  z-index: 1100;
   width: 232px;
   max-height: calc(100% - 90px);
   overflow-y: auto;
@@ -4224,6 +4224,16 @@ a.app-footer-link:hover { color: var(--accent); }
    Immersive "Surfline-style" charts layout — the map fills the viewport and
    every control floats over it.
    ══════════════════════════════════════════════════════════════════════════ */
+/* ── Charts: lock the page to one scroll context ─────────────────────────── */
+/* JS adds .charts-open to <html> when Charts is the active route.            */
+/* The :has() rule covers any browser that supports it as an extra guarantee. */
+html.charts-open,
+html:has(.charts-immersive) { overflow: hidden; height: 100dvh; }
+html.charts-open body,
+html:has(.charts-immersive) body { overflow: hidden; }
+/* Hide the footer — it sits below the map in DOM order and adds scroll height */
+main[data-screen-label="charts"] + .app-footer { display: none; }
+
 .charts-immersive {
   padding: 0;
   max-width: none;
@@ -4258,7 +4268,7 @@ a.app-footer-link:hover { color: var(--accent); }
 /* ── Left-edge vertical color scale ─────────────────────────────────────── */
 .chart-scalebar {
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  z-index: 500;
+  z-index: 1100;
   display: flex; flex-direction: column; align-items: stretch;
   background: rgba(6,14,24,0.6);
   border-radius: 0 12px 12px 0;
@@ -4461,7 +4471,7 @@ a.app-footer-link:hover { color: var(--accent); }
   border-bottom: 1px solid rgba(255,255,255,0.08);
   gap: 6px;
 }
-.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: #e2e8f0; flex: 1; }
+.wp-sidebar-title { font: 700 11px var(--ss-font-sans); color: #e2e8f0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wp-sidebar-controls { display: flex; align-items: center; gap: 6px; }
 .wp-sidebar-chevron { font-size: 9px; color: #64748b; }
 .wp-export-wrap { position: relative; }
@@ -4589,12 +4599,15 @@ a.app-footer-link:hover { color: var(--accent); }
   .charts-immersive { padding: 0; max-width: none; margin: -12px -12px -32px; height: calc(100vh - 48px); height: calc(100dvh - 48px); }
   .charts-immersive .mobile-layers-bar {
     position: absolute; top: 10px; left: 10px; right: 10px; width: auto; margin: 0;
-    z-index: 600; min-height: 48px; padding: 8px 14px; border-radius: 12px;
+    z-index: 1100; min-height: 48px; padding: 8px 14px; border-radius: 12px;
     background: rgba(8,18,30,0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
   .charts-immersive .wp-sidebar {
-    position: absolute; top: 64px; right: 10px; left: auto; width: 210px; margin: 0;
+    position: absolute; top: 68px; right: 10px; left: auto; width: 210px; margin: 0; z-index: 1100;
   }
+  /* Push pills below the full-width mobile layers bar (top:10px + 48px height + gap) */
+  .charts-immersive .boats-count-pill { top: 72px; }
+  .charts-immersive .geo-note-pill { top: 72px; }
   .chart-scalebar { top: 44%; }
   .chart-scalebar-grad { width: 24px; height: clamp(140px, 30vh, 240px); }
   /* Bigger, higher-contrast map controls so they don't disappear into the map */
