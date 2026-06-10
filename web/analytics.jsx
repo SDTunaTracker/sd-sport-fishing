@@ -104,7 +104,7 @@ function StreakTracker({ navigate, regions }) {
 
   return (
     <Panel title="Recent Form"
-           meta="Last 10 trips per boat — above (✅) or below (❌) fleet median for that trip length · min 10 trips"
+           meta="Last 10 trips per boat — above (✅) or below (❌) the median of boats fishing the same day & trip length (all-time median when <3 boats out) · min 10 trips"
            actions={
              <div className="row" style={{gap:4}}>
                {tabs.map(([val, lbl]) => (

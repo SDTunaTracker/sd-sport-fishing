@@ -31,12 +31,32 @@ function StarRow({ rating, count, size }) {
   );
 }
 
+// 🔥 Hot badge with a tap-to-reveal explanation (works on touch, where the
+// native title tooltip doesn't show). Tapping toggles a small popover.
+function HotBadge({ form }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
+  }, [open]);
+  const text = `Beat the fleet in ${form} of its last 10 trips — vs. boats fishing the same day & trip length.`;
+  return (
+    <span ref={ref} className="boats-form-badge hot hot-badge" title={text}
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(o => !o); }}>
+      🔥 Hot <span className="hot-badge-i">ⓘ</span>
+      {open && <span className="hot-badge-pop" role="tooltip">{text}</span>}
+    </span>
+  );
+}
+
 function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, tpData, form, lengths, navigate }) {
   const hasPhoto = profile && profile.photoUrl;
 
   let badge = null;
-  if (form >= 7) badge = <span className="boats-form-badge hot"
-    title={`🔥 Hot — beat the fleet in ${form} of its last 10 trips (vs. boats fishing the same day & trip length).`}>🔥 Hot ⓘ</span>;
+  if (form >= 7) badge = <HotBadge form={form} />;
 
   return (
     <div className="boat-card" onClick={() => {
@@ -457,8 +477,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                     </td>
                     <td>
                       {b.form >= 7
-                        ? <span className="boats-form-badge hot"
-                            title={`🔥 Hot — beat the fleet in ${b.form} of its last 10 trips (vs. boats fishing the same day & trip length).`}>🔥 Hot ⓘ</span>
+                        ? <HotBadge form={b.form} />
                         : b.form != null
                           ? <span style={{ color: 'var(--tb-slate)', fontSize: 11 }}>{b.form}/10</span>
                           : <span style={{ color: 'var(--ss-gray-2)' }}>—</span>
