@@ -36,7 +36,6 @@ function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, tpData, fo
 
   let badge = null;
   if (form >= 7) badge = <span className="boats-form-badge hot">🔥 Hot</span>;
-  else if (form != null && form <= 3) badge = <span className="boats-form-badge cold">❄️ Cold</span>;
 
   return (
     <div className="boat-card" onClick={() => {
@@ -236,7 +235,6 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
       r = r.filter(x => x.boat.toLowerCase().includes(q) || (x.landing || '').toLowerCase().includes(q));
     }
     if (formFilter === 'hot')  r = r.filter(x => x.form >= 7);
-    if (formFilter === 'cold') r = r.filter(x => x.form != null && x.form <= 3);
     return r;
   }, [boatRows, search, formFilter]);
 
@@ -316,7 +314,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
           {search && <button onClick={() => setSearch('')} className="boats-search-clear">×</button>}
         </div>
         <div className="row" style={{ gap: 4 }}>
-          {[['all','All'],['hot','🔥 Hot'],['cold','❄️ Cold']].map(([val, lbl]) => (
+          {[['all','All'],['hot','🔥 Hot']].map(([val, lbl]) => (
             <span key={val} className={`filter-pill ${formFilter === val ? 'on' : ''}`}
                   onClick={() => setFormFilter(val)}>{lbl}</span>
           ))}
@@ -459,11 +457,9 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                     <td>
                       {b.form >= 7
                         ? <span className="boats-form-badge hot">🔥 Hot</span>
-                        : b.form != null && b.form <= 3
-                          ? <span className="boats-form-badge cold">❄️ Cold</span>
-                          : b.form != null
-                            ? <span style={{ color: 'var(--tb-slate)', fontSize: 11 }}>{b.form}/10</span>
-                            : <span style={{ color: 'var(--ss-gray-2)' }}>—</span>
+                        : b.form != null
+                          ? <span style={{ color: 'var(--tb-slate)', fontSize: 11 }}>{b.form}/10</span>
+                          : <span style={{ color: 'var(--ss-gray-2)' }}>—</span>
                       }
                     </td>
                   </tr>
