@@ -458,13 +458,32 @@
   // For each boat, compute "recent form" from its last 10 trips vs fleet median.
   // Uses the full unfiltered trip dataset so "last 10" is always chronological.
   function boatStreaks(allTrips) {
-    // Fleet median trophyPerAnglerPerDay per trip length (all-time)
+    // Fleet median trophyPerAnglerPerDay per trip length (all-time) — used as a
+    // fallback benchmark on days with too few peers to form a same-day median.
     const byLen = {};
     allTrips.forEach(t => {
       (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t.trophyPerAnglerPerDay || 0);
     });
     const fleetMed = {};
     Object.entries(byLen).forEach(([len, vals]) => { fleetMed[len] = median(vals); });
+
+    // Same-day fleet median keyed by date|tripLength, so a trip is judged
+    // against the boats it actually competed with that day — this controls for
+    // bite conditions (a good day lifts everyone). Requires ≥3 peer trips that
+    // day/length to be meaningful; otherwise we fall back to the all-time median.
+    const byDayLen = {};
+    allTrips.forEach(t => {
+      const k = t.date + '|' + t.tripLength;
+      (byDayLen[k] || (byDayLen[k] = [])).push(t.trophyPerAnglerPerDay || 0);
+    });
+    const dayLenMed = {};
+    Object.entries(byDayLen).forEach(([k, vals]) => { dayLenMed[k] = median(vals); });
+
+    function benchmarkFor(t) {
+      const grp = byDayLen[t.date + '|' + t.tripLength];
+      if (grp && grp.length >= 3) return dayLenMed[t.date + '|' + t.tripLength];
+      return fleetMed[t.tripLength] ?? 0;
+    }
 
     // Group by boat (landing comes from first occurrence)
     const byBoat = {};
@@ -479,7 +498,7 @@
       const sorted = [...d.trips].sort((a, b) => b.date.localeCompare(a.date));
       const last10 = sorted.slice(0, 10);
       const dots = last10.map(t => ({
-        good: (t.trophyPerAnglerPerDay || 0) > (fleetMed[t.tripLength] ?? 0),
+        good: (t.trophyPerAnglerPerDay || 0) > benchmarkFor(t),
         date: t.date,
         tpa: t.trophyPerAnglerPerDay || 0,
       }));

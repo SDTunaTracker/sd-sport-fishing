@@ -35,7 +35,8 @@ function BoatCard({ boat, landing, profile, reviewData, tpa, winRate, tpData, fo
   const hasPhoto = profile && profile.photoUrl;
 
   let badge = null;
-  if (form >= 7) badge = <span className="boats-form-badge hot">🔥 Hot</span>;
+  if (form >= 7) badge = <span className="boats-form-badge hot"
+    title={`🔥 Hot — beat the fleet in ${form} of its last 10 trips (vs. boats fishing the same day & trip length).`}>🔥 Hot ⓘ</span>;
 
   return (
     <div className="boat-card" onClick={() => {
@@ -456,7 +457,8 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                     </td>
                     <td>
                       {b.form >= 7
-                        ? <span className="boats-form-badge hot">🔥 Hot</span>
+                        ? <span className="boats-form-badge hot"
+                            title={`🔥 Hot — beat the fleet in ${b.form} of its last 10 trips (vs. boats fishing the same day & trip length).`}>🔥 Hot ⓘ</span>
                         : b.form != null
                           ? <span style={{ color: 'var(--tb-slate)', fontSize: 11 }}>{b.form}/10</span>
                           : <span style={{ color: 'var(--ss-gray-2)' }}>—</span>
