@@ -203,8 +203,12 @@
     "338125955": {
       "name": "Legend",
       "landing": "H&M Landing"
+    },
+    "366813530": {
+      "name": "Islander",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-06-10T23:24:51.932458+00:00",
-  "_vessel_count": 49
+  "_last_discover_run": "2026-06-11T22:40:29.300655+00:00",
+  "_vessel_count": 50
 }
