@@ -32,7 +32,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:29:48.701004+00:00",
+    "updated_at": "2026-06-13T09:35:00.550739+00:00",
     "trail": []
   },
   {
@@ -44,7 +44,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:32:07.274060+00:00",
+    "updated_at": "2026-06-13T10:29:08.584868+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:25:20.942001+00:00",
+    "updated_at": "2026-06-13T10:07:19.970743+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:26:39.059428+00:00",
+    "updated_at": "2026-06-13T10:32:38.009333+00:00",
     "trail": []
   },
   {
@@ -128,7 +128,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:32:01.780871+00:00",
+    "updated_at": "2026-06-13T10:31:54.909293+00:00",
     "trail": []
   },
   {
@@ -140,7 +140,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:19:18.493526+00:00",
+    "updated_at": "2026-06-13T10:25:17.482613+00:00",
     "trail": []
   },
   {
@@ -188,7 +188,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:28:45.341050+00:00",
+    "updated_at": "2026-06-13T10:28:43.228146+00:00",
     "trail": []
   },
   {
@@ -200,7 +200,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:18:51.012893+00:00",
+    "updated_at": "2026-06-13T10:27:37.929130+00:00",
     "trail": []
   },
   {
@@ -212,7 +212,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T20:34:51.254578+00:00",
+    "updated_at": "2026-06-13T10:22:52.279671+00:00",
     "trail": []
   },
   {
@@ -224,7 +224,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:29:52.842109+00:00",
+    "updated_at": "2026-06-13T10:33:03.040546+00:00",
     "trail": []
   },
   {
@@ -284,7 +284,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-10T12:57:13.201258+00:00",
+    "updated_at": "2026-06-13T08:35:16.676244+00:00",
     "trail": []
   },
   {
@@ -512,7 +512,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-12T21:31:42.848376+00:00",
+    "updated_at": "2026-06-13T10:16:41.954328+00:00",
     "trail": []
   },
   {
@@ -609,6 +609,18 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-06-12T21:28:58.025899+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "367527250",
+    "name": "Enterprise",
+    "landing": "Pierpoint Landing",
+    "lat": 33.20861,
+    "lng": -117.39473,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-06-13T10:31:16.710315+00:00",
     "trail": []
   }
 ]
