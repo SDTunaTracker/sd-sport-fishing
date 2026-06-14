@@ -215,8 +215,16 @@
     "367527250": {
       "name": "Enterprise",
       "landing": "Pierpoint Landing"
+    },
+    "338369464": {
+      "name": "Fortune",
+      "landing": "Fisherman's Landing"
+    },
+    "338558424": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-06-13T19:02:29.476562+00:00",
-  "_vessel_count": 52
+  "_last_discover_run": "2026-06-14T01:49:26.386741+00:00",
+  "_vessel_count": 54
 }
