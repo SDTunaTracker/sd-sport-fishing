@@ -227,8 +227,16 @@
     "338363593": {
       "name": "Liberty",
       "landing": "Fisherman's Landing"
+    },
+    "338068987": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
+    },
+    "338477409": {
+      "name": "Fury",
+      "landing": "Dana Wharf Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-14T19:01:33.021496+00:00",
-  "_vessel_count": 55
+  "_last_discover_run": "2026-06-15T01:56:52.758258+00:00",
+  "_vessel_count": 57
 }
