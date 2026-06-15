@@ -235,8 +235,12 @@
     "338477409": {
       "name": "Fury",
       "landing": "Dana Wharf Sportfishing"
+    },
+    "319063100": {
+      "name": "Aztec",
+      "landing": "Seaforth Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-15T01:56:52.758258+00:00",
-  "_vessel_count": 57
+  "_last_discover_run": "2026-06-15T23:59:04.960079+00:00",
+  "_vessel_count": 58
 }
