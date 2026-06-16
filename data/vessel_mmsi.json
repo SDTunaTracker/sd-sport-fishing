@@ -239,8 +239,12 @@
     "319063100": {
       "name": "Aztec",
       "landing": "Seaforth Sportfishing"
+    },
+    "366849310": {
+      "name": "Dana Pride",
+      "landing": "Dana Wharf Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-15T23:59:04.960079+00:00",
-  "_vessel_count": 58
+  "_last_discover_run": "2026-06-16T17:29:11.022293+00:00",
+  "_vessel_count": 59
 }
