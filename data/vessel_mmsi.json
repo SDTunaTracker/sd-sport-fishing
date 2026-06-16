@@ -243,8 +243,12 @@
     "366849310": {
       "name": "Dana Pride",
       "landing": "Dana Wharf Sportfishing"
+    },
+    "367441140": {
+      "name": "Sea Adventure 80",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-06-16T17:29:11.022293+00:00",
-  "_vessel_count": 59
+  "_last_discover_run": "2026-06-16T23:48:48.041032+00:00",
+  "_vessel_count": 60
 }
