@@ -247,8 +247,12 @@
     "367441140": {
       "name": "Sea Adventure 80",
       "landing": "H&M Landing"
+    },
+    "368089620": {
+      "name": "Eldorado",
+      "landing": "Long Beach Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-17T14:31:18.976954+00:00",
-  "_vessel_count": 60
+  "_last_discover_run": "2026-06-17T21:51:30.641208+00:00",
+  "_vessel_count": 61
 }
