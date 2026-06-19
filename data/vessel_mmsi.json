@@ -251,8 +251,12 @@
     "368089620": {
       "name": "Eldorado",
       "landing": "Long Beach Sportfishing"
+    },
+    "367422040": {
+      "name": "Blue Horizon",
+      "landing": "Oceanside Sea Center"
     }
   },
-  "_last_discover_run": "2026-06-18T22:42:59.939380+00:00",
-  "_vessel_count": 61
+  "_last_discover_run": "2026-06-19T13:55:39.384586+00:00",
+  "_vessel_count": 62
 }
