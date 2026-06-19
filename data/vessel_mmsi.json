@@ -255,8 +255,12 @@
     "367422040": {
       "name": "Blue Horizon",
       "landing": "Oceanside Sea Center"
+    },
+    "257087080": {
+      "name": "Orion",
+      "landing": "Channel Islands Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-19T13:55:39.384586+00:00",
-  "_vessel_count": 62
+  "_last_discover_run": "2026-06-19T20:20:58.532836+00:00",
+  "_vessel_count": 63
 }
