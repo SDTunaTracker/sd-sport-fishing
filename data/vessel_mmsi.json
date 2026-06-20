@@ -259,8 +259,12 @@
     "257087080": {
       "name": "Orion",
       "landing": "Channel Islands Sportfishing"
+    },
+    "538007102": {
+      "name": "Pacific Dawn",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-06-19T20:20:58.532836+00:00",
-  "_vessel_count": 63
+  "_last_discover_run": "2026-06-20T01:53:53.350935+00:00",
+  "_vessel_count": 64
 }
