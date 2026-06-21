@@ -459,7 +459,15 @@ def _extract_pairs(text: str) -> tuple[dict, dict, list[tuple[str, int]]]:
 
 
 _PROSE_TRIP_RE = re.compile(
-    r'\b(long\s+range|overnight|(?:1\.5|2\.5|[2-7])\s+day|full\s+day)\b',
+    r'\b(?:'
+    r'long\s+range'
+    r'|overnight'
+    r'|half\s+day(?:\s+(?:am|pm))?'
+    r'|1/2\s+day'
+    r'|3/4\s+day'
+    r'|full\s+day'
+    r'|(?<![/\d.])(?:1\.5|2\.5|[2-7])\s+day'
+    r')\b',
     re.I,
 )
 
@@ -1122,31 +1130,35 @@ def scan_written_updates(src: LandingSource,
     return reports
 
 
-def reconcile_daily_counts(db_path: str = "tracker.db") -> dict:
-    """Compare written_update trips against structured fish-count entries for today.
+def reconcile_daily_counts(db_path: str = "tracker.db", lookback_days: int = 7) -> dict:
+    """Compare text_fallback trips against structured fish-count entries.
 
-    Structured fish-count page entries are the source of truth. Any written_update
-    row that has a matching structured row gets deleted. Unmatched written_update
+    Structured fish-count page entries are the source of truth. Any text_fallback
+    row that has a matching structured row gets deleted. Unmatched text_fallback
     rows are flagged with needs_review=1.
+
+    Covers `lookback_days` of history (default 7) so text_fallback records that
+    were added before the structured page updated are cleaned up on subsequent runs.
 
     Returns a summary dict: {matched, flagged}.
     """
     import sqlite3 as _sqlite3
-    today = date.today().isoformat()
+    from datetime import timedelta
+    since = (date.today() - timedelta(days=lookback_days)).isoformat()
     conn = _sqlite3.connect(db_path)
     conn.row_factory = _sqlite3.Row
     matched = 0
     flagged = 0
     try:
         written = conn.execute("""
-            SELECT id, boat, trip_length, landing, source
+            SELECT id, date, boat, trip_length, landing, source
             FROM trips
-            WHERE date = ?
+            WHERE date >= ?
               AND source IN (
                 'text_preliminary', 'text_final', 'text_fallback',
                 'written_update_final', 'written_update_preliminary'
               )
-        """, (today,)).fetchall()
+        """, (since,)).fetchall()
 
         for w in written:
             structured = conn.execute("""
@@ -1156,13 +1168,13 @@ def reconcile_daily_counts(db_path: str = "tracker.db") -> dict:
                   AND trip_length = ?
                   AND landing = ?
                   AND source = 'fish_count_page'
-            """, (today, w["boat"], w["trip_length"], w["landing"])).fetchone()
+            """, (w["date"], w["boat"], w["trip_length"], w["landing"])).fetchone()
 
             if structured:
                 conn.execute("DELETE FROM trips WHERE id = ?", (w["id"],))
                 matched += 1
-                log.info("reconcile: removed text entry (structured exists) — %s %s",
-                         w["landing"], w["boat"])
+                log.info("reconcile: removed text entry (structured exists) — %s %s %s",
+                         w["date"], w["landing"], w["boat"])
             else:
                 conn.execute("UPDATE trips SET needs_review = 1 WHERE id = ?", (w["id"],))
                 flagged += 1
