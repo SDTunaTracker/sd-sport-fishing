@@ -297,8 +297,10 @@ def parse_page(html: str, landing: str, source_url: str,
     out: list[dict] = []
     for r in raw_rows:
         if r["date"] is None:
-            log.debug("skip: no date  %r", r)
-            continue
+            # Landing pages show today's active trips at the top with no date
+            # header (the current day is implicit). Fall back to target_date if
+            # explicitly set, otherwise assume today.
+            r["date"] = target_date if target_date is not None else date.today()
         if target_date is not None and r["date"] != target_date:
             continue
         length_bucket, length_days = P.parse_trip_length(r["trip_type_raw"])
