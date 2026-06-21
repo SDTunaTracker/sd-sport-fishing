@@ -46,21 +46,21 @@ SOURCES: tuple[LandingSource, ...] = (
         url="https://www.fishcounts.com/hmlanding/fishcounts.php",
         referer="https://www.hmlanding.com/",
         main_url="https://www.hmlanding.com/",
-        news_url="https://www.hmlanding.com/fish-report/",
+        news_url="https://www.hmlanding.com/breaking-news",
     ),
     LandingSource(
         name="Fisherman's Landing",
         url="https://www.fishcounts.com/fishermanslanding/fishcounts.php",
         referer="https://www.fishermanslanding.com/",
         main_url="https://www.fishermanslanding.com/",
-        news_url="https://www.fishermanslanding.com/fish-reports/",
+        news_url="https://www.fishermanslanding.com/fishcounts.php",
     ),
     LandingSource(
         name="Seaforth Sportfishing",
         url="https://www.fishcounts.com/seaforth/fishcounts.php",
         referer="https://www.seaforthlanding.com/",
         main_url="https://www.seaforthlanding.com/",
-        news_url="https://www.seaforthlanding.com/fish-reports/",
+        news_url="https://www.seaforthlanding.com/fishcounts.php",
     ),
     LandingSource(
         name="Point Loma Sportfishing",
@@ -976,6 +976,11 @@ def _harvest_narrative_reports(
         other   = boat_result['other']
         window  = boat_result['text']
 
+        # Extract angler count from the text window ("for 16 anglers", "28 anglers").
+        _ang_m = re.search(r'\bfor\s+(\d+)\s+anglers?\b', window, re.I) \
+                 or re.search(r'\b(\d+)\s+anglers?\b', window, re.I)
+        extracted_anglers = int(_ang_m.group(1)) if _ang_m else 0
+
         # Unknowns: re-scan the same window for logging continuity.
         _, _, unknowns = _extract_pairs(window)
         for sp_raw, cnt in unknowns:
@@ -995,6 +1000,8 @@ def _harvest_narrative_reports(
                     and existing.get('source') == 'fish_count_page'):
                 for sp in P.TRACKED_SPECIES:
                     existing[sp.lower()] = tracked.get(sp, 0)
+                if existing.get('anglers', 0) == 0 and extracted_anglers > 0:
+                    existing['anglers'] = extracted_anglers
                 metrics = P.trophy_metrics(
                     tracked,
                     max(existing['anglers'], 1),
@@ -1023,6 +1030,8 @@ def _harvest_narrative_reports(
         col_counts, other_fish, _ = P.extract_extended_species(other)
         trophy_total = sum(tracked.get(sp, 0) for sp in P.TROPHY_SPECIES)
         moon = moon_info(datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc))
+        text_metrics = P.trophy_metrics(tracked, extracted_anglers, tl_days) \
+                       if extracted_anglers > 0 else None
 
         new_trips.append({
             'date':                      today.isoformat(),
@@ -1031,7 +1040,7 @@ def _harvest_narrative_reports(
             'trip_type_raw':             tl_raw,
             'trip_length':               tl_bucket,
             'trip_length_days':          tl_days,
-            'anglers':                   0,            # unknown — excluded from TPA
+            'anglers':                   extracted_anglers,
             'bluefin':                   tracked.get('Bluefin',    0),
             'yellowfin':                 tracked.get('Yellowfin',  0),
             'yellowtail':                tracked.get('Yellowtail', 0),
@@ -1040,8 +1049,8 @@ def _harvest_narrative_reports(
             'bigeye':                    tracked.get('Bigeye',     0),
             'albacore':                  tracked.get('Albacore',   0),
             'trophy_count':              trophy_total,
-            'trophy_per_angler':         0.0,
-            'trophy_per_angler_per_day': 0.0,
+            'trophy_per_angler':         text_metrics.trophy_per_angler if text_metrics else 0.0,
+            'trophy_per_angler_per_day': text_metrics.trophy_per_angler_per_day if text_metrics else 0.0,
             'other_species_json':        json.dumps({k: v for k, v in other.items() if v}),
             'moon_phase':                moon.phase,
             'moon_illum':                moon.illum,
@@ -1055,7 +1064,7 @@ def _harvest_narrative_reports(
             'region':                    src.region,
             'full_catch':                P.build_full_catch(tracked, other),
             'source':                    'text_fallback',
-            'is_preliminary':            1,            # always; anglers unknown until structured row arrives
+            'is_preliminary':            is_preliminary,
             'written_text':              block[:500],
             'reported_at':               scraped_at,
             '_unknowns':                 unknowns,
