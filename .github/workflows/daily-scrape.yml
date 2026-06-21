@@ -5,8 +5,14 @@ on:
     # Every hour, all 24 hours.  At 14:00 UTC (7am Pacific) run the full daily
     # pipeline (SST, weather, Reddit, backtest).  All other hours run the fast
     # hourly-only scrape so we don't hammer NOAA/weather APIs 24x per day.
-    - cron: '0 * * * *'
-  workflow_dispatch:  # allow manual triggering from the Actions tab
+    #
+    # NOTE: we deliberately avoid minute :00 — it is the single most
+    # oversubscribed slot on GitHub's scheduler and those runs are the first to
+    # be throttled/dropped.  Running at :37 markedly improves the hit-rate.  A
+    # Cloudflare Worker (cloudflare-worker/scrape-trigger.js) also calls this
+    # workflow via workflow_dispatch every hour as a reliable backstop.
+    - cron: '37 * * * *'
+  workflow_dispatch:  # manual trigger + hourly external (Cloudflare) trigger
 
 permissions:
   contents: write  # required so the workflow can commit back to the repo

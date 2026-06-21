@@ -1,0 +1,17 @@
+name            = "scrape-trigger"
+main            = "scrape-trigger.js"
+compatibility_date = "2024-09-23"
+workers_dev     = true
+
+# ── Cron: dispatch the Daily Scrape workflow every hour, on the hour ──────────
+# Cloudflare cron triggers are reliable, unlike GitHub's best-effort scheduler.
+[triggers]
+crons = ["0 * * * *"]
+
+# ── Secrets (set via wrangler CLI, not in this file) ─────────────────────────
+# Fine-grained GitHub PAT with "Actions: Read and write" on
+# sdtunatracker/sd-sport-fishing:
+#   wrangler secret put GH_DISPATCH_TOKEN --config scrape-trigger-wrangler.toml
+#
+# Optional token to protect the manual /?key= test endpoint:
+#   wrangler secret put AUTH_TOKEN --config scrape-trigger-wrangler.toml
