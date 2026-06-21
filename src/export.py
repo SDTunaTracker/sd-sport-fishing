@@ -50,7 +50,7 @@ LANDINGS = (
 
 TRIP_LENGTHS = (
     "Full Day", "Overnight",
-    "1.5 Day", "2 Day", "2.5 Day", "3 Day", "4 Day", "5 Day",
+    "1.5 Day", "2 Day", "2.5 Day", "3 Day", "3.5 Day", "4 Day", "5 Day",
     "6 Day", "7 Day", "Long Range",
 )
 
@@ -196,7 +196,9 @@ def _today_summary(trips: list[dict]) -> dict | None:
     """
     if not trips:
         return None
-    qualifying = [t for t in trips if t["tripLength"] in TRIP_LENGTHS]
+    # Filter by numeric length so novel trip-length labels (e.g. "3.5 Day") are
+    # never silently dropped just because they're missing from the TRIP_LENGTHS list.
+    qualifying = [t for t in trips if (t.get("tripLengthDays") or 0) >= 0.75]
     if not qualifying:
         return None
     today_str = max(t["date"] for t in qualifying)

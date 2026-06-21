@@ -25,6 +25,7 @@ TRIP_LENGTHS_DAYS = {
     "2 Day":     2.0,
     "2.5 Day":   2.5,
     "3 Day":     3.0,
+    "3.5 Day":   3.5,
     "4 Day":     4.0,
     "5 Day":     5.0,
     "6 Day":     6.0,
@@ -60,12 +61,18 @@ def parse_trip_length(raw: str) -> tuple[str | None, float | None]:
         return "Full Day", 0.75
     if re.search(r"\btwilight\b", s):
         return "Twilight", 0.25
-    for n_label, days in [
-        ("1.5", 1.5), ("2.5", 2.5),
-        ("7", 7.0), ("6", 6.0), ("5", 5.0), ("4", 4.0), ("3", 3.0), ("2", 2.0),
-    ]:
-        if re.search(rf"(?<![\d.]){re.escape(n_label)}\s*day\b", s):
-            return f"{n_label} Day", days
+    # Generic numeric match — handles any "N.5 Day" or "N Day" without needing
+    # explicit entries. Decimal checked first so "3.5 day" isn't split on "3".
+    # Lookbehind excludes "/" so "1/2 day" and "3/4 day" (caught above) can't
+    # accidentally match the trailing digit.
+    m = re.search(r'(?<![\d./])(\d+\.\d+)\s*day\b', s)
+    if m:
+        days = float(m.group(1))
+        return f"{m.group(1)} Day", days
+    m = re.search(r'(?<![\d./])(\d+)\s*day\b', s)
+    if m:
+        days = float(m.group(1))
+        return f"{int(days)} Day", days
     if re.search(r"\bovernight\b", s):
         return "Overnight", 1.0
     if re.search(r"\bfull\s*day\b", s):
