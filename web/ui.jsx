@@ -572,7 +572,7 @@ function AppFooter() {
             38,600+ trips tracked since 2015.
           </p>
           {updatedStr && (
-            <div className="app-footer-updated">Data updated {updatedStr}</div>
+            <div className="app-footer-updated">Data as of {updatedStr}</div>
           )}
         </div>
 
@@ -617,13 +617,15 @@ function AppFooter() {
   );
 }
 
-// ── LastUpdated — scraper freshness indicator ────────────────────
-// Shows absolute Pacific date+time. No setInterval — one render per mount.
+// ── LastUpdated — data freshness checkpoint ──────────────────────
+// Shows the time the data is current "as of" — i.e. the last successful
+// scrape RUN, not the last time the numbers changed. So an hourly check
+// that finds no new fish still advances this time.
 // Source: window.SD.META.lastScrape (MAX(finished_at) from scrape_log WHERE status='ok')
 // compact=true → shorter label, used inline next to section headings.
 
 function LastUpdated({ isoStr, compact }) {
-  var unknown = <span className="last-updated fresh">Updated: unknown</span>;
+  var unknown = <span className="last-updated fresh">As of: unknown</span>;
   if (!isoStr) return unknown;
 
   var d = new Date(isoStr);
@@ -639,7 +641,7 @@ function LastUpdated({ isoStr, compact }) {
     timeZone: 'America/Los_Angeles', timeZoneName: 'short',
   });
   var abs   = datePart + ' · ' + timePart;
-  var label = compact ? abs : 'Updated ' + abs;
+  var label = compact ? abs : 'As of ' + abs;
 
   return (
     <span className={'last-updated fresh' + (compact ? ' compact' : '')}>
