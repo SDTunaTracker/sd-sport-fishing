@@ -629,12 +629,6 @@ function LastUpdated({ isoStr, compact }) {
   var d = new Date(isoStr);
   if (isNaN(d.getTime())) return unknown;
 
-  var ageMin = Math.round((Date.now() - d.getTime()) / 60000);
-
-  // Status tiers mirror the Python exporter thresholds
-  var status  = ageMin < 90 ? 'fresh' : ageMin < 240 ? 'stale' : 'critical';
-  var isStale = status !== 'fresh';
-
   // Absolute Pacific time via Intl
   var datePart = d.toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -644,12 +638,11 @@ function LastUpdated({ isoStr, compact }) {
     hour: 'numeric', minute: '2-digit',
     timeZone: 'America/Los_Angeles', timeZoneName: 'short',
   });
-  var abs   = datePart + ' · ' + timePart + (isStale ? ' · stale' : '');
+  var abs   = datePart + ' · ' + timePart;
   var label = compact ? abs : 'Updated ' + abs;
 
   return (
-    <span className={'last-updated ' + status + (compact ? ' compact' : '')}>
-      {isStale && <i className="fa-solid fa-triangle-exclamation" aria-hidden="true"/>}
+    <span className={'last-updated fresh' + (compact ? ' compact' : '')}>
       {label}
     </span>
   );
