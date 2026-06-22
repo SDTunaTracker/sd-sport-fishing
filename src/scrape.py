@@ -83,7 +83,7 @@ SOURCES: tuple[LandingSource, ...] = (
     ),
     LandingSource(
         name="Ventura Harbor Sportfishing",
-        url="https://socalfishreports.com/landings/ventura_harbor_sportfishing.php",
+        url="https://socalfishreports.com/landings/ventura_harbor_sportfishing_llc.php",
         referer=None,
         region="oc_la",
     ),
@@ -473,11 +473,28 @@ _PROSE_TRIP_RE = re.compile(
 )
 
 
-def _trip_length_from_prose(text: str) -> tuple[str | None, float | None, str]:
-    """Return (bucket, days, raw_phrase) for the first trip-length phrase in text."""
-    m = _PROSE_TRIP_RE.search(text)
-    if not m:
+def _trip_length_from_prose(
+    text: str, anchor_idx: int | None = None,
+) -> tuple[str | None, float | None, str]:
+    """Return (bucket, days, raw_phrase) for the trip-length phrase in text.
+
+    anchor_idx — character offset of the boat-name mention within `text`.
+    When supplied, the chosen match is the one CLOSEST to anchor_idx that
+    appears AT OR AFTER it ("...the X did a 2 Day with..."). If no match
+    appears after the anchor, falls back to the nearest match before it.
+    This prevents site-nav fragments earlier in the block (e.g. "Full Day
+    - Coronado Island" in a menu) from out-voting the real report's
+    trip length.
+    """
+    all_matches = list(_PROSE_TRIP_RE.finditer(text))
+    if not all_matches:
         return None, None, ''
+    if anchor_idx is None:
+        m = all_matches[0]
+    else:
+        after = [mm for mm in all_matches if mm.start() >= anchor_idx]
+        candidates = after or all_matches
+        m = min(candidates, key=lambda mm: abs(mm.start() - anchor_idx))
     raw = m.group(0)
     bucket, days = P.parse_trip_length(raw)
     return bucket, days, raw
@@ -817,6 +834,80 @@ def _fetch_optional(url: str, timeout: float = 20.0) -> str | None:
         return None
 
 
+# ── Narrative-block date detection ───────────────────────────────────────────
+#
+# Landings interleave date formats: "Jun. 21, 2026", "June 21, 2026",
+# "6/21/2026", "Sunday 6/21/2026". parse_date() in parse.py only handles
+# the long-form ("June"), so we use a permissive narrative-only regex here.
+# DO NOT swap this into the structured-page parser.
+
+_NARRATIVE_MONTHS = {
+    'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+}
+_NARRATIVE_DATE_RE = re.compile(
+    r'\b('
+    r'(?P<mname>january|february|march|april|may|june|july|august|september|october|november|december'
+    r'|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\.?\s+'
+    r'(?P<mday>\d{1,2})(?:st|nd|rd|th)?,?\s+(?P<myear>\d{4})'
+    r'|'
+    r'(?P<smonth>\d{1,2})/(?P<sday>\d{1,2})/(?P<syear>\d{2,4})'
+    r')\b',
+    re.I,
+)
+
+
+def _find_narrative_dates(text: str) -> list[tuple[int, date]]:
+    """Return [(position, date)] for every date mention in text. Position is
+    the start offset of the match in `text`. Lets callers find the date
+    NEAREST a boat-name anchor rather than just the first one."""
+    if not text:
+        return []
+    found: list[tuple[int, date]] = []
+    for m in _NARRATIVE_DATE_RE.finditer(text):
+        try:
+            if m.group('mname'):
+                mo = _NARRATIVE_MONTHS[m.group('mname').lower().rstrip('.')[:3]]
+                d  = date(int(m.group('myear')), mo, int(m.group('mday')))
+            else:
+                yr = int(m.group('syear'))
+                if yr < 100:
+                    yr += 2000
+                d  = date(yr, int(m.group('smonth')), int(m.group('sday')))
+        except (ValueError, KeyError):
+            continue
+        found.append((m.start(), d))
+    return found
+
+
+# Tokens that strongly signal site navigation (uppercase menu items). When a
+# block STARTS with a dense cluster of these, we trim everything before the
+# first "Update for" / day-of-week heading where the actual report begins.
+_NAV_TOKEN_RE = re.compile(
+    r'\b(?:CHARTER\s+RATES|FLEET|FISH\s+COUNTS?|FISH\s+REPORTS?|BOOK(?:\s+(?:TRIP|NOW))?|'
+    r'PHOTOS|LINKS|CONTACT|RESERVE|GIFT\s+CARDS?|TRIP\s+TYPE|SCHEDULE|MENU|HOME|ABOUT)\b'
+)
+_REPORT_START_RE = re.compile(
+    r'\b(?:Update\s+for|Today\'?s\s+Update|Morning\s+Update|Evening\s+Update|'
+    r'(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+'
+    r'(?:Recap|Update|Returning|Departing))\b',
+    re.I,
+)
+
+
+def _strip_nav_prefix(text: str) -> str:
+    """Trim leading site-nav boilerplate. If the block opens with a dense
+    cluster of nav tokens and contains an explicit report-start marker
+    (e.g. "Update for Jun. 21..."), drop everything before the marker."""
+    if not text:
+        return text
+    head = text[:300]
+    if len(_NAV_TOKEN_RE.findall(head)) < 3:
+        return text  # not nav-heavy
+    m = _REPORT_START_RE.search(text)
+    return text[m.start():].strip() if m else text
+
+
 def _extract_text_blocks(html: str) -> list[str]:
     """Pull paragraph/div text blocks from a landing page, filtering boilerplate."""
     soup = BeautifulSoup(html, "lxml")
@@ -829,6 +920,46 @@ def _extract_text_blocks(html: str) -> list[str]:
             continue
         blocks.append(text)
     return blocks
+
+
+def _extract_dated_blocks(html: str) -> list[tuple['date | None', str]]:
+    """Like _extract_text_blocks, but additionally tracks the most-recent
+    date header seen while walking the DOM in document order, and returns
+    each block paired with that inherited date.
+
+    Date headers can be h1-h6 OR p/div/li/article whose text is *just* a
+    date. This lets us catch reports under a "June 21, 2026" heading where
+    the report paragraph itself doesn't repeat the date.
+
+    Used only by the narrative-harvest path. The structured fish-count
+    parser is unaffected.
+    """
+    soup = BeautifulSoup(html, "lxml")
+    out: list[tuple['date | None', str]] = []
+    current_date: 'date | None' = None
+    for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6",
+                              "p", "div", "li", "article"]):
+        text = tag.get_text(" ", strip=True)
+        if not text:
+            continue
+        # Date-only header? (≤ ~50 chars and contains a parseable date)
+        if len(text) <= 60:
+            dates = _find_narrative_dates(text)
+            # Treat as a date header iff a date is present AND the non-date
+            # portion is short (just decorations / day of week).
+            if dates:
+                pos, d = dates[-1]
+                non_date_chars = len(text) - len(text[pos:pos + 30])
+                if non_date_chars < 25:
+                    current_date = d
+                    continue
+        if len(text) < 40 or len(text) > 2000:
+            continue
+        if any(skip in text.lower() for skip in ("©", "privacy policy",
+                                                 "javascript", "cookie")):
+            continue
+        out.append((current_date, text))
+    return out
 
 
 def _looks_like_fish_report(text: str) -> bool:
@@ -871,10 +1002,12 @@ def _extract_boat_counts_from_text(
 
     # Extract a window: 80 chars before the name mention, up to 400 chars after,
     # but never past hard_stop (the next boat-name mention in the same block).
+    window_start = max(0, idx - 80)
     window_end = idx + 400
     if hard_stop is not None:
         window_end = min(window_end, hard_stop)
-    window = text[max(0, idx - 80): window_end]
+    window = text[window_start: window_end]
+    boat_anchor_in_window = idx - window_start  # boat-name offset inside the window
 
     tracked = {sp: 0 for sp in P.TRACKED_SPECIES}
     other: dict[str, int] = {}
@@ -897,7 +1030,12 @@ def _extract_boat_counts_from_text(
     if not found_any:
         return None
 
-    return {"tracked": tracked, "other": other, "text": window.strip()}
+    return {
+        "tracked":     tracked,
+        "other":       other,
+        "text":        window.strip(),
+        "boat_anchor": boat_anchor_in_window,
+    }
 
 
 def _harvest_narrative_reports(
@@ -951,19 +1089,26 @@ def _harvest_narrative_reports(
         re.I,
     )
 
-    # Fetch text blocks from all landing supplementary pages.
-    blocks: list[str] = []
+    # Fetch text blocks (with inherited date headers) from all landing
+    # supplementary pages. The dated-block walker tracks h1-h6 + dateline
+    # paragraphs so a report block under a "June 21, 2026" heading gets that
+    # date even when the report sentence doesn't repeat it.
+    dated_blocks: list[tuple['date | None', str]] = []
     for url in [u for u in [src.main_url, src.news_url] if u]:
         html = _fetch_optional(url)
         if html:
-            blocks.extend(_extract_text_blocks(html))
-    if not blocks:
+            dated_blocks.extend(_extract_dated_blocks(html))
+    if not dated_blocks:
         return []
 
     new_trips: list[dict] = []
     seen_new:  set[str]   = set()   # boat keys already emitted as new records
 
-    for block in blocks:
+    for inherited_date, raw_block in dated_blocks:
+        # FIX 4: strip site-nav prefix BEFORE any parsing so trip-length /
+        # date regexes don't snag menu items like "Full Day - Coronado Island".
+        block = _strip_nav_prefix(raw_block)
+
         m = boat_re.search(block)
         if not m:
             continue
@@ -971,6 +1116,27 @@ def _harvest_narrative_reports(
         raw_boat  = m.group('boat')
         boat_key  = raw_boat.lower()
         boat_name = boat_canon.get(boat_key, raw_boat)
+
+        # FIX 1: date-gate the block. Effective date is the date nearest the
+        # boat mention (some Fisherman's blocks aggregate multiple days into
+        # one paragraph); else the date inherited from a parent DOM heading.
+        # If neither yields a date — SKIP. Don't assume homepage text is
+        # about today (this is what caused the stale June-17 Grande entry).
+        effective_date: 'date | None' = inherited_date
+        dates_in_block = _find_narrative_dates(block)
+        if dates_in_block:
+            boat_pos = m.start()
+            # Pick the date closest to (and at or before) the boat mention;
+            # else the first date in the block.
+            before = [(p, d) for p, d in dates_in_block if p <= boat_pos]
+            effective_date = (before[-1][1] if before else dates_in_block[0][1])
+        if effective_date is None:
+            log.debug('narrative skip [%s] %s — no date in block', src.name, boat_name)
+            continue
+        if effective_date != today:
+            log.debug('narrative skip [%s] %s — block date %s != target %s',
+                      src.name, boat_name, effective_date, today)
+            continue
 
         # Truncate the extraction window at the next boat-name mention so that
         # counts from a subsequent boat in the same block can't bleed in.
@@ -981,13 +1147,17 @@ def _harvest_narrative_reports(
         boat_result = _extract_boat_counts_from_text(block, boat_name, hard_stop=hard_stop)
         if boat_result is None:
             continue
-        tracked = boat_result['tracked']
-        other   = boat_result['other']
-        window  = boat_result['text']
+        tracked      = boat_result['tracked']
+        other        = boat_result['other']
+        window       = boat_result['text']
+        boat_anchor  = boat_result['boat_anchor']
 
-        # Extract angler count from the text window ("for 16 anglers", "28 anglers").
-        _ang_m = re.search(r'\bfor\s+(\d+)\s+anglers?\b', window, re.I) \
-                 or re.search(r'\b(\d+)\s+anglers?\b', window, re.I)
+        # Extract angler count from the text window. Accept "anglers",
+        # "passengers", "people" (sites vary).
+        _ang_m = (
+            re.search(r'\bfor\s+(\d+)\s+(?:anglers?|passengers?|people)\b', window, re.I)
+            or re.search(r'\b(\d+)\s+(?:anglers?|passengers?|people)\b', window, re.I)
+        )
         extracted_anglers = int(_ang_m.group(1)) if _ang_m else 0
 
         # Unknowns: re-scan the same window for logging continuity.
@@ -996,7 +1166,10 @@ def _harvest_narrative_reports(
             log.info('unknown species [%s / %s]: "%s" ×%d — add to parse._EXTENDED_ALIASES if real',
                      src.name, boat_name, sp_raw, cnt)
 
-        tl_bucket, tl_days, tl_raw = _trip_length_from_prose(window)
+        # FIX 5: best-match trip-length anchored to the boat's position so a
+        # nav fragment earlier in the block can't win over the real report
+        # sentence (e.g. "Full Day - Coronado Island" vs "2 Day trip").
+        tl_bucket, tl_days, tl_raw = _trip_length_from_prose(window, anchor_idx=boat_anchor)
         if tl_bucket is None and boat_key in BOAT_TRIP_LENGTH_DEFAULTS:
             tl_bucket, tl_days, tl_raw = BOAT_TRIP_LENGTH_DEFAULTS[boat_key]
         status         = classify_report_status(block)
@@ -1031,6 +1204,15 @@ def _harvest_narrative_reports(
         # ── New: boat not in today's structured trips ─────────────────────────
         if boat_key in seen_new:
             continue
+
+        # FIX 2: a narrative trip with anglers <= 0 is a parse artifact, not
+        # a real trip. The structured fish-count page will get it when the
+        # boat returns and the landing posts the count. Drop it here.
+        if extracted_anglers <= 0:
+            log.debug('narrative skip [%s] %s — no anglers extracted (%r)',
+                      src.name, boat_name, window[:120])
+            continue
+
         seen_new.add(boat_key)
 
         if tl_bucket is None:

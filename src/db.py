@@ -448,6 +448,8 @@ def insert_trips(
     stripped before the trips INSERT.
     """
     from datetime import date as _date, timedelta
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
     cutoff = (_date.today() - timedelta(days=upsert_days)).isoformat()
 
     placeholders = ",".join("?" * len(TRIP_FIELDS))
@@ -456,11 +458,50 @@ def insert_trips(
     sql_ignore  = (f"INSERT OR IGNORE  INTO trips ({','.join(TRIP_FIELDS)})"
                    f" VALUES ({placeholders})")
 
+    # Structured-wins precedence (narrative-only filter)
+    # Before inserting any narrative-origin row (source != 'fish_count_page'),
+    # check if a structured row already exists for the same (date, boat,
+    # landing, trip_length normalized). If so, drop the narrative — the
+    # structured page is canonical. trip_length is normalized (case +
+    # whitespace + '/' collapsed) so the narrative's "Full Day" can't slip
+    # past a structured "FULL  DAY".
+    def _norm_tl(s):
+        return ' '.join((s or '').lower().split()).replace(' / ', '/')
+
+    trips = list(trips)  # materialize so we can pre-scan and then iterate
+
+    structured_keys: set[tuple] = set()
+    # Existing structured rows in DB
+    for row in conn.execute(
+        "SELECT date, lower(boat), lower(landing), trip_length FROM trips "
+        "WHERE source = 'fish_count_page'"
+    ):
+        structured_keys.add((row[0], row[1], row[2], _norm_tl(row[3])))
+    # Same-batch structured rows (so a same-run narrative can't sneak in
+    # alongside the just-parsed structured row for the same trip)
+    for t in trips:
+        if t.get("source") == "fish_count_page":
+            structured_keys.add((
+                t["date"], (t["boat"] or "").lower(),
+                (t["landing"] or "").lower(), _norm_tl(t.get("trip_length")),
+            ))
+
     recent_rows: list[tuple] = []
     old_rows:    list[tuple] = []
     unknown_rows: list[tuple] = []
+    skipped_structured_wins = 0
 
     for t in trips:
+        # FIX 3: narrative-only — defer to existing structured rows.
+        if t.get("source") and t["source"] != "fish_count_page":
+            key = (t["date"], (t["boat"] or "").lower(),
+                   (t["landing"] or "").lower(), _norm_tl(t.get("trip_length")))
+            if key in structured_keys:
+                skipped_structured_wins += 1
+                _log.info("structured-wins skip: narrative %s %s %s (%s)",
+                          t["date"], t["landing"], t["boat"], t.get("trip_length"))
+                continue
+
         for species_name, count in t.get("_unknowns", []):
             unknown_rows.append((species_name, count, t["date"], t["boat"], t["landing"]))
         row = tuple(
@@ -471,6 +512,9 @@ def insert_trips(
             recent_rows.append(row)
         else:
             old_rows.append(row)
+
+    if skipped_structured_wins:
+        _log.info("structured-wins: dropped %d narrative trip(s)", skipped_structured_wins)
 
     inserted = 0
     if recent_rows:
