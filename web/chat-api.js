@@ -50,8 +50,8 @@ function getMoonPhaseForDate(dateStr) {
 }
 
 function getUpcomingTripsForChat(regions) {
-  const today   = new Date().toISOString().slice(0, 10);
-  const cutoff  = new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const today   = window.TT_DATES.getPacificDate();
+  const cutoff  = window.TT_DATES.pacificDateOffsetDays(120);
   const allowed = getRegionLandings(regions);
 
   let winRateMap = {};
@@ -95,7 +95,7 @@ function getBoatStatsForChat(regions) {
   try {
     const yearTrips = SDA.filterTrips({
       ...DEFAULT_FILTERS,
-      year: String(new Date().getFullYear())
+      year: String(window.TT_DATES.getPacificYear())
     }).filter(t => allowed.includes(t.landing));
 
     const { rows } = SDA.boatLeaderboard(yearTrips, 'all', 5);
@@ -415,12 +415,12 @@ function extractDataUsed(question, answer, regions) {
 }
 
 function getChatUsage() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = window.TT_DATES.getPacificDate();
   return parseInt(localStorage.getItem(`tt_chat_${today}`) || '0');
 }
 
 function incrementChatUsage() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = window.TT_DATES.getPacificDate();
   const key   = `tt_chat_${today}`;
   const next  = getChatUsage() + 1;
   localStorage.setItem(key, next);

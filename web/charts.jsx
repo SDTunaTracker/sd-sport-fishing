@@ -1422,14 +1422,19 @@ function _tripJitter(id, axis) {
   return ((h & 0xffff) / 0xffff - 0.5) * 0.014;
 }
 
-function buildCatchLayer(trips) {
-  var today  = Date.now();
-  var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - _CATCH_DAYS);
-  var cutStr = cutoff.toISOString().slice(0, 10);
+// filterDateStr: optional YYYY-MM-DD upper bound. Catches after this date are hidden.
+// When scrubbing into the past, recency opacity is also relative to filterDate.
+function buildCatchLayer(trips, filterDateStr) {
+  var todayMs = Date.now();
+  var todayStr = window.TT_DATES.getPacificDate();
+  var cutStr = window.TT_DATES.pacificDateOffsetDays(-_CATCH_DAYS);
+  // When scrubbing past, cap at scrubber date; future scrubbing shows all current catches
+  var maxDateStr = (filterDateStr && filterDateStr < todayStr) ? filterDateStr : todayStr;
+  var referenceMs = filterDateStr ? Math.min(new Date(filterDateStr + 'T12:00:00').getTime(), todayMs) : todayMs;
   var group  = L.layerGroup();
 
   trips.filter(function(t) {
-    return t.date >= cutStr && !t.isPreliminary && (t.region === 'san_diego' || !t.region);
+    return t.date >= cutStr && t.date <= maxDateStr && !t.isPreliminary && (t.region === 'san_diego' || !t.region);
   }).forEach(function(trip) {
     var zoneLoc = _zoneFromText(trip.rawText);
     var isZone  = !!zoneLoc;
@@ -1439,7 +1444,7 @@ function buildCatchLayer(trips) {
     var tid   = String(trip.id || trip.boat + trip.date);
     var lat   = loc.lat + _tripJitter(tid, 'lat');
     var lng   = loc.lng + _tripJitter(tid, 'lng');
-    var ageDays  = (today - new Date(trip.date).getTime()) / 86400000;
+    var ageDays  = (referenceMs - new Date(trip.date).getTime()) / 86400000;
     var recency  = Math.max(0.35, 1 - (ageDays / _CATCH_DAYS) * 0.65);
     var tc       = trip.trophyCount || 0;
     var radius   = Math.max(6, Math.min(18, 6 + Math.sqrt(tc) * 2.2));
@@ -2420,6 +2425,18 @@ function ChartsView({ navigate, settings }) {
     return function() { clearInterval(boatsPollRef.current); };
   }, [showBoats]);
 
+  // Hide boat layer when scrubber is in the future (live positions don't apply)
+  React.useEffect(function() {
+    if (!mapInstance.current || !showBoats || !boatLayerRef.current) return;
+    if (isFutureMode) {
+      mapInstance.current.removeLayer(boatLayerRef.current);
+    } else {
+      if (!mapInstance.current.hasLayer(boatLayerRef.current)) {
+        boatLayerRef.current.addTo(mapInstance.current);
+      }
+    }
+  }, [isFutureMode, showBoats]);
+
   // Sync waypoint markers to state
   React.useEffect(function() {
     if (!mapInstance.current) return;
@@ -2460,16 +2477,19 @@ function ChartsView({ navigate, settings }) {
     }
   }, [sliderStep, sliderSeries]);
 
-  // Catch overlay
+  // Catch overlay — rebuilds when catches toggled or scrubber crosses a day boundary
   React.useEffect(function() {
     if (!mapInstance.current) return;
     if (catchLayerRef.current) { mapInstance.current.removeLayer(catchLayerRef.current); catchLayerRef.current = null; }
     if (showCatches) {
       var trips = (window.SD && window.SD.TRIPS) || [];
-      catchLayerRef.current = buildCatchLayer(trips);
+      var filterDateStr = scrubberDayKey
+        ? scrubberDayKey.slice(0,4) + '-' + scrubberDayKey.slice(4,6) + '-' + scrubberDayKey.slice(6,8)
+        : null;
+      catchLayerRef.current = buildCatchLayer(trips, filterDateStr);
       catchLayerRef.current.addTo(mapInstance.current);
     }
-  }, [showCatches]);
+  }, [showCatches, scrubberDayKey]);
 
   function handleSliderInput(val) {
     setSliderStep(val);
@@ -2505,6 +2525,8 @@ function ChartsView({ navigate, settings }) {
   var workerReady   = !!(window.VESSEL_WORKER_URL || '').trim();
   var showBoatSetup = showBoats && !workerReady && boatsError;
   var showSlider    = (condLayers.wind || condLayers.waves) && (sliderSeries || sliderLoading);
+  // Scrubber is ahead of real-time: live boat positions don't apply to future forecasts
+  var isFutureMode  = scrubberMs != null && scrubberMs > Date.now();
 
   // Summary of active layers, surfaced on the mobile "Map Layers" bar so the
   // current selection is visible without opening the sheet.
@@ -2597,7 +2619,12 @@ function ChartsView({ navigate, settings }) {
         )}
 
         {showBoatSetup && <BoatsSetupOverlay />}
-        {showBoats && !boatsError && boatPositions.length > 0 && (
+        {showBoats && isFutureMode && (
+          <div className="boats-count-pill boats-future-pill">
+            🚢 Boats hidden — forecast mode
+          </div>
+        )}
+        {showBoats && !isFutureMode && !boatsError && boatPositions.length > 0 && (
           <div className="boats-count-pill">
             🚢 {boatPositions.length} boat{boatPositions.length !== 1 ? 's' : ''} tracked
           </div>

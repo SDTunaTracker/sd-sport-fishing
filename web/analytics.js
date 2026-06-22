@@ -586,7 +586,7 @@
 
     const now = Date.now();
     const cutoff = now + 14 * 24 * 60 * 60 * 1000;
-    const year = new Date().getFullYear();
+    const year = window.TT_DATES.getPacificYear();
 
     const upcoming = schedule.filter(t => {
       if (!t.departureAt) return false;

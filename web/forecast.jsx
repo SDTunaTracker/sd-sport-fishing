@@ -900,7 +900,7 @@ function FleetDepartures({ date, navigate }) {
     return wB - wA;
   });
 
-  const todayStr  = new Date().toISOString().slice(0, 10);
+  const todayStr  = window.TT_DATES.getPacificDate();
   const isToday   = date === todayStr;
   const displayed = showAll ? sorted : sorted.slice(0, 8);
 

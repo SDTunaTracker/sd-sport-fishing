@@ -161,7 +161,10 @@ function ForecastWidget({ navigate }) {
 }
 
 
-const TODAY_ISO = new Date().toISOString().slice(0, 10);
+// Pacific calendar date — recomputed each render-time use so a long-lived tab
+// crossing midnight Pacific still gets the right "today".
+const getTodayISO = () => window.TT_DATES.getPacificDate();
+const TODAY_ISO   = getTodayISO();
 
 // ── Community intelligence widgets ────────────────────────────────────────────
 
@@ -319,8 +322,8 @@ function getTodayPerformanceSummary(todayTrips, allTrips, selectedDate) {
   const todayAvgTPA = _avgArr(todayTrips.map(t => t.trophyPerAnglerPerDay || 0));
   const boatCount = todayTrips.length;
 
-  // Early-day heuristic: before 4pm local time with only 1-2 boats back
-  if (selectedDate === TODAY_ISO && new Date().getHours() < 16 && boatCount <= 2) {
+  // Early-day heuristic: before 4pm Pacific (San Diego local) with only 1-2 boats back
+  if (selectedDate === getTodayISO() && window.TT_DATES.getPacificHour() < 16 && boatCount <= 2) {
     return {
       status: 'early', tone: 'neutral',
       message: `Early reports — ${boatCount} boat${boatCount > 1 ? 's' : ''} back so far`,
@@ -606,7 +609,7 @@ function ReturnVisitToast({ navigate }) {
   useEffect(() => {
     try {
       if (sessionStorage.getItem('tt_toast_shown')) return;
-      const today = new Date().toISOString().slice(0,10);
+      const today = window.TT_DATES.getPacificDate();
       const viewed = JSON.parse(localStorage.getItem('tt_viewed_trips') || '[]');
       const past = viewed.filter(v => v.date < today);
       if (!past.length) return;
@@ -641,7 +644,7 @@ function ReturnVisitToast({ navigate }) {
 }
 
 function TodayView({ navigate, settings, regions }) {
-  const currentYear = String(new Date().getFullYear());
+  const currentYear = String(window.TT_DATES.getPacificYear());
 
   const yearTrips = useMemo(
     () => SDA.filterTrips({ ...DEFAULT_FILTERS, year: currentYear }, regions),
@@ -737,7 +740,7 @@ function HomeRatingBadge({ ratingKey }) {
 }
 
 function HomeTop5({ navigate, settings, regions }) {
-  const currentYear = String(new Date().getFullYear());
+  const currentYear = String(window.TT_DATES.getPacificYear());
 
   // preprocessTrips runs in a useEffect in app.jsx (post-mount), so SD_PROC_TRIPS
   // is null on the first render. Guard synchronously so the leaderboard is correct immediately.
@@ -826,7 +829,7 @@ function HomeView({ navigate, settings, regions }) {
   const sstHistory = (window.SD?.SST?.history || [])
     .filter(h => h.location === 'Nearshore')
     .sort((a, b) => b.date.localeCompare(a.date));
-  const weekAgoISO = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const weekAgoISO = window.TT_DATES.pacificDateOffsetDays(-7);
   const weekAgoEntry = sstHistory.find(h => h.date <= weekAgoISO);
   const sstDelta = sstRaw != null && weekAgoEntry?.sst != null
     ? parseFloat((sstRaw - weekAgoEntry.sst).toFixed(1)) : null;

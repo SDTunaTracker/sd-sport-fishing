@@ -196,7 +196,7 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
     try {
       const key = 'tt_viewed_trips';
       const viewed = JSON.parse(localStorage.getItem(key) || '[]');
-      const entry = { boat: s.boat, date: dep.toISOString().slice(0,10), landing: s.landing, length: s.tripLength };
+      const entry = { boat: s.boat, date: window.TT_DATES.getPacificDate(dep), landing: s.landing, length: s.tripLength };
       if (!viewed.some(v => v.boat === entry.boat && v.date === entry.date)) {
         viewed.push(entry);
         localStorage.setItem(key, JSON.stringify(viewed.slice(-20)));
@@ -535,7 +535,9 @@ function RefineDatesSection({ selMonth, refineStart, setRefineStart, refineEnd, 
   if (!selMonth) return null;
 
   const firstDay = `${selMonth.year}-${String(selMonth.month + 1).padStart(2, '0')}-01`;
-  const lastDay  = new Date(selMonth.year, selMonth.month + 1, 0).toISOString().slice(0, 10);
+  // Last day of the selected month (compute as a date string directly to avoid TZ drift).
+  const _lastDayNum = new Date(selMonth.year, selMonth.month + 1, 0).getDate();
+  const lastDay = `${selMonth.year}-${String(selMonth.month + 1).padStart(2,'0')}-${String(_lastDayNum).padStart(2,'0')}`;
 
   return (
     <SidebarSection title="Refine Dates">
@@ -1042,7 +1044,7 @@ function TripPlanner({ navigate, regions }) {
         return <RM
           boat={reviewTrip.boat}
           landing={reviewTrip.landing}
-          prefill={{ date: new Date(reviewTrip.departureAt).toISOString().slice(0,10), length: reviewTrip.tripLength }}
+          prefill={{ date: window.TT_DATES.getPacificDate(new Date(reviewTrip.departureAt)), length: reviewTrip.tripLength }}
           onClose={() => setReviewTrip(null)}
         />;
       })()}

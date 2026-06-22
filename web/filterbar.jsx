@@ -158,7 +158,7 @@ function FilterBar({ filters, setFilters, hideBoat, regions }) {
 }
 
 const DEFAULT_FILTERS = {
-  year: String(new Date().getFullYear()),
+  year: String(window.TT_DATES.getPacificYear()),
   month: 'all',
   landing: 'all',
   boat: 'all',

@@ -87,7 +87,7 @@ function StreakTracker({ navigate, regions }) {
   const streaks = useMemo(() => {
     const _ALL = { year:'all', species:'all', landing:'all', month:'all', minTrips:0, includeZero:true, boat:'all' };
     const all = SDA.boatStreaks(SDA.filterTrips(_ALL, regions));
-    const cutoff = (() => { const d = new Date(); d.setMonth(d.getMonth() - 4); return d.toISOString().slice(0, 10); })();
+    const cutoff = (() => { const d = new Date(); d.setMonth(d.getMonth() - 4); return window.TT_DATES.getPacificDate(d); })();
     return all.filter(b => {
       const lastDate = b.last10.reduce((max, t) => (t.date && t.date > max ? t.date : max), '');
       return lastDate >= cutoff;
@@ -233,7 +233,7 @@ function BoatFinder({ navigate, regions }) {
   const { useState, useMemo } = React;
   const MIN_TRIPS = 3;
 
-  var curMonth = String(new Date().getMonth() + 1);
+  var curMonth = String(window.TT_DATES.getPacificMonth());
   const [selSpecies, setSelSpecies] = useState('all');
   const [selLength,  setSelLength]  = useState('all');
   const [selMonth,   setSelMonth]   = useState(curMonth);

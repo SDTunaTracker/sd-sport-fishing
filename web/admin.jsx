@@ -98,7 +98,7 @@ function ScraperCard({ name, runs }) {
   const lastAt = last?.at;
   const lastErr = last?.status === "error" ? last.error : null;
   const color = healthColor(lastAt, !!lastErr);
-  const tripsToday = (runs || []).filter(r => r.at?.startsWith(new Date().toISOString().slice(0, 10)))
+  const tripsToday = (runs || []).filter(r => r.at?.startsWith(window.TT_DATES.getPacificDate()))
     .reduce((s, r) => s + (r.kept || 0), 0);
   const tripsWeek = (runs || []).reduce((s, r) => s + (r.kept || 0), 0);
 
@@ -273,8 +273,8 @@ function SectionTraffic() {
     );
   }
 
-  const today   = new Date().toISOString().slice(0, 10);
-  const weekAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+  const today   = window.TT_DATES.getPacificDate();
+  const weekAgo = window.TT_DATES.pacificDateOffsetDays(-6);
 
   const todayClicks = stats.byDay[today] || 0;
   const weekClicks  = Object.entries(stats.byDay)
@@ -302,7 +302,7 @@ function SectionTraffic() {
 
   const last14Days = [];
   for (let i = 13; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const d = window.TT_DATES.pacificDateOffsetDays(-i);
     last14Days.push({ day: d, count: stats.byDay[d] || 0 });
   }
 

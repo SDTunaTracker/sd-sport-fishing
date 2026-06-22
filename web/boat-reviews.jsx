@@ -72,7 +72,7 @@ const BLANK_FORM = {
 // ── Step sub-components ───────────────────────────────────────────────────────
 function StepWhichTrip({ form, set, initBoat }) {
   const boats = (window.SD.BOATS || []).map(b => b.name).sort();
-  const today = new Date().toISOString().slice(0,10);
+  const today = window.TT_DATES.getPacificDate();
   return (
     <div className="rv-step">
       <div className="rv-step-head">

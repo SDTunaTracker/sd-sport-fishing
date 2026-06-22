@@ -21,6 +21,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 
 from . import parse as P
+from .dates import pacific_today
 from .moon import moon_info
 
 log = logging.getLogger(__name__)
@@ -299,8 +300,8 @@ def parse_page(html: str, landing: str, source_url: str,
         if r["date"] is None:
             # Landing pages show today's active trips at the top with no date
             # header (the current day is implicit). Fall back to target_date if
-            # explicitly set, otherwise assume today.
-            r["date"] = target_date if target_date is not None else date.today()
+            # explicitly set, otherwise assume today (Pacific — CI runs UTC).
+            r["date"] = target_date if target_date is not None else pacific_today()
         if target_date is not None and r["date"] != target_date:
             continue
         length_bucket, length_days = P.parse_trip_length(r["trip_type_raw"])
@@ -591,7 +592,7 @@ def parse_text_reports(
     corresponding structured trip (which has the real angler count) before insert.
     """
     scraped_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
-    today = target_date or date.today()
+    today = target_date or pacific_today()
     out: list[dict] = []
     seen: set[tuple] = set()
 
@@ -925,7 +926,7 @@ def _harvest_narrative_reports(
     if not (src.main_url or src.news_url):
         return []
 
-    today      = target_date or date.today()
+    today      = target_date or pacific_today()
     scraped_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
 
     # Index today's structured trips by lowercase boat name for O(1) lookup.
@@ -1096,7 +1097,7 @@ def scan_written_updates(src: LandingSource,
     should store them separately (not via insert_trips) until reconciled.
     """
     scraped_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    today = target_date or date.today()
+    today = target_date or pacific_today()
     reports: list[dict] = []
 
     urls = [u for u in [src.main_url, src.news_url] if u]
@@ -1144,7 +1145,7 @@ def reconcile_daily_counts(db_path: str = "tracker.db", lookback_days: int = 7) 
     """
     import sqlite3 as _sqlite3
     from datetime import timedelta
-    since = (date.today() - timedelta(days=lookback_days)).isoformat()
+    since = (pacific_today() - timedelta(days=lookback_days)).isoformat()
     conn = _sqlite3.connect(db_path)
     conn.row_factory = _sqlite3.Row
     matched = 0
