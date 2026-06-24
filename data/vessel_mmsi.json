@@ -263,8 +263,20 @@
     "538007102": {
       "name": "Pacific Dawn",
       "landing": "Fisherman's Landing"
+    },
+    "366915000": {
+      "name": "El Patron",
+      "landing": "Long Beach Sportfishing"
+    },
+    "338776000": {
+      "name": "Horizon",
+      "landing": "H&M Landing"
+    },
+    "338396711": {
+      "name": "Relentless",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-06-21T01:54:10.963300+00:00",
-  "_vessel_count": 64
+  "_last_discover_run": "2026-06-24T16:41:44.660607+00:00",
+  "_vessel_count": 67
 }

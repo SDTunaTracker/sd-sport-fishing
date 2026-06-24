@@ -8,7 +8,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-18T13:33:10.948435+00:00",
+    "updated_at": "2026-06-24T16:40:35.962504+00:00",
     "trail": []
   },
   {
@@ -32,7 +32,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T00:17:37.977715+00:00",
+    "updated_at": "2026-06-24T16:14:33.139706+00:00",
     "trail": []
   },
   {
@@ -44,7 +44,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:47:08.942100+00:00",
+    "updated_at": "2026-06-24T16:41:08.982929+00:00",
     "trail": []
   },
   {
@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:53:26.674668+00:00",
+    "updated_at": "2026-06-24T15:50:28.648450+00:00",
     "trail": []
   },
   {
@@ -68,7 +68,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:53:46.412176+00:00",
+    "updated_at": "2026-06-24T15:30:18.867618+00:00",
     "trail": []
   },
   {
@@ -92,7 +92,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T00:41:47.843435+00:00",
+    "updated_at": "2026-06-24T16:37:14.529835+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:52:20.643007+00:00",
+    "updated_at": "2026-06-24T16:31:19.291806+00:00",
     "trail": []
   },
   {
@@ -128,7 +128,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:52:24.000623+00:00",
+    "updated_at": "2026-06-24T16:40:49.418401+00:00",
     "trail": []
   },
   {
@@ -140,7 +140,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:53:37.995199+00:00",
+    "updated_at": "2026-06-24T16:39:33.065415+00:00",
     "trail": []
   },
   {
@@ -156,6 +156,18 @@
     "trail": []
   },
   {
+    "mmsi": "338396711",
+    "name": "Relentless",
+    "landing": "H&M Landing",
+    "lat": 32.71554,
+    "lng": -117.23251,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-06-24T16:40:59.529214+00:00",
+    "trail": []
+  },
+  {
     "mmsi": "367740760",
     "name": "Liberty",
     "landing": "Fisherman's Landing",
@@ -164,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:42:41.154356+00:00",
+    "updated_at": "2026-06-24T16:39:57.163130+00:00",
     "trail": []
   },
   {
@@ -188,7 +200,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:06:15.378412+00:00",
+    "updated_at": "2026-06-24T16:36:10.485923+00:00",
     "trail": []
   },
   {
@@ -200,7 +212,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:52:48.825582+00:00",
+    "updated_at": "2026-06-24T16:34:47.312784+00:00",
     "trail": []
   },
   {
@@ -212,7 +224,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-19T20:20:44.917624+00:00",
+    "updated_at": "2026-06-24T16:39:13.126350+00:00",
     "trail": []
   },
   {
@@ -272,7 +284,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-15T01:54:09.479517+00:00",
+    "updated_at": "2026-06-24T16:39:12.554935+00:00",
     "trail": []
   },
   {
@@ -296,7 +308,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T00:14:43.448281+00:00",
+    "updated_at": "2026-06-24T16:11:17.407923+00:00",
     "trail": []
   },
   {
@@ -308,7 +320,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-20T17:24:45.638402+00:00",
+    "updated_at": "2026-06-24T16:40:59.636472+00:00",
     "trail": []
   },
   {
@@ -380,7 +392,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:32:03.594961+00:00",
+    "updated_at": "2026-06-24T16:03:07.228311+00:00",
     "trail": []
   },
   {
@@ -404,7 +416,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-19T20:19:32.666998+00:00",
+    "updated_at": "2026-06-24T16:41:11.134692+00:00",
     "trail": []
   },
   {
@@ -428,7 +440,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:39:53.367803+00:00",
+    "updated_at": "2026-06-24T16:36:53.240963+00:00",
     "trail": []
   },
   {
@@ -572,7 +584,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-18T22:04:00.580372+00:00",
+    "updated_at": "2026-06-24T16:41:24.686825+00:00",
     "trail": []
   },
   {
@@ -608,7 +620,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:49:21.491331+00:00",
+    "updated_at": "2026-06-24T16:40:21.691519+00:00",
     "trail": []
   },
   {
@@ -704,7 +716,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-21T01:51:22.245564+00:00",
+    "updated_at": "2026-06-24T16:39:29.553834+00:00",
     "trail": []
   },
   {
@@ -765,6 +777,30 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-06-21T01:45:51.442024+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "366915000",
+    "name": "El Patron",
+    "landing": "Long Beach Sportfishing",
+    "lat": 33.77273,
+    "lng": -118.20837,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-06-24T16:38:30.140324+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "338776000",
+    "name": "Horizon",
+    "landing": "H&M Landing",
+    "lat": 32.7227,
+    "lng": -117.22613,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-06-24T16:36:47.611075+00:00",
     "trail": []
   }
 ]
