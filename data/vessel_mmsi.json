@@ -275,8 +275,12 @@
     "338396711": {
       "name": "Relentless",
       "landing": "H&M Landing"
+    },
+    "338465678": {
+      "name": "Freedom",
+      "landing": "22nd Street Landing"
     }
   },
-  "_last_discover_run": "2026-06-25T23:49:27.374019+00:00",
-  "_vessel_count": 67
+  "_last_discover_run": "2026-06-26T16:35:03.638655+00:00",
+  "_vessel_count": 68
 }
