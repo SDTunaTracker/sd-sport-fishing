@@ -283,8 +283,16 @@
     "368355590": {
       "name": "Pacifica",
       "landing": "Seaforth Sportfishing"
+    },
+    "368269920": {
+      "name": "Spitfire",
+      "landing": "Marina Del Rey Sportfishing"
+    },
+    "367413170": {
+      "name": "MarDiosa",
+      "landing": "Long Beach Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-27T15:53:17.385505+00:00",
-  "_vessel_count": 69
+  "_last_discover_run": "2026-06-27T23:13:07.674254+00:00",
+  "_vessel_count": 71
 }
