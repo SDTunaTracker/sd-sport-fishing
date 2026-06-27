@@ -279,8 +279,12 @@
     "338465678": {
       "name": "Freedom",
       "landing": "22nd Street Landing"
+    },
+    "368355590": {
+      "name": "Pacifica",
+      "landing": "Seaforth Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-26T23:24:54.034451+00:00",
-  "_vessel_count": 68
+  "_last_discover_run": "2026-06-27T15:53:17.385505+00:00",
+  "_vessel_count": 69
 }
