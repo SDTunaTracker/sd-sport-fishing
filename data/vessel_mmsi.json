@@ -295,8 +295,20 @@
     "367025330": {
       "name": "Ocean Odyssey",
       "landing": "H&M Landing"
+    },
+    "338452084": {
+      "name": "Relentless",
+      "landing": "H&M Landing"
+    },
+    "338496643": {
+      "name": "Pacific Dawn",
+      "landing": "Fisherman's Landing"
+    },
+    "368033280": {
+      "name": "Victory",
+      "landing": "Long Beach Sportfishing"
     }
   },
-  "_last_discover_run": "2026-06-28T15:59:07.852013+00:00",
-  "_vessel_count": 72
+  "_last_discover_run": "2026-06-28T23:11:39.996792+00:00",
+  "_vessel_count": 75
 }
