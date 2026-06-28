@@ -291,8 +291,12 @@
     "367413170": {
       "name": "MarDiosa",
       "landing": "Long Beach Sportfishing"
+    },
+    "367025330": {
+      "name": "Ocean Odyssey",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-06-27T23:13:07.674254+00:00",
-  "_vessel_count": 71
+  "_last_discover_run": "2026-06-28T15:59:07.852013+00:00",
+  "_vessel_count": 72
 }

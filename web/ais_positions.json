@@ -1,5 +1,17 @@
 [
   {
+    "mmsi": "367025330",
+    "name": "Ocean Odyssey",
+    "landing": "H&M Landing",
+    "lat": 32.72304,
+    "lng": -117.22668,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-06-28T15:44:35.860360+00:00",
+    "trail": []
+  },
+  {
     "mmsi": "368406170",
     "name": "Islander",
     "landing": "Fisherman's Landing",
@@ -44,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:11:10.466793+00:00",
+    "updated_at": "2026-06-28T15:53:10.574713+00:00",
     "trail": []
   },
   {
@@ -56,7 +68,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T22:59:27.382205+00:00",
+    "updated_at": "2026-06-28T15:44:28.196065+00:00",
     "trail": []
   },
   {
@@ -92,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:12:20.309692+00:00",
+    "updated_at": "2026-06-28T15:39:34.331803+00:00",
     "trail": []
   },
   {
@@ -104,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:10:19.044039+00:00",
+    "updated_at": "2026-06-28T15:58:20.513599+00:00",
     "trail": []
   },
   {
@@ -128,7 +140,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:12:11.484970+00:00",
+    "updated_at": "2026-06-28T15:51:10.789978+00:00",
     "trail": []
   },
   {
@@ -140,7 +152,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:12:21.919778+00:00",
+    "updated_at": "2026-06-28T15:58:41.079161+00:00",
     "trail": []
   },
   {
@@ -164,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:10:58.693311+00:00",
+    "updated_at": "2026-06-28T15:55:59.181493+00:00",
     "trail": []
   },
   {
@@ -188,7 +200,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T14:51:00.791799+00:00",
+    "updated_at": "2026-06-28T14:36:16.201941+00:00",
     "trail": []
   },
   {
@@ -200,7 +212,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-25T23:42:19.276056+00:00",
+    "updated_at": "2026-06-28T15:52:25.036891+00:00",
     "trail": []
   },
   {
@@ -212,7 +224,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T22:55:43.821763+00:00",
+    "updated_at": "2026-06-28T15:13:47.285041+00:00",
     "trail": []
   },
   {
@@ -224,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:12:53.225390+00:00",
+    "updated_at": "2026-06-28T15:58:12.427464+00:00",
     "trail": []
   },
   {
@@ -236,7 +248,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T22:54:16.389956+00:00",
+    "updated_at": "2026-06-28T15:36:17.765555+00:00",
     "trail": []
   },
   {
@@ -284,7 +296,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-26T16:33:22.724155+00:00",
+    "updated_at": "2026-06-28T15:57:13.428844+00:00",
     "trail": []
   },
   {
@@ -392,7 +404,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-24T23:12:37.546195+00:00",
+    "updated_at": "2026-06-28T15:42:20.169252+00:00",
     "trail": []
   },
   {
@@ -440,7 +452,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:06:46.652633+00:00",
+    "updated_at": "2026-06-28T15:44:49.104920+00:00",
     "trail": []
   },
   {
@@ -584,7 +596,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-26T23:24:29.977912+00:00",
+    "updated_at": "2026-06-28T15:58:57.408120+00:00",
     "trail": []
   },
   {
@@ -620,7 +632,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:11:09.654288+00:00",
+    "updated_at": "2026-06-28T15:53:09.147439+00:00",
     "trail": []
   },
   {
@@ -692,7 +704,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T22:59:30.251021+00:00",
+    "updated_at": "2026-06-28T15:35:30.213136+00:00",
     "trail": []
   },
   {
@@ -716,7 +728,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T23:09:35.315232+00:00",
+    "updated_at": "2026-06-28T15:43:32.580909+00:00",
     "trail": []
   },
   {
@@ -812,7 +824,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-26T23:24:09.463380+00:00",
+    "updated_at": "2026-06-28T15:49:18.547531+00:00",
     "trail": []
   },
   {
