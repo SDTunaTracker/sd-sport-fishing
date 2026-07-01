@@ -307,8 +307,12 @@
     "368033280": {
       "name": "Victory",
       "landing": "Long Beach Sportfishing"
+    },
+    "338449812": {
+      "name": "Relentless",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-07-01T16:47:14.275544+00:00",
-  "_vessel_count": 75
+  "_last_discover_run": "2026-07-01T23:43:14.600146+00:00",
+  "_vessel_count": 76
 }

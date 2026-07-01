@@ -8,7 +8,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-30T22:27:26.372624+00:00",
+    "updated_at": "2026-07-01T23:22:36.044161+00:00",
     "trail": []
   },
   {
@@ -20,7 +20,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:44:34.754087+00:00",
+    "updated_at": "2026-07-01T23:32:35.706283+00:00",
     "trail": []
   },
   {
@@ -44,7 +44,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:44:18.508591+00:00",
+    "updated_at": "2026-07-01T23:19:32.474590+00:00",
     "trail": []
   },
   {
@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:47:10.570075+00:00",
+    "updated_at": "2026-07-01T23:41:09.334214+00:00",
     "trail": []
   },
   {
@@ -68,7 +68,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:44:27.009272+00:00",
+    "updated_at": "2026-07-01T23:41:27.556784+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T15:33:04.865703+00:00",
+    "updated_at": "2026-07-01T23:42:48.770555+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:37:19.579310+00:00",
+    "updated_at": "2026-07-01T23:40:19.250653+00:00",
     "trail": []
   },
   {
@@ -152,7 +152,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:45:42.867334+00:00",
+    "updated_at": "2026-07-01T23:43:02.076434+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:37:56.200185+00:00",
+    "updated_at": "2026-07-01T23:25:58.498815+00:00",
     "trail": []
   },
   {
@@ -200,7 +200,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-28T14:36:16.201941+00:00",
+    "updated_at": "2026-07-01T23:42:14.049710+00:00",
     "trail": []
   },
   {
@@ -224,7 +224,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:16:42.557526+00:00",
+    "updated_at": "2026-07-01T23:40:47.354359+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:46:32.204512+00:00",
+    "updated_at": "2026-07-01T23:25:03.182185+00:00",
     "trail": []
   },
   {
@@ -296,7 +296,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:45:53.082953+00:00",
+    "updated_at": "2026-07-01T23:36:43.858780+00:00",
     "trail": []
   },
   {
@@ -500,7 +500,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:14:16.102137+00:00",
+    "updated_at": "2026-07-01T22:06:13.077702+00:00",
     "trail": []
   },
   {
@@ -608,7 +608,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:46:47.113003+00:00",
+    "updated_at": "2026-07-01T23:40:57.974662+00:00",
     "trail": []
   },
   {
@@ -644,7 +644,19 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:41:09.700834+00:00",
+    "updated_at": "2026-07-01T23:41:09.241394+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "338449812",
+    "name": "Relentless",
+    "landing": "H&M Landing",
+    "lat": 33.97032,
+    "lng": -118.44672,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-07-01T23:39:43.959666+00:00",
     "trail": []
   },
   {
@@ -740,7 +752,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-01T16:43:49.653114+00:00",
+    "updated_at": "2026-07-01T23:40:56.159796+00:00",
     "trail": []
   },
   {
