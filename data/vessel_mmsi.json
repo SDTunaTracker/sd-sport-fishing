@@ -315,8 +315,12 @@
     "338141545": {
       "name": "Legend",
       "landing": "H&M Landing"
+    },
+    "367664560": {
+      "name": "Excalibur",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-07-02T16:12:04.855860+00:00",
-  "_vessel_count": 77
+  "_last_discover_run": "2026-07-02T23:17:55.267284+00:00",
+  "_vessel_count": 78
 }
