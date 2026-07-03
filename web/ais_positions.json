@@ -20,7 +20,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:17:36.292047+00:00",
+    "updated_at": "2026-07-03T16:14:37.121491+00:00",
     "trail": []
   },
   {
@@ -44,7 +44,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:03:26.574233+00:00",
+    "updated_at": "2026-07-03T16:15:05.312509+00:00",
     "trail": []
   },
   {
@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:11:10.098936+00:00",
+    "updated_at": "2026-07-03T16:11:09.653540+00:00",
     "trail": []
   },
   {
@@ -68,7 +68,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:02:28.225102+00:00",
+    "updated_at": "2026-07-03T14:57:54.543905+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:17:53.796107+00:00",
+    "updated_at": "2026-07-03T15:13:58.411695+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:16:18.982714+00:00",
+    "updated_at": "2026-07-03T16:16:19.081239+00:00",
     "trail": []
   },
   {
@@ -152,7 +152,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:16:41.664970+00:00",
+    "updated_at": "2026-07-03T16:19:33.803640+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:04:58.399672+00:00",
+    "updated_at": "2026-07-03T16:04:59.450325+00:00",
     "trail": []
   },
   {
@@ -200,7 +200,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T14:29:46.121336+00:00",
+    "updated_at": "2026-07-03T14:31:43.945246+00:00",
     "trail": []
   },
   {
@@ -224,7 +224,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:01:43.705483+00:00",
+    "updated_at": "2026-07-03T16:10:48.019453+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:14:10.283806+00:00",
+    "updated_at": "2026-07-03T16:19:31.893022+00:00",
     "trail": []
   },
   {
@@ -248,7 +248,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T14:30:16.398584+00:00",
+    "updated_at": "2026-07-03T16:12:18.350261+00:00",
     "trail": []
   },
   {
@@ -332,7 +332,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:09:55.931501+00:00",
+    "updated_at": "2026-07-03T16:19:02.776509+00:00",
     "trail": []
   },
   {
@@ -345,6 +345,18 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-06-18T21:28:02.314929+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "367044250",
+    "name": "Ranger 85",
+    "landing": "Channel Islands Sportfishing",
+    "lat": 34.05101,
+    "lng": -119.192,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-07-03T16:17:19.854726+00:00",
     "trail": []
   },
   {
@@ -380,7 +392,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-30T22:40:11.159524+00:00",
+    "updated_at": "2026-07-03T15:47:21.437773+00:00",
     "trail": []
   },
   {
@@ -404,7 +416,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-28T15:42:20.169252+00:00",
+    "updated_at": "2026-07-03T15:27:06.232799+00:00",
     "trail": []
   },
   {
@@ -608,7 +620,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:15:55.914027+00:00",
+    "updated_at": "2026-07-03T16:19:16.314781+00:00",
     "trail": []
   },
   {
@@ -644,7 +656,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:11:09.440084+00:00",
+    "updated_at": "2026-07-03T16:17:12.469584+00:00",
     "trail": []
   },
   {
@@ -752,7 +764,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:16:59.317710+00:00",
+    "updated_at": "2026-07-03T16:11:04.510216+00:00",
     "trail": []
   },
   {
@@ -848,7 +860,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:15:49.157372+00:00",
+    "updated_at": "2026-07-03T16:18:49.014864+00:00",
     "trail": []
   },
   {
@@ -944,7 +956,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-07-02T23:11:20.022799+00:00",
+    "updated_at": "2026-07-03T15:46:47.015022+00:00",
     "trail": []
   }
 ]

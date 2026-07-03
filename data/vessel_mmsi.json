@@ -319,8 +319,12 @@
     "367664560": {
       "name": "Excalibur",
       "landing": "H&M Landing"
+    },
+    "367044250": {
+      "name": "Ranger 85",
+      "landing": "Channel Islands Sportfishing"
     }
   },
-  "_last_discover_run": "2026-07-02T23:17:55.267284+00:00",
-  "_vessel_count": 78
+  "_last_discover_run": "2026-07-03T16:19:50.820035+00:00",
+  "_vessel_count": 79
 }
