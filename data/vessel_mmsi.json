@@ -323,8 +323,16 @@
     "367044250": {
       "name": "Ranger 85",
       "landing": "Channel Islands Sportfishing"
+    },
+    "338145465": {
+      "name": "Islander",
+      "landing": "Fisherman's Landing"
+    },
+    "338478738": {
+      "name": "Fortune",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-07-04T15:44:19.517376+00:00",
-  "_vessel_count": 79
+  "_last_discover_run": "2026-07-04T23:07:04.650785+00:00",
+  "_vessel_count": 81
 }
