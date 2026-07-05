@@ -331,8 +331,12 @@
     "338478738": {
       "name": "Fortune",
       "landing": "Fisherman's Landing"
+    },
+    "367158550": {
+      "name": "Western Pride",
+      "landing": "Davey's Locker"
     }
   },
-  "_last_discover_run": "2026-07-05T15:50:37.840258+00:00",
-  "_vessel_count": 81
+  "_last_discover_run": "2026-07-05T23:11:40.906891+00:00",
+  "_vessel_count": 82
 }
