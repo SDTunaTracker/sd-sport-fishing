@@ -335,8 +335,12 @@
     "367158550": {
       "name": "Western Pride",
       "landing": "Davey's Locker"
+    },
+    "338164131": {
+      "name": "Freedom",
+      "landing": "22nd Street Landing"
     }
   },
-  "_last_discover_run": "2026-07-09T23:36:19.979562+00:00",
-  "_vessel_count": 82
+  "_last_discover_run": "2026-07-10T16:38:33.683596+00:00",
+  "_vessel_count": 83
 }
