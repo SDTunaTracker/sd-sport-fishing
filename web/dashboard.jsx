@@ -1050,4 +1050,4 @@ function HomeView({ navigate, settings, regions }) {
   );
 }
 
-Object.assign(window, { TodayView, HomeView });
+Object.assign(window, { TodayView, HomeView, HotspotsWidget, WeeklySummaryWidget });
