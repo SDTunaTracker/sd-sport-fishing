@@ -261,13 +261,13 @@ def main() -> int:
     for i, name in enumerate(SIXPACK_BOATS, 1):
         print(f"  {i:2d}. {name}")
     print()
-    _check("count == 20",           len(SIXPACK_BOATS) == 20,
+    _check("count == 21",           len(SIXPACK_BOATS) == 21,
            f"got {len(SIXPACK_BOATS)}")
     _check("Got Bait present",              "Got Bait" in SIXPACK_BOATS)
     _check("Freeman 34 present",            "Freeman 34" in SIXPACK_BOATS)
     _check("Lucky B Sportfishing present",  "Lucky B Sportfishing" in SIXPACK_BOATS)
+    _check("El Gato Dos present (manual add)", "El Gato Dos" in SIXPACK_BOATS)
     _check("Nautilus ABSENT",       "Nautilus" not in SIXPACK_BOATS)
-    _check("El Gato Dos ABSENT",    "El Gato Dos" not in SIXPACK_BOATS)
     _check("Intrigue ABSENT",       "Intrigue" not in SIXPACK_BOATS)
     _check("Graylight ABSENT",      "Graylight" not in SIXPACK_BOATS)
     print()

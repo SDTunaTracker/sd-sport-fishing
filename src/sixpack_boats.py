@@ -9,11 +9,11 @@ The list is derived programmatically from forecast/sixpack_candidates.csv
 (built by scripts/sixpack_analysis.py from the live trips table):
 
   - Every row classified HIGH_CONFIDENCE_SIXPACK (max_anglers <= 6, ≥10 trips)
-  - PLUS the one promoted REVIEW_BORDERLINE boat: "Lucky B Sportfishing"
+  - PLUS `_MANUAL_ADDITIONS` — human-verified six-packs the classifier missed.
 
-That yields 20 boats. If the CSV is regenerated later, this module picks up
-the new HIGH_CONFIDENCE set automatically; the promoted-borderline list is
-the only piece that lives in code and must be updated by hand.
+That yields 21 boats. If the CSV is regenerated later, this module picks up
+the new HIGH_CONFIDENCE set automatically; the manual-additions list is the
+only piece that lives in code and must be updated by hand.
 
 Matching contract for downstream code:
   Case-insensitive AND whitespace-trimmed on both sides. The DB carries
@@ -30,11 +30,18 @@ _CSV = _HERE.parent / "forecast" / "sixpack_candidates.csv"
 
 _HIGH_CLASS = "HIGH_CONFIDENCE_SIXPACK"
 
-# The one REVIEW_BORDERLINE boat that user analysis promoted. Intrigue and
-# Graylight (the other two borderlines) stay out. If you promote another
-# borderline case in the future, add it here.
-_PROMOTED_BORDERLINE: tuple[str, ...] = (
+# Boats the classifier did NOT auto-flag as HIGH_CONFIDENCE_SIXPACK but that
+# human review has confirmed as private six-pack charters. Add here (verbatim
+# stored name) when you confirm a new one.
+#
+# - Lucky B Sportfishing: classified REVIEW_BORDERLINE (max_anglers=8). User
+#   promoted 2026-07-12 — max=8 is data noise/rare full-boat, actually a 6-pack.
+# - El Gato Dos: classified OPEN_PARTY (max_anglers=22, 858 trips). User
+#   confirmed 2026-07-12 — private charter regardless of the 22-angler outliers,
+#   which are almost certainly scraper artifacts or co-op charter mis-counts.
+_MANUAL_ADDITIONS: tuple[str, ...] = (
     "Lucky B Sportfishing",
+    "El Gato Dos",
 )
 
 
@@ -50,9 +57,9 @@ def load_sixpack_boats() -> list[str]:
             if row["classification"] == _HIGH_CLASS:
                 high_conf.append(row["boat"])
     # CSV rows come pre-sorted by trip_count desc within class. Append the
-    # promoted borderline at the end so the canonical order is stable.
+    # manual additions at the end so the canonical order is stable.
     result = list(high_conf)
-    for name in _PROMOTED_BORDERLINE:
+    for name in _MANUAL_ADDITIONS:
         if name not in result:
             result.append(name)
     return result
