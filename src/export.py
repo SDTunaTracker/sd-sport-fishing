@@ -17,6 +17,7 @@ from .analytics import (
 )
 from .conditions import snapshot as conditions_snapshot
 from .forecast import build_forecast_payload, calculate_consensus
+from .sixpack_boats import SIXPACK_BOATS
 from .sst import LOCATIONS as SST_LOCATIONS
 
 LANDINGS_META = [
@@ -718,6 +719,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "BOAT_PROFILES": _boat_profiles_payload(conn),
         "ADMIN": _admin_payload(conn),
         "SCRAPE_STATUS": _scrape_status_payload(conn),
+        "SIXPACK_BOATS": list(SIXPACK_BOATS),
         "META": {
             "lastScrape": last_scrape["t"] if last_scrape and last_scrape["t"] else None,
             "tripCount": len(trips),

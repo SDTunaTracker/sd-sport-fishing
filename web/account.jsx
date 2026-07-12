@@ -132,12 +132,14 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
         window.setUserPref('tripTypeFilter', next.tripTypeFilter);
         window.setUserPref('windUnit', next.windUnit);
         window.setUserPref('density', next.density);
+        window.setUserPref('includeSixPackCharters', !!next.includeSixPackCharters);
       }
     } else {
       // Preferences persist for anonymous users too (localStorage via setUserPref)
       if (window.setUserPref) {
         window.setUserPref('tripTypeFilter', next.tripTypeFilter);
         window.setUserPref('density', next.density);
+        window.setUserPref('includeSixPackCharters', !!next.includeSixPackCharters);
       }
     }
   }
@@ -443,6 +445,17 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
               { value: 'comfortable', label: 'Comfortable' },
               { value: 'compact',     label: 'Compact'     },
             ]}
+          />
+        </div>
+
+        <div className="acct-field">
+          <div className="acct-field-l">
+            <div className="acct-field-t">Include private six-pack charters in Analytics</div>
+            <div className="acct-field-s">Off by default. Private 6-passenger charters skew leaderboards vs open-party boats.</div>
+          </div>
+          <SettingsToggle
+            on={!!settings.includeSixPackCharters}
+            onChange={function(v) { setPref('includeSixPackCharters', v); }}
           />
         </div>
       </div>

@@ -39,6 +39,13 @@ function defaultSettings() {
     tripTypeFilter: 'all',
     windUnit: 'kt',
     density: 'comfortable',
+    // Six-pack (USCG uninspected passenger vessel, <=6 anglers) charters are
+    // excluded from Analytics by default because their tiny sample sizes and
+    // 6-angler ceiling skew leaderboards vs open-party boats. Toggling this
+    // ON re-includes them; the analytics universe recomputes (Win Rate,
+    // head-to-head pool, TPA/Day, top-performer rate all change). See
+    // src/sixpack_boats.py for the canonical list.
+    includeSixPackCharters: false,
   };
 }
 

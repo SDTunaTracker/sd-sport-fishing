@@ -198,6 +198,14 @@ function App() {
       saveSettings(next);
       setSettingsState(next);
     }
+    // Six-pack toggle: null = never set → keep default (OFF). Explicit true/false wins.
+    const savedSixpack = window.getUserPref('includeSixPackCharters', null);
+    if (savedSixpack !== null) {
+      const next = { ...settings, includeSixPackCharters: !!savedSixpack };
+      saveSettings(next);
+      SDA.preprocessTrips(next);  // re-run — toggle changes analytics universe
+      setSettingsState(next);
+    }
   }, [isSignedIn, user && user.id]);
 
   // Sync effective region to global so filterTrips picks it up automatically.

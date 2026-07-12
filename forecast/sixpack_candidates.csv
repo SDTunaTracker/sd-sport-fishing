@@ -1,0 +1,183 @@
+boat,classification,trip_count,min_anglers,mean_anglers,median_anglers,p90_anglers,max_anglers,first_date_pacific,last_date_pacific,landings
+Sauerfish,HIGH_CONFIDENCE_SIXPACK,189,2,5.4,6,6.0,6,2016-04-16,2023-07-21,Point Loma Sportfishing
+Josie Lynn,HIGH_CONFIDENCE_SIXPACK,165,1,5.1,6,6.0,6,2015-01-23,2019-12-02,Point Loma Sportfishing
+Blackfish,HIGH_CONFIDENCE_SIXPACK,119,2,5.02,5,6.0,6,2023-04-01,2026-07-11,"Davey's Locker, Newport Landing"
+Alexes,HIGH_CONFIDENCE_SIXPACK,114,1,4.66,5.0,6.0,6,2015-02-26,2017-07-08,Seaforth Sportfishing
+Boardroom,HIGH_CONFIDENCE_SIXPACK,73,2,5.07,6,6.0,6,2020-02-05,2021-09-26,Dana Wharf Sportfishing
+Game Changer,HIGH_CONFIDENCE_SIXPACK,66,2,5.73,6.0,6.0,6,2018-10-07,2021-07-30,Point Loma Sportfishing
+Voodoo,HIGH_CONFIDENCE_SIXPACK,66,3,5.59,6.0,6.0,6,2018-08-11,2024-08-26,H&M Landing
+Bight 28 (SD),HIGH_CONFIDENCE_SIXPACK,55,1,2.89,3,4.0,6,2017-09-15,2025-12-05,Fisherman's Landing
+Invader,HIGH_CONFIDENCE_SIXPACK,53,2,4.7,5,6.0,6,2020-10-18,2023-09-12,Seaforth Sportfishing
+Hi-Count,HIGH_CONFIDENCE_SIXPACK,44,2,5.23,6.0,6.0,6,2015-07-10,2019-10-13,Point Loma Sportfishing
+Faith,HIGH_CONFIDENCE_SIXPACK,41,1,4.73,5,6.0,6,2015-08-30,2020-02-27,H&M Landing
+Hot Spot,HIGH_CONFIDENCE_SIXPACK,41,2,5.07,6,6.0,6,2020-05-31,2021-11-12,Dana Wharf Sportfishing
+Western Star,HIGH_CONFIDENCE_SIXPACK,37,2,5.22,6,6.0,6,2018-09-27,2021-05-05,Fisherman's Landing
+Little G,HIGH_CONFIDENCE_SIXPACK,34,3,5.53,6.0,6.0,6,2022-05-22,2025-10-19,H&M Landing
+Bongos III,HIGH_CONFIDENCE_SIXPACK,17,2,5.47,6,6.0,6,2015-01-25,2023-09-02,Davey's Locker
+Got Bait,HIGH_CONFIDENCE_SIXPACK,17,2,4.41,5,5.4,6,2026-05-02,2026-07-11,Point Loma Sportfishing
+Freeman 34,HIGH_CONFIDENCE_SIXPACK,12,1,3.58,3.5,5.0,6,2021-11-02,2026-04-18,Fisherman's Landing
+Black Diamond,HIGH_CONFIDENCE_SIXPACK,10,4,5.1,5.0,6.0,6,2018-02-06,2018-08-06,Fisherman's Landing
+Penetrator,HIGH_CONFIDENCE_SIXPACK,10,2,3.7,3.5,6.0,6,2015-03-21,2015-06-09,H&M Landing
+Chubasco III,REVIEW_SMALL_SAMPLE,9,4,5.22,6,6.0,6,2022-07-31,2023-05-21,Long Beach Sportfishing
+Primetime,REVIEW_SMALL_SAMPLE,9,4,5.78,6,6.0,6,2022-09-13,2024-08-09,Point Loma Sportfishing
+Bight 23 (SD),REVIEW_SMALL_SAMPLE,7,1,2.71,2,4.4,5,2020-07-06,2025-08-11,Fisherman's Landing
+Bongos II,REVIEW_SMALL_SAMPLE,7,4,5.57,6,6.0,6,2022-08-11,2022-09-23,Davey's Locker
+Cobalt,REVIEW_SMALL_SAMPLE,7,4,5.43,6,6.0,6,2021-07-01,2022-06-11,Fisherman's Landing
+Effishency,REVIEW_SMALL_SAMPLE,7,2,4.14,5,5.0,5,2026-05-30,2026-07-10,Oceanside Sea Center
+Mardiosa,REVIEW_SMALL_SAMPLE,7,2,4.86,5,6.0,6,2022-08-04,2023-06-07,Long Beach Sportfishing
+Pacific Raider,REVIEW_SMALL_SAMPLE,7,4,5.43,6,6.0,6,2022-09-03,2023-05-28,Long Beach Sportfishing
+Passport,REVIEW_SMALL_SAMPLE,7,2,4.57,5,6.0,6,2017-08-06,2018-08-19,H&M Landing
+Second Chance,REVIEW_SMALL_SAMPLE,3,3,4,4,4.8,5,2026-05-25,2026-06-16,Dana Wharf Sportfishing
+Osprey,REVIEW_SMALL_SAMPLE,2,4,4.5,4.5,4.9,5,2015-08-20,2015-09-06,H&M Landing
+Rampage,REVIEW_SMALL_SAMPLE,2,2,4,4.0,5.6,6,2020-01-18,2020-08-23,Dana Wharf Sportfishing
+Seasons 23,REVIEW_SMALL_SAMPLE,2,2,2,2.0,2.0,2,2019-07-12,2019-07-13,Fisherman's Landing
+Carolena,REVIEW_SMALL_SAMPLE,1,6,6,6,6.0,6,2023-07-23,2023-07-23,H&M Landing
+Hitman,REVIEW_SMALL_SAMPLE,1,4,4,4,4.0,4,2021-08-24,2021-08-24,Fisherman's Landing
+MarDiosa,REVIEW_SMALL_SAMPLE,1,6,6,6,6.0,6,2026-06-14,2026-06-14,Long Beach Sportfishing
+Ronin,REVIEW_SMALL_SAMPLE,1,4,4,4,4.0,4,2015-11-27,2015-11-27,H&M Landing
+Sun Dance II,REVIEW_SMALL_SAMPLE,1,6,6,6,6.0,6,2019-08-31,2019-08-31,H&M Landing
+Lucky B Sportfishing,REVIEW_BORDERLINE,62,1,3.16,3.0,4.0,8,2021-06-15,2026-06-08,Fisherman's Landing
+Intrigue,REVIEW_BORDERLINE,58,3,5.34,6.0,6.0,7,2018-09-27,2023-10-13,Fisherman's Landing
+Graylight,REVIEW_BORDERLINE,38,3,5.55,6.0,6.0,8,2026-05-01,2026-07-11,Channel Islands Sportfishing
+San Diego,OPEN_PARTY,2531,5,32.64,33,49.0,59,2015-01-02,2026-07-12,Seaforth Sportfishing
+Mission Belle,OPEN_PARTY,1588,5,22.89,23.0,35.0,43,2015-01-02,2026-07-11,Point Loma Sportfishing
+Liberty,OPEN_PARTY,1429,6,31.02,31,46.0,86,2016-07-15,2026-06-21,Fisherman's Landing
+Old Glory,OPEN_PARTY,1428,3,26.9,29.0,36.0,38,2015-05-29,2026-07-11,H&M Landing
+Grande,OPEN_PARTY,1307,4,29.42,30,39.0,60,2015-02-22,2026-07-11,"H&M Landing, Point Loma Sportfishing"
+Tribute,OPEN_PARTY,1300,7,26.85,29.0,33.0,44,2015-01-04,2026-06-20,Seaforth Sportfishing
+Malihini,OPEN_PARTY,1012,4,25.64,24.0,44.0,51,2015-01-02,2026-07-11,H&M Landing
+Producer,OPEN_PARTY,945,0,24.25,25,30.0,31,2015-05-09,2026-07-11,H&M Landing
+New Lo-An,OPEN_PARTY,909,5,22.7,23,32.0,39,2015-04-18,2026-06-14,"Fisherman's Landing, Point Loma Sportfishing"
+Pacific Queen,OPEN_PARTY,901,0,27.78,29,34.0,44,2015-01-03,2026-06-19,Fisherman's Landing
+Sea Watch,OPEN_PARTY,887,4,22.67,24,33.4,48,2015-03-20,2026-07-12,Seaforth Sportfishing
+El Gato Dos,OPEN_PARTY,858,1,4.81,5.0,6.0,22,2015-02-18,2026-07-12,Seaforth Sportfishing
+Patriot,OPEN_PARTY,821,0,31.61,31,47.0,74,2015-01-01,2026-05-25,Newport Landing
+Aztec,OPEN_PARTY,815,3,22.91,24,28.0,43,2015-01-23,2026-06-20,Seaforth Sportfishing
+Voyager,OPEN_PARTY,811,3,13.39,14,18.0,27,2015-02-08,2026-07-12,Seaforth Sportfishing
+Legend,OPEN_PARTY,750,1,25.4,27.0,30.0,53,2015-04-04,2026-07-12,H&M Landing
+Western Pride,OPEN_PARTY,724,0,32.82,33.0,48.0,87,2015-01-07,2026-07-11,"Davey's Locker, Newport Landing"
+Pacific Voyager,OPEN_PARTY,683,7,16.25,16,20.0,37,2015-01-17,2026-06-20,Seaforth Sportfishing
+Condor,OPEN_PARTY,657,6,24.3,24,36.0,44,2015-05-25,2024-11-08,Fisherman's Landing
+Tomahawk,OPEN_PARTY,637,0,22.91,24,28.0,31,2015-01-11,2026-07-11,"Fisherman's Landing, Seaforth Sportfishing"
+Daiwa Pacific,OPEN_PARTY,620,6,17.58,18.0,22.0,41,2015-04-10,2026-07-12,H&M Landing
+Point Loma,OPEN_PARTY,614,3,17.27,17.0,26.0,34,2015-01-25,2026-07-11,Point Loma Sportfishing
+Pacifica,OPEN_PARTY,594,5,24.11,26.0,30.0,43,2019-06-16,2026-06-20,"Dana Wharf Sportfishing, Seaforth Sportfishing"
+Nautilus,OPEN_PARTY,579,0,19.94,6,49.2,72,2015-05-21,2026-07-11,"H&M Landing, Newport Landing"
+Sum Fun,OPEN_PARTY,576,4,26.09,25.0,41.5,59,2019-11-01,2026-07-11,Dana Wharf Sportfishing
+Aggressor,OPEN_PARTY,567,3,24.58,23,42.0,47,2015-01-10,2026-06-21,Newport Landing
+Ocean Odyssey,OPEN_PARTY,526,7,25.44,26.0,30.0,35,2015-06-07,2026-07-12,H&M Landing
+Clemente,OPEN_PARTY,511,6,26.11,25,40.0,225,2019-11-02,2026-07-11,Dana Wharf Sportfishing
+Relentless,OPEN_PARTY,501,3,16.59,17,21.0,27,2015-05-16,2026-06-21,H&M Landing
+Freelance,OPEN_PARTY,491,9,42.44,45,59.0,70,2015-01-02,2026-07-11,Davey's Locker
+Pegasus,OPEN_PARTY,491,0,16.32,18,20.0,23,2015-06-27,2026-06-21,Fisherman's Landing
+Pacific Dawn,OPEN_PARTY,477,6,15.58,16,19.0,22,2015-07-24,2026-06-08,Fisherman's Landing
+Pride,OPEN_PARTY,467,3,13.9,14,18.0,20,2015-04-04,2026-07-11,"22nd Street Landing, Seaforth Sportfishing"
+Apollo,OPEN_PARTY,439,6,18.08,19,22.0,27,2015-04-26,2026-06-19,Seaforth Sportfishing
+Mustang,OPEN_PARTY,431,2,21.43,22,30.0,40,2015-04-10,2023-10-13,"Fisherman's Landing, H&M Landing"
+Constitution,OPEN_PARTY,412,0,20.68,22.0,25.0,64,2015-07-01,2026-06-19,"Fisherman's Landing, H&M Landing"
+Sea Adventure 80,OPEN_PARTY,404,3,24.58,26.0,30.0,35,2015-05-30,2026-07-12,"H&M Landing, Point Loma Sportfishing"
+Excalibur,OPEN_PARTY,383,6,24.4,26,28.0,36,2018-08-05,2026-07-12,H&M Landing
+Fortune,OPEN_PARTY,380,6,16.58,17.0,20.0,23,2015-02-02,2026-07-12,Fisherman's Landing
+Ranger 85,OPEN_PARTY,380,4,25.7,28.0,30.0,35,2015-07-01,2026-07-12,"Channel Islands Sportfishing, H&M Landing"
+Endeavor (Ventura),OPEN_PARTY,375,5,17.57,18,21.0,24,2015-06-28,2026-07-11,"Seaforth Sportfishing, Ventura Harbor Sportfishing"
+Reel Fun,OPEN_PARTY,367,4,20.86,21,32.0,37,2019-11-04,2026-07-11,Dana Wharf Sportfishing
+El Capitan,OPEN_PARTY,366,8,16.11,18.0,18.0,23,2015-06-07,2025-09-28,Point Loma Sportfishing
+New Del Mar,OPEN_PARTY,350,0,56.85,50.0,103.1,147,2015-02-01,2026-07-11,Marina Del Rey Sportfishing
+Outer Limits,OPEN_PARTY,339,7,18.47,19,23.0,38,2015-02-22,2025-04-04,Seaforth Sportfishing
+Polaris Supreme,OPEN_PARTY,312,10,22.66,24.0,24.0,25,2016-09-27,2026-07-12,"Fisherman's Landing, Seaforth Sportfishing"
+Jig Strike,OPEN_PARTY,294,5,13,12.0,18.0,30,2015-02-21,2024-08-27,H&M Landing
+Dolphin,OPEN_PARTY,287,0,28.27,26,46.4,68,2015-02-17,2026-07-11,Fisherman's Landing
+Spitfire,OPEN_PARTY,285,0,27.19,25,46.6,119,2015-02-14,2026-07-11,Marina Del Rey Sportfishing
+Islander,OPEN_PARTY,279,10,23.76,25,29.0,31,2015-07-08,2026-06-18,Fisherman's Landing
+Thunderbird,OPEN_PARTY,275,4,26.27,28,30.0,31,2015-01-18,2026-07-11,"Davey's Locker, Newport Landing"
+Fury,OPEN_PARTY,273,3,22.56,22,30.0,39,2019-11-03,2026-06-21,Dana Wharf Sportfishing
+Fisherman III,OPEN_PARTY,268,3,22.24,22.0,32.0,43,2015-01-18,2020-10-16,H&M Landing
+Reel Champion,OPEN_PARTY,268,1,5.02,5.0,6.0,25,2015-07-17,2026-05-28,H&M Landing
+Cortez,OPEN_PARTY,265,6,15.66,16,19.0,34,2015-06-28,2026-07-12,Seaforth Sportfishing
+Prowler,OPEN_PARTY,257,4,20.76,21,30.0,34,2015-02-22,2018-10-26,"Fisherman's Landing, Seaforth Sportfishing"
+Poseidon,OPEN_PARTY,248,6,20.75,22.0,25.0,27,2018-07-22,2026-07-11,"Fisherman's Landing, H&M Landing, Seaforth Sportfishing"
+Alicia,OPEN_PARTY,237,3,10.53,10,15.0,20,2015-05-21,2025-10-02,H&M Landing
+Top Gun 80,OPEN_PARTY,237,4,21.4,24,25.0,26,2015-02-15,2026-05-31,H&M Landing
+Betty-O,OPEN_PARTY,235,0,19.77,17,38.6,65,2015-02-01,2026-07-11,Marina Del Rey Sportfishing
+New Seaforth,OPEN_PARTY,229,6,31.52,30,51.2,68,2015-07-25,2026-07-12,Seaforth Sportfishing
+Vendetta,OPEN_PARTY,218,3,11.21,12.0,13.0,21,2015-01-04,2022-10-15,H&M Landing
+Dana Pride,OPEN_PARTY,216,7,35.19,34.0,59.0,70,2019-11-02,2026-07-11,Dana Wharf Sportfishing
+Highliner,OPEN_PARTY,212,6,21.46,22.0,25.0,141,2023-04-16,2026-06-21,Seaforth Sportfishing
+Chief,OPEN_PARTY,211,3,25.66,27,34.0,37,2015-01-04,2019-08-27,"H&M Landing, Point Loma Sportfishing"
+T-Bird,OPEN_PARTY,185,7,20.54,22,26.0,33,2019-06-09,2024-09-07,Point Loma Sportfishing
+Dominator,OPEN_PARTY,183,5,20.69,21,28.0,40,2015-05-10,2018-11-05,Point Loma Sportfishing
+Outrider,OPEN_PARTY,182,4,9.36,10.0,11.0,12,2020-06-15,2022-11-18,Fisherman's Landing
+Victory,OPEN_PARTY,168,8,28.75,26.0,44.3,64,2022-07-01,2026-06-21,Long Beach Sportfishing
+Vendetta 2,OPEN_PARTY,162,5,17.04,17.0,24.0,37,2021-07-20,2026-07-12,H&M Landing
+Eldorado,OPEN_PARTY,140,8,26.86,29.5,33.1,45,2015-07-26,2026-06-19,"Long Beach Sportfishing, Point Loma Sportfishing"
+Horizon,OPEN_PARTY,137,0,22.53,24,29.4,37,2023-05-07,2026-07-11,H&M Landing
+San Mateo,OPEN_PARTY,133,2,8.74,10,11.0,14,2019-12-24,2021-10-18,Dana Wharf Sportfishing
+Current,OPEN_PARTY,129,1,4.94,5,6.0,18,2019-11-11,2026-06-18,Dana Wharf Sportfishing
+Premier,OPEN_PARTY,121,6,29.75,29,51.0,59,2015-05-09,2026-07-11,H&M Landing
+First String,OPEN_PARTY,111,13,27.48,28,35.0,40,2015-07-19,2017-08-13,H&M Landing
+Pacific Star,OPEN_PARTY,106,15,23.07,24.0,26.0,35,2015-07-09,2017-10-25,Seaforth Sportfishing
+Oceanside 95,OPEN_PARTY,102,10,23.75,24.0,30.9,35,2022-05-15,2025-11-02,Point Loma Sportfishing
+Helena,OPEN_PARTY,100,5,14.07,14.0,20.0,25,2020-01-18,2026-06-19,Dana Wharf Sportfishing
+Pacific Islander,OPEN_PARTY,89,4,19.66,21,25.0,29,2020-07-19,2022-11-20,Point Loma Sportfishing
+Daily Double,OPEN_PARTY,77,8,26.35,25,39.4,58,2015-05-25,2026-07-11,Point Loma Sportfishing
+Boardroom II,OPEN_PARTY,74,1,3.86,4.0,4.0,35,2019-11-01,2021-10-17,Dana Wharf Sportfishing
+Joanna,OPEN_PARTY,72,1,5.67,6.0,6.0,51,2015-05-14,2016-06-11,H&M Landing
+Success,OPEN_PARTY,63,0,10.19,10,12.0,15,2015-07-13,2026-06-09,Point Loma Sportfishing
+Pacific Quest,OPEN_PARTY,62,4,10.82,12.0,12.0,17,2015-07-19,2016-09-24,Fisherman's Landing
+Patriot (SD),OPEN_PARTY,59,3,9.51,10,12.0,12,2022-09-06,2026-05-03,H&M Landing
+Lex Sea,OPEN_PARTY,58,1,4.02,4.0,4.0,33,2019-11-03,2021-09-03,Dana Wharf Sportfishing
+Blue Horizon,OPEN_PARTY,55,4,12.36,13,16.6,25,2015-01-17,2026-07-08,"H&M Landing, Oceanside Sea Center"
+Invicta,OPEN_PARTY,54,7,18.63,20.0,23.0,30,2015-01-04,2016-09-02,H&M Landing
+Spirit of Adventure,OPEN_PARTY,54,10,21.61,23.0,25.0,28,2020-08-09,2026-07-11,H&M Landing
+Tradition,OPEN_PARTY,51,9,16.18,16,23.0,29,2024-08-11,2026-07-11,"Fisherman's Landing, H&M Landing"
+American Angler,OPEN_PARTY,48,17,26.9,28.0,32.0,32,2016-05-21,2023-06-02,Point Loma Sportfishing
+Chubasco II,OPEN_PARTY,47,2,18.32,17,31.4,34,2026-05-01,2026-07-11,Oceanside Sea Center
+Vagabond,OPEN_PARTY,46,13,24.54,25.5,28.0,28,2015-01-17,2023-09-30,Point Loma Sportfishing
+Commander,OPEN_PARTY,45,9,20.73,22,25.0,35,2015-01-25,2016-09-27,"Fisherman's Landing, Seaforth Sportfishing"
+Aloha Spirit,OPEN_PARTY,44,3,23.34,26.0,30.0,30,2026-05-01,2026-07-11,Channel Islands Sportfishing
+Maximus,OPEN_PARTY,43,3,13,14,15.0,16,2015-07-25,2015-10-11,Fisherman's Landing
+Shogun,OPEN_PARTY,42,9,26,27.5,31.0,33,2015-06-30,2024-10-20,Fisherman's Landing
+Speed Twin,OPEN_PARTY,41,13,32.17,33,48.0,50,2026-05-01,2026-07-11,Channel Islands Sportfishing
+Southern Cal,OPEN_PARTY,37,9,26.97,27,39.4,43,2026-05-02,2026-07-11,Oceanside Sea Center
+Ahra Ahn,OPEN_PARTY,33,10,24.06,26,32.6,47,2022-07-08,2023-06-30,Long Beach Sportfishing
+Mirage,OPEN_PARTY,33,12,18.73,19,21.0,21,2026-05-01,2026-07-11,Channel Islands Sportfishing
+Island Fox,OPEN_PARTY,32,9,17.62,19.0,20.0,20,2026-05-01,2026-07-11,Channel Islands Sportfishing
+Gentleman,OPEN_PARTY,31,11,31.32,28,50.0,51,2026-05-01,2026-07-11,Channel Islands Sportfishing
+Island Tak,OPEN_PARTY,30,0,9.23,10.0,11.0,18,2026-05-02,2026-07-11,Channel Islands Sportfishing
+Searcher,OPEN_PARTY,28,11,21.07,17.5,32.0,34,2015-07-19,2024-05-17,Fisherman's Landing
+Pursuit,OPEN_PARTY,20,30,37,38.0,39.0,39,2026-05-25,2026-06-21,22nd Street Landing
+Monte Carlo,OPEN_PARTY,19,18,45.05,39,72.4,80,2026-05-25,2026-07-11,22nd Street Landing
+Redondo Special,OPEN_PARTY,16,13,37.69,37.5,53.0,56,2026-05-25,2026-07-11,Redondo Beach Sportfishing
+Orion,OPEN_PARTY,14,8,13.14,13.5,16.0,17,2026-05-02,2026-06-21,Channel Islands Sportfishing
+Intrepid,OPEN_PARTY,13,26,26,26,26.0,26,2021-04-25,2022-04-23,Point Loma Sportfishing
+Freedom,OPEN_PARTY,12,11,31,35.0,36.0,36,2019-04-29,2026-07-11,"22nd Street Landing, Point Loma Sportfishing"
+Native Sun,OPEN_PARTY,12,17,29.67,31.0,38.0,38,2026-05-29,2026-06-21,22nd Street Landing
+Patriot (Newport),OPEN_PARTY,12,1,28.83,32.5,42.5,43,2026-05-24,2026-06-21,Newport Landing
+Pronto,OPEN_PARTY,12,0,7.17,7.0,11.8,12,2026-05-02,2026-07-09,Oceanside Sea Center
+Endeavor,OPEN_PARTY,11,10,15.55,16,18.0,18,2026-05-02,2026-05-24,Ventura Harbor Sportfishing
+Patriot San Diego,OPEN_PARTY,11,16,30.82,35,43.0,43,2025-08-19,2026-05-23,Newport Landing
+Indicator,OPEN_PARTY,10,15,17.6,17.0,20.0,20,2026-05-09,2026-06-21,Channel Islands Sportfishing
+Island Spirit,OPEN_PARTY,10,12,26.3,25.5,37.7,44,2026-05-02,2026-06-12,Ventura Harbor Sportfishing
+El Patron,OPEN_PARTY,9,18,20.44,21,21.0,21,2026-06-01,2026-07-11,Long Beach Sportfishing
+Gail Force,OPEN_PARTY,9,10,19.11,22,24.2,25,2026-06-09,2026-07-11,LA Waterfront Sportfishing
+Dreamer,OPEN_PARTY,8,4,6.12,6.0,6.9,9,2022-07-03,2023-06-09,Long Beach Sportfishing
+Sport King,OPEN_PARTY,8,15,27.62,30.0,35.0,35,2026-06-08,2026-06-20,LA Waterfront Sportfishing
+Royal Polaris,OPEN_PARTY,7,18,21,19,24.8,26,2020-06-11,2020-08-22,Fisherman's Landing
+New San Mateo,OPEN_PARTY,6,8,11,11.0,13.5,14,2026-06-04,2026-06-21,Dana Wharf Sportfishing
+Ahra-Ahn,OPEN_PARTY,5,12,21.8,25,28.2,29,2026-05-30,2026-07-11,Long Beach Sportfishing
+Amigo,OPEN_PARTY,5,10,17.8,13,29.8,39,2015-01-10,2026-07-11,"22nd Street Landing, Newport Landing"
+Californian,OPEN_PARTY,5,10,25,21,39.8,45,2026-05-02,2026-07-11,Ventura Harbor Sportfishing
+City of Long Beach,OPEN_PARTY,5,13,31.8,34,47.8,53,2026-05-24,2026-06-20,Pierpoint Landing
+Cobra,OPEN_PARTY,5,8,10,10,11.0,11,2026-06-17,2026-07-11,Channel Islands Sportfishing
+Independence,OPEN_PARTY,5,20,26.8,26,31.0,31,2020-07-13,2023-05-22,Point Loma Sportfishing
+Pacific Eagle,OPEN_PARTY,5,16,21,22,23.6,24,2026-05-02,2026-07-11,Ventura Harbor Sportfishing
+Pescador,OPEN_PARTY,5,11,13.6,13,16.8,18,2026-06-13,2026-07-11,Redondo Beach Sportfishing
+Royal Star,OPEN_PARTY,5,0,14.8,24,25.0,25,2017-06-10,2026-06-03,Fisherman's Landing
+Triton,OPEN_PARTY,5,23,27.6,25,34.0,40,2026-05-03,2026-06-20,LA Waterfront Sportfishing
+Enterprise,OPEN_PARTY,4,26,32.5,34.5,35.0,35,2026-06-03,2026-07-09,Pierpoint Landing
+Excel,OPEN_PARTY,4,29,32,33.0,33.0,33,2019-06-21,2024-05-13,Fisherman's Landing
+Toronado,OPEN_PARTY,4,10,22.25,22.0,31.4,35,2026-05-24,2026-07-09,Pierpoint Landing
+Lucky Charm,OPEN_PARTY,2,10,12.5,12.5,14.5,15,2025-08-11,2025-09-20,H&M Landing
+Red Rooster III,OPEN_PARTY,1,30,30,30,30.0,30,2021-05-09,2021-05-09,H&M Landing
+Sea Star,OPEN_PARTY,1,15,15,15,15.0,15,2026-07-08,2026-07-08,Oceanside Sea Center
+Twilight,OPEN_PARTY,1,33,33,33,33.0,33,2020-09-06,2020-09-06,Dana Wharf Sportfishing

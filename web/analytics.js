@@ -4,15 +4,46 @@
   // user-selected trophy species) and `calcDays` (rounded or actual) to every
   // trip so all downstream analytics respect user preferences without any
   // further changes.
+  //
+  // Also filters six-pack (USCG uninspected passenger vessel) charters out of
+  // the Analytics universe when settings.includeSixPackCharters is falsy —
+  // this is the SINGLE choke point for six-pack exclusion. Every leaderboard,
+  // Win Rate matchup pool, TPA/Day, and head-to-head calc reads from
+  // window.SD_PROC_TRIPS, so dropping the trip here removes the boat from
+  // every metric at once (no per-metric drift possible). Reports / Today's
+  // Report render from window.SD.TODAY and window.SD.TRIPS directly and are
+  // deliberately not touched.
+  //
+  // Match on window.SD.SIXPACK_BOATS (case-insensitive, whitespace-trimmed).
+  function _sixpackFilter(settings) {
+    if (settings && settings.includeSixPackCharters) return null;  // pass-through
+    var list = (window.SD && window.SD.SIXPACK_BOATS) || [];
+    if (!list.length) return null;
+    var set = new Set();
+    for (var i = 0; i < list.length; i++) {
+      var n = list[i];
+      if (n) set.add(String(n).trim().toLowerCase());
+    }
+    return set;
+  }
+
   function preprocessTrips(settings) {
     const trophySp = (settings && settings.trophySpecies) || ['Bluefin','Yellowfin','Yellowtail','Dorado'];
     const method   = (settings && settings.tripLengthMethod) || 'rounded';
-    window.SD_PROC_TRIPS = window.SD.TRIPS.map(function(t) {
+    const sixpackSet = _sixpackFilter(settings);
+    const out = [];
+    for (var i = 0; i < window.SD.TRIPS.length; i++) {
+      var t = window.SD.TRIPS[i];
+      if (sixpackSet) {
+        var key = String(t.boat || '').trim().toLowerCase();
+        if (sixpackSet.has(key)) continue;
+      }
       var totalTuna = trophySp.reduce(function(s, sp) { return s + (t[sp] || 0); }, 0);
       var rawDays   = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
       var calcDays  = method === 'rounded' ? Math.max(1, Math.floor(rawDays)) : rawDays;
-      return Object.assign({}, t, { totalTuna: totalTuna, calcDays: calcDays });
-    });
+      out.push(Object.assign({}, t, { totalTuna: totalTuna, calcDays: calcDays }));
+    }
+    window.SD_PROC_TRIPS = out;
   }
   // Helper: every filter can be 'all' / null / single value / array. This makes
   // each one behave the same way (multi-select compatible) without changing
