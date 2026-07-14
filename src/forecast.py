@@ -718,6 +718,60 @@ def _historical_score_for_sst(
     return 5.5
 
 
+def _yellowtail_seasonal_lookup(conn: sqlite3.Connection) -> dict[int, float]:
+    """Per-month T1 seasonal rating for inshore yellowtail.
+
+    Returns {1..12: rating_on_1_10}. Held-out validation (see
+    forecast/validate_yellowtail_analog.py) showed this beats the previous
+    _YELLOWTAIL_BREAKS SST-based scoring by +25.7pp direction accuracy on the
+    2025 inshore slice, and matches an analog model within noise. Yellowtail
+    catch is calendar-dominated -- per-month climatology is the right form.
+
+    Computed from ALL historical inshore trips (trip_length_days <= 1.0,
+    anglers >= 5, non-half-day). Each yellowtail-per-angler value is converted
+    to a 1-10 rating via mid-rank percentile against the full inshore
+    distribution (zero-inflation safe); the monthly mean of those ratings is
+    the lookup value.
+    """
+    import bisect
+    from collections import defaultdict
+    rows = conn.execute(
+        """SELECT date, yellowtail * 1.0 / NULLIF(anglers, 0) AS pa
+           FROM trips
+           WHERE is_half_day = 0 AND anglers >= 5
+             AND trip_length_days >= 0.75 AND trip_length_days <= 1.0
+             AND anglers > 0"""
+    ).fetchall()
+    if not rows:
+        return {m: 5.5 for m in range(1, 13)}
+    pas = sorted(r[1] for r in rows if r[1] is not None)
+    n = len(pas)
+    if n == 0:
+        return {m: 5.5 for m in range(1, 13)}
+
+    def _rank(v: float) -> float:
+        less = bisect.bisect_left(pas, v)
+        equal = bisect.bisect_right(pas, v) - less
+        p = (less + 0.5 * equal) / n
+        return max(1.0, min(10.0, 1.0 + p * 9.0))
+
+    by_month: dict[int, list[float]] = defaultdict(list)
+    for date_str, pa in rows:
+        if pa is None:
+            continue
+        try:
+            m = int(str(date_str)[5:7])
+        except (ValueError, IndexError, TypeError):
+            continue
+        by_month[m].append(_rank(pa))
+
+    out: dict[int, float] = {}
+    for m in range(1, 13):
+        vals = by_month.get(m, [])
+        out[m] = round(sum(vals) / len(vals), 1) if vals else 5.5
+    return out
+
+
 def score_day(
     sst_f: float | None,
     moon_illum: int | None,
@@ -727,11 +781,19 @@ def score_day(
     anomaly: float | None,
     historical_val: float = 5.5,
     weight_overrides: dict | None = None,
+    month: int | None = None,
+    yellowtail_seasonal: dict[int, float] | None = None,
 ) -> dict:
     """Compute full weighted score for one day.
 
     Returns a dict with overall_score, species scores, conditions_label,
     factor_scores, and factor_weights.
+
+    When both `month` and `yellowtail_seasonal` are provided, the yellowtail
+    score is drawn from the per-month T1 seasonal lookup instead of the
+    _YELLOWTAIL_BREAKS SST-based blend. This is the validated model for
+    yellowtail-inshore (see forecast/validate_yellowtail_analog.py); if
+    callers omit either arg, the old SST-break behavior is preserved.
     """
     w = {**_load_factor_weights(), **(weight_overrides or {})}
 
@@ -773,11 +835,19 @@ def score_day(
         base_adj = round(min(10.0, max(1.0, base + anom_mod)), 1)
         return round(min(10.0, max(1.0, base_adj * sp_w + non_sst_avg * (1 - sp_w))), 1)
 
+    # Yellowtail: prefer the validated per-month T1 seasonal lookup when the
+    # caller supplied it; otherwise fall back to the old SST-break blend.
+    if yellowtail_seasonal is not None and month is not None:
+        yt_score = round(min(10.0, max(1.0,
+                                       yellowtail_seasonal.get(month, 5.5))), 1)
+    else:
+        yt_score = _sp(_YELLOWTAIL_BREAKS)
+
     return {
         "overall_score":    overall,
         "bluefin_score":    _sp(bluefin_breaks),
         "yellowfin_score":  _sp(yellowfin_breaks),
-        "yellowtail_score": _sp(_YELLOWTAIL_BREAKS),
+        "yellowtail_score": yt_score,
         "dorado_score":     _sp(_DORADO_BREAKS),
         "conditions_label": _conditions_label(overall),
         "factor_scores": {
@@ -1092,6 +1162,12 @@ def build_forecast_payload(
     # ── Historical factor ────────────────────────────────────────────────────
     hist_val = _historical_score_for_sst(conn, primary_sst, month) if primary_sst else 5.5
 
+    # ── T1 seasonal lookup for yellowtail (inshore-calibrated, per-month) ──
+    # Replaces _YELLOWTAIL_BREAKS SST-based scoring per validation:
+    # forecast/validate_yellowtail_analog.py. Beats old path by +25.7pp on the
+    # 2025 held-out slice. Computed once here, passed to every score_day call.
+    yt_seasonal = _yellowtail_seasonal_lookup(conn)
+
     # ── Today's score ─────────────────────────────────────────────────────────
     scores = score_day(
         sst_f=primary_sst,
@@ -1101,6 +1177,8 @@ def build_forecast_payload(
         pressure_trend=today_wx.get("pressure_trend"),
         anomaly=primary_anom,
         historical_val=hist_val,
+        month=today.month,
+        yellowtail_seasonal=yt_seasonal,
     )
 
     today_out = {
@@ -1170,6 +1248,8 @@ def build_forecast_payload(
             pressure_trend=wx.get("pressure_trend"),
             anomaly=primary_anom if use_actual else None,
             historical_val=hist_val,
+            month=d.month,
+            yellowtail_seasonal=yt_seasonal,
         )
         seven_day.append({
             "date":            d_str,
