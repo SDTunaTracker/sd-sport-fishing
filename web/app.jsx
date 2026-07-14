@@ -369,6 +369,14 @@ function App() {
     const nextPath = pathFromRoute(view, params, regions);
     if (window.location.pathname !== nextPath) {
       history.pushState(null, '', nextPath); // pushState does not fire popstate
+      // Belt-and-suspenders: some mobile browsers dropped the setRoute() call
+      // below when it came right after a preventDefault()+pushState on an
+      // <a href> touch click, leaving the URL updated but the view stale
+      // until a manual refresh. Firing popstate manually makes the router's
+      // onPop handler (which also calls setRoute via applyParsed) run as a
+      // second, independent path so the view can't stay behind the URL.
+      try { window.dispatchEvent(new PopStateEvent('popstate')); }
+      catch (e) { /* PopStateEvent unsupported on very old browsers; ignore */ }
     }
     setRoute({ view, params });
     window.scrollTo({ top: 0, behavior: 'instant' });
