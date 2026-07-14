@@ -328,13 +328,37 @@ def _model_b_score(
 
     try:
         def _fetch(sst_lo: float, sst_hi: float, with_wind_dir: bool) -> list[tuple]:
+            # STEP 3: offshore rows carry span-averaged conditions IN dss
+            # (dss.sst_offshore_span, dss.wind_is_upwelling_span). Read those
+            # directly instead of joining hc on dss.date. Inshore keeps the
+            # existing HC join because inshore dss.date = filed date (shift=0)
+            # and its conditions weren't span-changed.
+            if segment == "offshore":
+                where = [
+                    "dss.segment = 'offshore'",
+                    "dss.sst_offshore_span BETWEEN ? AND ?",
+                    f"strftime('%m', dss.date) IN ({month_ph})",
+                    "dss.trip_count >= 2",
+                    "dss.sst_offshore_span IS NOT NULL",
+                ]
+                params: list = [sst_lo, sst_hi, *month_fmt]
+                if with_wind_dir and is_upwelling is not None:
+                    where.append("dss.wind_is_upwelling_span = ?")
+                    params.append(1.0 if is_upwelling else 0.0)
+                return conn.execute(
+                    f"SELECT dss.date, dss.avg_tpa FROM daily_segment_stats dss"
+                    f" WHERE {' AND '.join(where)}"
+                    f" ORDER BY ABS(dss.sst_offshore_span - ?) LIMIT 20",
+                    [*params, sst_val],
+                ).fetchall()
+            # Inshore: unchanged join.
             where = [
-                "dss.segment = ?",
+                "dss.segment = 'inshore'",
                 f"hc.{sst_col} BETWEEN ? AND ?",
                 f"strftime('%m', dss.date) IN ({month_ph})",
                 "dss.trip_count >= 2",
             ]
-            params: list = [segment, sst_lo, sst_hi, *month_fmt]
+            params = [sst_lo, sst_hi, *month_fmt]
             if with_wind_dir and is_upwelling is not None:
                 where.append("hc.wind_is_upwelling = ?")
                 params.append(1 if is_upwelling else 0)

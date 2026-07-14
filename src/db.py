@@ -615,17 +615,52 @@ def update_daily_segment_stats(
       inshore  — trip_length_days <= 1.0  (day trips, local waters)
       offshore — trip_length_days  > 1.0  (overnight+ trips, distant banks)
 
+    STEP 1 change (dep-date keying, offshore only):
+      Offshore rows are keyed on the reconstructed DEPARTURE date, not the
+      landing/return date, so downstream forecast joins see the conditions the
+      trip was actually caught under. Inshore keeps the same date (shift is 0
+      for trip_length_days <= 1.0 by construction). The shift math comes from
+      the shared trip_conditions.DEP_DATE_SQL so live scoring and offline
+      backtest cannot drift.
+
+    STEP 2 change (angler-weighted aggregation, offshore only):
+      Offshore species_tpa columns switch from AVG(species/anglers) (trip-
+      weighted) to SUM(species)/SUM(anglers) (angler-weighted), matching the
+      response variable that the offline validation used. Inshore aggregation
+      is unchanged (byte-identical). This changes only the four species tpa
+      columns for offshore rows; avg_tpa / top_quartile_tpa / median_tpa still
+      average trophy_per_angler_per_day per trip (formula-agnostic for the
+      monthly baseline in forecast._monthly_score, which reads top_quartile_tpa).
+
+    STEP 3 change (span-averaged condition columns, offshore only):
+      Offshore rows now also store span-averaged conditions across the fishing
+      window (dep_date .. dep_date + span_days - 1), via
+      trip_conditions.averaged_conditions. Columns added: sst_offshore_span,
+      sst_nearshore_span, sst_anomaly_span, sst_gradient_span, wind_speed_span,
+      swell_height_span, moon_illum_span, wind_is_upwelling_span. Inshore
+      offshore-only span columns stay NULL (Model B falls back to the HC join
+      for inshore, unchanged). wind_is_upwelling_span is taken as the dep_date
+      value (binary flag doesn't average meaningfully).
+
     Uses top-quartile TPA as the primary target variable for the dual forecast model.
     Returns number of rows written.
     """
+    from datetime import date as _date
+    from .trip_conditions import DEP_DATE_SQL, span_days, averaged_conditions
+
     conn.executescript(_DAILY_SEGMENT_STATS_SCHEMA)
+    _migrate_span_columns(conn)
 
-    # Derive segment from trip_length_days; filter to eligible trips only.
+    # since_date filters trips.date (return date) -- an incremental rebuild may
+    # still touch dss rows keyed slightly earlier for offshore multi-day trips
+    # whose fishing window started before since_date. That's the correct
+    # semantic: the dss row for the fishing day should reflect all trips that
+    # fished on it, regardless of when they returned.
     date_filter = f" AND date >= '{since_date}'" if since_date else ""
-    seg_expr = "CASE WHEN trip_length_days <= 1.0 THEN 'inshore' ELSE 'offshore' END"
 
-    base_rows = conn.execute(f"""
-        SELECT date, {seg_expr} AS segment,
+    # ── Inshore: unchanged from pre-STEP-1 -- filed date + trip-weighted AVG.
+    inshore_rows = conn.execute(f"""
+        SELECT date AS date, 'inshore' AS segment,
                COUNT(*) as trip_count,
                AVG(trophy_per_angler_per_day) as avg_tpa,
                SUM(trophy_count) as total_tuna,
@@ -635,15 +670,75 @@ def update_daily_segment_stats(
                AVG(yellowtail* 1.0 / NULLIF(anglers,0)) as yellowtail_tpa,
                AVG(dorado    * 1.0 / NULLIF(anglers,0)) as dorado_tpa
         FROM trips
-        WHERE is_half_day = 0 AND anglers >= 5{date_filter}
-        GROUP BY date, segment
+        WHERE is_half_day = 0 AND anglers >= 5 AND trip_length_days <= 1.0{date_filter}
+        GROUP BY date
         HAVING COUNT(*) >= 2
     """).fetchall()
+
+    # ── Offshore: dep-date keying + angler-weighted SUM/SUM aggregation +
+    # avg_trip_length so we can compute span for span-averaged conditions.
+    offshore_rows = conn.execute(f"""
+        SELECT {DEP_DATE_SQL} AS date, 'offshore' AS segment,
+               COUNT(*) as trip_count,
+               AVG(trophy_per_angler_per_day) as avg_tpa,
+               SUM(trophy_count) as total_tuna,
+               SUM(anglers) as total_anglers,
+               CAST(SUM(bluefin)    AS REAL) / NULLIF(SUM(anglers), 0) as bluefin_tpa,
+               CAST(SUM(yellowfin)  AS REAL) / NULLIF(SUM(anglers), 0) as yellowfin_tpa,
+               CAST(SUM(yellowtail) AS REAL) / NULLIF(SUM(anglers), 0) as yellowtail_tpa,
+               CAST(SUM(dorado)     AS REAL) / NULLIF(SUM(anglers), 0) as dorado_tpa,
+               AVG(trip_length_days) as _avg_trip_length
+        FROM trips
+        WHERE is_half_day = 0 AND anglers >= 5 AND trip_length_days > 1.0{date_filter}
+        GROUP BY {DEP_DATE_SQL}
+        HAVING COUNT(*) >= 2
+    """).fetchall()
+
+    # Compute span-averaged HC per offshore row using the shared helper.
+    span_cols_numeric = (
+        "sst_offshore", "sst_nearshore", "sst_anomaly", "sst_gradient",
+        "wind_speed", "swell_height", "moon_illum",
+    )
+    hc_by_date: dict[str, dict] = {}
+    for r in conn.execute("SELECT * FROM historical_conditions"):
+        hc_by_date[r["date"]] = dict(r)
+
+    span_by_key: dict[tuple[str, str], dict] = {}
+    for r in offshore_rows:
+        dep_str = r["date"]
+        try:
+            dep_d = _date.fromisoformat(dep_str)
+        except ValueError:
+            continue
+        n = span_days(r["_avg_trip_length"] or 2.0)
+        avg = averaged_conditions(hc_by_date, dep_d, n, span_cols_numeric)
+        dep_hc = hc_by_date.get(dep_str) or {}
+        span_by_key[(dep_str, "offshore")] = {
+            "sst_offshore_span":       (avg or {}).get("sst_offshore"),
+            "sst_nearshore_span":      (avg or {}).get("sst_nearshore"),
+            "sst_anomaly_span":        (avg or {}).get("sst_anomaly"),
+            "sst_gradient_span":       (avg or {}).get("sst_gradient"),
+            "wind_speed_span":         (avg or {}).get("wind_speed"),
+            "swell_height_span":       (avg or {}).get("swell_height"),
+            "moon_illum_span":         (avg or {}).get("moon_illum"),
+            # Binary upwelling flag: take dep-date value; averaging a 0/1 across
+            # 2 days would produce 0.5 which Model B's `= ?` filter can't use.
+            "wind_is_upwelling_span":  dep_hc.get("wind_is_upwelling"),
+        }
+
+    base_rows = list(inshore_rows) + list(offshore_rows)
+
+    # Percentiles for top_quartile_tpa / median_tpa keep the pre-STEP-2 semantics
+    # (trip-weighted list of trophy_per_angler_per_day). Offshore percentile
+    # buckets now key by dep_date; inshore by raw date.
+    key_expr = (f"CASE WHEN trip_length_days <= 1.0 THEN date "
+                f"ELSE {DEP_DATE_SQL} END")
+    seg_expr = "CASE WHEN trip_length_days <= 1.0 THEN 'inshore' ELSE 'offshore' END"
 
     from collections import defaultdict
     tpa_lists: dict[tuple, list] = defaultdict(list)
     tpa_rows = conn.execute(f"""
-        SELECT date, {seg_expr} AS segment, trophy_per_angler_per_day
+        SELECT {key_expr} AS date, {seg_expr} AS segment, trophy_per_angler_per_day
         FROM trips
         WHERE is_half_day = 0 AND anglers >= 5
           AND trophy_per_angler_per_day IS NOT NULL{date_filter}
@@ -656,16 +751,36 @@ def update_daily_segment_stats(
         tpas  = tpa_lists.get((r["date"], r["segment"]), [])
         top_q = _percentile(tpas, 75)
         median = _percentile(tpas, 50)
+        sp = span_by_key.get((r["date"], r["segment"]), {})
         insert_rows.append((
             r["date"], r["segment"], r["trip_count"], r["avg_tpa"],
             top_q, median, r["total_tuna"], r["total_anglers"],
             r["bluefin_tpa"], r["yellowfin_tpa"], r["yellowtail_tpa"], r["dorado_tpa"],
+            sp.get("sst_offshore_span"), sp.get("sst_nearshore_span"),
+            sp.get("sst_anomaly_span"), sp.get("sst_gradient_span"),
+            sp.get("wind_speed_span"), sp.get("swell_height_span"),
+            sp.get("moon_illum_span"), sp.get("wind_is_upwelling_span"),
         ))
 
     conn.executemany("""
         INSERT OR REPLACE INTO daily_segment_stats
         (date, segment, trip_count, avg_tpa, top_quartile_tpa, median_tpa,
-         total_tuna, total_anglers, bluefin_tpa, yellowfin_tpa, yellowtail_tpa, dorado_tpa)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+         total_tuna, total_anglers, bluefin_tpa, yellowfin_tpa, yellowtail_tpa, dorado_tpa,
+         sst_offshore_span, sst_nearshore_span, sst_anomaly_span, sst_gradient_span,
+         wind_speed_span, swell_height_span, moon_illum_span, wind_is_upwelling_span)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?, ?,?,?,?, ?,?,?,?)
     """, insert_rows)
     return len(insert_rows)
+
+
+def _migrate_span_columns(conn: sqlite3.Connection) -> None:
+    """Idempotent ADD COLUMN for the STEP 3 span-averaged HC columns."""
+    existing = {r[1] for r in conn.execute(
+        "PRAGMA table_info(daily_segment_stats)"
+    ).fetchall()}
+    for col in ("sst_offshore_span", "sst_nearshore_span",
+                "sst_anomaly_span", "sst_gradient_span",
+                "wind_speed_span", "swell_height_span",
+                "moon_illum_span", "wind_is_upwelling_span"):
+        if col not in existing:
+            conn.execute(f"ALTER TABLE daily_segment_stats ADD COLUMN {col} REAL")

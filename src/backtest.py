@@ -26,6 +26,7 @@ from typing import Iterator
 import requests
 
 from . import db as dbmod
+from .trip_conditions import DEP_DATE_SQL, averaged_conditions
 from .analytics import (
     _BLUEFIN_BREAKS, _OVERALL_BREAKS, _YELLOWFIN_BREAKS,
     _anomaly_boost, _score,
@@ -565,7 +566,7 @@ def _get_daily_tpa(conn: sqlite3.Connection) -> dict[str, dict]:
     trophy_per_angler_per_day already normalises for trip length.
     """
     rows = conn.execute(
-        """SELECT date(date, '-' || CAST(ROUND(trip_length_days - 1) AS INTEGER) || ' days') AS dep_date,
+        f"""SELECT {DEP_DATE_SQL} AS dep_date,
                   AVG(trophy_per_angler_per_day)              AS avg_tpa,
                   AVG(bluefin   * 1.0 / NULLIF(anglers, 0))  AS bf_pa,
                   AVG(yellowfin * 1.0 / NULLIF(anglers, 0))  AS yf_pa,
@@ -585,21 +586,9 @@ def _get_daily_tpa(conn: sqlite3.Connection) -> dict[str, dict]:
 
 def _avg_conditions(hc_by_date: dict, dep_date: date, n_days: int) -> dict | None:
     """Average historical_conditions over n_days starting from dep_date.
-
-    Returns None if no conditions rows are found for any day in the range.
-    All numeric columns are averaged; moon_phase_name is taken from day 1.
-    """
-    rows = [hc_by_date.get((dep_date + timedelta(days=i)).isoformat())
-            for i in range(max(n_days, 1))]
-    rows = [r for r in rows if r]
-    if not rows:
-        return None
-    result: dict = {}
-    for col in _HC_NUMERIC_COLS:
-        vals = [r[col] for r in rows if r.get(col) is not None]
-        result[col] = round(sum(vals) / len(vals), 4) if vals else None
-    result["moon_phase_name"] = rows[0].get("moon_phase_name")
-    return result
+    Thin wrapper over trip_conditions.averaged_conditions -- see there for
+    the canonical semantics."""
+    return averaged_conditions(hc_by_date, dep_date, n_days, _HC_NUMERIC_COLS)
 
 
 def _tpa_to_rating(tpa: float, all_values: list[float]) -> float:
@@ -1038,18 +1027,9 @@ def _get_segment_daily_tpa(conn: sqlite3.Connection, segment: str) -> dict[str, 
 
 
 def _avg_conditions_extended(hc_by_date: dict, dep_date: date, n_days: int = 1) -> dict | None:
-    """Like _avg_conditions but includes all extended dual-model columns."""
-    rows = [hc_by_date.get((dep_date + timedelta(days=i)).isoformat())
-            for i in range(max(n_days, 1))]
-    rows = [r for r in rows if r]
-    if not rows:
-        return None
-    result: dict = {}
-    for col in _SEGMENT_HC_FACTORS:
-        vals = [r[col] for r in rows if r.get(col) is not None]
-        result[col] = round(sum(vals) / len(vals), 4) if vals else None
-    result["moon_phase_name"] = rows[0].get("moon_phase_name")
-    return result
+    """Like _avg_conditions but with the extended dual-model column set.
+    Thin wrapper over trip_conditions.averaged_conditions."""
+    return averaged_conditions(hc_by_date, dep_date, n_days, _SEGMENT_HC_FACTORS)
 
 
 def backtest_segment(
