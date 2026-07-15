@@ -1,5 +1,14 @@
 // The Tuna Tracker — app-shell service worker
-var CACHE = 'tt-shell-v2';
+// Bumping CACHE forces old service workers to be replaced on next visit
+// (the activate handler purges every key that isn't the current CACHE).
+var CACHE = 'tt-shell-v3';
+
+// Regex for files that CHANGE without their URL changing. The daily scrape
+// commits a fresh data.js roughly every hour but does NOT re-stamp the
+// ?v= query in index.html (only full deploys via build-prod.py do that),
+// so cache-first-by-URL leaves mobile users looking at hours-old counts.
+// These files must be network-first with cache as an offline fallback.
+var _MUTABLE_DATA = /\/(data\.js|ais_positions\.json|sst_grid\.json)(\?|$)/;
 
 // Resources to pre-cache on install (app shell)
 var SHELL = [
@@ -77,6 +86,23 @@ self.addEventListener('fetch', function(e) {
     url.includes('cdnjs.cloudflare') ||
     url.includes('unpkg.com')
   ) return;
+
+  // Mutable data files (rewritten by the hourly scrape) — network-first with
+  // cache fallback. Must be checked BEFORE the ?v= cache-first branch below,
+  // because data.js is loaded as `data.js?v=<hash>` and the hash only updates
+  // on full deploys, not on hourly scrape commits.
+  if (_MUTABLE_DATA.test(url)) {
+    e.respondWith(
+      fetch(req).then(function(res) {
+        if (res && res.status === 200) {
+          var clone = res.clone();
+          caches.open(CACHE).then(function(c) { c.put(req, clone); });
+        }
+        return res;
+      }).catch(function() { return _cacheOrError(req); })
+    );
+    return;
+  }
 
   // HTML navigation: network-first, fall back to cached root
   if (req.mode === 'navigate') {
