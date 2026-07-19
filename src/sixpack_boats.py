@@ -39,9 +39,14 @@ _HIGH_CLASS = "HIGH_CONFIDENCE_SIXPACK"
 # - El Gato Dos: classified OPEN_PARTY (max_anglers=22, 858 trips). User
 #   confirmed 2026-07-12 — private charter regardless of the 22-angler outliers,
 #   which are almost certainly scraper artifacts or co-op charter mis-counts.
+# - Nautilus: max_anglers=6 across 315 H&M trips (all lengths) since 2019 —
+#   textbook six-pack. User confirmed 2026-07-19. The pre-2017 Newport Nautilus
+#   (avg 30 anglers) is a different vessel, effectively retired, so name-based
+#   matching sweeping both up is fine.
 _MANUAL_ADDITIONS: tuple[str, ...] = (
     "Lucky B Sportfishing",
     "El Gato Dos",
+    "Nautilus",
 )
 
 

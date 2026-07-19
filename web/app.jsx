@@ -52,7 +52,7 @@ const HASH_VIEWS = {
   account: 'account', boats: 'boats', charts: 'charts',
 };
 
-const ANALYTICS_SUBTABS = ['overview', 'finder', 'headtohead', 'seasonality', 'moon'];
+const ANALYTICS_SUBTABS = ['overview', 'finder', 'headtohead', 'seasonality', 'moon', 'halfday'];
 
 function extractRegionFromHash(raw) {
   if (!raw) return { regionIds: null, rest: '' };
@@ -166,10 +166,11 @@ function App() {
   function onSettingsChange(next) {
     saveSettings(next);
     SDA.preprocessTrips(next);
+    SDA.preprocessHalfDayTrips(next);
     setSettingsState(next);
   }
   // Initialize processed trips on first render.
-  useE(() => { SDA.preprocessTrips(settings); }, []);
+  useE(() => { SDA.preprocessTrips(settings); SDA.preprocessHalfDayTrips(settings); }, []);
 
   // When a user signs in, pull their saved region and species from Clerk metadata.
   useE(() => {
@@ -184,6 +185,7 @@ function App() {
       const next = { ...settings, trophySpecies: savedSpecies };
       saveSettings(next);
       SDA.preprocessTrips(next);
+    SDA.preprocessHalfDayTrips(next);
       setSettingsState(next);
     }
     const savedMethod = window.getUserPref('tripLengthMethod', null);
@@ -203,7 +205,8 @@ function App() {
     if (savedSixpack !== null) {
       const next = { ...settings, includeSixPackCharters: !!savedSixpack };
       saveSettings(next);
-      SDA.preprocessTrips(next);  // re-run — toggle changes analytics universe
+      SDA.preprocessTrips(next);
+    SDA.preprocessHalfDayTrips(next);  // re-run — toggle changes analytics universe
       setSettingsState(next);
     }
   }, [isSignedIn, user && user.id]);

@@ -686,6 +686,363 @@
     };
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HALF-DAY ANALYTICS
+  // ───────────────────────────────────────────────────────────────────────────
+  // Half-day trips (is_half_day=1 in the DB) ship in window.SD.HALF_DAY_TRIPS,
+  // separate from the trophy-tuna TRIPS array. The functions below mirror the
+  // trophy-side aggregators (preprocessTrips/filterTrips/boatLeaderboard/etc)
+  // but operate on the half-day set with three differences:
+  //  1. The primary metric is TOTAL FISH per angler (all landed species),
+  //     because half-day trips catch bass, rockfish, sheephead, etc. — trophy
+  //     tuna is nearly zero.
+  //  2. Trips carry a `slot` field derived from tripLength: 'AM' / 'PM' /
+  //     'Twilight' / 'Full' — since AM vs PM performance is a real half-day
+  //     question that trophy analytics never has to ask.
+  //  3. Species filter is multi-select and sums across the selection.
+
+  // Every species field currently exported by src/export.py._trip_to_js.
+  // Kept in sync with the (key, col) list there.
+  var HD_ALL_SPECIES = [
+    'Bluefin','Yellowfin','Yellowtail','Dorado',
+    'Skipjack','Bigeye','Albacore',
+    'Rockfish','Sheephead','Calico Bass','Sand Bass',
+    'Halibut','Lingcod','Whitefish','Bonito','Barracuda','White Sea Bass',
+  ];
+  // "Rare catch" for a half-day trip: trophy-grade fish that turn a routine
+  // near-shore trip into a memorable one. Reported as count per 100 anglers.
+  var HD_RARE_SPECIES = ['White Sea Bass', 'Halibut', 'Lingcod', 'Yellowtail'];
+
+  function _hdSlot(tripLength) {
+    if (tripLength === 'Half Day AM')       return 'AM';
+    if (tripLength === 'Half Day PM')       return 'PM';
+    if (tripLength === 'Half Day Twilight') return 'Twilight';
+    return 'Full';   // 'Half Day' (no AM/PM qualifier)
+  }
+
+  function _hdTotalFish(t) {
+    var n = 0;
+    for (var i = 0; i < HD_ALL_SPECIES.length; i++) n += t[HD_ALL_SPECIES[i]] || 0;
+    return n;
+  }
+
+  function preprocessHalfDayTrips(settings) {
+    var trophySp = (settings && settings.trophySpecies) || ['Bluefin','Yellowfin','Yellowtail','Dorado'];
+    var sixpackSet = _sixpackFilter(settings);
+    var src = (window.SD && window.SD.HALF_DAY_TRIPS) || [];
+    var out = [];
+    for (var i = 0; i < src.length; i++) {
+      var t = src[i];
+      if (sixpackSet) {
+        var key = String(t.boat || '').trim().toLowerCase();
+        if (sixpackSet.has(key)) continue;
+      }
+      var totalFish = _hdTotalFish(t);
+      var totalTrophy = trophySp.reduce(function(s, sp) { return s + (t[sp] || 0); }, 0);
+      out.push(Object.assign({}, t, {
+        totalFish: totalFish,
+        totalTuna: totalTrophy,   // keep the field name that shared helpers expect
+        calcDays: 1,              // half-day trips normalize to 1-day for TPAD
+        slot: _hdSlot(t.tripLength),
+      }));
+    }
+    window.SD_HD_TRIPS = out;
+  }
+
+  // Half-day filter: same field shape as filterTrips PLUS a `slot` field.
+  // species: array (multi-select) or single string; 'all' passes everything.
+  function filterHalfDayTrips(filters, regions) {
+    var effectiveRegion = (regions && window.getEffectiveRegion)
+      ? window.getEffectiveRegion(regions)
+      : window.CURRENT_REGION;
+    var regionLandings = (effectiveRegion && window.getLandingsForRegion)
+      ? window.getLandingsForRegion(effectiveRegion)
+      : null;
+    var t = window.SD_HD_TRIPS || [];
+    return t.filter(function(r) {
+      if (regionLandings && regionLandings.length > 0 && !regionLandings.includes(r.landing)) return false;
+      if (!_passes(r.year,       filters.year,       { toNumber: true })) return false;
+      if (!_passes(r.month,      filters.month,      { toNumber: true })) return false;
+      if (!_passes(r.landing,    filters.landing))                        return false;
+      if (!_passes(r.boat,       filters.boat))                           return false;
+      if (!_passes(r.slot,       filters.slot))                           return false;
+      if (!_passes(r.tripLength, filters.tripLength))                     return false;
+      if (filters.species && filters.species !== 'all') {
+        var sel = Array.isArray(filters.species) ? filters.species : [filters.species];
+        if (sel.length > 0 && !sel.some(function(sp) { return (r[sp] || 0) > 0; })) return false;
+      }
+      return true;
+    });
+  }
+
+  // Score a single half-day trip under a given metric. Returns fish-count-like
+  // number to be divided by anglers by the caller.
+  //   'fpa'     — total fish across all species  (default)
+  //   'tpad'    — trophy species (settings.trophySpecies) — same formula as tuna analytics
+  //   'species' — sum of user-selected species from filters.species (array)
+  function _hdSpeciesSum(t, speciesList) {
+    if (!speciesList || speciesList === 'all') return t.totalFish || 0;
+    var sel = Array.isArray(speciesList) ? speciesList : [speciesList];
+    if (sel.length === 0) return t.totalFish || 0;
+    var n = 0;
+    for (var i = 0; i < sel.length; i++) n += t[sel[i]] || 0;
+    return n;
+  }
+
+  // Ranked half-day boat leaderboard. `metric` selects the ranking rule; extra
+  // columns (fpa, tpad, wsbRate, halibutRate, lingcodRate, ytRate) are always
+  // computed so the UI can show them side-by-side regardless of sort key.
+  //   metric: 'fpa' | 'tpad' | 'species'   (default 'fpa')
+  //   species: array (only used when metric='species' or for the fpa-of-selection view)
+  function halfDayLeaderboard(trips, opts) {
+    opts = opts || {};
+    var metric   = opts.metric   || 'fpa';
+    var species  = opts.species  || 'all';
+    var minTrips = opts.minTrips || 3;
+
+    var byBoat = {};
+    trips.forEach(function(t) {
+      if (!byBoat[t.boat]) byBoat[t.boat] = { boat: t.boat, landing: t.landing, trips: [] };
+      byBoat[t.boat].trips.push(t);
+    });
+
+    var rows = Object.values(byBoat).map(function(b) {
+      var trips = b.trips;
+      var totalAnglers = 0, totalFish = 0, totalTrophy = 0, totalSpeciesSel = 0;
+      var rareCounts = { 'White Sea Bass': 0, Halibut: 0, Lingcod: 0, Yellowtail: 0 };
+      var amTrips = 0, amAnglers = 0, amFish = 0;
+      var pmTrips = 0, pmAnglers = 0, pmFish = 0;
+
+      trips.forEach(function(t) {
+        var ang = t.anglers || 0;
+        totalAnglers    += ang;
+        totalFish       += t.totalFish  || 0;
+        totalTrophy     += t.totalTuna  || 0;
+        totalSpeciesSel += _hdSpeciesSum(t, species);
+        for (var i = 0; i < HD_RARE_SPECIES.length; i++) {
+          rareCounts[HD_RARE_SPECIES[i]] += t[HD_RARE_SPECIES[i]] || 0;
+        }
+        if (t.slot === 'AM') { amTrips++; amAnglers += ang; amFish += t.totalFish || 0; }
+        if (t.slot === 'PM') { pmTrips++; pmAnglers += ang; pmFish += t.totalFish || 0; }
+      });
+
+      var fpa      = totalAnglers ? totalFish       / totalAnglers : 0;
+      var tpad     = totalAnglers ? totalTrophy     / totalAnglers : 0;  // calcDays=1 for half-day
+      var speciesFpa = totalAnglers ? totalSpeciesSel / totalAnglers : 0;
+      var amFpa    = amAnglers ? amFish / amAnglers : 0;
+      var pmFpa    = pmAnglers ? pmFish / pmAnglers : 0;
+
+      // Rare-catch rate: total rare fish per 100 anglers.
+      var rareSum = HD_RARE_SPECIES.reduce(function(s, sp) { return s + rareCounts[sp]; }, 0);
+      var rareRate = totalAnglers ? (rareSum / totalAnglers) * 100 : 0;
+
+      var sortValue = metric === 'tpad'    ? tpad :
+                      metric === 'species' ? speciesFpa :
+                                             fpa;
+
+      return {
+        boat: b.boat, landing: b.landing,
+        tripCount:  trips.length,
+        totalAnglers: totalAnglers, totalFish: totalFish, totalTrophy: totalTrophy,
+        avgAnglers: trips.length ? totalAnglers / trips.length : 0,
+        fpa: fpa, tpad: tpad, speciesFpa: speciesFpa,
+        amTrips: amTrips, pmTrips: pmTrips, amFpa: amFpa, pmFpa: pmFpa,
+        rareCounts: rareCounts, rareRate: rareRate,
+        sortValue: sortValue,
+      };
+    });
+
+    var eligible = rows.filter(function(r) { return r.tripCount >= minTrips; });
+    eligible.sort(function(a, b) { return b.sortValue - a.sortValue; });
+    return { rows: eligible, allRows: rows, metric: metric, minTrips: minTrips };
+  }
+
+  // Head-to-head win rate for half-day boats. A "matchup" = same-date, same-slot
+  // pool of ≥2 boats. Wins credited per-matchup (each pair compared). Metric
+  // choice ('fpa' | 'tpad' | 'species') decides the comparison value.
+  // MIN_MATCHUPS deliberately lower than trophy (10 → 5) because the SD half-
+  // day fleet is thin and stricter thresholds would suppress the whole list.
+  function halfDayWinRates(trips, opts) {
+    opts = opts || {};
+    var metric   = opts.metric   || 'fpa';
+    var species  = opts.species  || 'all';
+    var MIN_MATCHUPS = opts.minMatchups || 5;
+
+    function valOf(t) {
+      var ang = Math.max(1, t.anglers || 0);
+      if (metric === 'tpad')    return (t.totalTuna || 0) / ang;      // calcDays=1
+      if (metric === 'species') return _hdSpeciesSum(t, species) / ang;
+      return (t.totalFish || 0) / ang;
+    }
+
+    // Group by date + slot so AM and PM boats aren't compared against each other.
+    var groups = {};
+    trips.forEach(function(t) {
+      var k = t.date + '|' + t.slot;
+      (groups[k] || (groups[k] = [])).push(t);
+    });
+
+    var stats = {};   // boat|landing -> { wins, matchups, sumVal, trips }
+    var landingMap = {};
+    Object.values(groups).forEach(function(pool) {
+      if (pool.length < 2) return;
+      var scored = pool.map(function(t) { return { t: t, v: valOf(t) }; });
+      scored.forEach(function(a, i) {
+        var key = a.t.boat + '|' + a.t.landing;
+        landingMap[a.t.boat] = a.t.landing;
+        var s = stats[key] || (stats[key] = { wins: 0, matchups: 0, sumVal: 0, trips: 0 });
+        s.trips++; s.sumVal += a.v;
+        scored.forEach(function(b, j) {
+          if (i === j) return;
+          s.matchups++;
+          if (a.v > b.v) s.wins++;
+          else if (a.v === b.v) s.wins += 0.5;
+        });
+      });
+    });
+
+    var out = Object.keys(stats).map(function(key) {
+      var parts = key.split('|');
+      var s = stats[key];
+      return {
+        boat:      parts[0],
+        landing:   parts[1],
+        wins:      s.wins,
+        matchups:  s.matchups,
+        trips:     s.trips,
+        avgVal:    s.trips ? s.sumVal / s.trips : 0,
+        winRate:   s.matchups >= MIN_MATCHUPS ? s.wins / s.matchups : null,
+      };
+    });
+    out.sort(function(a, b) {
+      var aw = a.winRate == null ? -1 : a.winRate;
+      var bw = b.winRate == null ? -1 : b.winRate;
+      return bw - aw;
+    });
+    return out;
+  }
+
+  // AM vs PM per-boat comparison. Only boats that ran BOTH slots are returned.
+  function halfDayAMvsPM(trips, opts) {
+    opts = opts || {};
+    var minTripsPerSlot = opts.minTripsPerSlot || 3;
+    var byBoat = {};
+    trips.forEach(function(t) {
+      var slot = t.slot;
+      if (slot !== 'AM' && slot !== 'PM') return;
+      var r = byBoat[t.boat] || (byBoat[t.boat] = {
+        boat: t.boat, landing: t.landing,
+        AM: { trips: 0, anglers: 0, fish: 0 },
+        PM: { trips: 0, anglers: 0, fish: 0 },
+      });
+      r[slot].trips++;
+      r[slot].anglers += t.anglers || 0;
+      r[slot].fish    += t.totalFish || 0;
+    });
+    return Object.values(byBoat)
+      .filter(function(r) { return r.AM.trips >= minTripsPerSlot && r.PM.trips >= minTripsPerSlot; })
+      .map(function(r) {
+        var amFpa = r.AM.anglers ? r.AM.fish / r.AM.anglers : 0;
+        var pmFpa = r.PM.anglers ? r.PM.fish / r.PM.anglers : 0;
+        return {
+          boat: r.boat, landing: r.landing,
+          amTrips: r.AM.trips, pmTrips: r.PM.trips,
+          amFpa: amFpa, pmFpa: pmFpa,
+          delta: amFpa - pmFpa,
+          preferredSlot: amFpa > pmFpa ? 'AM' : (pmFpa > amFpa ? 'PM' : 'even'),
+        };
+      })
+      .sort(function(a, b) { return Math.abs(b.delta) - Math.abs(a.delta); });
+  }
+
+  // "Recent form" streak tracker for half-day boats — last 10 trips vs the
+  // fleet's same-day / same-slot median (falls back to all-time slot median
+  // when the day is thin). Mirrors boatStreaks() on the trophy side.
+  function halfDayStreaks(allTrips, opts) {
+    opts = opts || {};
+    var minTrips = opts.minTrips || 5;
+
+    function fpa(t) { return (t.totalFish || 0) / Math.max(1, t.anglers || 0); }
+
+    // All-time median FpA per slot as a fallback benchmark.
+    var bySlot = {};
+    allTrips.forEach(function(t) {
+      (bySlot[t.slot] || (bySlot[t.slot] = [])).push(fpa(t));
+    });
+    var slotMed = {};
+    Object.entries(bySlot).forEach(function(kv) { slotMed[kv[0]] = median(kv[1]); });
+
+    // Same-day / same-slot median for context-adjusted benchmark.
+    var byDaySlot = {};
+    allTrips.forEach(function(t) {
+      var k = t.date + '|' + t.slot;
+      (byDaySlot[k] || (byDaySlot[k] = [])).push(fpa(t));
+    });
+    var daySlotMed = {};
+    Object.entries(byDaySlot).forEach(function(kv) { daySlotMed[kv[0]] = median(kv[1]); });
+
+    function benchmarkFor(t) {
+      var grp = byDaySlot[t.date + '|' + t.slot];
+      if (grp && grp.length >= 3) return daySlotMed[t.date + '|' + t.slot];
+      return slotMed[t.slot] || 0;
+    }
+
+    var byBoat = {};
+    allTrips.forEach(function(t) {
+      if (!byBoat[t.boat]) byBoat[t.boat] = { trips: [], landing: t.landing };
+      byBoat[t.boat].trips.push(t);
+    });
+
+    var result = [];
+    Object.entries(byBoat).forEach(function(kv) {
+      var boat = kv[0], d = kv[1];
+      if (d.trips.length < minTrips) return;
+      var sorted = d.trips.slice().sort(function(a, b) { return b.date.localeCompare(a.date); });
+      var last10 = sorted.slice(0, 10);
+      var dots = last10.map(function(t) {
+        return { good: fpa(t) > benchmarkFor(t), date: t.date, fpa: fpa(t), slot: t.slot };
+      });
+      var goodCount = dots.filter(function(x) { return x.good; }).length;
+      result.push({
+        boat: boat, landing: d.landing,
+        last10: dots, goodCount: goodCount,
+        hotPct: Math.round((goodCount / Math.max(1, dots.length)) * 100),
+        totalTrips: d.trips.length,
+      });
+    });
+    result.sort(function(a, b) { return b.hotPct - a.hotPct; });
+    return result;
+  }
+
+  // Rare-catch leaderboard: WSB / halibut / lingcod / yellowtail per 100 anglers.
+  // These four are the half-day "trophies" — infrequent hits that stand out on
+  // a day of routine rockfish/bass fishing.
+  function halfDayRareCatchRate(trips, opts) {
+    opts = opts || {};
+    var minTrips = opts.minTrips || 5;
+    var byBoat = {};
+    trips.forEach(function(t) {
+      var r = byBoat[t.boat] || (byBoat[t.boat] = {
+        boat: t.boat, landing: t.landing, trips: 0, anglers: 0,
+        counts: { 'White Sea Bass': 0, Halibut: 0, Lingcod: 0, Yellowtail: 0 },
+      });
+      r.trips++; r.anglers += t.anglers || 0;
+      HD_RARE_SPECIES.forEach(function(sp) { r.counts[sp] += t[sp] || 0; });
+    });
+    return Object.values(byBoat)
+      .filter(function(b) { return b.trips >= minTrips; })
+      .map(function(b) {
+        var total = HD_RARE_SPECIES.reduce(function(s, sp) { return s + b.counts[sp]; }, 0);
+        var rate  = b.anglers ? (total / b.anglers) * 100 : 0;
+        return {
+          boat: b.boat, landing: b.landing,
+          trips: b.trips, anglers: b.anglers,
+          counts: b.counts, total: total, ratePer100: rate,
+        };
+      })
+      .sort(function(a, b) { return b.ratePer100 - a.ratePer100; });
+  }
+
   window.SDA = {
     preprocessTrips,
     filterTrips,
@@ -704,6 +1061,16 @@
     boatTopPerformerRates,
     boatStreaks,
     computeTopTripToBook,
+    // Half-day aggregators (see block above)
+    preprocessHalfDayTrips,
+    filterHalfDayTrips,
+    halfDayLeaderboard,
+    halfDayWinRates,
+    halfDayAMvsPM,
+    halfDayStreaks,
+    halfDayRareCatchRate,
+    HD_ALL_SPECIES,
+    HD_RARE_SPECIES,
     median, mean, stddev, speciesField,
   };
 })();

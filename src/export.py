@@ -684,6 +684,20 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     all_rows = [_trip_to_js(r) for r in rows]
     trips    = [t for t in all_rows if not t.get('isPreliminary')]
     boats    = _boats_from_trips(trips)
+
+    # Half-day trips ship in a separate payload — the main TRIPS array is trophy
+    # tuna-focused (is_half_day=0), but the Analytics "Half Day" subtab needs
+    # its own dataset. Preliminary rows dropped for the same anglers-unknown
+    # reason as the main trips array. include_full_catch=True so the AM/PM/
+    # rare-catch analytics can drill into any landed species regardless of date.
+    hd_rows = conn.execute(
+        "SELECT * FROM trips WHERE is_half_day = 1 ORDER BY date, id"
+    ).fetchall()
+    half_day_trips = [
+        _trip_to_js(r, include_full_catch=True)
+        for r in hd_rows
+    ]
+    half_day_trips = [t for t in half_day_trips if not t.get('isPreliminary')]
     schedule_rows = conn.execute(
         "SELECT * FROM scheduled_trips ORDER BY departure_at, landing, boat"
     ).fetchall()
@@ -709,6 +723,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "MOON_PHASES": list(MOON_PHASES),
         "BOATS": boats,
         "TRIPS": trips,
+        "HALF_DAY_TRIPS": half_day_trips,
         "TODAY": _today_summary(all_rows),
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),

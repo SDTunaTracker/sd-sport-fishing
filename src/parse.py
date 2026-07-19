@@ -14,10 +14,11 @@ from datetime import date
 # Canonical bucket -> length in days. Sub-3/4-day buckets are listed so we can
 # IDENTIFY them as half-day (in order to exclude), not include them.
 TRIP_LENGTHS_DAYS = {
-    "Twilight":    0.25,
-    "Half Day":    0.5,
-    "Half Day AM": 0.5,
-    "Half Day PM": 0.5,
+    "Twilight":          0.25,
+    "Half Day":          0.5,
+    "Half Day AM":       0.5,
+    "Half Day PM":       0.5,
+    "Half Day Twilight": 0.4,
     "3/4 Day":     0.75,
     "Full Day":  0.75,
     "Overnight": 1.0,
@@ -51,10 +52,16 @@ def parse_trip_length(raw: str) -> tuple[str | None, float | None]:
     # Check fractional-day labels BEFORE the numbered-day loop.
     # "1/2 day" contains "2 day" and "3/4 day" contains "4 day" — both would be
     # mis-parsed by the loop below because "/" isn't excluded by the lookbehind.
-    if re.search(r"\bhalf\s*day\s+am\b", s):
+    # AM / PM / Twilight qualifiers must match BEFORE the generic Half Day rule
+    # below, because that rule would otherwise swallow the whole string. Cover
+    # both "half day" and "1/2 day" phrasings — landings use both interchangeably
+    # (Dana Wharf/Davey's write "1/2 Day AM", H&M writes "Half Day AM").
+    if re.search(r"\b(?:1/2|half)\s*day\s+am\b", s):
         return "Half Day AM", 0.5
-    if re.search(r"\bhalf\s*day\s+pm\b", s):
+    if re.search(r"\b(?:1/2|half)\s*day\s+pm\b", s):
         return "Half Day PM", 0.5
+    if re.search(r"\b(?:1/2|half)\s*day\s+twilight\b", s):
+        return "Half Day Twilight", 0.4
     if re.search(r"\b1/2\s*day\b|\bhalf\s*day\b", s):
         return "Half Day", 0.5
     if re.search(r"\b3/4\s*day\b", s):

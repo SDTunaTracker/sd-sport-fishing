@@ -331,6 +331,406 @@ function BoatFinder({ navigate, regions }) {
   );
 }
 
+// ── HalfDayView ───────────────────────────────────────────────────────────────
+// Dedicated Analytics subtab for half-day boat performance. Uses window.SD.HALF_DAY_TRIPS
+// (populated separately from the trophy-tuna TRIPS array) and the SDA.halfDay*
+// functions in analytics.js. Deliberately self-contained: renders its own filter
+// bar, KPIs, and panels rather than reusing AnalyticsFilterBar — half-day filters
+// (slot, extended species multi-select, metric) are different enough that reusing
+// would push half-day-only logic into every other subtab.
+function HalfDayView({ navigate, regions, settings }) {
+  const { useMemo, useState } = React;
+
+  const SLOT_OPTS = [
+    { value: 'all',      label: 'All slots' },
+    { value: 'AM',       label: 'AM' },
+    { value: 'PM',       label: 'PM' },
+    { value: 'Twilight', label: 'Twilight' },
+    { value: 'Full',     label: 'Full half-day' },
+  ];
+  const METRIC_OPTS = [
+    { value: 'fpa',     label: 'Fish / Angler',        desc: 'All landed species' },
+    { value: 'tpad',    label: 'Tuna / Angler / Day',  desc: 'Trophy species only' },
+    { value: 'species', label: 'Selected species',     desc: 'Sum of species below / angler' },
+  ];
+  // Species list mirrors SDA.HD_ALL_SPECIES, dropping tuna species that are ~0
+  // on half-day trips (Bluefin/Yellowfin/Skipjack/Bigeye/Albacore/Dorado).
+  const SPECIES_OPTS = [
+    'Yellowtail', 'White Sea Bass', 'Halibut', 'Lingcod',
+    'Rockfish', 'Sheephead', 'Calico Bass', 'Sand Bass',
+    'Whitefish', 'Bonito', 'Barracuda',
+  ];
+
+  const YEAR_OPTS = useMemo(() => {
+    const yrs = new Set((window.SD.HALF_DAY_TRIPS || []).map(t => t.year));
+    return ['all', ...[...yrs].sort((a, b) => b - a)];
+  }, []);
+  const MONTH_OPTS = ['all', ...Array.from({ length: 12 }, (_, i) => String(i + 1))];
+
+  // Ensure preprocess ran (mirrors the AnalyticsView guard).
+  if (!window.SD_HD_TRIPS) SDA.preprocessHalfDayTrips(settings);
+
+  const [year,     setYear]     = useState('all');
+  const [month,    setMonth]    = useState('all');
+  const [landing,  setLanding]  = useState('all');
+  const [slot,     setSlot]     = useState('all');
+  const [metric,   setMetric]   = useState('fpa');
+  const [selSpecies, setSelSpecies] = useState([]);    // multi-select, empty = all
+  const [minTrips, setMinTrips] = useState(5);
+
+  const filters = { year, month, landing, boat: 'all', slot,
+                    species: selSpecies.length ? selSpecies : 'all' };
+
+  const filtered = useMemo(() => SDA.filterHalfDayTrips(filters, regions),
+                            [year, month, landing, slot, selSpecies, regions, settings]);
+
+  const leaderboard = useMemo(
+    () => SDA.halfDayLeaderboard(filtered, { metric, species: selSpecies.length ? selSpecies : 'all', minTrips }),
+    [filtered, metric, selSpecies, minTrips]
+  );
+
+  const winRates = useMemo(
+    () => SDA.halfDayWinRates(filtered, { metric, species: selSpecies.length ? selSpecies : 'all', minMatchups: 5 }),
+    [filtered, metric, selSpecies]
+  );
+
+  const amVsPm = useMemo(() => SDA.halfDayAMvsPM(filtered, { minTripsPerSlot: 3 }), [filtered]);
+
+  const rareCatch = useMemo(() => SDA.halfDayRareCatchRate(filtered, { minTrips: 5 }), [filtered]);
+
+  // Streaks operate on the full half-day universe (region-filtered) so "last 10
+  // trips" is always chronological, not gated by year/month.
+  const streaks = useMemo(() => {
+    const universe = SDA.filterHalfDayTrips(
+      { year: 'all', month: 'all', landing: 'all', boat: 'all', slot: 'all', species: 'all' },
+      regions
+    );
+    return SDA.halfDayStreaks(universe, { minTrips: 10 });
+  }, [regions, settings]);
+
+  // KPI values
+  const totalTrips   = filtered.length;
+  const totalAnglers = filtered.reduce((s, t) => s + (t.anglers || 0), 0);
+  const totalFish    = filtered.reduce((s, t) => s + (t.totalFish || 0), 0);
+  const totalTrophy  = filtered.reduce((s, t) => s + (t.totalTuna || 0), 0);
+  const fleetFpa     = totalAnglers ? totalFish   / totalAnglers : 0;
+  const fleetTpad    = totalAnglers ? totalTrophy / totalAnglers : 0;
+  const topBoat      = leaderboard.rows[0];
+
+  const metricLabel = METRIC_OPTS.find(o => o.value === metric)?.label || 'Metric';
+
+  function toggleSpecies(sp) {
+    setSelSpecies(prev => prev.includes(sp) ? prev.filter(x => x !== sp) : [...prev, sp]);
+  }
+
+  // Bar-chart max for the leaderboard
+  const maxSort = leaderboard.rows.length ? leaderboard.rows[0].sortValue : 1;
+
+  return (
+    <React.Fragment>
+      <Crumbs items={[{ label: 'Analytics' }, { label: 'Half Day' }]}/>
+      <div className="pagehead">
+        <div>
+          <h1>Half Day Reports <span className="region-subtitle-badge">{(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'}</span></h1>
+          <div className="sub analytics-sub">
+            {fmt.n(totalTrips)} trips · {fmt.n(totalAnglers)} anglers · {fmt.n(totalFish)} fish landed
+          </div>
+        </div>
+      </div>
+
+      {/* Custom filter panel — half-day-specific (slot, extended species) */}
+      <div className="finder-panel">
+        <div className="finder-panel-title">Filter half-day trips</div>
+        <div className="finder-params">
+          <label className="finder-param">
+            <span className="finder-param-label">Year</span>
+            <select className="finder-param-select" value={year} onChange={e => setYear(e.target.value)}>
+              {YEAR_OPTS.map(y => <option key={y} value={y}>{y === 'all' ? 'All years' : y}</option>)}
+            </select>
+          </label>
+          <label className="finder-param">
+            <span className="finder-param-label">Month</span>
+            <select className="finder-param-select" value={month} onChange={e => setMonth(e.target.value)}>
+              {MONTH_OPTS.map(m => <option key={m} value={m}>{m === 'all' ? 'Any month' : MONTH_NAMES[+m - 1]}</option>)}
+            </select>
+          </label>
+          <label className="finder-param">
+            <span className="finder-param-label">Landing</span>
+            <select className="finder-param-select" value={landing} onChange={e => setLanding(e.target.value)}>
+              <option value="all">All landings</option>
+              {(window.SD.LANDINGS || []).map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </label>
+          <label className="finder-param">
+            <span className="finder-param-label">Slot</span>
+            <select className="finder-param-select" value={slot} onChange={e => setSlot(e.target.value)}>
+              {SLOT_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </label>
+          <label className="finder-param">
+            <span className="finder-param-label">Rank by</span>
+            <select className="finder-param-select" value={metric} onChange={e => setMetric(e.target.value)}
+                    title={METRIC_OPTS.find(o => o.value === metric)?.desc}>
+              {METRIC_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </label>
+          <label className="finder-param">
+            <span className="finder-param-label">Min trips</span>
+            <select className="finder-param-select" value={minTrips} onChange={e => setMinTrips(+e.target.value)}>
+              {[1, 3, 5, 10, 20].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+        </div>
+        <div style={{marginTop: 10}}>
+          <div className="finder-param-label" style={{marginBottom: 6}}>
+            Species (multi-select — filters trips + drives the "Selected species" metric)
+          </div>
+          <div className="row" style={{gap: 6, flexWrap: 'wrap'}}>
+            {SPECIES_OPTS.map(sp => (
+              <span key={sp}
+                    className={`filter-pill ${selSpecies.includes(sp) ? 'on' : ''}`}
+                    style={{cursor: 'pointer'}}
+                    onClick={() => toggleSpecies(sp)}>
+                {sp}
+              </span>
+            ))}
+            {selSpecies.length > 0 && (
+              <span className="filter-pill" style={{cursor: 'pointer', opacity: 0.6}}
+                    onClick={() => setSelSpecies([])}>Clear</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div className="kpis">
+        <KPI label="Half-Day Trips" value={fmt.n(totalTrips)}
+             ctx={`${fmt.n(totalAnglers)} anglers · ${fmt.n(totalFish)} fish landed`}/>
+        <KPI label="Fleet Fish / Angler" value={fleetFpa.toFixed(2)}
+             ctx="All landed species"/>
+        <KPI label="Fleet Tuna / Angler / Day" value={fleetTpad.toFixed(2)}
+             ctx="Trophy species only (mostly yellowtail on half-days)"/>
+        <KPI label={`Top Boat by ${metricLabel}`}
+             value={topBoat?.boat || '—'}
+             ctx={topBoat ? `${topBoat.sortValue.toFixed(2)} · ${topBoat.landing}` : ''}/>
+      </div>
+
+      {/* Universal AM/PM insight banner — shown when data supports it */}
+      {amVsPm.length >= 3 && (() => {
+        const pmBias = amVsPm.filter(r => r.preferredSlot === 'PM').length;
+        const amBias = amVsPm.filter(r => r.preferredSlot === 'AM').length;
+        const majority = pmBias > amBias ? 'PM' : (amBias > pmBias ? 'AM' : null);
+        if (!majority) return null;
+        const majCount = majority === 'PM' ? pmBias : amBias;
+        return (
+          <div className="custom-species-banner"
+               title="Boats that ran ≥3 trips in each slot with matching filters">
+            <i className="fa-solid fa-sun"/> {majCount}/{amVsPm.length} boats fish better in the {majority}
+            {' '}under current filters
+          </div>
+        );
+      })()}
+
+      {/* Main leaderboard */}
+      <div style={{marginBottom: 12}}>
+        <Panel title={`Top Half-Day Boats — ${metricLabel}`}
+               meta={`Min ${minTrips} trips${selSpecies.length && metric === 'species' ? ` · counting ${selSpecies.join(', ')}` : ''}`}>
+          {leaderboard.rows.length === 0 ? (
+            <div className="muted-block">No boats meet the {minTrips}-trip threshold for these filters.</div>
+          ) : (
+            <div>
+              {leaderboard.rows.slice(0, 15).map((r, i) => {
+                const wpct = maxSort > 0 ? (r.sortValue / maxSort) * 100 : 0;
+                return (
+                  <div key={r.boat} className="bar-row consistent"
+                       style={{cursor: 'pointer'}}
+                       onClick={() => navigate('boat', { boat: r.boat })}>
+                    <div className="label">
+                      <span className="rank"
+                            style={{color: i < 3 ? 'var(--ss-orange-500)' : null,
+                                    fontWeight: i < 3 ? 700 : 500}}>{i + 1}</span>
+                      <div style={{minWidth: 0, flex: 1}}>
+                        <div className="name">{r.boat}</div>
+                        <div className="lan">
+                          {r.landing.replace(' Sportfishing', '').replace(' Landing', '')}
+                          {' · '}{r.tripCount} trips · {r.avgAnglers.toFixed(0)} avg anglers
+                        </div>
+                      </div>
+                    </div>
+                    <div className="track" style={{position: 'relative'}}>
+                      <div className="fill" style={{width: `${wpct}%`}}></div>
+                    </div>
+                    <div className="num">{r.sortValue.toFixed(2)}</div>
+                  </div>
+                );
+              })}
+              {/* Column glossary row */}
+              <div style={{marginTop: 12, padding: '10px 4px 0', borderTop: '1px solid var(--ss-border-2)',
+                          fontSize: 11, color: 'var(--ss-gray-3)'}}>
+                Also computed per boat: fish/angler ({metric === 'fpa' ? '↑ ranking metric' : 'shown for reference'}),
+                tuna/angler/day, rare-catch rate/100, AM vs PM fish/angler.
+              </div>
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* Two-column: Win Rate | AM vs PM */}
+      <div className="two-col-grid"
+           style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12}}>
+        <Panel title="Head-to-Head Win Rate"
+               meta="% of same-day, same-slot matchups this boat wins · min 5 matchups">
+          {winRates.filter(r => r.winRate != null).length === 0 ? (
+            <div className="muted-block">Not enough overlapping matchups under these filters.</div>
+          ) : (
+            <div>
+              {winRates.filter(r => r.winRate != null).slice(0, 12).map((r, i) => (
+                <div key={r.boat + r.landing}
+                     style={{display: 'grid', gridTemplateColumns: '24px 1fr 60px 50px',
+                             gap: 8, alignItems: 'center', padding: '6px 0',
+                             borderBottom: '1px solid var(--ss-border-2)', cursor: 'pointer'}}
+                     onClick={() => navigate('boat', { boat: r.boat })}>
+                  <span style={{fontWeight: i < 3 ? 700 : 500,
+                                color: i < 3 ? 'var(--ss-orange-500)' : null}}>{i + 1}</span>
+                  <div style={{minWidth: 0}}>
+                    <div style={{font: '500 12px/15px var(--ss-font-sans)'}}>{r.boat}</div>
+                    <div style={{font: '400 10px/13px var(--ss-font-sans)', color: 'var(--ss-gray-3)'}}>
+                      {r.trips} trips · {r.matchups} matchups
+                    </div>
+                  </div>
+                  <div className="track" style={{height: 8}}>
+                    <div className="fill" style={{width: `${r.winRate * 100}%`}}></div>
+                  </div>
+                  <span style={{font: '600 12px/15px var(--ss-font-sans)', textAlign: 'right',
+                                fontVariantNumeric: 'tabular-nums'}}>
+                    {Math.round(r.winRate * 100)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+
+        <Panel title="AM vs PM per Boat"
+               meta="Boats that ran ≥3 trips in each slot · positive delta = AM better">
+          {amVsPm.length === 0 ? (
+            <div className="muted-block">No boats have enough trips in both slots yet.</div>
+          ) : (
+            <div>
+              {amVsPm.slice(0, 12).map(r => {
+                const barW = Math.min(50, Math.abs(r.delta) * 15);
+                const rightBias = r.delta > 0;   // AM > PM → bar leans right of center
+                return (
+                  <div key={r.boat + r.landing}
+                       style={{padding: '8px 0', borderBottom: '1px solid var(--ss-border-2)'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between',
+                                 alignItems: 'baseline', marginBottom: 4}}>
+                      <span style={{font: '500 12px/15px var(--ss-font-sans)', cursor: 'pointer'}}
+                            onClick={() => navigate('boat', { boat: r.boat })}>{r.boat}</span>
+                      <span style={{font: '600 11px/14px var(--ss-font-sans)',
+                                    color: r.preferredSlot === 'AM' ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)'}}>
+                        Prefers {r.preferredSlot} ({r.delta > 0 ? '+' : ''}{r.delta.toFixed(2)})
+                      </span>
+                    </div>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 6px 1fr', gap: 0,
+                                 fontSize: 10, color: 'var(--ss-gray-3)', alignItems: 'center'}}>
+                      <div style={{textAlign: 'right', paddingRight: 6}}>
+                        AM {r.amFpa.toFixed(2)} <span style={{opacity: 0.6}}>({r.amTrips}t)</span>
+                      </div>
+                      <div style={{width: 2, height: 12, background: 'var(--ss-border-2)'}}></div>
+                      <div style={{paddingLeft: 6}}>
+                        PM {r.pmFpa.toFixed(2)} <span style={{opacity: 0.6}}>({r.pmTrips}t)</span>
+                      </div>
+                    </div>
+                    <div style={{position: 'relative', height: 6, background: 'var(--ss-border-2)',
+                                 borderRadius: 3, marginTop: 4}}>
+                      <div style={{position: 'absolute', left: '50%', top: 0, height: '100%',
+                                   width: `${barW}%`, background: rightBias ? 'var(--ss-orange-500)' : 'var(--ss-darkseagreen-500)',
+                                   transform: rightBias ? 'none' : 'translateX(-100%)',
+                                   borderRadius: 3}}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* Rare-catch panel */}
+      <div style={{marginBottom: 12}}>
+        <Panel title="Rare-Catch Rate"
+               meta="Yellowtail + White Sea Bass + Halibut + Lingcod per 100 anglers · min 5 trips">
+          {rareCatch.length === 0 ? (
+            <div className="muted-block">No boats meet the threshold under these filters.</div>
+          ) : (
+            <div>
+              {rareCatch.slice(0, 10).map((r, i) => (
+                <div key={r.boat + r.landing}
+                     style={{padding: '8px 0', borderBottom: '1px solid var(--ss-border-2)', cursor: 'pointer'}}
+                     onClick={() => navigate('boat', { boat: r.boat })}>
+                  <div style={{display: 'flex', justifyContent: 'space-between',
+                               alignItems: 'baseline', marginBottom: 4}}>
+                    <span style={{font: '500 13px/16px var(--ss-font-sans)'}}>
+                      <span style={{marginRight: 8, color: i < 3 ? 'var(--ss-orange-500)' : 'var(--ss-slate)',
+                                    fontWeight: 700}}>{i + 1}</span>
+                      {r.boat}
+                      <span style={{marginLeft: 8, color: 'var(--ss-gray-3)', fontWeight: 400, fontSize: 11}}>
+                        {r.landing.replace(' Sportfishing', '').replace(' Landing', '')}
+                      </span>
+                    </span>
+                    <span style={{font: '700 13px/16px var(--ss-font-sans)',
+                                  fontVariantNumeric: 'tabular-nums'}}>
+                      {r.ratePer100.toFixed(1)} <span style={{fontSize: 10, color: 'var(--ss-gray-3)', fontWeight: 400}}>/100 anglers</span>
+                    </span>
+                  </div>
+                  <div style={{font: '400 11px/14px var(--ss-font-sans)', color: 'var(--ss-gray-3)'}}>
+                    YT {r.counts.Yellowtail} · WSB {r.counts['White Sea Bass']} · Halibut {r.counts.Halibut} · Lingcod {r.counts.Lingcod}
+                    <span style={{marginLeft: 12, opacity: 0.7}}>({r.trips} trips · {r.anglers} anglers)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* Streak tracker (universe: all half-day trips in region, ignores filters
+          so "last 10 trips" is always chronological) */}
+      <Panel title="Recent Form — Half Day"
+             meta="Last 10 half-day trips per boat vs same-day/same-slot fleet median · min 10 total trips">
+        {streaks.length === 0 ? (
+          <div className="muted-block">No boats with 10+ half-day trips in this region.</div>
+        ) : (
+          <div className="streak-list">
+            {streaks.slice(0, 12).map(s => (
+              <div key={s.boat} className="streak-row" style={{cursor: 'pointer'}}
+                   onClick={() => navigate('boat', { boat: s.boat })}>
+                <div className="streak-name" title={`${s.landing} · ${s.totalTrips} half-day trips total`}>
+                  {s.boat}
+                </div>
+                <div className="streak-dots">
+                  {s.last10.map((d, i) => {
+                    const mo = d.date ? new Date(d.date + 'T12:00:00')
+                      .toLocaleString('en-US', { month: 'short', day: 'numeric' }) : d.date;
+                    return (
+                      <span key={i}
+                            title={`${mo} · ${d.slot} · ${d.fpa.toFixed(2)} fish/angler`}
+                            className="streak-dot"
+                            style={{background: d.good ? '#10B981' : '#EF4444'}}/>
+                    );
+                  })}
+                </div>
+                <div className="streak-score">{s.goodCount}/10</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
+    </React.Fragment>
+  );
+}
+
 // ── AnalyticsView ─────────────────────────────────────────────────────────────
 
 function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navigate, tweaks, settings, regions, subtab = 'overview' }) {
@@ -343,6 +743,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
     { id: 'headtohead',  label: 'Head-to-Head' },
     { id: 'seasonality', label: 'Seasonality' },
     { id: 'moon',        label: 'Moon Phase' },
+    { id: 'halfday',     label: 'Half Day' },
   ];
 
   const SUBTAB_FIELDS = {
@@ -351,6 +752,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
     headtohead:  ['year', 'month', 'landing', 'tripLength', 'species', 'minTrips'],
     seasonality: ['year', 'landing', 'tripLength'],
     moon:        ['year', 'landing', 'tripLength', 'species'],
+    halfday:     [], // half-day view manages its own inline filter panel
   };
 
   // preprocessTrips runs in a useEffect in app.jsx (post-mount), so SD_PROC_TRIPS
@@ -406,14 +808,19 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
         ))}
       </div>
 
-      {/* Shared filter bar — one instance for all subtabs */}
-      <div style={{padding: '10px 16px 0'}}>
-        <AnalyticsFilterBar
-          filters={filters}
-          setFilters={setFilters}
-          fields={SUBTAB_FIELDS[subtab] || SUBTAB_FIELDS.overview}
-          regions={regions}/>
-      </div>
+      {/* Shared filter bar — one instance for all subtabs EXCEPT half-day
+          (which uses its own extended filter panel: slot, extended species
+          multi-select, metric selector). Skipping avoids a confusing double
+          filter bar on that subtab. */}
+      {subtab !== 'halfday' && (
+        <div style={{padding: '10px 16px 0'}}>
+          <AnalyticsFilterBar
+            filters={filters}
+            setFilters={setFilters}
+            fields={SUBTAB_FIELDS[subtab] || SUBTAB_FIELDS.overview}
+            regions={regions}/>
+        </div>
+      )}
 
       {/* Overview sub-tab */}
       {subtab === 'overview' && <React.Fragment>
@@ -579,8 +986,11 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
       {/* Moon Phase sub-tab */}
       {subtab === 'moon' && <MoonView filters={filters} setFilters={setFilters} navigate={navigate} regions={regions}/>}
+
+      {/* Half Day sub-tab */}
+      {subtab === 'halfday' && <HalfDayView navigate={navigate} regions={regions} settings={settings}/>}
     </React.Fragment>
   );
 }
 
-Object.assign(window, { AnalyticsView });
+Object.assign(window, { AnalyticsView, HalfDayView });
