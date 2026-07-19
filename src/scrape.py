@@ -13,7 +13,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -430,6 +430,12 @@ _BOAT_NAME_BLACKLIST = frozenset({
     'Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Skipjack', 'Albacore', 'Bigeye',
 })
 
+# How many days back a narrative-report block may be dated relative to `today`
+# and still be accepted. Evening posts often carry that day's date but are only
+# reachable by the next morning's scrape; multi-day returns similarly lag the
+# fish-count table. Kept small so old archive text can't repopulate stale rows.
+NARRATIVE_LOOKBACK_DAYS = 2
+
 
 def _extract_pairs(text: str) -> tuple[dict, dict, list[tuple[str, int]]]:
     """Harvest (count, species) pairs from free-form text.
@@ -798,6 +804,9 @@ _FINAL_KEYWORDS = [
     'wrapped up', 'wrap up', 'final count', 'final totals',
     'at the dock', 'tied up', 'now unloading', 'unloading',
     'back down to', 'back in port', 'back to the dock',
+    # Seaforth idioms — "finished up their 2 day", "landed 1 Bluefin"
+    'finished up', 'finished their', 'finished up their',
+    'landed', 'ended their', 'ended today',
 ]
 
 _PRELIMINARY_KEYWORDS = [
@@ -1133,9 +1142,17 @@ def _harvest_narrative_reports(
         if effective_date is None:
             log.debug('narrative skip [%s] %s — no date in block', src.name, boat_name)
             continue
-        if effective_date != today:
-            log.debug('narrative skip [%s] %s — block date %s != target %s',
-                      src.name, boat_name, effective_date, today)
+        # Accept blocks dated within the last NARRATIVE_LOOKBACK_DAYS days.
+        # Landings often post evening reports for that day; the next morning's
+        # scrape sees them dated "yesterday" and would drop them under a strict
+        # equality gate. A 2-day window catches those lagged posts (and multi-
+        # day boats whose text report predates the fish-count table) while
+        # still rejecting month-old archive content that keeps a boat's name
+        # visible on the homepage.
+        if not (today - timedelta(days=NARRATIVE_LOOKBACK_DAYS) <= effective_date <= today):
+            log.debug('narrative skip [%s] %s — block date %s outside [%s, %s]',
+                      src.name, boat_name, effective_date,
+                      today - timedelta(days=NARRATIVE_LOOKBACK_DAYS), today)
             continue
 
         # Truncate the extraction window at the next boat-name mention so that
@@ -1205,13 +1222,24 @@ def _harvest_narrative_reports(
         if boat_key in seen_new:
             continue
 
-        # FIX 2: a narrative trip with anglers <= 0 is a parse artifact, not
-        # a real trip. The structured fish-count page will get it when the
-        # boat returns and the landing posts the count. Drop it here.
+        # FIX 2 (updated): anglers <= 0 is usually a parse artifact — BUT some
+        # landings (notably Seaforth) omit angler counts from their evening
+        # trip-return blurbs. When the block carries an explicit "final" verb
+        # (returned/docked/finished up/landed…) AND at least one tracked-
+        # species count, admit it with anglers=0. TPA metrics stay 0 because
+        # 0-anglers division is undefined; downstream analytics that require
+        # anglers >= 5 naturally exclude these rows. The structured fish-
+        # count row, when it eventually lands, overwrites via the purge in
+        # insert_trips.
         if extracted_anglers <= 0:
-            log.debug('narrative skip [%s] %s — no anglers extracted (%r)',
-                      src.name, boat_name, window[:120])
-            continue
+            is_return   = classify_report_status(block) == 'final'
+            has_tracked = any(tracked.get(sp, 0) > 0 for sp in P.TROPHY_SPECIES)
+            if not (is_return and has_tracked):
+                log.debug('narrative skip [%s] %s — no anglers and no return-verb+counts (%r)',
+                          src.name, boat_name, window[:120])
+                continue
+            log.info('narrative admit-no-anglers [%s] %s — return verb + counts, anglers=0',
+                     src.name, boat_name)
 
         seen_new.add(boat_key)
 
@@ -1220,12 +1248,12 @@ def _harvest_narrative_reports(
 
         col_counts, other_fish, _ = P.extract_extended_species(other)
         trophy_total = sum(tracked.get(sp, 0) for sp in P.TROPHY_SPECIES)
-        moon = moon_info(datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc))
+        moon = moon_info(datetime.combine(effective_date, datetime.min.time(), tzinfo=timezone.utc))
         text_metrics = P.trophy_metrics(tracked, extracted_anglers, tl_days) \
                        if extracted_anglers > 0 else None
 
         new_trips.append({
-            'date':                      today.isoformat(),
+            'date':                      effective_date.isoformat(),
             'boat':                      boat_name,
             'landing':                   src.name,
             'trip_type_raw':             tl_raw,

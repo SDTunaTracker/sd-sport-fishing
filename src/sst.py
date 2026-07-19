@@ -285,6 +285,19 @@ def fetch_daily_sst(target_date: date, conn=None) -> list[dict]:
     return results
 
 
+def fetch_hourly_sst(target_date: date, conn=None) -> list[dict]:
+    """Fetch only the Nearshore buoy (NDBC 46232) for use on 15-min hourly runs.
+
+    Skips OSTIA/MUR entirely — those satellite products only update daily, so
+    polling them every 15 min would waste bandwidth and could rate-limit us.
+    The buoy typically publishes a fresh WTMP reading every hour; INSERT OR
+    REPLACE on (date, location) means the newest reading wins.
+    """
+    lat, lon = LOCATIONS["Nearshore"]
+    record = _fetch_location("Nearshore", lat, lon, target_date, conn)
+    return [record] if record else []
+
+
 def insert_sst(conn, records: list[dict]) -> int:
     """Upsert SST records (INSERT OR REPLACE on PRIMARY KEY date+location)."""
     if not records:

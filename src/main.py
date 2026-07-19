@@ -18,7 +18,7 @@ from .export import export
 from .scrape import SOURCES, scrape_all, reconcile_daily_counts
 from .schedule import scrape_all_schedules
 from .backtest import daily_accuracy_update, weekly_recalibrate
-from .sst import fetch_daily_sst, insert_sst
+from .sst import fetch_daily_sst, fetch_hourly_sst, insert_sst
 from .forecast import score_yesterday as forecast_score_yesterday
 from .weather import fetch_marine_forecast
 
@@ -101,13 +101,23 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             summary_lines.append(f"  Segment stats ERROR (non-fatal): {e}")
 
         if not hourly:
-            # SST — skip on hourly runs to avoid hammering NOAA 24×/day.
+            # SST — full sweep (Nearshore buoy + 3 offshore satellite banks).
             try:
                 sst_records = fetch_daily_sst(target_date or date.today(), conn)
                 n_sst = insert_sst(conn, sst_records)
                 summary_lines.append(f"  SST fetched: {n_sst} location-days stored")
             except Exception as e:
                 summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
+        else:
+            # Hourly: pull just the NDBC Nearshore buoy so the homepage temp
+            # refreshes through the day. Offshore satellites only publish
+            # once/day so we don't re-hit them here.
+            try:
+                sst_records = fetch_hourly_sst(target_date or date.today(), conn)
+                n_sst = insert_sst(conn, sst_records)
+                summary_lines.append(f"  SST hourly (Nearshore): {n_sst} record(s)")
+            except Exception as e:
+                summary_lines.append(f"  SST hourly fetch ERROR (non-fatal): {e}")
 
             # Upwelling index (NOAA ERDDAP erdUI456hr, 33N117W, ~30-day lag in practice)
             try:

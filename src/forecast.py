@@ -1087,19 +1087,28 @@ def build_forecast_payload(
     today_str = today.isoformat()
     month     = today.month
 
-    # ── SST (latest available) ────────────────────────────────────────────────
+    # ── SST (latest available PER LOCATION) ──────────────────────────────────
+    # The earlier version keyed off a single global MAX(date), which silently
+    # dropped locations whose latest reading was even one day older than the
+    # freshest location (e.g. offshore satellites lag 1-6 days behind the
+    # Nearshore buoy). Per-location MAX means each pill on the homepage shows
+    # the freshest observation for that specific spot.
     sst_rows = conn.execute(
-        """SELECT location, sst_fahrenheit, anomaly
-           FROM ocean_temps
-           WHERE date = (SELECT MAX(date) FROM ocean_temps)
-           ORDER BY location"""
+        """SELECT ot.location, ot.date, ot.sst_fahrenheit, ot.anomaly
+             FROM ocean_temps ot
+             JOIN (SELECT location, MAX(date) AS max_date
+                     FROM ocean_temps GROUP BY location) mx
+               ON ot.location = mx.location AND ot.date = mx.max_date
+            ORDER BY ot.location"""
     ).fetchall()
-    sst_by_loc  = {r["location"]: r["sst_fahrenheit"] for r in sst_rows}
-    anom_by_loc = {r["location"]: r["anomaly"]         for r in sst_rows}
-    sst_date_row = conn.execute("SELECT MAX(date) FROM ocean_temps").fetchone()
-    sst_data_date = sst_date_row[0] if sst_date_row else None
+    sst_by_loc      = {r["location"]: r["sst_fahrenheit"] for r in sst_rows}
+    anom_by_loc     = {r["location"]: r["anomaly"]         for r in sst_rows}
+    sst_date_by_loc = {r["location"]: r["date"]            for r in sst_rows}
+    sst_data_date = max(sst_date_by_loc.values(), default=None)
 
-    primary_sst  = sst_by_loc.get("60-Mile Bank") or next(iter(sst_by_loc.values()), None)
+    primary_sst  = (sst_by_loc.get("60-Mile Bank")
+                    or sst_by_loc.get("9-Mile Bank")
+                    or sst_by_loc.get("Nearshore"))
     primary_anom = anom_by_loc.get("60-Mile Bank")
 
     # ── Today's weather data + extended conditions ────────────────────────────
@@ -1190,6 +1199,14 @@ def build_forecast_payload(
         "sst_9mile":       sst_by_loc.get("9-Mile Bank"),
         "sst_offshore":    primary_sst,
         "sst_cortez":      sst_by_loc.get("Cortez Bank"),
+        # Per-location observation dates — lets the UI show "(as of Jul 16)"
+        # when a satellite location lags behind the buoy.
+        "sst_dates": {
+            "Nearshore":    sst_date_by_loc.get("Nearshore"),
+            "9-Mile Bank":  sst_date_by_loc.get("9-Mile Bank"),
+            "60-Mile Bank": sst_date_by_loc.get("60-Mile Bank"),
+            "Cortez Bank":  sst_date_by_loc.get("Cortez Bank"),
+        },
         "anomaly":         primary_anom,
         "wind_speed":      today_wx.get("wind_speed"),
         "wind_direction":  today_wx.get("wind_direction"),

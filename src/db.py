@@ -516,6 +516,23 @@ def insert_trips(
     if skipped_structured_wins:
         _log.info("structured-wins: dropped %d narrative trip(s)", skipped_structured_wins)
 
+    # Reconciliation: when a structured (fish_count_page) row lands, purge any
+    # earlier narrative rows for the same (date, boat, landing). Narrative
+    # rows may have carried anglers=0 or a guessed trip_length ("Full Day"
+    # default) that produces a different UNIQUE key than the incoming
+    # structured row — without this purge, both would coexist as duplicates.
+    # Only fires when we actually have structured rows to insert.
+    structured_incoming = [t for t in trips if t.get("source") == "fish_count_page"]
+    if structured_incoming:
+        purge_keys = list({(t["date"], t["boat"], t["landing"]) for t in structured_incoming})
+        purged = conn.executemany(
+            "DELETE FROM trips WHERE date=? AND boat=? AND landing=? "
+            "AND source != 'fish_count_page'",
+            purge_keys,
+        ).rowcount
+        if purged > 0:
+            _log.info("narrative-purge: dropped %d superseded narrative row(s)", purged)
+
     inserted = 0
     if recent_rows:
         inserted += conn.executemany(sql_replace, recent_rows).rowcount
