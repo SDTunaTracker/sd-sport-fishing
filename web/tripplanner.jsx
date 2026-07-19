@@ -72,6 +72,95 @@ const MONTH_NAMES_FULL  = ['January','February','March','April','May','June',
                             'July','August','September','October','November','December'];
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+// ── Customizable Win Rate ────────────────────────────────────────────────────
+// Same H2H logic as SDA.boatWinRates() but with three user-tunable knobs:
+//   timeWindow    : '30d' | '90d' | '6mo' | '1yr' | '2yr' | '3yr' | '5yr' | 'all'
+//   matchupWindow : 'exact' | 'week' | 'biweek' | 'month'
+//                   how nearby trips are grouped as a "same conditions" matchup
+//   minMatchups   : integer (default 10) — min sample below which winRate is null
+const WR_TIME_WINDOW_OPTS = [
+  ['30d',  'Last 30 days'],
+  ['90d',  'Last 90 days'],
+  ['6mo',  'Last 6 months'],
+  ['1yr',  'Last 1 year'],
+  ['2yr',  'Last 2 years'],
+  ['3yr',  'Last 3 years'],
+  ['5yr',  'Last 5 years'],
+  ['all',  'All time (default)'],
+];
+const WR_MATCHUP_WINDOW_OPTS = [
+  ['exact',  'Same date only (default)'],
+  ['week',   'Same week (±3 days)'],
+  ['biweek', 'Same 2 weeks (±7 days)'],
+  ['month',  'Same month'],
+];
+const WR_MIN_MATCHUP_OPTS = [3, 5, 10, 20, 50];
+const WR_DEFAULTS = { timeWindow: 'all', matchupWindow: 'exact', minMatchups: 10 };
+
+function _wrCutoffISO(win) {
+  if (win === 'all') return null;
+  const days = { '30d': 30, '90d': 90, '6mo': 180, '1yr': 365,
+                 '2yr': 730, '3yr': 1095, '5yr': 1825 }[win];
+  if (!days) return null;
+  return new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+}
+function _wrBucket(dateStr, windowKind) {
+  if (windowKind === 'exact')  return dateStr;
+  if (windowKind === 'month')  return dateStr.slice(0, 7);
+  const days = Math.floor(new Date(dateStr).getTime() / 86400000);
+  const size = windowKind === 'week' ? 7 : windowKind === 'biweek' ? 14 : 1;
+  return Math.floor(days / size);
+}
+function computeWinRates(allTrips, opts = WR_DEFAULTS) {
+  const cutoff = _wrCutoffISO(opts.timeWindow);
+  const trips = cutoff ? allTrips.filter(t => t.date >= cutoff) : allTrips;
+
+  const byBucketLen = {};
+  for (const t of trips) {
+    const b = _wrBucket(t.date, opts.matchupWindow);
+    const k = `${b}|${t.tripLength}`;
+    (byBucketLen[k] = byBucketLen[k] || []).push(t);
+  }
+
+  const mStats = {};
+  for (const group of Object.values(byBucketLen)) {
+    if (group.length < 2) continue;
+    let top = 0;
+    for (const t of group) {
+      const v = t.trophyPerAnglerPerDay || 0;
+      if (v > top) top = v;
+    }
+    for (const t of group) {
+      const k = `${t.boat}|${t.tripLength}`;
+      const r = mStats[k] = mStats[k] || { wins: 0, matchupCount: 0 };
+      r.matchupCount++;
+      if ((t.trophyPerAnglerPerDay || 0) >= top - 1e-9) r.wins++;
+    }
+  }
+
+  const tStats = {};
+  for (const t of trips) {
+    const k = `${t.boat}|${t.tripLength}`;
+    const r = tStats[k] = tStats[k] || { tpaSum: 0, total: 0 };
+    r.tpaSum += t.trophyPerAnglerPerDay || 0;
+    r.total++;
+  }
+
+  const min = opts.minMatchups ?? 10;
+  const out = {};
+  for (const [k, ts] of Object.entries(tStats)) {
+    const ms = mStats[k] || { wins: 0, matchupCount: 0 };
+    out[k] = {
+      total:        ts.total,
+      avgTPAPerDay: ts.total > 0 ? ts.tpaSum / ts.total : 0,
+      wins:         ms.wins,
+      matchupCount: ms.matchupCount,
+      winRate:      ms.matchupCount >= min ? ms.wins / ms.matchupCount : null,
+    };
+  }
+  return out;
+}
+
 // ── Meals helpers ─────────────────────────────────────────────────────────────
 const _MEALS_RE = /meals?\s+included|meal\s+plan|galley\s+included|food\s+included/i;
 const MEAL_VALUES = {
@@ -176,7 +265,7 @@ function HighlightedNote({ text }) {
 // ── Trip card ─────────────────────────────────────────────────────────────────
 const NOTE_LINES = 2; // lines visible when collapsed
 
-function TripCard({ s, avgTpaByKey, context, onReview }) {
+function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const [noteOpen, setNoteOpen] = useState(false);
 
   const dep    = new Date(s.departureAt);
@@ -208,8 +297,10 @@ function TripCard({ s, avgTpaByKey, context, onReview }) {
   const capBarColor = capPct >= 30 ? '#34D399' : capPct >= 15 ? '#FBBF24' : '#F87171';
   const hasNote     = !!(s.note || s.tripStatus || s.targetSpecies || s.whatsIncluded);
 
-  const boatEl = url ? (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-boat-link">
+  const boatEl = navigate ? (
+    <a href={`/sd/boat/${encodeURIComponent(s.boat)}`}
+       className="tp-card-boat-link"
+       onClick={(e) => { e.preventDefault(); navigate('boat', { boat: s.boat }); }}>
       {s.boat}
     </a>
   ) : <span className="tp-card-boat-name">{s.boat}</span>;
@@ -566,10 +657,61 @@ function RefineDatesSection({ selMonth, refineStart, setRefineStart, refineEnd, 
   );
 }
 
+function WinRateSettingsSection({ timeWindow, setTimeWindow,
+                                   matchupWindow, setMatchupWindow,
+                                   minMatchups, setMinMatchups }) {
+  const isDefault =
+    timeWindow    === WR_DEFAULTS.timeWindow &&
+    matchupWindow === WR_DEFAULTS.matchupWindow &&
+    minMatchups   === WR_DEFAULTS.minMatchups;
+  return (
+    <details className="tp-sb-section tp-sb-collapsible">
+      <summary className="tp-sb-title tp-sb-collapsible-head">
+        <span>Win Rate Settings{!isDefault && <span className="tp-sb-custom-dot"> ●</span>}</span>
+        <span className="tp-sb-collapse-caret" aria-hidden="true">▾</span>
+      </summary>
+
+      <div className="tp-sb-subtitle">Time window</div>
+      {WR_TIME_WINDOW_OPTS.map(([val, label]) => (
+        <label key={val} className="tp-sb-radio-row">
+          <input type="radio" name="wrTimeWindow" checked={timeWindow === val}
+                 onChange={() => setTimeWindow(val)}/>
+          <span>{label}</span>
+        </label>
+      ))}
+
+      <div className="tp-sb-subtitle">Matchup grouping</div>
+      {WR_MATCHUP_WINDOW_OPTS.map(([val, label]) => (
+        <label key={val} className="tp-sb-radio-row">
+          <input type="radio" name="wrMatchupWindow" checked={matchupWindow === val}
+                 onChange={() => setMatchupWindow(val)}/>
+          <span>{label}</span>
+        </label>
+      ))}
+
+      <div className="tp-sb-subtitle">Minimum matchups</div>
+      {WR_MIN_MATCHUP_OPTS.map(val => (
+        <label key={val} className="tp-sb-radio-row">
+          <input type="radio" name="wrMinMatchups" checked={minMatchups === val}
+                 onChange={() => setMinMatchups(val)}/>
+          <span>{val}+{val === WR_DEFAULTS.minMatchups ? ' (default)' : ''}</span>
+        </label>
+      ))}
+
+      <div className="tp-sb-hint">
+        These settings only affect the Win Rate shown on this page.
+      </div>
+    </details>
+  );
+}
+
 function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setRefineEnd,
                           moonPhases, setMoonPhases, minWinRate, setMinWinRate,
                           minPrice, setMinPrice, maxPrice, setMaxPrice,
-                          boatSize, setBoatSize, capThresholds, onReset }) {
+                          boatSize, setBoatSize, capThresholds, onReset,
+                          wrTimeWindow, setWrTimeWindow,
+                          wrMatchupWindow, setWrMatchupWindow,
+                          wrMinMatchups, setWrMinMatchups }) {
   const togglePhase = (phase) => {
     const sel = moonPhases === 'all' ? MOON_PHASE_OPTIONS.map(o => o.phase) : [...moonPhases];
     const next = sel.includes(phase) ? sel.filter(p => p !== phase) : [...sel, phase];
@@ -628,6 +770,11 @@ function SidebarFilters({ selMonth, refineStart, setRefineStart, refineEnd, setR
           </label>
         ))}
       </SidebarSection>
+
+      <WinRateSettingsSection
+        timeWindow={wrTimeWindow}       setTimeWindow={setWrTimeWindow}
+        matchupWindow={wrMatchupWindow} setMatchupWindow={setWrMatchupWindow}
+        minMatchups={wrMinMatchups}     setMinMatchups={setWrMinMatchups}/>
 
       <SidebarSection title="Price Range">
         <div className="tp-sb-price-row">
@@ -699,6 +846,11 @@ function TripPlanner({ navigate, regions }) {
   const [maxPrice,    setMaxPrice]    = useState('');
   const [boatSize,    setBoatSize]    = useState('any');
 
+  // Win Rate calculation knobs (Trip Planner scoped — does not affect other pages)
+  const [wrTimeWindow,    setWrTimeWindow]    = useState(WR_DEFAULTS.timeWindow);
+  const [wrMatchupWindow, setWrMatchupWindow] = useState(WR_DEFAULTS.matchupWindow);
+  const [wrMinMatchups,   setWrMinMatchups]   = useState(WR_DEFAULTS.minMatchups);
+
   // Display state
   const [activeTab,         setActiveTab]         = useState('best');
   const [sortBy,            setSortBy]            = useState('recommended');
@@ -746,7 +898,13 @@ function TripPlanner({ navigate, regions }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [openPop]);
 
-  const winRates = useMemo(() => SDA.boatWinRates(), []);
+  // Custom win rates driven by the Win Rate Settings section in the sidebar.
+  // Recomputes only when a knob changes; scoped to Trip Planner (other pages
+  // continue to read SDA.boatWinRates() with its all-time defaults).
+  const winRates = useMemo(() => computeWinRates(
+    window.SD_PROC_TRIPS || window.SD.TRIPS,
+    { timeWindow: wrTimeWindow, matchupWindow: wrMatchupWindow, minMatchups: wrMinMatchups },
+  ), [wrTimeWindow, wrMatchupWindow, wrMinMatchups]);
   const tpRates  = useMemo(() => SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates() : {}, []);
 
   // Capacity percentile thresholds derived from actual upcoming-trip data
@@ -789,6 +947,24 @@ function TripPlanner({ navigate, regions }) {
     const out = {};
     for (const [k, v] of Object.entries(acc)) {
       if (v.n >= 3) out[k] = Math.round((v.sum / v.n) * 100) / 100;
+    }
+    return out;
+  }, []);
+
+  // Median TPA per boat for the current year (used by "Fish Count" sort)
+  const medianTpaByBoat = useMemo(() => {
+    const yearStr = String(_now.getFullYear());
+    const acc = {};
+    (window.SD.TRIPS || []).forEach(t => {
+      if (t.trophyPerAnglerPerDay == null) return;
+      if (!t.date || t.date.slice(0, 4) !== yearStr) return;
+      (acc[t.boat] = acc[t.boat] || []).push(t.trophyPerAnglerPerDay);
+    });
+    const out = {};
+    for (const [boat, vals] of Object.entries(acc)) {
+      vals.sort((a, b) => a - b);
+      const n = vals.length;
+      out[boat] = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
     }
     return out;
   }, []);
@@ -870,6 +1046,15 @@ function TripPlanner({ navigate, regions }) {
         return copy.sort((a, b) => a.capacity == null ? 1 : b.capacity == null ? -1 : a.capacity - b.capacity);
       case 'capacity-desc':
         return copy.sort((a, b) => a.capacity == null ? 1 : b.capacity == null ? -1 : b.capacity - a.capacity);
+      case 'fish-count':
+        return copy.sort((a, b) => {
+          const ma = medianTpaByBoat[a.boat];
+          const mb = medianTpaByBoat[b.boat];
+          if (ma == null && mb == null) return 0;
+          if (ma == null) return 1;
+          if (mb == null) return -1;
+          return mb - ma;
+        });
       case 'win-rate':
       case 'recommended':
       default:
@@ -888,7 +1073,7 @@ function TripPlanner({ navigate, regions }) {
           return ea == null ? 1 : eb == null ? -1 : ea - eb;
         });
     }
-  }, [filtered, sortBy, winRates]);
+  }, [filtered, sortBy, winRates, medianTpaByBoat]);
 
   const minPriceVal = useMemo(() => {
     const prices = filtered.map(s => effectivePrice(s) ?? s.price).filter(p => p != null);
@@ -896,9 +1081,11 @@ function TripPlanner({ navigate, regions }) {
   }, [filtered]);
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setSortBy(tab === 'best' ? 'recommended' : 'price-asc');
-    if (window.TTTrack) TTTrack.tabSwitch(tab);
+    const next = activeTab === tab ? null : tab;
+    setActiveTab(next);
+    if (next === 'best')     setSortBy('recommended');
+    if (next === 'cheapest') setSortBy('price-asc');
+    if (window.TTTrack) TTTrack.tabSwitch(next || 'off');
   };
 
   const handleReset = () => {
@@ -908,6 +1095,9 @@ function TripPlanner({ navigate, regions }) {
     setMoonPhases('all'); setMinWinRate(0);
     setMinPrice(''); setMaxPrice('');
     setBoatSize('any');
+    setWrTimeWindow(WR_DEFAULTS.timeWindow);
+    setWrMatchupWindow(WR_DEFAULTS.matchupWindow);
+    setWrMinMatchups(WR_DEFAULTS.minMatchups);
     // refineStart/End cleared by setSelMonth above
   };
 
@@ -927,6 +1117,9 @@ function TripPlanner({ navigate, regions }) {
     minWinRate, setMinWinRate: setMinWinRateTracked,
     minPrice, setMinPrice, maxPrice, setMaxPrice,
     boatSize, setBoatSize: setBoatSizeTracked, capThresholds,
+    wrTimeWindow, setWrTimeWindow,
+    wrMatchupWindow, setWrMatchupWindow,
+    wrMinMatchups, setWrMinMatchups,
     onReset: handleReset,
   };
 
@@ -981,6 +1174,7 @@ function TripPlanner({ navigate, regions }) {
                   <option value="price-desc">Price: High to Low</option>
                   <option value="date">Departure Date</option>
                   <option value="win-rate">Win Rate</option>
+                  <option value="fish-count">Fish Count</option>
                   <option value="spots">Open Spots</option>
                   <option value="capacity-asc">Max Load: Smallest first</option>
                   <option value="capacity-desc">Max Load: Largest first</option>
@@ -1023,6 +1217,7 @@ function TripPlanner({ navigate, regions }) {
               {displayed.map((s, idx) => (
                 <TripCard key={`${s.landing}-${s.sourceId}`} s={s} avgTpaByKey={avgTpaByKey}
                           onReview={setReviewTrip}
+                          navigate={navigate}
                           context={{
                             tab:      activeTab,
                             position: idx + 1,

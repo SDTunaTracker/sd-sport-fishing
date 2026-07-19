@@ -824,15 +824,26 @@ function HomeView({ navigate, settings, regions }) {
 
   // Conditions from today's forecast
   const fc = window.SD?.FORECAST?.today;
-  const sstRaw = fc?.sst_offshore ?? fc?.sst_nearshore;
-  const sstF = sstRaw != null ? Math.round(sstRaw) : null;
-  const sstHistory = (window.SD?.SST?.history || [])
-    .filter(h => h.location === 'Nearshore')
-    .sort((a, b) => b.date.localeCompare(a.date));
-  const weekAgoISO = window.TT_DATES.pacificDateOffsetDays(-7);
-  const weekAgoEntry = sstHistory.find(h => h.date <= weekAgoISO);
-  const sstDelta = sstRaw != null && weekAgoEntry?.sst != null
-    ? parseFloat((sstRaw - weekAgoEntry.sst).toFixed(1)) : null;
+  // Same-location 7-day trend per pill — compares Nearshore-today to Nearshore-7d-ago
+  // and 60-Mile-today to 60-Mile-7d-ago. Previous single-pill code mixed the two
+  // (today's offshore vs 7d-ago nearshore) and produced a bogus warming/cooling.
+  const _sstHistoryAll = window.SD?.SST?.history || [];
+  const _weekAgoISO = window.TT_DATES.pacificDateOffsetDays(-7);
+  function sstPill(location, current) {
+    if (current == null) return null;
+    const past = _sstHistoryAll
+      .filter(h => h.location === location)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .find(h => h.date <= _weekAgoISO);
+    const delta = past?.sst != null
+      ? parseFloat((current - past.sst).toFixed(1)) : null;
+    return { valueF: Math.round(current), delta,
+             dataDate: fc?.sst_dates?.[location] || null };
+  }
+  const sstNearshore = sstPill('Nearshore',    fc?.sst_nearshore);
+  const sstOffshore  = sstPill('60-Mile Bank', fc?.sst_offshore);
+  // Kept for the "hot" heat color threshold on the primary display.
+  const sstF = sstNearshore?.valueF ?? sstOffshore?.valueF ?? null;
   const windKt  = fc?.wind_speed  != null ? Math.round(fc.wind_speed)  : null;
   const moonPct = fc?.moon_phase  != null ? Math.round(fc.moon_phase)  : null;
   const moonName = fc?.moon_phase_name || null;
@@ -903,7 +914,12 @@ function HomeView({ navigate, settings, regions }) {
                     {shortName(b.landing)} · {b.tripLength} · {fmt.n(b.anglers)} anglers
                     {b.reportedAt ? ` · ${timeAgo(b.reportedAt)}` : ''}
                   </div>
-                  <div className="ch-rep-catch">{catchLine(b)}</div>
+                  <div className="ch-rep-catch">
+                    <span className="ch-rep-catch-species">{catchLine(b)}</span>
+                    <span className="ch-rep-catch-tpa">
+                      {fmt.tpa(b.trophyPerAnglerPerDay)} tuna/person/day
+                    </span>
+                  </div>
                 </div>
                 <span className={`ch-chip ${repChipClass(b.ratingKey, i === 0)}`}>
                   {repChipLabel(b.ratingKey, i === 0)}
@@ -943,21 +959,29 @@ function HomeView({ navigate, settings, regions }) {
         <div className="ch-band-in">
           <div className="ch-seclbl">On the water today</div>
           <div className="ch-conds">
-            <div className="ch-cond">
-              <div className={`ch-cond-v${sstF != null && sstF >= 67 ? ' hot' : ''}`}>
-                {sstF != null ? `${sstF}°F` : '—'}
-                {sstDelta != null && (
-                  <span className={`ch-trend ${sstDelta > 0 ? 'up' : 'dn'}`}>
-                    {sstDelta > 0 ? ' ▲' : ' ▼'}
-                  </span>
-                )}
+            <div className="ch-cond ch-cond-sst">
+              <div className="ch-cond-sst-pair">
+                {[['Nearshore', sstNearshore, 'Buoy · Point Loma'],
+                  ['60-Mile Bank', sstOffshore, 'Offshore satellite']].map(([label, p, hint]) => (
+                  <div key={label} className="ch-cond-sst-loc">
+                    <div className="ch-cond-sst-lbl">{label}</div>
+                    <div className={`ch-cond-v${p?.valueF != null && p.valueF >= 67 ? ' hot' : ''}`}>
+                      {p?.valueF != null ? `${p.valueF}°F` : '—'}
+                      {p?.delta != null && (
+                        <span className={`ch-trend ${p.delta > 0 ? 'up' : 'dn'}`}>
+                          {p.delta > 0 ? ' ▲' : ' ▼'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="ch-cond-sub">
+                      {p?.delta != null
+                        ? `${p.delta > 0 ? '+' : ''}${p.delta}° · 7d`
+                        : hint}
+                    </div>
+                  </div>
+                ))}
               </div>
               <div className="ch-cond-k">Water temp</div>
-              <div className="ch-cond-sub">
-                {sstDelta != null
-                  ? `${sstDelta > 0 ? 'Warming' : 'Cooling'} · ${sstDelta > 0 ? '+' : ''}${sstDelta}° this week`
-                  : 'Nearshore SST'}
-              </div>
             </div>
             <div className="ch-cond">
               <div className="ch-cond-v">{windKt != null ? `${windKt}kt` : '—'}</div>
