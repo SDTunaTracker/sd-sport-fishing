@@ -1,5 +1,5 @@
 {
-  "_updated": "2026-07-19T23:01:35.977050+00:00",
+  "_updated": "2026-07-22T21:17:07.539434+00:00",
   "_sessions": [
     {
       "started": "2026-05-30T15:34:52.404638+00:00",
@@ -8439,6 +8439,13 @@
           "name": "Freedom"
         }
       ]
+    },
+    {
+      "started": "2026-07-22T21:17:07.539434+00:00",
+      "duration_seconds": 7200,
+      "total_messages": 0,
+      "unique_mmsis_seen": 0,
+      "matched_known_boats": []
     }
   ],
   "all_observed_vessels": {
