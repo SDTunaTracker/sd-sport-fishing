@@ -385,6 +385,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://thetunatracker.com/sd/boat/Patriot</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://thetunatracker.com/sd/boat/Patriot%20%28SD%29</loc>
     <lastmod>2026-07-23</lastmod>
     <changefreq>weekly</changefreq>
