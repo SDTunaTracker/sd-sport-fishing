@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass
 from datetime import date, datetime, timezone, timedelta
 from typing import Literal
@@ -385,13 +386,53 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
 
 # --- Orchestration -------------------------------------------------------
 
+# fishingreservations.net paginates the sales table via ?page=N (Seaforth
+# routinely runs 20+ pages during peak season). "Page X of Y" is printed
+# verbatim in the HTML so we can read the total up front instead of blindly
+# walking until empty. Cap at 50 as a runaway guard.
+_PAGE_OF_RE = re.compile(r"Page\s+\d+\s+of\s+(\d+)", re.I)
+_MAX_SCHEDULE_PAGES = 50
+
+
+def _fetch_fishingreservations_all_pages(src: ScheduleSource) -> list[str]:
+    first = _fetch(src, params={"page": 1})
+    m = _PAGE_OF_RE.search(first)
+    total = min(int(m.group(1)), _MAX_SCHEDULE_PAGES) if m else 1
+    pages = [first]
+    for p in range(2, total + 1):
+        # fishingreservations.net will present a CAPTCHA challenge if we hammer
+        # them; a small delay between page requests keeps us under the radar.
+        time.sleep(1.0)
+        try:
+            pages.append(_fetch(src, params={"page": p}))
+        except requests.HTTPError as e:
+            # 404 on a page past the last one is fine — treat as end-of-list.
+            if e.response is not None and e.response.status_code == 404:
+                break
+            log.warning("schedule page %d fetch failed for %s: %s", p, src.name, e)
+            break
+        except Exception as e:
+            log.warning("schedule page %d fetch failed for %s: %s", p, src.name, e)
+            break
+    return pages
+
+
 def scrape_schedule(src: ScheduleSource) -> list[dict]:
     if src.kind == "xola_jsonp":
         body = _fetch(src, params={"callback": "cb", "nocache": "1"})
         return parse_xola_jsonp(body, src.name, src.url)
     elif src.kind == "fishingreservations":
-        html = _fetch(src)
-        return parse_fishingreservations(html, src.name, src.url)
+        merged: list[dict] = []
+        seen_ids: set[str] = set()
+        for html in _fetch_fishingreservations_all_pages(src):
+            for trip in parse_fishingreservations(html, src.name, src.url):
+                sid = trip.get("source_id")
+                if sid and sid in seen_ids:
+                    continue
+                if sid:
+                    seen_ids.add(sid)
+                merged.append(trip)
+        return merged
     else:
         raise ValueError(f"unknown schedule kind: {src.kind}")
 

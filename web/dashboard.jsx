@@ -912,14 +912,10 @@ function HomeView({ navigate, settings, regions }) {
                   <div className="ch-rep-nm">{b.boat}</div>
                   <div className="ch-rep-sub">
                     {shortName(b.landing)} · {b.tripLength} · {fmt.n(b.anglers)} anglers
+                    {' · '}<span className="ch-rep-tpa">{fmt.tpa(b.trophyPerAnglerPerDay)} tuna/person/day</span>
                     {b.reportedAt ? ` · ${timeAgo(b.reportedAt)}` : ''}
                   </div>
-                  <div className="ch-rep-catch">
-                    <span className="ch-rep-catch-species">{catchLine(b)}</span>
-                    <span className="ch-rep-catch-tpa">
-                      {fmt.tpa(b.trophyPerAnglerPerDay)} tuna/person/day
-                    </span>
-                  </div>
+                  <div className="ch-rep-catch">{catchLine(b)}</div>
                 </div>
                 <span className={`ch-chip ${repChipClass(b.ratingKey, i === 0)}`}>
                   {repChipLabel(b.ratingKey, i === 0)}
