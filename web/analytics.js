@@ -261,6 +261,78 @@
     });
   }
 
+  // Recent full moons — bucket filtered trips into "week before / on FM / week after".
+  // Treats report dates FM and FM+1 as "fished on the full moon" (matches how 1.5-day
+  // trip reports post the day after fishing). Returns most-recent N full moons that
+  // have any trip data in the filtered set.
+  function recentFullMoonWindows(trips, species, opts) {
+    const sf = speciesField(species);
+    const N = (opts && opts.n) || 3;
+    // Identify full-moon dates from the trips themselves (illum >= 98 & near-zero dff).
+    const seen = new Set();
+    trips.forEach((t) => {
+      if ((t.moonIllum || 0) >= 98 && (t.daysFromFull ?? 99) < 0.6) seen.add(t.date);
+    });
+    // Cluster consecutive dates (illum can hit 100 on two adjacent days) — keep earliest.
+    const sorted = Array.from(seen).sort();
+    const clusters = [];
+    sorted.forEach((d) => {
+      const last = clusters[clusters.length - 1];
+      if (last && (new Date(d) - new Date(last[last.length - 1])) <= 2 * 86400000) last.push(d);
+      else clusters.push([d]);
+    });
+    const fmDates = clusters.map((c) => c[0]).slice(-N);
+    const summ = (ts) => {
+      const tpads = ts.map((t) => ((t[sf] || 0) / Math.max(1, t.anglers)) / (t.calcDays || 1));
+      const totalT = ts.reduce((s, t) => s + (t[sf] || 0), 0);
+      const totalA = ts.reduce((s, t) => s + t.anglers, 0);
+      return {
+        trips: ts.length,
+        anglers: totalA,
+        totalTrophy: totalT,
+        tpaPerDay: mean(tpads),
+        medTpaPerDay: median(tpads),
+      };
+    };
+    return fmDates.map((fm) => {
+      const fmMs = new Date(fm).getTime();
+      const before = [], onFm = [], after = [];
+      trips.forEach((t) => {
+        const delta = Math.round((new Date(t.date).getTime() - fmMs) / 86400000);
+        if (delta >= -7 && delta <= -1) before.push(t);
+        else if (delta === 0 || delta === 1) onFm.push(t);
+        else if (delta >= 2 && delta <= 8) after.push(t);
+      });
+      return { fullMoonDate: fm, before: summ(before), onFm: summ(onFm), after: summ(after) };
+    });
+  }
+
+  // Before vs after full moon at matched distance-from-full bands. Uses daysFromNew
+  // (0-29.5, linear through cycle) to disambiguate waxing (before full) from waning
+  // (after full) — daysFromFull alone is absolute.
+  function waxingVsWaning(trips, species) {
+    const sf = speciesField(species);
+    const bands = [
+      { label: '±2 days',  min: 0,  max: 2 },
+      { label: '3–5 days', min: 3,  max: 5 },
+      { label: '6–9 days', min: 6,  max: 9 },
+      { label: '10–13 days', min: 10, max: 13 },
+    ];
+    const summ = (ts) => {
+      const tpads = ts.map((t) => ((t[sf] || 0) / Math.max(1, t.anglers)) / (t.calcDays || 1));
+      return { trips: ts.length, tpaPerDay: mean(tpads), medTpaPerDay: median(tpads) };
+    };
+    return bands.map((b) => {
+      const inBand = trips.filter((t) => {
+        const dff = t.daysFromFull;
+        return dff != null && dff >= b.min && dff <= b.max;
+      });
+      const before = inBand.filter((t) => (t.daysFromNew ?? 0) < 14.76);
+      const after  = inBand.filter((t) => (t.daysFromNew ?? 0) >= 14.76);
+      return { label: b.label, before: summ(before), after: summ(after) };
+    });
+  }
+
   function dayOfYearHeatmap(trips, species) {
     const sf = speciesField(species);
     // Aggregate by month×day, normalize by anglers
@@ -1051,6 +1123,8 @@
     monthlyTrend,
     speciesMix,
     moonAnalysis,
+    recentFullMoonWindows,
+    waxingVsWaning,
     dayOfYearHeatmap,
     bestSingleDays,
     tripLengthBreakdown,

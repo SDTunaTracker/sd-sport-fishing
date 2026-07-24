@@ -528,6 +528,47 @@ a { color: inherit; text-decoration: none; }
 .moon-cell .val { font: 700 16px/20px var(--ss-font-sans); color: #FFFFFF; margin-top: 6px; }
 .moon-cell .sub { font: 400 10px/12px var(--ss-font-sans); color: rgba(255,255,255,0.5); }
 
+/* full-moon window panel: last 3 FMs × (before / on FM / after) */
+.fm-windows { display: flex; flex-direction: column; gap: 14px; padding: 4px 0; }
+.fm-window { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--surface); }
+.fm-window-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.fm-window-icon { font-size: 18px; }
+.fm-window-date { font: 600 14px/18px var(--ss-font-sans); color: var(--ink); }
+.fm-window-cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.fm-window-cell { padding: 10px 12px; border-radius: 6px; background: var(--band); border: 1px solid transparent; }
+.fm-window-cell.best { background: rgba(52,211,153,0.14); border-color: rgba(52,211,153,0.4); }
+.fm-window-cell-lab { font: 500 11px/14px var(--ss-font-sans); color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.fm-window-cell-val { font: 700 20px/24px var(--ss-font-sans); color: var(--ink); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.fm-window-cell-sub { font: 400 11px/14px var(--ss-font-sans); color: var(--muted); margin-top: 2px; }
+@media (max-width: 640px) {
+  .fm-window-cells { grid-template-columns: 1fr; gap: 6px; }
+  .fm-window-cell { padding: 8px 10px; }
+  .fm-window-cell-val { font-size: 17px; line-height: 21px; }
+}
+
+/* waxing vs waning table */
+.ww-table { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
+.ww-row { display: grid; grid-template-columns: 1.1fr 2fr 2fr 0.9fr; gap: 12px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.ww-row:last-child { border-bottom: none; }
+.ww-head { font: 500 11px/14px var(--ss-font-sans); color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.ww-lab { font: 500 13px/16px var(--ss-font-sans); color: var(--ink); }
+.ww-cell { display: flex; align-items: center; gap: 8px; }
+.ww-bar-wrap { flex: 1; height: 8px; background: var(--band); border-radius: 4px; overflow: hidden; min-width: 40px; }
+.ww-bar { height: 100%; border-radius: 4px; }
+.ww-bar-before { background: rgba(148, 163, 184, 0.7); }
+.ww-bar-after { background: #34D399; }
+.ww-val { font: 600 13px/16px var(--ss-font-sans); color: var(--ink); font-variant-numeric: tabular-nums; min-width: 62px; text-align: right; }
+.ww-n { font-weight: 400; color: var(--muted); font-size: 11px; }
+.ww-lift { font: 600 13px/16px var(--ss-font-sans); color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.ww-lift.pos { color: #16a34a; }
+.ww-lift.neg { color: #dc2626; }
+@media (max-width: 640px) {
+  .ww-row { grid-template-columns: 1fr 1fr 1fr 0.7fr; gap: 6px; font-size: 12px; }
+  .ww-head { font-size: 10px; }
+  .ww-val { min-width: 44px; font-size: 12px; }
+  .ww-n { display: none; }
+}
+
 /* species mix donut */
 .donut-legend { display: flex; flex-direction: column; gap: 8px; }
 .donut-legend .ll { display: flex; align-items: center; gap: 8px; font: 400 12px/16px var(--ss-font-sans); }
@@ -6216,9 +6257,9 @@ button.btn-save-boat[data-saved="true"],
 .ch-rep-nm { font-weight: 700; font-size: 16px; color: var(--ch-ink); }
 .ch-rep-sub { font: 500 11.5px/1 var(--ch-mono); color: var(--ch-muted); margin-top: 6px; }
 .ch-rep-catch { font: 500 14px/1.3 var(--ch-mono); color: var(--ch-ink); margin-top: 9px; }
-/* Desktop: species breakdown; mobile: TPA/day headline (see mobile block). */
-.ch-rep-catch-tpa     { display: none; font-weight: 700; color: var(--ch-ink); }
-.ch-rep-catch-species { display: inline; }
+/* Inline TPA on the sub-line — makes the "sorted by tuna/person/day"
+   ordering visible without hiding the per-species catch below. */
+.ch-rep-tpa { font-weight: 700; color: var(--ch-ink); }
 .ch-chip {
   display: inline-flex; flex-shrink: 0;
   padding: 4px 9px; border-radius: 999px;
@@ -6359,10 +6400,6 @@ button.btn-save-boat[data-saved="true"],
   .ch-bb-right { text-align: left; width: 100%; }
   .ch-explore { grid-template-columns: 1fr; }
   .ch-foot-in { padding: 20px 16px; }
-  /* Homepage report cards on mobile: replace per-species breakdown with the
-     TPA/day headline. Anglers stays in .ch-rep-sub above. */
-  .ch-rep-catch-species { display: none; }
-  .ch-rep-catch-tpa     { display: inline; }
 }
 
 /* ── LastUpdated freshness indicator ────────────────────────────── */
