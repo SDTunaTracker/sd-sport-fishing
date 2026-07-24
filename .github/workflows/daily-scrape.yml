@@ -36,10 +36,42 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Decide run mode
+        id: mode
+        run: |
+          # Self-healing selector. The original design hard-gated the full pipeline on
+          # `date -u +%H == 14`, but GitHub cron drift routinely shifts the :37 crontab
+          # to 13:xx UTC — meaning the daily SST/weather/reddit/backtest run stops
+          # firing for weeks at a time. Instead: run full whenever offshore SST is
+          # stale, and always run full at the target 14 UTC slot regardless.
+          HOUR=$(date -u +%H)
+          STALE=1
+          if [ -f tracker.db ]; then
+            STALE=$(python3 - <<'PYEOF'
+          import sqlite3
+          from datetime import date, timedelta
+          try:
+              c = sqlite3.connect('tracker.db')
+              r = c.execute("SELECT MAX(date) FROM ocean_temps WHERE location='60-Mile Bank'").fetchone()
+              latest = r[0] if r else None
+              cutoff = (date.today() - timedelta(days=5)).isoformat()  # MUR lag ≤6 days
+              print(0 if latest and latest >= cutoff else 1)
+          except Exception:
+              print(1)
+          PYEOF
+            )
+          fi
+          if [ "$HOUR" = "14" ] || [ "$STALE" = "1" ]; then
+            echo "mode=full" >> $GITHUB_OUTPUT
+            echo "=== Mode: FULL (hour=$HOUR, stale=$STALE) ==="
+          else
+            echo "mode=hourly" >> $GITHUB_OUTPUT
+            echo "=== Mode: HOURLY (hour=$HOUR, stale=$STALE) ==="
+          fi
+
       - name: Run scrape
         run: |
-          HOUR=$(date -u +%H)
-          if [ "$HOUR" = "14" ]; then
+          if [ "${{ steps.mode.outputs.mode }}" = "full" ]; then
             echo "=== Full daily run (SST, weather, Reddit, backtest) ==="
             python -m src.main
           else
@@ -47,13 +79,9 @@ jobs:
             python -m src.main --hourly
           fi
 
-      - name: Fetch SST grid (daily, 14 UTC only)
+      - name: Fetch SST grid (full mode only)
+        if: steps.mode.outputs.mode == 'full'
         run: |
-          HOUR=$(date -u +%H)
-          if [ "$HOUR" != "14" ]; then
-            echo "Hourly run — skipping SST grid fetch"
-            exit 0
-          fi
           python3 - <<'PYEOF'
           import json, datetime, urllib.request
           from pathlib import Path

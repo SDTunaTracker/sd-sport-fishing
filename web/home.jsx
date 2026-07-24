@@ -138,7 +138,7 @@
   // ── Conditions + fleet trend band ─────────────────────────────────────────
   function ConditionsBand({ trend }) {
     const fc = window.SD && window.SD.FORECAST && window.SD.FORECAST.today;
-    const sstRaw = fc && (fc.sst_offshore != null ? fc.sst_offshore : fc.sst_nearshore);
+    const sstRaw = fc && (fc.sst_nearshore != null ? fc.sst_nearshore : fc.sst_offshore);
     const sstF = sstRaw != null ? Math.round(sstRaw) : null;
     const windKt = fc && fc.wind_speed != null ? Math.round(fc.wind_speed) : null;
     const windDir = (fc && fc.wind_direction) || '';

@@ -2,8 +2,7 @@
 
 Source priority per location:
   1. NDBC buoy 46232 (Nearshore only) — real-time, hourly updates.
-  2. UKMO OSTIA SST — 0.05° L4 analyzed, ~1-2 day lag.
-  3. JPL MUR SST v4.1 — 0.01° L4 analyzed, 3-6 day lag (fallback).
+  2. JPL MUR SST v4.1 — 0.01° L4 analyzed, 3-6 day lag.
 
 ERDDAP endpoints: https://coastwatch.pfeg.noaa.gov/erddap/griddap/
 """
@@ -18,8 +17,9 @@ import requests
 log = logging.getLogger(__name__)
 
 # ── ERDDAP endpoints ──────────────────────────────────────────────────────────
-MUR_BASE   = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json"
-OSTIA_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplOSTIASSTv20.json"
+# NOTE: UKMO OSTIA (jplOSTIASSTv20) was retired from CoastWatch ERDDAP mid-2026
+# and now returns 404. MUR is the only working satellite source.
+MUR_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json"
 
 # NOAA NDBC realtime2 feed — Point Loma South buoy (nearshore SD).
 NDBC_URL = "https://www.ndbc.noaa.gov/data/realtime2/46232.txt"
@@ -60,9 +60,6 @@ _CLIM_F: dict[str, dict[int, float]] = {
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
 
-# OSTIA: typically available within 1-2 days; look back up to 7 days.
-_OSTIA_SAFE_LAG  = 2
-_OSTIA_LOOKBACK  = 7
 # MUR SST: 3-6 day lag; reduced from 5 to 3 to grab data sooner when available.
 _MUR_SAFE_LAG    = 3
 _MUR_LOOKBACK    = 10
@@ -136,17 +133,11 @@ def _fetch_erddap(
         return []
 
 
-# Convenience wrappers with dataset-specific time suffixes.
+# Convenience wrapper with MUR's fixed time suffix.
 def _fetch_mur(lat: float, lon: float, start: date, end: date,
                timeout: float = 45.0) -> list[tuple[date, float]]:
     return _fetch_erddap(MUR_BASE, "T09:00:00Z", lat, lon, start, end,
                          timeout=timeout, label="MUR")
-
-
-def _fetch_ostia(lat: float, lon: float, start: date, end: date,
-                 timeout: float = 30.0) -> list[tuple[date, float]]:
-    return _fetch_erddap(OSTIA_BASE, "T12:00:00Z", lat, lon, start, end,
-                         timeout=timeout, label="OSTIA")
 
 
 # ── NDBC buoy (nearshore only) ────────────────────────────────────────────────
@@ -233,25 +224,7 @@ def _fetch_location(
                 "anomaly": _compute_anomaly(conn, name, data_date, sst_f),
             }
 
-    # 2. OSTIA (~1-2 day lag)
-    ostia_end   = min(target_date, date.today() - timedelta(days=_OSTIA_SAFE_LAG))
-    ostia_start = ostia_end - timedelta(days=_OSTIA_LOOKBACK)
-    rows = _fetch_ostia(lat, lon, ostia_start, ostia_end)
-    if rows:
-        rows.sort(key=lambda x: x[0], reverse=True)
-        data_date, sst_c = rows[0]
-        sst_f = _c_to_f(sst_c)
-        log.info("SST %s %s (OSTIA): %.1f°F", data_date, name, sst_f)
-        return {
-            "date": data_date.isoformat(),
-            "location": name,
-            "lat": lat, "lon": lon,
-            "sst_celsius":   round(sst_c, 2),
-            "sst_fahrenheit": sst_f,
-            "anomaly": _compute_anomaly(conn, name, data_date, sst_f),
-        }
-
-    # 3. MUR SST (3-6 day lag, most reliable fallback)
+    # 2. MUR SST (3-6 day lag; only working satellite source since OSTIA retirement)
     mur_end   = min(target_date, date.today() - timedelta(days=_MUR_SAFE_LAG))
     mur_start = mur_end - timedelta(days=_MUR_LOOKBACK)
     rows = _fetch_mur(lat, lon, mur_start, mur_end)
@@ -259,7 +232,7 @@ def _fetch_location(
         rows.sort(key=lambda x: x[0], reverse=True)
         data_date, sst_c = rows[0]
         sst_f = _c_to_f(sst_c)
-        log.info("SST %s %s (MUR fallback): %.1f°F", data_date, name, sst_f)
+        log.info("SST %s %s (MUR): %.1f°F", data_date, name, sst_f)
         return {
             "date": data_date.isoformat(),
             "location": name,
