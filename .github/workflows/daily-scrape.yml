@@ -14,6 +14,15 @@ on:
     - cron: '37 * * * *'
   workflow_dispatch:  # manual trigger + hourly external (Cloudflare) trigger
 
+# Serialize scrape runs. Two concurrent runs racing on tracker.db /
+# web/sst_grid.json cause rebase conflicts that fail the push step and
+# self-perpetuate (failed push leaves SST stale → next run also runs full
+# mode → collides again). cancel-in-progress:false lets any active run
+# finish; a newer queued run supersedes any older queued run.
+concurrency:
+  group: daily-scrape
+  cancel-in-progress: false
+
 permissions:
   contents: write  # required so the workflow can commit back to the repo
 
@@ -174,6 +183,10 @@ jobs:
             git commit --no-verify -m "Scrape: $(date -u +'%Y-%m-%d %H:%M UTC')"
             pushed=0
             for i in $(seq 1 5); do
+              # Recover from any half-finished rebase left by a prior retry —
+              # otherwise the next `git pull --rebase` refuses to start.
+              git rebase --abort 2>/dev/null || true
+              git reset --hard HEAD
               git pull --rebase origin main && git push origin main && { pushed=1; break; }
               echo "push race, retry $i"; sleep $((RANDOM % 8 + 3))
             done
