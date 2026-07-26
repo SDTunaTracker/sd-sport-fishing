@@ -351,8 +351,12 @@
     "338314837": {
       "name": "Aloha Spirit",
       "landing": "Channel Islands Sportfishing"
+    },
+    "205229000": {
+      "name": "Orion",
+      "landing": "Channel Islands Sportfishing"
     }
   },
-  "_last_discover_run": "2026-07-25T23:02:06.330235+00:00",
-  "_vessel_count": 86
+  "_last_discover_run": "2026-07-26T15:39:14.190736+00:00",
+  "_vessel_count": 87
 }
