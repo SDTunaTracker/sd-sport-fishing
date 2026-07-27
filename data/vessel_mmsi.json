@@ -355,8 +355,12 @@
     "205229000": {
       "name": "Orion",
       "landing": "Channel Islands Sportfishing"
+    },
+    "368014440": {
+      "name": "Monte Carlo",
+      "landing": "22nd Street Landing"
     }
   },
-  "_last_discover_run": "2026-07-27T16:46:11.808035+00:00",
-  "_vessel_count": 87
+  "_last_discover_run": "2026-07-27T23:18:47.121685+00:00",
+  "_vessel_count": 88
 }
