@@ -359,8 +359,12 @@
     "368014440": {
       "name": "Monte Carlo",
       "landing": "22nd Street Landing"
+    },
+    "369713000": {
+      "name": "Tribute",
+      "landing": "Seaforth Sportfishing"
     }
   },
-  "_last_discover_run": "2026-07-28T23:15:34.273010+00:00",
-  "_vessel_count": 88
+  "_last_discover_run": "2026-07-29T16:20:28.172220+00:00",
+  "_vessel_count": 89
 }
