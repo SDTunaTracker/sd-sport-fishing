@@ -18,8 +18,10 @@ $ErrorActionPreference = "Stop"
 $root       = Split-Path -Parent $PSScriptRoot
 $runHourly  = Join-Path $root "scripts\run-daily.ps1"
 $runFull    = Join-Path $root "scripts\run-full.ps1"
+$launcher   = Join-Path $root "scripts\run-hidden.vbs"
 if (-not (Test-Path $runHourly)) { Write-Error "run-daily.ps1 not found at $runHourly" }
 if (-not (Test-Path $runFull))   { Write-Error "run-full.ps1 not found at $runFull" }
+if (-not (Test-Path $launcher))  { Write-Error "run-hidden.vbs not found at $launcher" }
 
 $userId = "$env:USERDOMAIN\$env:USERNAME"
 
@@ -33,7 +35,10 @@ foreach ($name in @($HourlyTaskName, $FullTaskName, "SD Sport Fishing - Daily Sc
 }
 
 # Task 1: 15-minute hourly scrape
-$hourlyArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$runHourly`""
+# Run via wscript.exe + run-hidden.vbs so no PowerShell window ever pops up
+# while the user is working. The VBS launcher waits for exit so the task
+# scheduler still sees the real return code.
+$hourlyArgs = "`"$launcher`" `"$runHourly`""
 $hourlyXml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -71,7 +76,7 @@ $hourlyXml = @"
   </Settings>
   <Actions Context="Author">
     <Exec>
-      <Command>powershell.exe</Command>
+      <Command>wscript.exe</Command>
       <Arguments>$hourlyArgs</Arguments>
       <WorkingDirectory>$root</WorkingDirectory>
     </Exec>
@@ -82,8 +87,8 @@ $hourlyXml = @"
 Register-ScheduledTask -TaskName $HourlyTaskName -Xml $hourlyXml -Force
 Write-Output "Task '$HourlyTaskName' registered - runs every 15 min, 6am-10pm."
 
-# Task 2: once-daily full run
-$fullArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$runFull`""
+# Task 2: once-daily full run (also via run-hidden.vbs — see Task 1 note)
+$fullArgs = "`"$launcher`" `"$runFull`""
 $fullXml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -116,7 +121,7 @@ $fullXml = @"
   </Settings>
   <Actions Context="Author">
     <Exec>
-      <Command>powershell.exe</Command>
+      <Command>wscript.exe</Command>
       <Arguments>$fullArgs</Arguments>
       <WorkingDirectory>$root</WorkingDirectory>
     </Exec>
