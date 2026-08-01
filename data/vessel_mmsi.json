@@ -363,8 +363,12 @@
     "369713000": {
       "name": "Tribute",
       "landing": "Seaforth Sportfishing"
+    },
+    "338126875": {
+      "name": "Island Fox",
+      "landing": "Channel Islands Sportfishing"
     }
   },
-  "_last_discover_run": "2026-07-31T23:14:23.265615+00:00",
-  "_vessel_count": 89
+  "_last_discover_run": "2026-08-01T15:37:42.949947+00:00",
+  "_vessel_count": 90
 }
