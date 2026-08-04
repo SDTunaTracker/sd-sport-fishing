@@ -367,8 +367,12 @@
     "338126875": {
       "name": "Island Fox",
       "landing": "Channel Islands Sportfishing"
+    },
+    "367619860": {
+      "name": "Patriot",
+      "landing": "Newport Landing"
     }
   },
-  "_last_discover_run": "2026-08-03T23:13:11.412148+00:00",
-  "_vessel_count": 90
+  "_last_discover_run": "2026-08-04T16:26:35.865612+00:00",
+  "_vessel_count": 91
 }
