@@ -371,8 +371,16 @@
     "367619860": {
       "name": "Patriot",
       "landing": "Newport Landing"
+    },
+    "368350710": {
+      "name": "Current",
+      "landing": "Dana Wharf Sportfishing"
+    },
+    "338526081": {
+      "name": "Sea Star",
+      "landing": "Oceanside Sea Center"
     }
   },
-  "_last_discover_run": "2026-08-04T16:26:35.865612+00:00",
-  "_vessel_count": 91
+  "_last_discover_run": "2026-08-04T23:20:11.249607+00:00",
+  "_vessel_count": 93
 }
