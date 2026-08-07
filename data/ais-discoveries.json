@@ -1,5 +1,5 @@
 {
-  "_updated": "2026-08-04T23:20:11.198884+00:00",
+  "_updated": "2026-08-07T13:14:06.718360+00:00",
   "_sessions": [
     {
       "started": "2026-05-30T15:34:52.404638+00:00",
@@ -10850,6 +10850,13 @@
           "name": "El Patron"
         }
       ]
+    },
+    {
+      "started": "2026-08-07T13:14:06.718360+00:00",
+      "duration_seconds": 7200,
+      "total_messages": 0,
+      "unique_mmsis_seen": 0,
+      "matched_known_boats": []
     }
   ],
   "all_observed_vessels": {
