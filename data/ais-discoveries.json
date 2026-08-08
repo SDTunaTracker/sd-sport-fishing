@@ -1,5 +1,5 @@
 {
-  "_updated": "2026-08-07T20:51:38.555588+00:00",
+  "_updated": "2026-08-08T12:58:08.214935+00:00",
   "_sessions": [
     {
       "started": "2026-05-30T15:34:52.404638+00:00",
@@ -10860,6 +10860,13 @@
     },
     {
       "started": "2026-08-07T20:51:38.555588+00:00",
+      "duration_seconds": 7200,
+      "total_messages": 0,
+      "unique_mmsis_seen": 0,
+      "matched_known_boats": []
+    },
+    {
+      "started": "2026-08-08T12:58:08.214935+00:00",
       "duration_seconds": 7200,
       "total_messages": 0,
       "unique_mmsis_seen": 0,
