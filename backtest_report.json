@@ -1,0 +1,462 @@
+{
+  "run_date": "2026-05-24",
+  "model_version": "1.0",
+  "date_range_start": "2024-01-01",
+  "date_range_end": "2026-05-24",
+  "metrics": {
+    "total_days": 497,
+    "mae": 3.802,
+    "rmse": 4.198,
+    "direction_accuracy": 38.4,
+    "by_month": {
+      "2": 5.55,
+      "3": 4.078,
+      "4": 3.569,
+      "5": 3.448,
+      "6": 4.338,
+      "7": 3.669,
+      "8": 3.505,
+      "9": 4.282,
+      "10": 3.393,
+      "11": 3.761,
+      "12": 4.471,
+      "1": 4.025
+    },
+    "by_sst_range": {
+      "60-64F": 3.512,
+      "<60F": 3.095,
+      "64-68F": 4.106,
+      "68-72F": 3.535
+    }
+  },
+  "correlations": {
+    "sst_offshore": {
+      "overall": 0.4422,
+      "bluefin": 0.2822,
+      "yellowfin": 0.2003,
+      "yellowtail": 0.22
+    },
+    "sst_anomaly": {
+      "overall": 0.1568,
+      "bluefin": 0.0432,
+      "yellowfin": -0.0127,
+      "yellowtail": 0.1801
+    },
+    "wind_speed": {
+      "overall": -0.1816,
+      "bluefin": -0.0982,
+      "yellowfin": -0.0679,
+      "yellowtail": -0.1422
+    },
+    "swell_height": {
+      "overall": -0.0646,
+      "bluefin": 0.0379,
+      "yellowfin": 0.0777,
+      "yellowtail": -0.1365
+    },
+    "pressure_trend": {
+      "overall": 0.0161,
+      "bluefin": -0.0029,
+      "yellowfin": 0.0756,
+      "yellowtail": 0.0415
+    },
+    "moon_illum": {
+      "overall": -0.027,
+      "bluefin": -0.109,
+      "yellowfin": 0.0138,
+      "yellowtail": 0.057
+    },
+    "month_num": {
+      "overall": 0.2891,
+      "bluefin": 0.2975,
+      "yellowfin": 0.2688,
+      "yellowtail": 0.0678
+    },
+    "moon_illum_all_trips": {
+      "overall": 0.0273,
+      "bluefin": -0.0756,
+      "yellowfin": 0.0315,
+      "yellowtail": 0.0239
+    }
+  },
+  "weights": {
+    "sst_weight": 1.284,
+    "anomaly_weight": 0.914,
+    "moon_weight": 0.082,
+    "wind_weight": 0.545,
+    "overall_breaks": [
+      [
+        55,
+        1.0
+      ],
+      [
+        58,
+        3.0
+      ],
+      [
+        62,
+        2.1
+      ],
+      [
+        65,
+        3.6
+      ],
+      [
+        68,
+        4.7
+      ],
+      [
+        72,
+        5.0
+      ],
+      [
+        75,
+        6.5
+      ],
+      [
+        78,
+        4.5
+      ],
+      [
+        null,
+        2.5
+      ]
+    ],
+    "bluefin_breaks": [
+      [
+        58,
+        1.0
+      ],
+      [
+        60,
+        5.5
+      ],
+      [
+        62,
+        7.0
+      ],
+      [
+        65,
+        7.9
+      ],
+      [
+        68,
+        8.5
+      ],
+      [
+        71,
+        9.1
+      ],
+      [
+        74,
+        4.0
+      ],
+      [
+        null,
+        2.0
+      ]
+    ],
+    "yellowfin_breaks": [
+      [
+        62,
+        5.2
+      ],
+      [
+        65,
+        6.0
+      ],
+      [
+        67,
+        6.9
+      ],
+      [
+        70,
+        6.9
+      ],
+      [
+        73,
+        7.6
+      ],
+      [
+        76,
+        7.5
+      ],
+      [
+        78,
+        5.5
+      ],
+      [
+        null,
+        3.0
+      ]
+    ]
+  },
+  "top_factors": [
+    {
+      "factor": "sst_offshore",
+      "correlation": 0.4422
+    },
+    {
+      "factor": "month_num",
+      "correlation": 0.2891
+    },
+    {
+      "factor": "wind_speed",
+      "correlation": -0.1816
+    },
+    {
+      "factor": "sst_anomaly",
+      "correlation": 0.1568
+    },
+    {
+      "factor": "swell_height",
+      "correlation": -0.0646
+    },
+    {
+      "factor": "moon_illum_all_trips",
+      "correlation": 0.0273
+    }
+  ],
+  "best_month": "October",
+  "worst_month": "February",
+  "sample_predictions": {
+    "best_predictions": [
+      {
+        "date": "2024-08-14",
+        "month": 8,
+        "predicted_overall": 8.3,
+        "predicted_bluefin": 9.3,
+        "predicted_yellowfin": 7.6,
+        "actual_tpa": 2.7361,
+        "actual_rating": 8.3,
+        "bf_pa": 1.9606537356321838,
+        "yf_pa": 0.0,
+        "yt_pa": 2.095632527302419,
+        "n_boats": 16,
+        "error": 0.0,
+        "correct_direction": true,
+        "sst_offshore": 67.93,
+        "sst_anomaly": -1.77,
+        "wind_speed": 13.8,
+        "swell_height": 1.71,
+        "pressure_trend": 1.1,
+        "moon_illum": 66.0
+      },
+      {
+        "date": "2025-09-28",
+        "month": 9,
+        "predicted_overall": 8.0,
+        "predicted_bluefin": 7.0,
+        "predicted_yellowfin": 10.0,
+        "actual_tpa": 2.5646,
+        "actual_rating": 8.0,
+        "bf_pa": 1.0335618349904063,
+        "yf_pa": 2.7396880379799633,
+        "yt_pa": 0.15927809844476512,
+        "n_boats": 21,
+        "error": 0.0,
+        "correct_direction": true,
+        "sst_offshore": 70.05,
+        "sst_anomaly": 0.0,
+        "wind_speed": 7.8,
+        "swell_height": 2.36,
+        "pressure_trend": 2.4,
+        "moon_illum": 31.0
+      },
+      {
+        "date": "2025-11-13",
+        "month": 11,
+        "predicted_overall": 9.9,
+        "predicted_bluefin": 10.0,
+        "predicted_yellowfin": 5.9,
+        "actual_tpa": 5.1087,
+        "actual_rating": 9.9,
+        "bf_pa": 1.0,
+        "yf_pa": 0.0,
+        "yt_pa": 4.108695652173913,
+        "n_boats": 2,
+        "error": 0.0,
+        "correct_direction": true,
+        "sst_offshore": 65.39,
+        "sst_anomaly": 3.54,
+        "wind_speed": 7.2,
+        "swell_height": 1.19,
+        "pressure_trend": -1.3,
+        "moon_illum": 52.0
+      }
+    ],
+    "worst_predictions": [
+      {
+        "date": "2024-06-25",
+        "month": 6,
+        "predicted_overall": 9.5,
+        "predicted_bluefin": 10.0,
+        "predicted_yellowfin": 5.8,
+        "actual_tpa": 0.1208,
+        "actual_rating": 1.5,
+        "bf_pa": 0.16878402903811254,
+        "yf_pa": 0.0,
+        "yt_pa": 0.0768506297090689,
+        "n_boats": 8,
+        "error": 8.0,
+        "correct_direction": false,
+        "sst_offshore": 65.17,
+        "sst_anomaly": 2.04,
+        "wind_speed": 12.0,
+        "swell_height": 1.49,
+        "pressure_trend": 1.0,
+        "moon_illum": 89.0
+      },
+      {
+        "date": "2026-04-03",
+        "month": 4,
+        "predicted_overall": 10.0,
+        "predicted_bluefin": 10.0,
+        "predicted_yellowfin": 6.0,
+        "actual_tpa": 0.2168,
+        "actual_rating": 1.8,
+        "bf_pa": 0.0,
+        "yf_pa": 0.0,
+        "yt_pa": 0.21681711733929565,
+        "n_boats": 7,
+        "error": 8.2,
+        "correct_direction": false,
+        "sst_offshore": 65.29,
+        "sst_anomaly": 5.22,
+        "wind_speed": 18.8,
+        "swell_height": null,
+        "pressure_trend": -0.7,
+        "moon_illum": 100.0
+      },
+      {
+        "date": "2026-03-31",
+        "month": 3,
+        "predicted_overall": 10.0,
+        "predicted_bluefin": 10.0,
+        "predicted_yellowfin": 6.0,
+        "actual_tpa": 0.2092,
+        "actual_rating": 1.7,
+        "bf_pa": 0.0,
+        "yf_pa": 0.0,
+        "yt_pa": 0.20924812030075185,
+        "n_boats": 5,
+        "error": 8.3,
+        "correct_direction": false,
+        "sst_offshore": 65.85,
+        "sst_anomaly": 8.23,
+        "wind_speed": 10.5,
+        "swell_height": null,
+        "pressure_trend": -0.5,
+        "moon_illum": 93.0
+      }
+    ],
+    "recent": [
+      {
+        "date": "2026-05-15",
+        "month": 5,
+        "predicted_overall": 7.8,
+        "predicted_bluefin": 8.3,
+        "predicted_yellowfin": 3.1,
+        "actual_tpa": 1.5013,
+        "actual_rating": 6.0,
+        "bf_pa": 2.0321147987814654,
+        "yf_pa": 0.0761528326745718,
+        "yt_pa": 0.6197101449275362,
+        "n_boats": 15,
+        "error": 1.8,
+        "correct_direction": true,
+        "sst_offshore": 62.65,
+        "sst_anomaly": 1.2,
+        "wind_speed": 15.9,
+        "swell_height": 2.08,
+        "pressure_trend": -1.1,
+        "moon_illum": 3.0
+      },
+      {
+        "date": "2026-05-16",
+        "month": 5,
+        "predicted_overall": 5.8,
+        "predicted_bluefin": 5.8,
+        "predicted_yellowfin": 1.2,
+        "actual_tpa": 0.9015,
+        "actual_rating": 4.1,
+        "bf_pa": 0.6965404965404965,
+        "yf_pa": 0.0,
+        "yt_pa": 0.20496867386007656,
+        "n_boats": 13,
+        "error": 1.7,
+        "correct_direction": false,
+        "sst_offshore": 61.92,
+        "sst_anomaly": 1.32,
+        "wind_speed": 23.0,
+        "swell_height": 2.83,
+        "pressure_trend": -1.7,
+        "moon_illum": 1.0
+      },
+      {
+        "date": "2026-05-17",
+        "month": 5,
+        "predicted_overall": 5.7,
+        "predicted_bluefin": 5.7,
+        "predicted_yellowfin": 1.1,
+        "actual_tpa": 1.6633,
+        "actual_rating": 6.4,
+        "bf_pa": 2.4691538713589702,
+        "yf_pa": 0.0,
+        "yt_pa": 0.6326785894593806,
+        "n_boats": 23,
+        "error": 0.7,
+        "correct_direction": true,
+        "sst_offshore": 61.49,
+        "sst_anomaly": 0.73,
+        "wind_speed": 24.0,
+        "swell_height": 4.26,
+        "pressure_trend": -3.2,
+        "moon_illum": 0.0
+      },
+      {
+        "date": "2026-05-18",
+        "month": 5,
+        "predicted_overall": 5.7,
+        "predicted_bluefin": 5.7,
+        "predicted_yellowfin": 1.1,
+        "actual_tpa": 1.3359,
+        "actual_rating": 5.5,
+        "bf_pa": 1.5909090909090908,
+        "yf_pa": 0.0,
+        "yt_pa": 0.719692870261052,
+        "n_boats": 11,
+        "error": 0.2,
+        "correct_direction": true,
+        "sst_offshore": 61.3,
+        "sst_anomaly": 0.74,
+        "wind_speed": 20.6,
+        "swell_height": 3.66,
+        "pressure_trend": -0.3,
+        "moon_illum": 2.0
+      },
+      {
+        "date": "2026-05-19",
+        "month": 5,
+        "predicted_overall": 5.8,
+        "predicted_bluefin": 5.8,
+        "predicted_yellowfin": 1.1,
+        "actual_tpa": 1.2709,
+        "actual_rating": 5.3,
+        "bf_pa": 1.8105199148677409,
+        "yf_pa": 0.0,
+        "yt_pa": 0.21217523852066306,
+        "n_boats": 13,
+        "error": 0.5,
+        "correct_direction": false,
+        "sst_offshore": 61.72,
+        "sst_anomaly": 1.0,
+        "wind_speed": 10.0,
+        "swell_height": 2.07,
+        "pressure_trend": 3.1,
+        "moon_illum": 6.0
+      }
+    ]
+  },
+  "run_duration_seconds": 4.2
+}
