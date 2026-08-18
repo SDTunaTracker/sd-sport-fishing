@@ -1,0 +1,39 @@
+==============================================================================
+SHADOW WIRE-UP SIMULATION
+V0-live (current dss keying)  vs  V1-live (dep-date dss keying)
+Both use dss-style trip-weighted response + single-day HC at dss.date.
+==============================================================================
+
+V0-live dss (would-be) rows: 4,840
+  inshore: 2,757   offshore: 2,083
+V1-live dss (would-be) rows: 4,871
+  inshore: 2,757   offshore: 2,114
+
+-- Inshore isolation --
+  PASS -- inshore V0 == V1-live (byte-identical)
+
+-- Offshore held-out (2025) direction acc / MAE / Brier --
+  species    variant    n_test  dir_acc    mae   brier
+  bluefin    V0-live       173   0.7803  1.821  0.1751
+  bluefin    V1-live       182   0.8187  1.732  0.1523
+  bluefin    delta              +0.0383 -0.089 -0.0228
+
+  yellowfin  V0-live       173   0.8092  1.363  0.1551
+  yellowfin  V1-live       182   0.8077  1.362  0.1592
+  yellowfin  delta              -0.0016 -0.001 +0.0041
+
+  dorado     V0-live       173   0.8439  0.965  0.1313
+  dorado     V1-live       182   0.8242  0.988  0.1354
+  dorado     delta              -0.0198 +0.023 +0.0041
+
+
+V1-validated targets (from validate_daterep.py, angler-weighted + span-avg HC):
+  bluefin   ~ 73.3% dir / MAE ~1.98 / Brier ~0.19
+  yellowfin ~ 82.2% dir / MAE ~1.29 / Brier ~0.15
+  dorado    ~ 86.0% dir / MAE ~0.97 / Brier ~0.13
+
+If V1-live above deviates materially from V1-validated, that's expected --
+V1-live uses dss AVG-per-trip response + single-day HC at dep-date, while
+V1-validated used SUM/SUM angler-weighted + span-averaged HC. The wire-up
+as scoped can only change the date KEY, not the aggregation formula or HC-
+averaging behavior. Recommendation for the user is at the bottom.

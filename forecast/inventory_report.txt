@@ -1,0 +1,292 @@
+==============================================================================
+FORECASTING MVP  DATA INVENTORY
+Generated (Pacific): 2026-07-13T15:08:11-07:00
+Repo:                C:\Users\Jenelle\Projects\sd-sport-fishing
+Catch DB:            tracker.db
+==============================================================================
+
+ AIS / VESSEL POSITIONS 
+
+Total stored position rows: 3,927,346
+  Rows written by scripts/ais_push.py (source='aisstream'). CF Worker KV
+  snapshot still lives at expirationTtl=600 (10 min) but is no longer the
+  system of record  the positions table is.
+
+Speed/course completeness: sog non-null 3,927,346/3,927,346   cog non-null 3,620,332/3,927,346
+  (nulls mean the AISStream message omitted the field  not the same as 0.0)
+
+Per-MMSI position stats:
+  MMSI        boat                       rows first_ts (UTC)            last_ts (UTC)                max_gap
+  ------------------------------------------------------------------------------------------------------
+  368352260   Constitution             390918 2024-03-01T00:00:02Z      2025-10-31 23:58:53Z          120.0d
+  338425851   Fortune                  393066 2021-10-15T16:12:49Z      2025-10-31 23:57:12Z          121.0d
+  366746210   Grande                   463251 2020-03-01T00:00:44Z      2025-10-30 18:07:28Z          124.8d
+  368406170   Islander                  40181 2025-05-01 00:02:11Z      2025-10-31 23:58:40Z           12.9d
+  367600830   Legend                   513410 2020-03-01T00:00:01Z      2025-10-31 20:27:34Z          125.7d
+  338301392   Liberty                   52959 2020-03-07T20:27:12Z      2025-10-04 00:48:41Z          206.0d
+  367740760   Liberty (2)              285918 2020-03-01T00:00:15Z      2025-10-31 23:59:32Z          158.8d
+  367186270   Pacific Queen            120955 2020-06-12T00:11:57Z      2025-10-17 17:03:21Z          314.8d
+  367543000   Polaris Supreme          155746 2020-03-11T15:55:19Z      2023-03-09T18:49:11Z          271.6d
+  367050490   Royal Polaris            582194 2020-03-04T07:45:33Z      2025-06-06 20:17:19Z          148.7d
+  367185130   Spirit of Adventure      324252 2020-03-07T06:19:59Z      2025-10-26 21:28:57Z          262.8d
+  338555612   Tribute                       0                                                                
+  368064780   Victory (SD)              51125 2023-03-28T23:28:27Z      2025-10-31 23:57:57Z          821.7d
+  368026910   Voyager                  553364 2020-03-01T00:01:13Z      2025-10-31 18:35:01Z          127.0d
+
+Distinct (MMSI, Pacific-date) with position coverage: 8831
+  (bucketed via src.dates.to_pacific_date  same helper as web/dates.js)
+
+Last-seen per tracked MMSI (from data/ais-discoveries.json, one entry per boat):
+  MMSI        boat                   landing                      last_seen (Pac)
+  --------------------------------------------------------------------------
+  368352260   Constitution           Fisherman's Landing          2026-06-19  
+  338425851   Fortune                Fisherman's Landing          2026-06-20  
+  366746210   Grande                 H&M Landing                  2026-06-20  
+  368406170   Islander               Fisherman's Landing          2026-06-18  
+  367600830   Legend                 H&M Landing                  2026-06-14  
+  338301392   Liberty                Fisherman's Landing          2026-06-20  
+  367740760   Liberty (2)            Fisherman's Landing          2026-06-20  
+  367186270   Pacific Queen          ?                                        
+  367543000   Polaris Supreme        ?                                        
+  367050490   Royal Polaris          ?                            2026-06-04  
+  367185130   Spirit of Adventure    H&M Landing                              
+  338555612   Tribute                Seaforth Sportfishing        2026-06-20  
+  368064780   Victory (SD)           Long Beach Sportfishing      2026-06-20  
+  368026910   Voyager                Seaforth Sportfishing        2026-06-03  
+
+Distinct (tracked boat, Pacific-date) via last-seen fallback: 11 / 14
+
+ CATCH DB (tracker.db.trips) 
+
+Trip rows:          42,805
+Date range:         2015-01-01  2026-07-13
+Distinct boats:     182
+Distinct (boat, Pacific-date) catch records: 41,786
+  (trips.date is stamped by landings on the Pacific business day)
+
+Tracked MMSI to catch mapping (case-insensitive on the normalised name):
+  MMSI        tracked name         catch rows  catch-days  landing(s)
+  ----------------------------------------------------------------------------
+  368352260   Constitution                413         410  H&M Landing,Fisherman's Landing
+  338425851   Fortune                     380         380  Fisherman's Landing
+  366746210   Grande                     1308        1305  Point Loma Sportfishing,H&M Landing
+  368406170   Islander                    280         280  Fisherman's Landing
+  367600830   Legend                      751         747  H&M Landing
+  338301392   Liberty                    1429        1427  Fisherman's Landing
+  367740760   Liberty                    1429        1427  Fisherman's Landing
+  367186270   Pacific Queen               902         893  Fisherman's Landing
+  367543000   Polaris Supreme             312         311  Fisherman's Landing,Seaforth Sportfishing
+  367050490   Royal Polaris                 7           7  Fisherman's Landing
+  367185130   Spirit of Adventure          54          54  H&M Landing
+  338555612   Tribute                    1300        1296  Seaforth Sportfishing
+  368064780   Victory                     169         169  Long Beach Sportfishing
+  368026910   Voyager                     812         771  Seaforth Sportfishing
+
+Catch boat-days by year-month (all trips, for seasonal context):
+  2015-01  boat-days:    104
+  2015-02  boat-days:    166
+  2015-03  boat-days:    223
+  2015-04  boat-days:    228
+  2015-05  boat-days:    262
+  2015-06  boat-days:    398
+  2015-07  boat-days:    741
+  2015-08  boat-days:   1046
+  2015-09  boat-days:    890
+  2015-10  boat-days:    474
+  2015-11  boat-days:    217
+  2015-12  boat-days:    104
+  2016-01  boat-days:    118
+  2016-02  boat-days:     80
+  2016-03  boat-days:     74
+  2016-04  boat-days:    154
+  2016-05  boat-days:    205
+  2016-06  boat-days:    284
+  2016-07  boat-days:    577
+  2016-08  boat-days:    763
+  2016-09  boat-days:    671
+  2016-10  boat-days:    335
+  2016-11  boat-days:     93
+  2016-12  boat-days:     56
+  2017-01  boat-days:     51
+  2017-02  boat-days:     40
+  2017-03  boat-days:     57
+  2017-04  boat-days:    168
+  2017-05  boat-days:    189
+  2017-06  boat-days:    202
+  2017-07  boat-days:    429
+  2017-08  boat-days:    694
+  2017-09  boat-days:    577
+  2017-10  boat-days:    331
+  2017-11  boat-days:    118
+  2017-12  boat-days:    104
+  2018-01  boat-days:     37
+  2018-02  boat-days:     47
+  2018-03  boat-days:     43
+  2018-04  boat-days:     88
+  2018-05  boat-days:    161
+  2018-06  boat-days:    257
+  2018-07  boat-days:    484
+  2018-08  boat-days:    736
+  2018-09  boat-days:    710
+  2018-10  boat-days:    405
+  2018-11  boat-days:    168
+  2018-12  boat-days:     16
+  2019-01  boat-days:     21
+  2019-02  boat-days:     13
+  2019-03  boat-days:     58
+  2019-04  boat-days:    169
+  2019-05  boat-days:    223
+  2019-06  boat-days:    366
+  2019-07  boat-days:    483
+  2019-08  boat-days:    674
+  2019-09  boat-days:    676
+  2019-10  boat-days:    470
+  2019-11  boat-days:    269
+  2019-12  boat-days:     87
+  2020-01  boat-days:     83
+  2020-02  boat-days:     93
+  2020-03  boat-days:    105
+  2020-04  boat-days:     60
+  2020-05  boat-days:     79
+  2020-06  boat-days:    472
+  2020-07  boat-days:    719
+  2020-08  boat-days:    870
+  2020-09  boat-days:    894
+  2020-10  boat-days:    751
+  2020-11  boat-days:    295
+  2020-12  boat-days:     88
+  2021-01  boat-days:     59
+  2021-02  boat-days:     44
+  2021-03  boat-days:    141
+  2021-04  boat-days:    254
+  2021-05  boat-days:    447
+  2021-06  boat-days:    652
+  2021-07  boat-days:    817
+  2021-08  boat-days:    885
+  2021-09  boat-days:    725
+  2021-10  boat-days:    472
+  2021-11  boat-days:    211
+  2021-12  boat-days:     11
+  2022-01  boat-days:     26
+  2022-02  boat-days:     21
+  2022-03  boat-days:     85
+  2022-04  boat-days:    219
+  2022-05  boat-days:    336
+  2022-06  boat-days:    468
+  2022-07  boat-days:    644
+  2022-08  boat-days:    792
+  2022-09  boat-days:    639
+  2022-10  boat-days:    505
+  2022-11  boat-days:    130
+  2022-12  boat-days:     52
+  2023-01  boat-days:     22
+  2023-02  boat-days:     24
+  2023-03  boat-days:     54
+  2023-04  boat-days:    195
+  2023-05  boat-days:    357
+  2023-06  boat-days:    423
+  2023-07  boat-days:    642
+  2023-08  boat-days:    628
+  2023-09  boat-days:    624
+  2023-10  boat-days:    418
+  2023-11  boat-days:    108
+  2023-12  boat-days:     16
+  2024-01  boat-days:     17
+  2024-02  boat-days:     22
+  2024-03  boat-days:     75
+  2024-04  boat-days:     44
+  2024-05  boat-days:    165
+  2024-06  boat-days:    355
+  2024-07  boat-days:    522
+  2024-08  boat-days:    620
+  2024-09  boat-days:    505
+  2024-10  boat-days:    285
+  2024-11  boat-days:     55
+  2024-12  boat-days:     19
+  2025-01  boat-days:     20
+  2025-02  boat-days:     15
+  2025-03  boat-days:     26
+  2025-04  boat-days:     80
+  2025-05  boat-days:    144
+  2025-06  boat-days:    314
+  2025-07  boat-days:    495
+  2025-08  boat-days:    643
+  2025-09  boat-days:    489
+  2025-10  boat-days:    326
+  2025-11  boat-days:     70
+  2025-12  boat-days:     28
+  2026-01  boat-days:     34
+  2026-02  boat-days:     44
+  2026-03  boat-days:    144
+  2026-04  boat-days:    172
+  2026-05  boat-days:    647
+  2026-06  boat-days:    729
+  2026-07  boat-days:    143
+
+ PAIRED (AIS x CATCH) BOAT-DAYS 
+
+Paired boat-days (positions AND catch, tracked MMSIs only): 2572
+
+Paired boat-days by year-month:
+  2020-03  paired: 3
+  2020-06  paired: 57
+  2020-07  paired: 106
+  2020-08  paired: 101
+  2020-09  paired: 89
+  2020-10  paired: 94
+  2021-02  paired: 2
+  2021-03  paired: 6
+  2021-04  paired: 25
+  2021-05  paired: 85
+  2021-06  paired: 84
+  2021-07  paired: 97
+  2021-08  paired: 79
+  2021-09  paired: 69
+  2021-10  paired: 53
+  2022-03  paired: 11
+  2022-04  paired: 54
+  2022-05  paired: 62
+  2022-06  paired: 72
+  2022-07  paired: 75
+  2022-08  paired: 87
+  2022-09  paired: 75
+  2022-10  paired: 65
+  2023-03  paired: 4
+  2023-04  paired: 21
+  2023-05  paired: 45
+  2023-06  paired: 58
+  2023-07  paired: 84
+  2023-08  paired: 79
+  2023-09  paired: 60
+  2023-10  paired: 35
+  2024-03  paired: 4
+  2024-04  paired: 8
+  2024-05  paired: 29
+  2024-06  paired: 56
+  2024-07  paired: 80
+  2024-08  paired: 86
+  2024-09  paired: 65
+  2024-10  paired: 43
+  2025-03  paired: 1
+  2025-04  paired: 6
+  2025-05  paired: 16
+  2025-06  paired: 45
+  2025-07  paired: 86
+  2025-08  paired: 95
+  2025-09  paired: 76
+  2025-10  paired: 39
+
+Wrote forecast\paired_days.csv  (2572 data rows)
+
+ RECOMMENDATION 
+Bank AIS history first  the modeling MVP is data-starved.
+  1. Add a positions table to tracker.db:
+       (mmsi TEXT, ts_utc TEXT, lat REAL, lng REAL, sog REAL, cog REAL,
+        heading REAL, source TEXT).  Index (mmsi, ts_utc).
+  2. In scripts/ais_push.py after collect(), also INSERT each new position
+     into that table before write_local()/push_to_worker(). sog/cog are
+     already captured at line 104  nothing else to wire.
+  3. Optional belt-and-suspenders: cron the CF Worker /vessels response into
+     the same table (needs KV TTL bumped from 600s so nothing is lost).
+Re-run this inventory after 1-2 seasons of banked history to check whether
+paired boat-days per season crosses the useful-training threshold.

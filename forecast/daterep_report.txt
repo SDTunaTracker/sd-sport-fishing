@@ -1,0 +1,70 @@
+==============================================================================
+V0 (return-date, single-day) vs V1 (departure-date, span-averaged)
+Held-out re-baseline for offshore species; time split train<=2024, test=2025.
+==============================================================================
+
+Sanity: shift + span from src.trip_conditions.sql_round match SQLite ROUND
+  trip_length_days=0.75: dep_shift_days=  0, span_days=1
+  trip_length_days=1.0: dep_shift_days=  0, span_days=1
+  trip_length_days=1.5: dep_shift_days= -1, span_days=2
+  trip_length_days=2.0: dep_shift_days= -1, span_days=2
+  trip_length_days=2.5: dep_shift_days= -2, span_days=3
+
+trips (after hygiene: anglers>=5, half-day filtered, tl in [0.75, 2.0]): 34,326
+historical_conditions rows loaded: 4,212
+
+V0 offshore day-groups: 1,880   after dropping rows with no HC/sst_offshore: 1,875
+V1 offshore day-groups: 1,880   after dropping rows with no HC/sst_offshore: 1,872
+
+==============================================================================
+SPECIES: BLUEFIN   (offshore)
+==============================================================================
+  V0 (return-date, single-day):  train=1,673  test=157
+  V1 (dep-date, span-averaged):  train=1,673  test=157
+
+  metric                 V0 model   V1 model      delta     V0 naive   V1 naive
+  direction_acc            0.7325     0.7325    +0.0000       0.4204     0.4268
+  mae                      1.9890     1.9845    -0.0044       2.6158     2.6195
+  brier                    0.1899     0.1885    -0.0014       0.2471     0.2480
+
+  VERDICT: V0 ~= V1  direction +0.0pp, MAE -0.004, Brier -0.0014 on n=157. The date-representation skew is not measurably distorting held-out accuracy at the daily-segment level.
+
+==============================================================================
+SPECIES: YELLOWFIN   (offshore)
+==============================================================================
+  V0 (return-date, single-day):  train=1,673  test=157
+  V1 (dep-date, span-averaged):  train=1,673  test=157
+
+  metric                 V0 model   V1 model      delta     V0 naive   V1 naive
+  direction_acc            0.8217     0.8217    +0.0000       0.4331     0.4395
+  mae                      1.3353     1.2867    -0.0486       2.2873     2.2756
+  brier                    0.1518     0.1473    -0.0045       0.2492     0.2482
+
+  VERDICT: V0 ~= V1  direction +0.0pp, MAE -0.049, Brier -0.0045 on n=157. The date-representation skew is not measurably distorting held-out accuracy at the daily-segment level.
+
+==============================================================================
+SPECIES: DORADO   (offshore)
+==============================================================================
+  V0 (return-date, single-day):  train=1,673  test=157
+  V1 (dep-date, span-averaged):  train=1,673  test=157
+
+  metric                 V0 model   V1 model      delta     V0 naive   V1 naive
+  direction_acc            0.8471     0.8599    +0.0127       0.4268     0.4331
+  mae                      1.0029     0.9662    -0.0367       1.7976     1.7828
+  brier                    0.1287     0.1262    -0.0026       0.2643     0.2626
+
+  VERDICT: V1 IMPROVES  direction +1.3pp, MAE -0.037, Brier -0.0026 on n=157. Aligning live scoring to the calibrated representation would help.
+
+==============================================================================
+ISOLATION: inshore V0 vs V1 must be byte-identical
+==============================================================================
+  V0 inshore rows: 2,757
+  V1 inshore rows: 2,757
+  All columns byte-identical -- inshore isolation OK.
+
+==============================================================================
+Written parallel V0 / V1 -- no live production behavior changed. If any
+species shows a clean V1 IMPROVES verdict AND the isolation check passes,
+the next atomic task is a single-file wire-up of daily_segment_stats (or
+the forecaster's join) to use trip_conditions helpers for offshore only.
+==============================================================================

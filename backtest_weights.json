@@ -1,8 +1,8 @@
 {
-  "sst_weight": 1.499,
-  "anomaly_weight": 0.816,
+  "sst_weight": 1.495,
+  "anomaly_weight": 0.807,
   "moon_weight": 0.08,
-  "wind_weight": 0.405,
+  "wind_weight": 0.403,
   "overall_breaks": [
     [
       55,

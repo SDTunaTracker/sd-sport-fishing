@@ -1,0 +1,53 @@
+==============================================================================
+YELLOWTAIL-INSHORE ANALOG VALIDATION
+Tiered comparison T0/T1/T2/T3 on 2025 held-out inshore. No production
+code touched.
+==============================================================================
+trips (inshore hygiene: anglers>=5, 0.75<=tl<=1.0, non-half): 24,217
+day-groups (n_trips>=2): 2,774
+after env-merge (require sst_nearshore_d1): 2,632 (dropped 142)
+train (<=2024): 2,355   test (2025): 191
+
+zero-catch share  overall=12.5%  train=12.4%  test=14.1%
+
+scoring T0 (current path)...
+scoring T1 (naive seasonal)...
+scoring T2 (analog on month only, strictly-prior train-neighbors)...
+scoring T3 (analog on month + conditions)...
+
+Leakage guard:
+  T2 / T3 neighbor pool is strictly EARLIER than target date AND in train.
+  Guarded by: mask = train_mask & (df.date < target.date). Any test-day
+  would have its own date excluded; any train day cannot self-match.
+  Test rows scored by pulling from 2,355 train candidates.
+
+==============================================================================
+HELD-OUT 2025 INSHORE-YELLOWTAIL METRICS
+==============================================================================
+  tier       n    dir_acc     MAE    Brier
+  T0       191     0.3770   2.571   0.3306
+  T1       191     0.6335   1.831   0.2352
+  T2       191     0.6021   1.990   0.2526
+  T3       191     0.3874   2.644   0.3386
+
+Interpretation:
+  T2 vs T1  (analog machinery vs seasonal climatology):
+    dir delta = -0.0314  (-3.1pp). analog matches seasonal within noise -- machinery reproduces climatology (healthy)
+  T3 vs T2  (do conditions add signal over pure seasonality):
+    dir delta = -0.2147  (-21.5pp). conditions HURT -- their filtering pulls in a worse neighbor pool than pure seasonality
+  best tier (T1) vs T0 (broken current path):
+    dir delta = +0.2565  (+25.7pp)
+
+==============================================================================
+VERDICT
+==============================================================================
+  BEST: T1 (naive seasonal) and T2 (month-only analog) are within noise
+  of each other on n=191 (T1=0.6335, T2=0.6021,
+  delta +3.1pp). Both beat T0 by ~26pp.
+  RECOMMEND: ship T1 (per-month seasonal mean). Simpler, no neighbor
+  bookkeeping, and analog machinery earns nothing over pure seasonality
+  for this species. T3 (conditions) is clearly worse -- do NOT use it.
+
+Isolation: this validator does NOT modify src/forecast.py or any other
+production code. Offshore scoring and all non-yellowtail species outputs
+are byte-identical by construction (no code paths altered).

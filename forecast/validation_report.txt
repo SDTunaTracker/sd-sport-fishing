@@ -1,0 +1,88 @@
+==============================================================================
+HELD-OUT VALIDATION -- yellowtail anomaly + yellowtail gradient +
+dorado inverted gradient. Not a production integration; ship/no-ship
+advisory only. Time-split: train<=2024, test=2025.
+==============================================================================
+trips (raw):                               42,834
+trips (after hygiene):                     34,322
+
+==============================================================================
+CANDIDATE: A1  yellowtail(inshore) + sst_anomaly_d1
+  species=yellowtail  segment=inshore
+  baseline SST input: sst_nearshore_d1
+  candidate feature:  sst_anomaly_d1  invert=False
+==============================================================================
+day-segment rows: 2,757   after env merge (drop rows missing sst_nearshore_d1): 2,653
+train rows (<=2024): 2,355   test rows (2025):   191
+fit on train: beta = +0.3409   (invert=False)
+
+metric                    naive   baseline  treatment   delta_treat-base
+  direction_acc          0.6335     0.3770     0.3246            -0.0524
+  mae                    1.8306     2.5711     2.7286            +0.1575
+  brier                  0.2352     0.3306     0.3549            +0.0244
+
+VERDICT:
+  NO-SHIP -- direction -5.2pp, MAE +0.157, Brier +0.0244  on n=191 rows. Change does not improve out-of-sample.
+
+==============================================================================
+CANDIDATE: A2  yellowtail(inshore) + sst_gradient_d1
+  species=yellowtail  segment=inshore
+  baseline SST input: sst_nearshore_d1
+  candidate feature:  sst_gradient_d1  invert=False
+==============================================================================
+day-segment rows: 2,757   after env merge (drop rows missing sst_nearshore_d1): 2,653
+train rows (<=2024): 2,355   test rows (2025):   191
+fit on train: beta = +0.4265   (invert=False)
+
+metric                    naive   baseline  treatment   delta_treat-base
+  direction_acc          0.6335     0.3770     0.3037            -0.0733
+  mae                    1.8306     2.5711     3.4039            +0.8329
+  brier                  0.2352     0.3306     0.4372            +0.1067
+
+VERDICT:
+  NO-SHIP -- direction -7.3pp, MAE +0.833, Brier +0.1067  on n=191 rows. Change does not improve out-of-sample.
+
+==============================================================================
+CANDIDATE: B   dorado(offshore) + INVERTED sst_gradient_d1
+  species=dorado  segment=offshore
+  baseline SST input: sst_offshore_d1
+  candidate feature:  sst_gradient_d1  invert=True
+==============================================================================
+day-segment rows: 1,880   after env merge (drop rows missing sst_offshore_d1): 1,874
+train rows (<=2024): 1,673   test rows (2025):   157
+fit on train: beta = -0.1890   (invert=True)
+
+metric                    naive   baseline  treatment   delta_treat-base
+  direction_acc          0.4268     0.8471     0.8153            -0.0318
+  mae                    1.7976     0.9946     1.0380            +0.0433
+  brier                  0.2643     0.1284     0.1621            +0.0337
+
+VERDICT:
+  NO-SHIP -- direction -3.2pp, MAE +0.043, Brier +0.0337  on n=157 rows. Change does not improve out-of-sample.
+
+==============================================================================
+ISOLATION CHECK: bluefin & yellowfin scores under baseline vs each
+candidate. Every candidate touches only one species path; other
+species must be byte-identical.
+==============================================================================
+  2026-07-07: bluefin=7.9133  yellowfin=4.0133
+  2026-07-08: bluefin=7.2285  yellowfin=3.3285
+  (These values are computed via species_baseline() using the
+   BLUEFIN and YELLOWFIN break tables. Neither A1/A2 (yellowtail
+   feature swap) nor B (dorado gradient) invokes these paths;
+   the two functions are structurally independent by species.)
+
+==============================================================================
+SUMMARY
+==============================================================================
+  A1  yellowtail(inshore) + sst_anomaly_d1
+    beta=+0.3409   n_test=191   dir_delta=-5.2pp   mae_delta=+0.157   brier_delta=+0.0244
+  A2  yellowtail(inshore) + sst_gradient_d1
+    beta=+0.4265   n_test=191   dir_delta=-7.3pp   mae_delta=+0.833   brier_delta=+0.1067
+  B   dorado(offshore) + INVERTED sst_gradient_d1
+    beta=-0.1890   n_test=157   dir_delta=-3.2pp   mae_delta=+0.043   brier_delta=+0.0337
+
+Next atomic task, if any candidate ships: single-file change to
+src/forecast.py species scoring path for that species only. Do NOT
+rewire the ensemble or touch other species until each new feature
+has its own independent held-out confirmation like this one.
