@@ -108,7 +108,12 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
 
   function handleNavItem(id) {
     setMenuState('closed');
-    onNavigate && onNavigate(id);
+    // Yield one frame so the drawer visibly closes before the target route's
+    // (often heavy) first render blocks the main thread. Without this, React
+    // batches setMenuState with the target's setRoute + initial render into a
+    // single commit — the drawer stays on screen until the new page is fully
+    // mounted, and on mobile the tap feels dead until it suddenly jumps.
+    requestAnimationFrame(() => { onNavigate && onNavigate(id); });
   }
 
   const currentChoice =
