@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — 5 Homepage Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800;900&family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1b2530;font-family:'Inter',system-ui,sans-serif;color:#cdd8e3;-webkit-font-smoothing:antialiased}
+  .page{max-width:1180px;margin:0 auto;padding:28px 22px 80px}
+  .page-h{margin:6px 0 22px}
+  .page-h h1{color:#fff;font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .page-h p{color:#8aa0b4;font-size:14px;margin-top:8px;max-width:780px;line-height:1.5}
+
+  /* option label bar */
+  .opt-label{display:flex;align-items:baseline;gap:12px;margin:34px 0 12px}
+  .opt-label .n{font:700 12px/1 'DM Mono',monospace;letter-spacing:.1em;color:#0C8FD6;background:#0c1a28;border:1px solid #24384c;border-radius:7px;padding:7px 10px}
+  .opt-label .t{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .opt-label .d{color:#8aa0b4;font-size:13px}
+
+  /* the device frame each mockup sits in */
+  .frame{border-radius:16px;overflow:hidden;border:1px solid #2a3947;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+
+  /* ============ SHARED MOCKUP BASE (scoped to .mk) ============ */
+  .mk{background:var(--bg);color:var(--ink);font-family:var(--bf)}
+  .mk .in{max-width:none;padding:0 26px}
+  .mk a{color:inherit;text-decoration:none}
+  .mk .num{font-family:'DM Mono',monospace;font-feature-settings:"tnum" 1;letter-spacing:-.01em}
+
+  .mk .nav{display:flex;align-items:center;gap:24px;height:54px;padding:0 26px;border-bottom:1px solid var(--navline);background:var(--navbg)}
+  .mk .brand b{font-weight:800;font-size:15px;letter-spacing:-.02em;color:var(--navink)}
+  .mk .brand span{display:block;font:500 9px/1 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--navfaint)}
+  .mk .nlinks{display:flex;gap:18px}
+  .mk .nlinks a{font-size:12.5px;font-weight:500;color:var(--navfaint)}
+  .mk .nlinks a.on{color:var(--navink)}
+  .mk .signin{margin-left:auto;font-size:12px;font-weight:600;color:var(--navink);border:1px solid var(--navline);border-radius:8px;padding:7px 13px}
+
+  .mk .hero{position:relative;overflow:hidden;background:var(--herobg);color:var(--heroink);padding:38px 26px 0}
+  .mk .hero .badge{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid var(--badgebd);border-radius:999px;background:var(--badgebg);color:var(--badgeink);font:600 10px/1 'DM Mono',monospace;letter-spacing:.13em;text-transform:uppercase}
+  .mk .hero h1{font-family:var(--hf);font-size:46px;font-weight:var(--hw);letter-spacing:var(--htrack);line-height:.98;margin:16px 0 12px;color:var(--heroh)}
+  .mk .hero p{max-width:430px;color:var(--herosub);font-size:14.5px;line-height:1.5}
+  .mk .trust{margin-top:14px;color:var(--herofaint);font-size:12.5px}
+  .mk .trust b{color:var(--heroink);font-family:'DM Mono',monospace;font-weight:500}
+  .mk .stats{margin-top:26px;display:flex;border-top:1px solid var(--herorule);background:var(--herostatbg)}
+  .mk .stat{padding:14px 22px 14px 0;margin-right:22px;border-right:1px solid var(--herorule)}
+  .mk .stat:first-child{padding-left:0}
+  .mk .stat .v{font:500 var(--statsz)/1 'DM Mono',monospace;letter-spacing:-.02em;color:var(--heroink)}
+  .mk .stat .v.hot{color:var(--warm-h)}
+  .mk .stat .k{margin-top:6px;font:600 9px/1 'DM Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--herofaint)}
+  .mk .statmeta{margin-left:auto;display:flex;align-items:center;gap:8px;padding:14px 0;color:var(--herofaint);font-size:11.5px}
+  .mk .dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+
+  .mk .body{padding:30px 26px 34px}
+  .mk .sec{margin-bottom:24px}
+  .mk .sec-h{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:13px}
+  .mk .eyebrow{display:inline-flex;align-items:center;gap:6px;font:600 10px/1 'DM Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--warm)}
+  .mk .eyebrow.cool{color:var(--accent)}
+  .mk .eyebrow .dot{background:var(--warm)}
+  .mk .sec-h h2{font-family:var(--hf);font-size:21px;font-weight:var(--h2w);letter-spacing:-.02em;color:var(--ink);margin-top:6px}
+  .mk .sec-h h2.sm{font-size:18px}
+  .mk .sub{color:var(--faint);font-size:12px;margin-top:4px}
+  .mk .arrow{font-size:12.5px;font-weight:600;color:var(--accent)}
+
+  .mk .card{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .mk .card.feat{box-shadow:var(--shadow-feat);border-color:var(--featbd)}
+  .mk .topbar{height:4px;background:var(--featbar)}
+  .mk .status{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line2);background:var(--statusbg)}
+  .mk .status .pulse{width:9px;height:9px;border-radius:50%;background:var(--warm);box-shadow:0 0 0 4px var(--warmglow)}
+  .mk .status .lbl{font-size:13.5px;font-weight:600;color:var(--ink)}
+  .mk .status .lbl b{font-weight:800}
+  .mk .status .lbl span{color:var(--muted);font-weight:500}
+  .mk .status .r{margin-left:auto;font:500 11.5px/1 'DM Mono',monospace;color:var(--faint)}
+
+  .mk table{width:100%;border-collapse:collapse}
+  .mk thead th{font:600 9px/1 'DM Mono',monospace;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);text-align:right;padding:11px 20px;border-bottom:1px solid var(--line2)}
+  .mk thead th:first-child{text-align:left}
+  .mk tbody td{padding:13px 20px;text-align:right;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink)}
+  .mk tbody td:first-child{text-align:left;font-family:var(--bf)}
+  .mk .tb .nm{font-weight:600;font-size:13.5px}
+  .mk .tb .s{font:500 10.5px/1 'DM Mono',monospace;color:var(--faint);margin-top:2px}
+  .mk .chip{display:inline-flex;padding:4px 9px;border-radius:999px;font:600 10.5px/1 var(--bf)}
+  .mk .chip-top{background:var(--warm-soft);color:var(--warm);margin-left:7px;font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.05em}
+  .mk .chip-good{background:var(--good-soft);color:var(--good)}
+
+  .mk .lb{display:grid;grid-template-columns:26px 1fr 70px 58px;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line2)}
+  .mk .lb:last-child{border-bottom:0}
+  .mk .lb.top .rk{color:var(--warm)}
+  .mk .rk{font:500 12px/1 'DM Mono',monospace;color:var(--faint);text-align:center}
+  .mk .bt .nm{font-size:13.5px;font-weight:600}
+  .mk .bt .s{margin-top:2px;font:500 10.5px/1 'DM Mono',monospace;color:var(--faint)}
+  .mk .spark{height:20px;width:70px}
+  .mk .tpa{text-align:right}
+  .mk .tpa .v{font:500 var(--tpasz)/1 'DM Mono',monospace;letter-spacing:-.02em;color:var(--ink)}
+  .mk .tpa .u{font:500 8px/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+
+  /* ============ VARIANT TOKENS ============ */
+  /* 1 — CLEAN LIGHT (refined SaaS) */
+  .v1{--bg:#F4F7FA;--surface:#fff;--ink:#0F1E2E;--muted:#5A6B7E;--faint:#8C9AAA;--line:#E4EAF1;--line2:#EEF2F7;
+      --accent:#0C8FD6;--warm:#D97A0B;--warm-soft:#FBF0DE;--warm-h:#F6B045;--warmglow:rgba(217,122,11,.16);--good:#0E9D63;--good-soft:#E4F5EC;
+      --radius:14px;--shadow:0 1px 2px rgba(16,30,46,.05),0 8px 22px rgba(16,30,46,.05);--shadow-feat:0 2px 4px rgba(16,30,46,.06),0 18px 40px rgba(12,143,214,.10);--featbd:#D6E3EF;--featbar:linear-gradient(90deg,#D97A0B,#F2B45A);--statusbg:linear-gradient(90deg,#FBF0DE,rgba(251,240,222,0));
+      --bf:'Inter',sans-serif;--hf:'Inter',sans-serif;--hw:900;--h2w:800;--htrack:-.035em;--statsz:28px;--tpasz:17px;
+      --navbg:rgba(244,247,250,.9);--navline:#E4EAF1;--navink:#0F1E2E;--navfaint:#5A6B7E;
+      --herobg:linear-gradient(180deg,#14283F,#0C1A2A);--heroink:#EAF1F8;--heroh:#fff;--herosub:#B6C6D6;--herofaint:#7E92A6;--herorule:rgba(255,255,255,.08);--herostatbg:rgba(6,14,24,.4);
+      --badgebd:rgba(55,189,247,.4);--badgebg:rgba(55,189,247,.1);--badgeink:#7FD2F5;}
+  .v1 .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 82% 12%,rgba(245,158,11,.45),transparent 46%);pointer-events:none}
+
+  /* 2 — DEEP SEA (dark premium) */
+  .v2{--bg:#0A121C;--surface:#101E30;--ink:#EAF1F8;--muted:#94A8BE;--faint:#5E748C;--line:#1E3346;--line2:#172a40;
+      --accent:#37BDF7;--warm:#F2A93C;--warm-soft:rgba(245,158,11,.16);--warm-h:#F6B045;--warmglow:rgba(245,158,11,.18);--good:#34D399;--good-soft:rgba(52,211,153,.16);
+      --radius:14px;--shadow:none;--shadow-feat:0 0 0 1px rgba(55,189,247,.18);--featbd:#27435f;--featbar:linear-gradient(90deg,#F2A93C,#F6C76B);--statusbg:linear-gradient(90deg,rgba(245,158,11,.12),transparent);
+      --bf:'Inter',sans-serif;--hf:'Inter',sans-serif;--hw:900;--h2w:800;--htrack:-.035em;--statsz:28px;--tpasz:17px;
+      --navbg:rgba(10,18,28,.85);--navline:#172a40;--navink:#EAF1F8;--navfaint:#94A8BE;
+      --herobg:radial-gradient(120% 90% at 80% 10%,rgba(245,158,11,.4),transparent 46%),linear-gradient(180deg,#13243A,#0A121C);--heroink:#EAF1F8;--heroh:#fff;--herosub:#A9BDD1;--herofaint:#7089a0;--herorule:#172a40;--herostatbg:rgba(6,12,20,.4);
+      --badgebd:rgba(55,189,247,.35);--badgebg:rgba(55,189,247,.08);--badgeink:#37BDF7;}
+
+  /* 3 — COASTAL (warm editorial, serif) */
+  .v3{--bg:#F6F1E6;--surface:#FFFDF8;--ink:#16322E;--muted:#5E726B;--faint:#9A9482;--line:#E7DDC9;--line2:#EFE8D8;
+      --accent:#0E6E63;--warm:#C2622B;--warm-soft:#F6E4D6;--warm-h:#E0894C;--warmglow:rgba(194,98,43,.16);--good:#2E7D5B;--good-soft:#E1F0E5;
+      --radius:12px;--shadow:0 1px 2px rgba(60,48,24,.05),0 10px 26px rgba(60,48,24,.06);--shadow-feat:0 2px 4px rgba(60,48,24,.07),0 18px 40px rgba(14,110,99,.10);--featbd:#E0D6BF;--featbar:linear-gradient(90deg,#C2622B,#E0894C);--statusbg:linear-gradient(90deg,#F6E4D6,rgba(246,228,214,0));
+      --bf:'Inter',sans-serif;--hf:'Playfair Display',serif;--hw:800;--h2w:800;--htrack:-.02em;--statsz:28px;--tpasz:17px;
+      --navbg:rgba(246,241,230,.92);--navline:#E7DDC9;--navink:#16322E;--navfaint:#5E726B;
+      --herobg:radial-gradient(130% 100% at 85% 8%,rgba(194,98,43,.55),transparent 48%),linear-gradient(180deg,#143A33,#0E2A25);--heroink:#F4EFE2;--heroh:#fff;--herosub:#CDD8CF;--herofaint:#9FB0A6;--herorule:rgba(255,255,255,.1);--herostatbg:rgba(8,24,20,.34);
+      --badgebd:rgba(224,200,150,.4);--badgebg:rgba(224,200,150,.12);--badgeink:#E9D3A6;}
+
+  /* 4 — SCOREBOARD (bold sporty dark) */
+  .v4{--bg:#0C0F14;--surface:#151A22;--ink:#F2F6FA;--muted:#8A95A3;--faint:#5C6675;--line:#232B36;--line2:#1b222c;
+      --accent:#2B8CFF;--warm:#FFB020;--warm-soft:rgba(255,176,32,.16);--warm-h:#FFC24D;--warmglow:rgba(255,176,32,.2);--good:#27E08A;--good-soft:rgba(39,224,138,.16);
+      --radius:10px;--shadow:none;--shadow-feat:0 0 0 1px rgba(43,140,255,.3);--featbd:#243447;--featbar:linear-gradient(90deg,#2B8CFF,#27E08A);--statusbg:linear-gradient(90deg,rgba(255,176,32,.14),transparent);
+      --bf:'Archivo',sans-serif;--hf:'Archivo',sans-serif;--hw:900;--h2w:800;--htrack:-.03em;--statsz:38px;--tpasz:20px;
+      --navbg:rgba(12,15,20,.9);--navline:#1b222c;--navink:#F2F6FA;--navfaint:#8A95A3;
+      --herobg:linear-gradient(115deg,#0C0F14 40%,#10243f 100%);--heroink:#F2F6FA;--heroh:#fff;--herosub:#9BA7B5;--herofaint:#6B7686;--herorule:#1f2733;--herostatbg:rgba(5,8,12,.4);
+      --badgebd:rgba(43,140,255,.4);--badgebg:rgba(43,140,255,.12);--badgeink:#6BB3FF;}
+
+  /* 5 — TERMINAL (austere light mono grid) */
+  .v5{--bg:#FBFBF8;--surface:#FFFFFF;--ink:#15181C;--muted:#5C6168;--faint:#9398A0;--line:#E3E3DC;--line2:#ECECE5;
+      --accent:#0F7A52;--warm:#A8740C;--warm-soft:#F3EAD6;--warm-h:#B5790A;--warmglow:rgba(168,116,12,.14);--good:#0F7A52;--good-soft:#E2F0E8;
+      --radius:6px;--shadow:none;--shadow-feat:none;--featbd:#D8D8CF;--featbar:#0F7A52;--statusbg:#FBF8F0;
+      --bf:'Inter',sans-serif;--hf:'DM Mono',monospace;--hw:500;--h2w:500;--htrack:-.02em;--statsz:26px;--tpasz:16px;
+      --navbg:#fff;--navline:#E3E3DC;--navink:#15181C;--navfaint:#5C6168;
+      --herobg:#fff;--heroink:#15181C;--heroh:#15181C;--herosub:#5C6168;--herofaint:#9398A0;--herorule:#E3E3DC;--herostatbg:#FBFBF8;
+      --badgebd:#D8D8CF;--badgebg:#F4F4EE;--badgeink:#5C6168;}
+  .v5 .hero{border-bottom:1px solid var(--line)}
+  .v5 .card{border-radius:6px}
+  .v5 .hero h1{font-weight:500}
+
+  @media(max-width:680px){.mk .nlinks{display:none}.mk .stats{flex-wrap:wrap}.mk .lb{grid-template-columns:24px 1fr 54px}.mk .spark{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-h">
+    <h1>The Tuna Tracker — 5 homepage directions</h1>
+    <p>Same content, five aesthetics. All share the redesign fundamentals (uniform cards, mono numerals, Today's Report pulled up front, no gimmicky banners). Pick a direction — or mix (e.g. "this layout, that color"). I'll build the winner onto your real files.</p>
+  </div>
+
+  <!-- ============ OPTION 1 ============ -->
+  <div class="opt-label"><span class="n">01</span><span class="t">Clean Light</span><span class="d">Refined SaaS · dark hero over an airy light page (Stripe / Strava)</span></div>
+  <div class="frame"><div class="mk v1">__BODY__</div></div>
+
+  <!-- ============ OPTION 2 ============ -->
+  <div class="opt-label"><span class="n">02</span><span class="t">Deep Sea</span><span class="d">Cohesive dark premium · glowing accents (Fishare / Surfline)</span></div>
+  <div class="frame"><div class="mk v2">__BODY__</div></div>
+
+  <!-- ============ OPTION 3 ============ -->
+  <div class="opt-label"><span class="n">03</span><span class="t">Coastal</span><span class="d">Warm editorial · serif headlines, sand + teal, more character</span></div>
+  <div class="frame"><div class="mk v3">__BODY__</div></div>
+
+  <!-- ============ OPTION 4 ============ -->
+  <div class="opt-label"><span class="n">04</span><span class="t">Scoreboard</span><span class="d">Bold sporty · big numbers, high contrast, energetic (ESPN-style)</span></div>
+  <div class="frame"><div class="mk v4">__BODY__</div></div>
+
+  <!-- ============ OPTION 5 ============ -->
+  <div class="opt-label"><span class="n">05</span><span class="t">Terminal</span><span class="d">Austere data-first · mono, hairline grid, monochrome (Bloomberg / Linear)</span></div>
+  <div class="frame"><div class="mk v5">__BODY__</div></div>
+
+</div>
+
+<script>
+// inject identical mockup markup into every variant frame (keeps it DRY)
+var BODY = `
+  <div class="nav">
+    <div class="brand"><b>The Tuna Tracker</b><span>San Diego</span></div>
+    <div class="nlinks"><a class="on">Today</a><a>Forecast</a><a>Charts</a><a>Boats</a><a>Analytics</a><a>Trip Planner</a></div>
+    <a class="signin">Sign In</a>
+  </div>
+  <div class="hero">
+    <span class="badge">★ San Diego's #1 Sportfishing Analytics</span>
+    <h1>Stop guessing.<br>Start catching.</h1>
+    <p>See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.</p>
+    <div class="trust">Trusted data from <b>38,700+</b> trips since 2015</div>
+    <div class="stats">
+      <div class="stat"><div class="v hot num">8</div><div class="k">Tuna today</div></div>
+      <div class="stat"><div class="v num">1</div><div class="k">Boats out</div></div>
+      <div class="stat"><div class="v num">5</div><div class="k">Anglers</div></div>
+      <div class="stat"><div class="v num">4</div><div class="k">Landings</div></div>
+      <div class="statmeta"><span class="dot"></span>Updated 3:48 PM PDT</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="sec">
+      <div class="sec-h">
+        <div><span class="eyebrow"><span class="dot"></span>Today on the water</span><h2>Today's Report</h2><div class="sub">Tue, June 5, 2026 · updated 3:48 PM PDT</div></div>
+        <a class="arrow">Full report →</a>
+      </div>
+      <div class="card feat"><div class="topbar"></div>
+        <div class="status"><span class="pulse"></span><span class="lbl"><b>Hot day.</b> <span>Running 622% above the 30-day average.</span></span><span class="r">1 boat in · 1.60 avg</span></div>
+        <table><thead><tr><th>Boat</th><th>Trip</th><th>Bluefin</th><th>TPA/Day</th><th>Rating</th></tr></thead>
+        <tbody><tr><td class="tb"><div class="nm">El Gato Dos</div><div class="s">Seaforth</div></td><td>Full Day</td><td>0</td><td>1.60 <span class="chip chip-top">★ TOP</span></td><td><span class="chip chip-good">Above avg</span></td></tr></tbody></table>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-h">
+        <div><span class="eyebrow cool">Season leaderboard</span><h2 class="sm">Top Boats</h2><div class="sub">TPA/Day · 2026 · min 5 trips</div></div>
+        <a class="arrow">Full leaderboard →</a>
+      </div>
+      <div class="card">
+        <div class="lb top"><div class="rk">1</div><div class="bt"><div class="nm">Pacific Queen</div><div class="s">Fisherman's · 12 trips</div></div><svg class="spark" viewBox="0 0 70 20"><polyline points="0,15 12,13 24,14 36,8 48,10 60,4 70,3" fill="none" stroke="var(--warm)" stroke-width="1.5"/></svg><div class="tpa"><div class="v">2.01</div><div class="u">TPA/Day</div></div></div>
+        <div class="lb"><div class="rk">2</div><div class="bt"><div class="nm">New Lo-An</div><div class="s">Point Loma · 8 trips</div></div><svg class="spark" viewBox="0 0 70 20"><polyline points="0,12 12,14 24,9 36,11 48,7 60,8 70,5" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg><div class="tpa"><div class="v">1.99</div><div class="u">TPA/Day</div></div></div>
+        <div class="lb"><div class="rk">3</div><div class="bt"><div class="nm">Pacific Voyager</div><div class="s">Seaforth · 29 trips</div></div><svg class="spark" viewBox="0 0 70 20"><polyline points="0,10 12,11 24,9 36,10 48,9 60,8 70,8" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg><div class="tpa"><div class="v">1.91</div><div class="u">TPA/Day</div></div></div>
+      </div>
+    </div>
+  </div>`;
+document.querySelectorAll('.mk').forEach(function(el){el.innerHTML=BODY});
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — 5 Divergent Homepage UX Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700;800;900&family=Archivo:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#171f29;font-family:'Inter',sans-serif;color:#cbd6e2;-webkit-font-smoothing:antialiased}
+  .page{max-width:1180px;margin:0 auto;padding:26px 22px 90px}
+  .page-h h1{color:#fff;font-size:23px;font-weight:800;letter-spacing:-.02em}
+  .page-h p{color:#89a0b4;font-size:14px;margin-top:8px;max-width:820px;line-height:1.55}
+  .lab{display:flex;align-items:baseline;gap:12px;margin:34px 0 12px}
+  .lab .n{font:700 12px/1 'DM Mono',monospace;letter-spacing:.1em;color:#37BDF7;background:#0c1a28;border:1px solid #24384c;border-radius:7px;padding:7px 10px}
+  .lab .t{color:#fff;font-size:17px;font-weight:700}
+  .lab .d{color:#89a0b4;font-size:13px}
+  .frame{border-radius:16px;overflow:hidden;border:1px solid #2a3947;box-shadow:0 20px 50px rgba(0,0,0,.4);height:540px;position:relative}
+  .num{font-family:'DM Mono',monospace;font-feature-settings:"tnum"}
+  .mini-nav{display:flex;align-items:center;gap:20px;height:50px;padding:0 22px}
+  .mini-nav .bd b{font-weight:800;font-size:14px}
+  .mini-nav .bd span{display:block;font:500 8.5px/1 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+  .mini-nav .lk{display:flex;gap:15px;font-size:12px;font-weight:500;opacity:.7}
+  .mini-nav .si{margin-left:auto;font-size:11.5px;font-weight:600;border:1px solid;border-radius:7px;padding:6px 11px;opacity:.9}
+
+  /* =================== A · MAP COCKPIT =================== */
+  .cA{position:absolute;inset:0;background:#08131f;color:#dceaf6;font-family:'Inter'}
+  .cA .map{position:absolute;inset:0;background:radial-gradient(60% 70% at 62% 42%,rgba(245,158,11,.5),transparent 55%),radial-gradient(40% 50% at 40% 70%,rgba(55,189,247,.28),transparent 60%),linear-gradient(160deg,#0b2036,#071420)}
+  .cA svg.field{position:absolute;inset:0;width:100%;height:100%;opacity:.9}
+  .cA .top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:18px;height:52px;padding:0 20px;background:linear-gradient(180deg,rgba(4,12,20,.85),transparent);z-index:3;color:#eaf3fb}
+  .cA .chips{display:flex;gap:8px;margin-left:8px}
+  .cA .chip{font:600 11px/1 'DM Mono',monospace;letter-spacing:.04em;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:#cfe0ee;background:rgba(8,18,30,.5)}
+  .cA .chip.on{background:rgba(245,158,11,.9);color:#1a1205;border-color:transparent}
+  .cA .si{margin-left:auto;font-size:11.5px;font-weight:600;border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:7px 12px;color:#eaf3fb}
+  .cA .panel{position:absolute;top:74px;left:20px;width:290px;background:rgba(7,17,28,.72);backdrop-filter:blur(14px);border:1px solid rgba(120,160,200,.22);border-radius:14px;padding:16px;z-index:3}
+  .cA .panel .eb{font:600 10px/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#F6B045;display:flex;align-items:center;gap:7px}
+  .cA .panel .eb i{width:8px;height:8px;border-radius:50%;background:#F6B045;box-shadow:0 0 0 4px rgba(245,158,11,.18)}
+  .cA .panel h3{color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em;margin:9px 0 3px}
+  .cA .panel .meta{color:#9db4c8;font-size:12px}
+  .cA .panel .topboat{margin-top:14px;padding-top:13px;border-top:1px solid rgba(120,160,200,.18);display:flex;align-items:center;gap:10px}
+  .cA .panel .topboat .nm{font-weight:600;font-size:13.5px;color:#eaf3fb}
+  .cA .panel .topboat .s{font:500 10.5px/1 'DM Mono',monospace;color:#9db4c8;margin-top:2px}
+  .cA .panel .topboat .v{margin-left:auto;font:500 19px/1 'DM Mono',monospace;color:#F6B045}
+  .cA .rows{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+  .cA .rows .r{display:flex;font:500 12px/1 'DM Mono',monospace;color:#bcd0e2}
+  .cA .rows .r b{margin-left:auto;color:#eaf3fb;font-weight:500}
+  .cA .legend{position:absolute;bottom:58px;left:20px;display:flex;align-items:center;gap:9px;background:rgba(7,17,28,.7);border:1px solid rgba(120,160,200,.2);border-radius:10px;padding:8px 12px;z-index:3;font:500 10px/1 'DM Mono',monospace;color:#9db4c8}
+  .cA .ramp{width:120px;height:8px;border-radius:5px;background:linear-gradient(90deg,#2b6cff,#37BDF7,#34D399,#F6B045,#FB7185)}
+  .cA .bottom{position:absolute;bottom:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:18px;padding:0 20px;background:linear-gradient(0deg,rgba(4,12,20,.9),transparent);z-index:3;font:500 12px/1 'DM Mono',monospace;color:#bcd0e2}
+  .cA .bottom .slider{margin-left:auto;display:flex;align-items:center;gap:8px;color:#9db4c8}
+  .cA .bottom .track{width:180px;height:4px;border-radius:3px;background:rgba(255,255,255,.16);position:relative}
+  .cA .bottom .track::after{content:"";position:absolute;left:18%;top:-3px;width:10px;height:10px;border-radius:50%;background:#37BDF7}
+  .cA .vessel{fill:#7FE0C0}
+
+  /* =================== B · MAGAZINE =================== */
+  .cB{position:absolute;inset:0;background:#fbfaf7;color:#1a1a18;overflow:hidden;font-family:'Inter'}
+  .cB .mnav{color:#1a1a18;border-bottom:1px solid #ece8e0}
+  .cB .mnav .bd b{font-family:'Playfair Display';font-weight:800;font-size:17px}
+  .cB .mnav .si{border-color:#d8d2c6;color:#1a1a18}
+  .cB .hero{position:relative;height:300px;display:flex;align-items:flex-end;padding:30px;background:linear-gradient(120deg,rgba(20,16,10,.7),rgba(20,16,10,.15)),radial-gradient(80% 100% at 80% 0,rgba(245,158,11,.85),transparent 60%),linear-gradient(180deg,#5a3d1f,#2a1c10)}
+  .cB .hero .kick{font:600 11px/1 'DM Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#f4d9a8}
+  .cB .hero h1{font-family:'Playfair Display';font-weight:900;font-size:54px;line-height:.96;color:#fff;letter-spacing:-.01em;margin:12px 0 8px;max-width:600px}
+  .cB .hero .by{color:#e7dcc9;font-size:13.5px}
+  .cB .hero .by b{font-family:'DM Mono',monospace;font-weight:500;color:#fff}
+  .cB .strip{display:grid;grid-template-columns:1.4fr 1fr;gap:0}
+  .cB .feature{padding:26px 30px;border-right:1px solid #ece8e0}
+  .cB .feature .lbl{font:600 10.5px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#b4762a}
+  .cB .feature h2{font-family:'Playfair Display';font-weight:800;font-size:27px;margin:10px 0;letter-spacing:-.01em}
+  .cB .feature p{color:#5b574e;font-size:13.5px;line-height:1.6;max-width:380px}
+  .cB .feature .big{margin-top:16px;display:flex;align-items:baseline;gap:10px}
+  .cB .feature .big .v{font:500 40px/1 'DM Mono',monospace;letter-spacing:-.02em;color:#1a1a18}
+  .cB .feature .big .u{font:600 11px/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9482}
+  .cB .lead{padding:26px 30px}
+  .cB .lead .lbl{font:600 10.5px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9482;margin-bottom:6px}
+  .cB .lead .row{display:flex;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid #ece8e0}
+  .cB .lead .row .rk{font-family:'Playfair Display';font-weight:800;font-size:22px;color:#c9a05a;width:24px}
+  .cB .lead .row .nm{font-weight:600;font-size:14px}
+  .cB .lead .row .s{font:500 10.5px/1 'DM Mono',monospace;color:#9a9482;margin-top:2px}
+  .cB .lead .row .v{margin-left:auto;font:500 17px/1 'DM Mono',monospace}
+
+  /* =================== C · ACTIVITY FEED =================== */
+  .cC{position:absolute;inset:0;background:#f3f5f8;color:#15202b;overflow-y:auto;font-family:'Inter'}
+  .cC .cnav{position:sticky;top:0;background:rgba(243,245,248,.9);backdrop-filter:blur(10px);border-bottom:1px solid #e3e8ee;color:#15202b;z-index:2}
+  .cC .cnav .si{border-color:#dbe1e8;color:#15202b;background:#fff}
+  .cC .feed{max-width:540px;margin:0 auto;padding:18px 16px}
+  .cC .post{background:#fff;border:1px solid #e7ebf0;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(20,32,43,.04)}
+  .cC .ph{display:flex;align-items:center;gap:11px}
+  .cC .av{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#0C8FD6,#0b5a8a);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+  .cC .av.hot{background:linear-gradient(135deg,#F2A93C,#D97A0B)}
+  .cC .ph .nm{font-weight:700;font-size:14.5px}
+  .cC .ph .meta{font:500 11.5px/1 'DM Mono',monospace;color:#7b8794;margin-top:3px}
+  .cC .ph .badge{margin-left:auto;font:600 10px/1 'DM Mono',monospace;letter-spacing:.06em;padding:5px 9px;border-radius:999px;background:#FBF0DE;color:#b4762a}
+  .cC .ph .badge.good{background:#E4F5EC;color:#0E9D63}
+  .cC .line{margin:13px 0 12px;font-size:14.5px;line-height:1.45}
+  .cC .line b{font-weight:700}
+  .cC .stats{display:flex;gap:9px}
+  .cC .stat{flex:1;background:#f6f8fa;border:1px solid #eceff3;border-radius:10px;padding:9px 11px}
+  .cC .stat .v{font:500 17px/1 'DM Mono',monospace;letter-spacing:-.01em}
+  .cC .stat .v.hot{color:#D97A0B}
+  .cC .stat .k{font:600 8.5px/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9aa6b2;margin-top:5px}
+  .cC .act{display:flex;gap:18px;margin-top:13px;padding-top:12px;border-top:1px solid #eceff3;font-size:12.5px;font-weight:600;color:#7b8794}
+  .cC .act .view{margin-left:auto;color:#0C8FD6}
+
+  /* =================== D · BENTO DASHBOARD =================== */
+  .cD{position:absolute;inset:0;background:#0c1119;color:#e6edf4;overflow:hidden;font-family:'Inter'}
+  .cD .dnav{color:#e6edf4;border-bottom:1px solid #1b2533}
+  .cD .dnav .si{border-color:#27323f;color:#e6edf4}
+  .cD .grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:112px;gap:12px;padding:16px 18px}
+  .cD .t{background:#131c28;border:1px solid #1f2a38;border-radius:14px;padding:15px;position:relative;overflow:hidden}
+  .cD .t .eb{font:600 9px/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6b8298}
+  .cD .big{grid-column:span 2;grid-row:span 2;background:radial-gradient(120% 100% at 100% 0,rgba(245,158,11,.28),transparent 60%),#15202e}
+  .cD .big .eb{color:#F6B045}
+  .cD .big .pct{font:500 46px/1 'DM Mono',monospace;letter-spacing:-.03em;margin:8px 0 2px;color:#fff}
+  .cD .big .sub{color:#a9bccd;font-size:13px}
+  .cD .big .tb{position:absolute;left:15px;bottom:15px;right:15px;display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #243140}
+  .cD .big .tb .nm{font-weight:600;font-size:14px}
+  .cD .big .tb .s{font:500 10.5px/1 'DM Mono',monospace;color:#7d93a6;margin-top:2px}
+  .cD .big .tb .v{margin-left:auto;font:500 20px/1 'DM Mono',monospace;color:#F6B045}
+  .cD .lead{grid-row:span 2}
+  .cD .lead .r{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #1c2632;font-size:12.5px}
+  .cD .lead .r:last-child{border:0}
+  .cD .lead .r .rk{font:500 11px/1 'DM Mono',monospace;color:#6b8298;width:14px}
+  .cD .lead .r .nm{font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cD .lead .r .v{margin-left:auto;font:500 13px/1 'DM Mono',monospace;color:#37BDF7}
+  .cD .gauge{display:flex;flex-direction:column;justify-content:space-between}
+  .cD .gauge .pct{font:500 32px/1 'DM Mono',monospace;color:#34D399}
+  .cD .map{grid-column:span 2;background:radial-gradient(50% 70% at 60% 45%,rgba(245,158,11,.4),transparent 55%),radial-gradient(40% 50% at 35% 60%,rgba(55,189,247,.3),transparent),linear-gradient(160deg,#0b2036,#08131f);position:relative}
+  .cD .map .tag{position:absolute;left:15px;bottom:13px;font:600 9px/1 'DM Mono',monospace;letter-spacing:.1em;color:#cfe0ee;background:rgba(8,18,30,.6);padding:5px 8px;border-radius:6px}
+  .cD .moon{text-align:left}
+  .cD .moon .ph{font-size:26px;margin-top:6px}
+  .cD .v-big{font:500 30px/1 'DM Mono',monospace;margin-top:8px}
+  .cD .trend{grid-column:span 2}
+  .cD .trend .v-big{font-size:22px}
+
+  /* =================== E · BITE-SCORE FOCUS =================== */
+  .cE{position:absolute;inset:0;background:linear-gradient(180deg,#0e1c2c,#0a1420);color:#e9f1f8;font-family:'Inter';overflow:hidden}
+  .cE .enav{color:#e9f1f8}
+  .cE .enav .si{border-color:rgba(255,255,255,.2);color:#e9f1f8}
+  .cE .wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+  .cE .kick{font:600 11px/1 'DM Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#F6B045;display:flex;align-items:center;gap:8px}
+  .cE .kick i{width:8px;height:8px;border-radius:50%;background:#F6B045;box-shadow:0 0 0 5px rgba(245,158,11,.16)}
+  .cE .gaugewrap{position:relative;width:200px;height:200px;margin:18px 0 6px}
+  .cE svg.g{transform:rotate(-90deg)}
+  .cE .gnum{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .cE .gnum .v{font:500 56px/1 'DM Mono',monospace;letter-spacing:-.03em;color:#fff}
+  .cE .gnum .u{font:600 10px/1 'DM Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#90a6bb;margin-top:4px}
+  .cE h1{font-size:34px;font-weight:900;letter-spacing:-.03em;margin:6px 0 6px}
+  .cE h1 .hot{color:#F6B045}
+  .cE .answer{color:#aebfce;font-size:15px;max-width:420px;line-height:1.5}
+  .cE .answer b{color:#e9f1f8;font-weight:600}
+  .cE .pills{display:flex;gap:10px;margin:22px 0 20px}
+  .cE .pill{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:11px 16px}
+  .cE .pill .v{font:500 18px/1 'DM Mono',monospace}
+  .cE .pill .k{font:600 8.5px/1 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#90a6bb;margin-top:5px}
+  .cE .cta{background:#37BDF7;color:#04121d;font-weight:700;font-size:14px;padding:13px 26px;border-radius:11px}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-h">
+    <h1>The Tuna Tracker — 5 very different homepage UX directions</h1>
+    <p>Not recolors — five different <i>layouts &amp; interaction models</i>. Same data, radically different ways to present it. These are about structure; colors/fonts are easy to swap once you pick a direction.</p>
+  </div>
+
+  <div class="lab"><span class="n">01</span><span class="t">Map Cockpit</span><span class="d">The homepage IS the ocean map. Conditions everywhere, data panels floating on top (Windy / command-center)</span></div>
+  <div class="frame"><div class="cA">
+    <svg class="field" viewBox="0 0 900 540" preserveAspectRatio="none">
+      <path d="M0,120 C200,90 380,150 560,120 C720,95 820,140 900,120" fill="none" stroke="rgba(120,210,245,.45)" stroke-width="1.3"/>
+      <path d="M0,210 C220,180 400,250 600,215 C760,188 840,230 900,215" fill="none" stroke="rgba(120,210,245,.4)" stroke-width="1.3"/>
+      <path d="M0,330 C200,300 420,360 620,325 C780,300 850,335 900,325" fill="none" stroke="rgba(245,158,11,.55)" stroke-dasharray="6 6" stroke-width="1.5"/>
+      <path d="M0,420 C240,395 430,450 640,420 C800,396 860,425 900,420" fill="none" stroke="rgba(245,158,11,.5)" stroke-dasharray="6 6" stroke-width="1.4"/>
+      <circle class="vessel" cx="540" cy="250" r="3"/><circle class="vessel" cx="600" cy="300" r="3"/><circle class="vessel" cx="500" cy="330" r="3"/><circle class="vessel" cx="640" cy="270" r="3"/><circle class="vessel" cx="700" cy="320" r="3"/>
+    </svg>
+    <div class="top"><div style="font-weight:800;font-size:14px">The Tuna Tracker</div>
+      <div class="chips"><span class="chip on">SST + Fronts</span><span class="chip">Wind</span><span class="chip">Currents</span><span class="chip">Catches</span></div>
+      <span class="si">Sign In</span></div>
+    <div class="panel">
+      <div class="eb"><i></i>Today on the water</div>
+      <h3>Hot day</h3>
+      <div class="meta">Running 622% above the 30-day average · 1 boat in</div>
+      <div class="topboat"><div><div class="nm">El Gato Dos</div><div class="s">Seaforth · Full Day</div></div><div class="v">1.60</div></div>
+      <div class="rows">
+        <div class="r">Pacific Queen <b>2.01</b></div>
+        <div class="r">New Lo-An <b>1.99</b></div>
+        <div class="r">Pacific Voyager <b>1.91</b></div>
+      </div>
+    </div>
+    <div class="legend">SST °F<span class="ramp"></span>58 — 72</div>
+    <div class="bottom">8 tuna today · 1 boat out · 4 landings
+      <div class="slider">14-day<span class="track"></span>+14d</div></div>
+  </div></div>
+
+  <div class="lab"><span class="n">02</span><span class="t">Magazine</span><span class="d">Editorial publication — full-bleed imagery, serif headlines, "today's story" featured (Apple / Surfline editorial)</span></div>
+  <div class="frame"><div class="cB">
+    <div class="mini-nav mnav"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div><div class="lk"><span>Today</span><span>Forecast</span><span>Charts</span><span>Boats</span></div><span class="si">Sign In</span></div>
+    <div class="hero">
+      <div><div class="kick">Today · San Diego · June 5</div>
+        <h1>The bite is on.</h1>
+        <div class="by">Fleet running <b>+622%</b> above the 30-day average</div></div>
+    </div>
+    <div class="strip">
+      <div class="feature">
+        <div class="lbl">Boat of the day</div>
+        <h2>El Gato Dos</h2>
+        <p>Seaforth's full-day boat came back loaded — the standout of a red-hot Tuesday on the water, well above the fleet pace.</p>
+        <div class="big"><span class="v">1.60</span><span class="u">TPA / Day · ★ Top</span></div>
+      </div>
+      <div class="lead">
+        <div class="lbl">Season leaders</div>
+        <div class="row"><span class="rk">1</span><div><div class="nm">Pacific Queen</div><div class="s">Fisherman's · 12 trips</div></div><span class="v">2.01</span></div>
+        <div class="row"><span class="rk">2</span><div><div class="nm">New Lo-An</div><div class="s">Point Loma · 8 trips</div></div><span class="v">1.99</span></div>
+        <div class="row"><span class="rk">3</span><div><div class="nm">Pacific Voyager</div><div class="s">Seaforth · 29 trips</div></div><span class="v">1.91</span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="lab"><span class="n">03</span><span class="t">Activity Feed</span><span class="d">Scrollable feed of boat "posts" — each day's catch as a card you scan and tap (Strava / social timeline)</span></div>
+  <div class="frame"><div class="cC">
+    <div class="mini-nav cnav"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div><div class="lk"><span>Feed</span><span>Boats</span><span>Charts</span></div><span class="si">Sign In</span></div>
+    <div class="feed">
+      <div class="post">
+        <div class="ph"><div class="av hot">EG</div><div><div class="nm">El Gato Dos</div><div class="meta">Seaforth · Full Day · 2h ago</div></div><span class="badge good">Above avg</span></div>
+        <div class="line">Came back hot — <b>1.60 tuna per angler/day</b>, today's top boat on a +622% day.</div>
+        <div class="stats"><div class="stat"><div class="v hot">1.60</div><div class="k">TPA/Day</div></div><div class="stat"><div class="v">8</div><div class="k">Tuna</div></div><div class="stat"><div class="v">★</div><div class="k">Top boat</div></div></div>
+        <div class="act"><span>♡ 24</span><span>💬 6</span><span class="view">View trip →</span></div>
+      </div>
+      <div class="post">
+        <div class="ph"><div class="av">PQ</div><div><div class="nm">Pacific Queen</div><div class="meta">Fisherman's · season-best pace · 1d ago</div></div><span class="badge">#1 season</span></div>
+        <div class="line">Leading the 2026 board at <b>2.01 TPA/Day</b> across 12 trips.</div>
+        <div class="stats"><div class="stat"><div class="v">2.01</div><div class="k">TPA/Day</div></div><div class="stat"><div class="v">12</div><div class="k">Trips</div></div><div class="stat"><div class="v">#1</div><div class="k">Rank</div></div></div>
+        <div class="act"><span>♡ 41</span><span>💬 9</span><span class="view">View boat →</span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="lab"><span class="n">04</span><span class="t">Bento Dashboard</span><span class="d">Everything glanceable in one screen — modular tiles of different sizes (Apple / Vercel bento)</span></div>
+  <div class="frame"><div class="cD">
+    <div class="mini-nav dnav"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div><div class="lk"><span>Today</span><span>Charts</span><span>Boats</span></div><span class="si">Sign In</span></div>
+    <div class="grid">
+      <div class="t big"><div class="eb">Today · Hot</div><div class="pct">+622%</div><div class="sub">above the 30-day average</div>
+        <div class="tb"><div><div class="nm">El Gato Dos</div><div class="s">Seaforth · today's top</div></div><div class="v">1.60</div></div></div>
+      <div class="t lead"><div class="eb">Season leaders</div>
+        <div class="r"><span class="rk">1</span><span class="nm">Pacific Queen</span><span class="v">2.01</span></div>
+        <div class="r"><span class="rk">2</span><span class="nm">New Lo-An</span><span class="v">1.99</span></div>
+        <div class="r"><span class="rk">3</span><span class="nm">Pacific Voyager</span><span class="v">1.91</span></div>
+        <div class="r"><span class="rk">4</span><span class="nm">Polaris Supreme</span><span class="v">1.86</span></div>
+        <div class="r"><span class="rk">5</span><span class="nm">Tomahawk</span><span class="v">1.27</span></div></div>
+      <div class="t gauge"><div class="eb">Bite forecast</div><div class="pct">78</div><div class="eb" style="color:#34D399">Strong · dawn window</div></div>
+      <div class="t map"><div class="eb" style="color:#cfe0ee">SST &amp; fronts</div><div class="tag">9-Mile break · 66°F</div></div>
+      <div class="t trend"><div class="eb">30-day fleet trend</div>
+        <svg viewBox="0 0 200 40" style="width:100%;height:40px;margin-top:8px"><polyline points="0,32 25,28 50,30 75,20 100,24 125,12 150,16 175,8 200,6" fill="none" stroke="#37BDF7" stroke-width="2"/></svg></div>
+      <div class="t moon"><div class="eb">Moon</div><div class="ph">🌔</div><div class="eb" style="margin-top:6px;color:#a9bccd">Waxing · 68%</div></div>
+      <div class="t"><div class="eb">Boats out</div><div class="v-big">1</div></div>
+    </div>
+  </div></div>
+
+  <div class="lab"><span class="n">05</span><span class="t">Bite-Score Focus</span><span class="d">One big answer — a score gauge + "go / no-go" verdict, everything else secondary (weather-app today screen)</span></div>
+  <div class="frame"><div class="cE">
+    <div class="mini-nav enav" style="position:absolute;top:0;left:0;right:0;z-index:2"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div><div class="lk"><span>Today</span><span>Forecast</span><span>Charts</span></div><span class="si">Sign In</span></div>
+    <div class="wrap">
+      <div class="kick"><i></i>Today · San Diego</div>
+      <div class="gaugewrap">
+        <svg class="g" width="200" height="200" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="14"/>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="#F6B045" stroke-width="14" stroke-linecap="round" stroke-dasharray="540" stroke-dashoffset="119"/>
+        </svg>
+        <div class="gnum"><div class="v">78</div><div class="u">Bite Score</div></div>
+      </div>
+      <h1>It's a <span class="hot">hot</span> one.</h1>
+      <div class="answer">The fleet's running <b>622% above average</b>. Best boat today: <b>El Gato Dos</b> out of Seaforth at <b>1.60</b> per angler.</div>
+      <div class="pills">
+        <div class="pill"><div class="v">8</div><div class="k">Tuna today</div></div>
+        <div class="pill"><div class="v">05:34</div><div class="k">Best window</div></div>
+        <div class="pill"><div class="v">🌔 68%</div><div class="k">Moon</div></div>
+      </div>
+      <span class="cta">See full report →</span>
+    </div>
+  </div></div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — Ocean vs Coastal (full homepage)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#171f29;font-family:'Inter',sans-serif;color:#cbd6e2;-webkit-font-smoothing:antialiased}
+  .page{max-width:1080px;margin:0 auto;padding:26px 22px 90px}
+  .page-h h1{color:#fff;font-size:23px;font-weight:800;letter-spacing:-.02em}
+  .page-h p{color:#89a0b4;font-size:14px;margin-top:8px;max-width:800px;line-height:1.55}
+  .lab{display:flex;align-items:baseline;gap:12px;margin:36px 0 12px}
+  .lab .n{font:700 12px/1 'DM Mono',monospace;letter-spacing:.08em;color:#37BDF7;background:#0c1a28;border:1px solid #24384c;border-radius:7px;padding:7px 11px}
+  .lab .t{color:#fff;font-size:17px;font-weight:700}
+  .lab .d{color:#89a0b4;font-size:13px}
+  .frame{border-radius:16px;overflow:hidden;border:1px solid #2a3947;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+
+  .mag{background:var(--bg);color:var(--ink)}
+  .mag .nav{display:flex;align-items:center;gap:22px;height:54px;padding:0 32px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--navbg);backdrop-filter:blur(10px);z-index:5}
+  .mag .nav .bd b{font-family:'Fraunces';font-weight:600;font-size:18px;color:var(--ink);letter-spacing:-.01em}
+  .mag .nav .bd span{display:block;font:500 8.5px/1 'DM Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .mag .nav .lk{display:flex;gap:18px;font-size:12.5px;font-weight:500;color:var(--muted)}
+  .mag .nav .lk a.on{color:var(--ink)}
+  .mag .nav .si{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 14px}
+
+  .mag .hero{position:relative;height:320px;display:flex;align-items:flex-end;padding:36px 32px;background:var(--herobg);color:var(--heroink)}
+  .mag .hero .kick{font:600 11px/1 'DM Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--herokick)}
+  .mag .hero h1{font-family:'Fraunces';font-weight:900;font-size:60px;line-height:.94;letter-spacing:-.015em;color:#fff;margin:14px 0 10px;max-width:640px}
+  .mag .hero .by{color:var(--herosub);font-size:14px}
+  .mag .hero .by b{font-family:'DM Mono',monospace;font-weight:500;color:#fff}
+
+  .mag .sec{padding:30px 32px}
+  .mag .seclbl{font:600 10.5px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+  .mag .strip{display:grid;grid-template-columns:1.45fr 1fr;gap:0;border-top:1px solid var(--line)}
+  .mag .feature{padding:28px 32px 28px 0;border-right:1px solid var(--line)}
+  .mag .feature h2{font-family:'Fraunces';font-weight:600;font-size:32px;letter-spacing:-.01em;margin:9px 0;color:var(--ink)}
+  .mag .feature p{color:var(--muted);font-size:13.5px;line-height:1.65;max-width:400px}
+  .mag .feature .big{margin-top:18px;display:flex;align-items:baseline;gap:11px}
+  .mag .feature .big .v{font:500 44px/1 'DM Mono',monospace;letter-spacing:-.02em;color:var(--ink)}
+  .mag .feature .big .u{font:600 11px/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  .mag .lead{padding:28px 0 28px 32px}
+  .mag .lead .ll{font:600 10.5px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+  .mag .row{display:flex;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .mag .row:last-child{border-bottom:0}
+  .mag .row .rk{font-family:'Fraunces';font-weight:600;font-size:24px;color:var(--accent);width:26px}
+  .mag .row .nm{font-weight:600;font-size:14px;color:var(--ink)}
+  .mag .row .s{font:500 10.5px/1 'DM Mono',monospace;color:var(--faint);margin-top:2px}
+  .mag .row .v{margin-left:auto;font:500 17px/1 'DM Mono',monospace;color:var(--ink)}
+
+  /* conditions band */
+  .mag .band{background:var(--band);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 32px}
+  .mag .band .seclbl{color:var(--faint)}
+  .mag .conds{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:10px}
+  .mag .cond{padding-right:24px;margin-right:24px;border-right:1px solid var(--line)}
+  .mag .cond:last-child{border-right:0}
+  .mag .cond .v{font:500 30px/1 'DM Mono',monospace;letter-spacing:-.02em;color:var(--ink)}
+  .mag .cond .v.hot{color:var(--accent)}
+  .mag .cond .k{font-family:'Fraunces';font-weight:600;font-size:14px;color:var(--ink);margin-top:8px}
+  .mag .cond .sub{font:500 11px/1 'DM Mono',monospace;color:var(--faint);margin-top:3px}
+
+  /* explore band */
+  .mag .explore{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:30px 32px}
+  .mag .ec{border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--surface);transition:.15s}
+  .mag .ec h3{font-family:'Fraunces';font-weight:600;font-size:21px;color:var(--ink);display:flex;justify-content:space-between;align-items:center}
+  .mag .ec p{color:var(--muted);font-size:13px;margin-top:7px;line-height:1.55}
+  .mag .ec .ar{color:var(--accent);font-family:'Inter';font-weight:700}
+
+  .mag footer{border-top:1px solid var(--line);padding:24px 32px;display:flex;align-items:center;gap:10px;color:var(--faint);font-size:12px}
+  .mag footer b{font-family:'Fraunces';font-weight:600;font-size:15px;color:var(--ink)}
+
+  /* ===== B · OCEAN (cool white + teal) ===== */
+  .B{--bg:#FCFDFE;--surface:#fff;--ink:#10222F;--muted:#52677A;--faint:#93A4B3;--line:#E6EDF2;--accent:#0E7C8B;--band:#F1F7F8;--navbg:rgba(252,253,254,.88);
+     --herobg:linear-gradient(120deg,rgba(6,22,32,.78),rgba(6,22,32,.18)),radial-gradient(90% 120% at 86% 0,rgba(13,148,136,.72),transparent 60%),linear-gradient(180deg,#0c3a45,#06202a);
+     --heroink:#EAF4F6;--herosub:#C4D8DE;--herokick:#7FD9D0;}
+  /* ===== E · COASTAL (oat + forest teal + coral) ===== */
+  .E{--bg:#F5F0E4;--surface:#FFFDF8;--ink:#1B3A33;--muted:#5C7068;--faint:#9C9279;--line:#E6DDC9;--accent:#CF6A3C;--band:#EEE6D4;--navbg:rgba(245,240,228,.9);
+     --herobg:linear-gradient(120deg,rgba(12,30,26,.74),rgba(12,30,26,.14)),radial-gradient(92% 120% at 86% 0,rgba(207,106,60,.72),transparent 60%),linear-gradient(180deg,#16443b,#0e2c25);
+     --heroink:#F1ECDD;--herosub:#CFD9CE;--herokick:#F2C7A6;}
+
+  @media(max-width:640px){.mag .nav .lk{display:none}.mag .strip,.mag .conds,.mag .explore{grid-template-columns:1fr}.mag .feature{border-right:0;border-bottom:1px solid var(--line);padding-right:0}.mag .lead{padding-left:0}.mag .cond{border-right:0}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-h"><h1>Editorial homepage — Ocean vs Coastal, full page</h1>
+    <p>Both use Fraunces. The only real difference is the palette: <b style="color:#bcd">B is cool &amp; crisp</b> (white + deep teal), <b style="color:#e6c">E is warm &amp; friendly</b> (oat + forest-teal + coral). Scroll the whole page of each to feel how the palette holds up.</p></div>
+
+  <div class="lab"><span class="n">B</span><span class="t">Ocean Editorial</span><span class="d">Cool white · deep teal — crisp, modern, premium-clean</span></div>
+  <div class="frame"><div class="mag B"></div></div>
+
+  <div class="lab"><span class="n">E</span><span class="t">Coastal Warm</span><span class="d">Oat &amp; forest teal · coral — warm, friendly, lifestyle-brand</span></div>
+  <div class="frame"><div class="mag E"></div></div>
+</div>
+
+<script>
+var BODY = `
+  <div class="nav"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div>
+    <div class="lk"><a class="on">Today</a><a>Forecast</a><a>Charts</a><a>Boats</a><a>Analytics</a><a>Trip Planner</a></div>
+    <span class="si">Sign In</span></div>
+
+  <div class="hero"><div>
+    <div class="kick">Today · San Diego · June 5</div>
+    <h1>The bite is on.</h1>
+    <div class="by">The fleet is running <b>+622%</b> above the 30-day average</div>
+  </div></div>
+
+  <div class="strip">
+    <div class="feature">
+      <div class="seclbl">Boat of the day</div>
+      <h2>El Gato Dos</h2>
+      <p>Seaforth's full-day boat came back loaded — the standout of a red-hot Tuesday on the water, running well above the fleet pace.</p>
+      <div class="big"><span class="v">1.60</span><span class="u">Tuna / angler / day · ★ Top</span></div>
+    </div>
+    <div class="lead">
+      <div class="ll">Season leaders</div>
+      <div class="row"><span class="rk">1</span><div><div class="nm">Pacific Queen</div><div class="s">Fisherman's · 12 trips</div></div><span class="v">2.01</span></div>
+      <div class="row"><span class="rk">2</span><div><div class="nm">New Lo-An</div><div class="s">Point Loma · 8 trips</div></div><span class="v">1.99</span></div>
+      <div class="row"><span class="rk">3</span><div><div class="nm">Pacific Voyager</div><div class="s">Seaforth · 29 trips</div></div><span class="v">1.91</span></div>
+      <div class="row"><span class="rk">4</span><div><div class="nm">Polaris Supreme</div><div class="s">Seaforth · 26 trips</div></div><span class="v">1.86</span></div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="seclbl">On the water today</div>
+    <div class="conds">
+      <div class="cond"><div class="v hot">78</div><div class="k">Bite forecast</div><div class="sub">Strong · dawn window</div></div>
+      <div class="cond"><div class="v">66°F</div><div class="k">Best break</div><div class="sub">9-Mile · 2.1°/10km</div></div>
+      <div class="cond"><div class="v">8kt</div><div class="k">Wind</div><div class="sub">SW · light chop</div></div>
+      <div class="cond"><div class="v">68%</div><div class="k">Moon</div><div class="sub">Waxing gibbous</div></div>
+    </div>
+  </div>
+
+  <div class="explore">
+    <div class="ec"><h3>Analytics <span class="ar">→</span></h3><p>Boat leaderboards, head-to-head matchups, and 11 years of catch trends.</p></div>
+    <div class="ec"><h3>Trip Planner <span class="ar">→</span></h3><p>Compare upcoming trips and find the best boats with open spots.</p></div>
+  </div>
+
+  <footer><b>The Tuna Tracker</b><span>· San Diego sportfishing analytics · H&amp;M · Fisherman's · Seaforth · Point Loma</span></footer>`;
+document.querySelectorAll('.mag').forEach(function(el){el.innerHTML=BODY});
+</script>
+</body>
+</html>

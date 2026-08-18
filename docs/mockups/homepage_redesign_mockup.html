@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — Homepage Redesign Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A121C;            /* deep navy canvas */
+    --bg-2:#0D1826;
+    --surface:#101E30;       /* card */
+    --surface-2:#13243A;
+    --line:#1E3346;          /* hairline borders */
+    --line-soft:#172a40;
+    --ink:#EAF1F8;           /* primary text */
+    --muted:#94A8BE;         /* secondary */
+    --faint:#5E748C;         /* tertiary / labels */
+    --cyan:#37BDF7;          /* primary accent */
+    --teal:#2DD4BF;
+    --hot:#F59E0B;           /* hot / above avg warm */
+    --hot-2:#FB7185;
+    --good:#34D399;          /* positive */
+    --radius:14px;
+    --mono:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+
+  /* ── labels / numerals ── */
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .num{font-family:var(--mono);font-feature-settings:"tnum" 1;letter-spacing:-.01em}
+
+  /* ── nav ── */
+  nav{position:sticky;top:0;z-index:40;background:rgba(10,18,28,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft)}
+  .nav-in{display:flex;align-items:center;gap:28px;height:60px}
+  .brand{display:flex;flex-direction:column;line-height:1.05}
+  .brand b{font-weight:800;font-size:16px;letter-spacing:-.02em}
+  .brand span{font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .nav-links{display:flex;gap:22px;margin-left:8px}
+  .nav-links a{font-size:13.5px;font-weight:500;color:var(--muted);padding:6px 0;border-bottom:2px solid transparent;transition:.15s}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a.active{color:var(--ink);border-color:var(--cyan)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .btn-ghost{font-size:13px;font-weight:600;color:var(--muted);padding:8px 14px;border:1px solid var(--line);border-radius:9px;transition:.15s}
+  .btn-ghost:hover{color:var(--ink);border-color:var(--cyan)}
+
+  /* ── hero (kept dark, refined) ── */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line-soft)}
+  .hero-bg{position:absolute;inset:0;
+    background:
+      radial-gradient(120% 90% at 78% 12%, rgba(245,158,11,.42) 0%, rgba(245,158,11,0) 46%),
+      radial-gradient(90% 80% at 88% 0%, rgba(251,113,133,.30) 0%, rgba(251,113,133,0) 50%),
+      linear-gradient(180deg,#13243A 0%, #0B1624 60%, #0A121C 100%);
+  }
+  .hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,18,28,.85) 0%,rgba(10,18,28,.45) 55%,rgba(10,18,28,.1) 100%)}
+  .hero-in{position:relative;padding:64px 0 0}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid rgba(55,189,247,.35);border-radius:999px;background:rgba(55,189,247,.08);color:var(--cyan);font:600 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase}
+  h1{font-size:clamp(40px,6vw,68px);font-weight:900;letter-spacing:-.035em;line-height:.98;margin:22px 0 18px}
+  .hero p{max-width:440px;color:var(--muted);font-size:16px;line-height:1.55}
+  .trust{margin-top:20px;display:flex;align-items:center;gap:8px;color:var(--faint);font-size:13px}
+  .trust .num{color:var(--ink);font-weight:500}
+
+  /* stat strip */
+  .stats{position:relative;margin-top:40px;display:flex;align-items:stretch;border-top:1px solid var(--line-soft);background:rgba(8,15,24,.55)}
+  .stat{padding:18px 26px 18px 0;margin-right:26px;border-right:1px solid var(--line-soft)}
+  .stat:first-child{padding-left:0}
+  .stat .v{font:500 30px/1 var(--mono);letter-spacing:-.02em}
+  .stat .v.hot{color:var(--hot)}
+  .stat .k{margin-top:7px;font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .stat-meta{margin-left:auto;display:flex;align-items:center;gap:10px;padding:18px 0;color:var(--faint);font-size:12.5px}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px rgba(52,211,153,.18)}
+
+  /* ── sections ── */
+  section{padding:44px 0}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+  .sec-title{display:flex;flex-direction:column;gap:6px}
+  .sec-title h2{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .sec-title .sub{color:var(--faint);font-size:12.5px}
+  .link-arrow{font-size:13px;font-weight:600;color:var(--cyan);display:inline-flex;align-items:center;gap:6px;transition:.15s}
+  .link-arrow:hover{gap:9px}
+
+  /* primary CTAs */
+  .cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .cta{position:relative;border:1px solid var(--line);background:linear-gradient(160deg,var(--surface-2),var(--surface));border-radius:var(--radius);padding:24px;overflow:hidden;transition:.18s}
+  .cta:hover{border-color:rgba(55,189,247,.5);transform:translateY(-2px)}
+  .cta .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(55,189,247,.12);color:var(--cyan);font-size:17px;margin-bottom:14px}
+  .cta h3{font-size:17px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .cta p{margin-top:6px;color:var(--muted);font-size:13.5px}
+  .cta .arrow{position:absolute;top:24px;right:22px;color:var(--faint);transition:.18s}
+  .cta:hover .arrow{color:var(--cyan);transform:translateX(3px)}
+
+  /* card */
+  .card{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);overflow:hidden}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line-soft)}
+  .card-head .ttl{display:flex;flex-direction:column;gap:4px}
+  .card-head h3{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .card-head .meta{font:500 11px/1 var(--mono);letter-spacing:.04em;color:var(--faint)}
+
+  /* leaderboard rows */
+  .lb-row{display:grid;grid-template-columns:30px 1fr 86px 64px;align-items:center;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line-soft);transition:.12s}
+  .lb-row:last-child{border-bottom:0}
+  .lb-row:hover{background:var(--surface-2)}
+  .rank{font:500 13px/1 var(--mono);color:var(--faint);text-align:center}
+  .lb-row.top .rank{color:var(--hot)}
+  .boat .nm{font-size:14px;font-weight:600;letter-spacing:-.01em}
+  .boat .sub{margin-top:2px;font:500 11px/1 var(--mono);color:var(--faint)}
+  .spark{height:22px;width:86px}
+  .tpa{text-align:right}
+  .tpa .v{font:500 18px/1 var(--mono);letter-spacing:-.02em}
+  .tpa .u{font:500 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:4px}
+
+  /* today report */
+  .status{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--line-soft);background:linear-gradient(90deg,rgba(245,158,11,.10),rgba(245,158,11,0))}
+  .status .pulse{width:9px;height:9px;border-radius:50%;background:var(--hot);box-shadow:0 0 0 4px rgba(245,158,11,.16)}
+  .status .lbl{font-size:13.5px;font-weight:600}
+  .status .lbl-faint{color:var(--muted);font-weight:500}
+  .status .right{margin-left:auto;font:500 12px/1 var(--mono);color:var(--faint)}
+
+  table{width:100%;border-collapse:collapse}
+  thead th{font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-align:right;padding:12px 22px;border-bottom:1px solid var(--line-soft)}
+  thead th:first-child{text-align:left}
+  tbody td{padding:15px 22px;text-align:right;font-family:var(--mono);font-size:13.5px}
+  tbody td:first-child{text-align:left;font-family:var(--sans)}
+  .td-boat .nm{font-weight:600;font-size:14px}
+  .td-boat .sub{font:500 11px/1 var(--mono);color:var(--faint);margin-top:2px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;font:600 11px/1 var(--sans);letter-spacing:.01em}
+  .chip-top{background:rgba(245,158,11,.14);color:#F6C76B;margin-left:8px;font-family:var(--mono);font-size:10px;letter-spacing:.06em}
+  .chip-good{background:rgba(52,211,153,.14);color:#5FE0AE}
+  .chip-avg{background:rgba(148,168,190,.14);color:#B4C6DA}
+
+  .card-foot{padding:14px 22px;text-align:center;border-top:1px solid var(--line-soft)}
+
+  /* note banner */
+  .note{margin:0 auto 6px;max-width:1120px;padding:10px 24px;color:var(--faint);font:500 11px/1.5 var(--mono);letter-spacing:.03em}
+  footer{border-top:1px solid var(--line-soft);margin-top:30px;padding:30px 0;color:var(--faint);font-size:12.5px}
+  @media(max-width:720px){
+    .cta-grid{grid-template-columns:1fr}
+    .nav-links{display:none}
+    .stats{flex-wrap:wrap}
+    .lb-row{grid-template-columns:26px 1fr 60px}
+    .spark{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="note">MOCKUP · redesign concept for The Tuna Tracker homepage — dark, uniform, data-forward (Fishare / Surfline / Strava inspired)</div>
+
+<!-- NAV -->
+<nav><div class="wrap nav-in">
+  <div class="brand"><b>The Tuna Tracker</b><span>San Diego</span></div>
+  <div class="nav-links">
+    <a class="active" href="#">Today</a><a href="#">Forecast</a><a href="#">Charts</a>
+    <a href="#">Boats</a><a href="#">Analytics</a><a href="#">Trip Planner</a>
+  </div>
+  <div class="nav-right"><a class="btn-ghost" href="#">Sign In</a></div>
+</div></nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="wrap hero-in">
+    <span class="badge">★ San Diego's #1 Sportfishing Analytics</span>
+    <h1>Stop guessing.<br>Start catching.</h1>
+    <p>See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.</p>
+    <div class="trust">Trusted data from <span class="num">38,700+</span> trips since 2015</div>
+
+    <div class="stats">
+      <div class="stat"><div class="v hot num">8</div><div class="k">Tuna landed today</div></div>
+      <div class="stat"><div class="v num">1</div><div class="k">Boats out</div></div>
+      <div class="stat"><div class="v num">5</div><div class="k">Anglers</div></div>
+      <div class="stat"><div class="v num">4</div><div class="k">Landings</div></div>
+      <div class="stat-meta"><span class="live-dot"></span>Updated 3:48 PM PDT · all landings synced</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- PRIMARY CTAS -->
+  <section style="padding-bottom:14px">
+    <div class="cta-grid">
+      <a class="cta" href="#">
+        <div class="ic">◷</div>
+        <h3>Analytics</h3>
+        <p>Boat leaderboards, head-to-head, and 11 years of trends.</p>
+        <span class="arrow">→</span>
+      </a>
+      <a class="cta" href="#">
+        <div class="ic">⚓</div>
+        <h3>Trip Planner</h3>
+        <p>Compare and find the best upcoming trips with open spots.</p>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- TOP BOATS -->
+  <section style="padding-top:30px">
+    <div class="sec-head">
+      <div class="sec-title"><h2>Top Boats</h2><span class="sub">TPA/Day · 2026 season · minimum 5 trips</span></div>
+      <a class="link-arrow" href="#">Full leaderboard →</a>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="ttl"><h3>This season's leaders</h3><span class="meta">Tuna per angler, per day — normalized across trip lengths</span></div></div>
+
+      <div class="lb-row top">
+        <div class="rank num">1</div>
+        <div class="boat"><div class="nm">Pacific Queen</div><div class="sub">Fisherman's · 12 trips</div></div>
+        <svg class="spark" viewBox="0 0 86 22"><polyline points="0,16 14,14 28,15 43,9 57,11 72,5 86,4" fill="none" stroke="#F59E0B" stroke-width="1.6"/></svg>
+        <div class="tpa"><div class="v">2.01</div><div class="u">TPA/Day</div></div>
+      </div>
+      <div class="lb-row">
+        <div class="rank num">2</div>
+        <div class="boat"><div class="nm">New Lo-An</div><div class="sub">Point Loma · 8 trips</div></div>
+        <svg class="spark" viewBox="0 0 86 22"><polyline points="0,13 14,15 28,10 43,12 57,8 72,9 86,6" fill="none" stroke="#37BDF7" stroke-width="1.6"/></svg>
+        <div class="tpa"><div class="v">1.99</div><div class="u">TPA/Day</div></div>
+      </div>
+      <div class="lb-row">
+        <div class="rank num">3</div>
+        <div class="boat"><div class="nm">Pacific Voyager</div><div class="sub">Seaforth · 29 trips</div></div>
+        <svg class="spark" viewBox="0 0 86 22"><polyline points="0,11 14,12 28,10 43,11 57,10 72,9 86,9" fill="none" stroke="#37BDF7" stroke-width="1.6"/></svg>
+        <div class="tpa"><div class="v">1.91</div><div class="u">TPA/Day</div></div>
+      </div>
+      <div class="lb-row">
+        <div class="rank num">4</div>
+        <div class="boat"><div class="nm">Polaris Supreme</div><div class="sub">Seaforth · 26 trips</div></div>
+        <svg class="spark" viewBox="0 0 86 22"><polyline points="0,9 14,11 28,12 43,10 57,12 72,11 86,11" fill="none" stroke="#37BDF7" stroke-width="1.6"/></svg>
+        <div class="tpa"><div class="v">1.86</div><div class="u">TPA/Day</div></div>
+      </div>
+      <div class="lb-row">
+        <div class="rank num">5</div>
+        <div class="boat"><div class="nm">Tomahawk</div><div class="sub">Fisherman's · 10 trips</div></div>
+        <svg class="spark" viewBox="0 0 86 22"><polyline points="0,8 14,9 28,11 43,12 57,13 72,14 86,15" fill="none" stroke="#5E748C" stroke-width="1.6"/></svg>
+        <div class="tpa"><div class="v">1.27</div><div class="u">TPA/Day</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TODAY'S REPORT -->
+  <section style="padding-top:14px">
+    <div class="sec-head">
+      <div class="sec-title"><h2>Today's Report</h2><span class="sub">Tuesday, June 5, 2026 · updated 3:48 PM PDT</span></div>
+      <a class="link-arrow" href="#">Full report →</a>
+    </div>
+    <div class="card">
+      <div class="status">
+        <span class="pulse"></span>
+        <span class="lbl"><b>Hot day.</b> <span class="lbl-faint">Today is running 622% above the 30-day average.</span></span>
+        <span class="right">1 boat in · 1.60 avg</span>
+      </div>
+      <table>
+        <thead><tr><th>Boat</th><th>Trip</th><th>Bluefin</th><th>TPA/Day</th><th>Rating</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="td-boat"><div class="nm">El Gato Dos</div><div class="sub">Seaforth</div></td>
+            <td>Full Day</td>
+            <td>0</td>
+            <td>1.60 <span class="chip chip-top">★ TOP</span></td>
+            <td><span class="chip chip-good">Above avg</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-foot"><a class="link-arrow" href="#">View full report &amp; all boats →</a></div>
+    </div>
+  </section>
+
+</div>
+
+<footer><div class="wrap">© 2026 The Tuna Tracker · San Diego sportfishing analytics · Data: H&amp;M · Fisherman's · Seaforth · Point Loma</div></footer>
+
+</body>
+</html>

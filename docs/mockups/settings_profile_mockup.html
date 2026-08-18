@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — Account & Settings (mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FCFBF8;--surface:#FFFFFF;--ink:#1B3A33;--muted:#5C7068;--faint:#8A8275;
+    --line:#E7E2D8;--band:#F5F2EB;--accent:#CF6A3C;--accent-ink:#B4572D;--good:#2E7D5B;
+    --teal:#14403A;--mono:'DM Mono',monospace;--serif:'Fraunces';
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .nav{display:flex;align-items:center;gap:22px;height:58px;border-bottom:1px solid var(--line);padding:0 30px;background:var(--surface)}
+  .bd b{font-family:var(--serif);font-weight:600;font-size:18px}
+  .bd span{display:block;font:500 8.5px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .lk{display:flex;gap:17px;font-size:12.5px;font-weight:500;color:var(--muted)}
+  .lk a.on{color:var(--ink)}
+  .nav .me{margin-left:auto;display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600}
+  .nav .av{width:28px;height:28px;border-radius:8px;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+
+  .wrap{max-width:780px;margin:0 auto;padding:32px 26px 90px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink)}
+  h1{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.015em;margin:8px 0 22px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .sec-t{font-family:var(--serif);font-weight:600;font-size:17px;margin-bottom:3px}
+  .sec-d{color:var(--faint);font-size:12.5px;margin-bottom:16px}
+
+  /* identity */
+  .id{display:flex;align-items:center;gap:14px}
+  .id .avb{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,#1d4a42,#0e2a24);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px}
+  .id .nm{font-weight:700;font-size:16px}
+  .id .em{font:500 12px/1 var(--mono);color:var(--muted);margin-top:4px}
+  .id .badge{display:inline-block;margin-top:7px;font:600 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--good);background:var(--good-soft,#E2F0E7);padding:4px 8px;border-radius:999px}
+  .id .out{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 15px;background:var(--bg)}
+  .freeline{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font:500 11.5px/1.4 var(--mono);color:var(--faint)}
+  .freeline b{color:var(--accent-ink);font-weight:500}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:500;cursor:pointer}
+  .chip.sel{background:#EAF1EE;border-color:#BcccC6;border-color:#BACDC6;color:var(--teal);font-weight:600}
+  .chip.sel .dot{color:var(--good)}
+  .chip .x{color:var(--faint);font-family:var(--mono)}
+  .chip.add{border-style:dashed;color:var(--accent-ink);border-color:#E0C4B4}
+  .chip .dot{font-size:9px}
+
+  /* toggle rows */
+  .row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row .l .t{font-weight:600;font-size:13.5px}
+  .row .l .s{font:500 11px/1.3 var(--mono);color:var(--faint);margin-top:3px}
+  .row .l{flex:1}
+  .tog{width:42px;height:24px;border-radius:999px;background:#D8D3C7;position:relative;flex-shrink:0;cursor:pointer;transition:.15s}
+  .tog::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.15s}
+  .tog.on{background:var(--accent)}
+  .tog.on::after{left:21px}
+
+  /* fields + segmented */
+  .field{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .field:last-child{border-bottom:0}
+  .field .fl{flex:1}
+  .field .fl .t{font-weight:600;font-size:13.5px}
+  .field .fl .s{font:500 11px/1 var(--mono);color:var(--faint);margin-top:3px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--bg)}
+  .seg button{border:0;background:transparent;font:600 12px/1 'Inter';padding:8px 13px;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .sel-input{font:500 13px/1 'Inter';border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:var(--surface);color:var(--ink)}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;padding:11px 18px;border-radius:10px;cursor:pointer}
+  .btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+  .btn.coral{background:var(--accent);color:#fff;border:0}
+
+  .note{margin:0 auto;max-width:780px;padding:8px 26px;color:var(--faint);font:500 11px/1.5 var(--mono)}
+  @media(max-width:560px){.lk{display:none}.seg button{padding:8px 10px}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div>
+  <div class="lk"><a>Today</a><a>Forecast</a><a>Charts</a><a>Boats</a><a>Analytics</a><a>Trip Planner</a></div>
+  <div class="me"><span class="av">TC</span>Account</div>
+</div>
+
+<div class="note">MOCKUP · Account &amp; Settings — all free; a free account unlocks the personal/sticky features</div>
+
+<div class="wrap">
+  <div class="eyebrow">Your account</div>
+  <h1>Account &amp; settings</h1>
+
+  <!-- identity -->
+  <div class="card">
+    <div class="id">
+      <div class="avb">TC</div>
+      <div>
+        <div class="nm">Tyler Christian</div>
+        <div class="em">tylerjchristian@yahoo.com</div>
+        <span class="badge">● Free account</span>
+      </div>
+      <a class="out">Sign out</a>
+    </div>
+    <div class="freeline">Your account saves your <b>followed boats, species, and alerts</b> across all your devices.</div>
+  </div>
+
+  <!-- following -->
+  <div class="card">
+    <div class="sec-t">Boats you follow</div>
+    <div class="sec-d">Followed boats get highlighted on Today and trigger your alerts.</div>
+    <div class="chips">
+      <span class="chip sel"><span class="dot">●</span>Pacific Voyager <span class="x">×</span></span>
+      <span class="chip sel"><span class="dot">●</span>Tomahawk <span class="x">×</span></span>
+      <span class="chip sel"><span class="dot">●</span>El Gato Dos <span class="x">×</span></span>
+      <span class="chip add">＋ Follow a boat</span>
+    </div>
+    <div class="sec-t" style="margin-top:20px">Your landings</div>
+    <div class="sec-d">Focus Today and the leaderboards on the landings you launch from.</div>
+    <div class="chips">
+      <span class="chip sel"><span class="dot">●</span>Seaforth</span>
+      <span class="chip sel"><span class="dot">●</span>Fisherman's</span>
+      <span class="chip">H&amp;M</span>
+      <span class="chip">Point Loma</span>
+    </div>
+  </div>
+
+  <!-- species -->
+  <div class="card">
+    <div class="sec-t">Target species</div>
+    <div class="sec-d">Tailors the leaderboards, reports, and your "trophy" count to what you actually chase.</div>
+    <div class="chips">
+      <span class="chip sel"><span class="dot">●</span>Bluefin</span>
+      <span class="chip sel"><span class="dot">●</span>Yellowfin</span>
+      <span class="chip sel"><span class="dot">●</span>Yellowtail</span>
+      <span class="chip sel"><span class="dot">●</span>Dorado</span>
+      <span class="chip">Bigeye</span>
+      <span class="chip">Skipjack</span>
+      <span class="chip">Albacore</span>
+    </div>
+  </div>
+
+  <!-- alerts -->
+  <div class="card">
+    <div class="sec-t">Alerts &amp; notifications</div>
+    <div class="sec-d">The reason to come back. Tell us what's worth a ping.</div>
+    <div class="row"><div class="l"><div class="t">A boat you follow finished a trip</div><div class="s">Get the fish counts as soon as a followed boat reports in</div></div><div class="tog on"></div></div>
+    <div class="row"><div class="l"><div class="t">A boat you follow scheduled a new trip</div><div class="s">When a followed boat posts a new trip you can book</div></div><div class="tog on"></div></div>
+    <div class="row"><div class="l"><div class="t">A top trip opens spots</div><div class="s">Open spots on a high-performing upcoming trip</div></div><div class="tog on"></div></div>
+    <div class="row"><div class="l"><div class="t">Weekly bite report</div><div class="s">A Friday digest of the week on the water</div></div><div class="tog"></div></div>
+    <div class="field" style="border-top:1px solid var(--line);margin-top:6px"><div class="fl"><div class="t">Deliver by</div></div>
+      <div class="seg"><button class="on">Email</button><button>Push</button></div>
+    </div>
+  </div>
+
+  <!-- preferences -->
+  <div class="card">
+    <div class="sec-t">Preferences</div>
+    <div class="sec-d">Display &amp; defaults.</div>
+    <div class="field"><div class="fl"><div class="t">Region</div></div><select class="sel-input"><option>San Diego</option><option>OC / LA (soon)</option></select></div>
+    <div class="field"><div class="fl"><div class="t">Trip type focus</div><div class="s">how leaderboards weight trips</div></div>
+      <div class="seg"><button class="on">All</button><button>Local / day</button><button>Multi-day</button></div></div>
+    <div class="field"><div class="fl"><div class="t">Water temp</div></div><div class="seg"><button class="on">°F</button><button>°C</button></div></div>
+    <div class="field"><div class="fl"><div class="t">Wind</div></div><div class="seg"><button class="on">kt</button><button>mph</button></div></div>
+    <div class="field"><div class="fl"><div class="t">Density</div></div><div class="seg"><button class="on">Comfortable</button><button>Compact</button></div></div>
+  </div>
+
+  <!-- data -->
+  <div class="card">
+    <div class="sec-t">Your data</div>
+    <div class="sec-d">Export leaderboards and boat history — free.</div>
+    <a class="btn ghost">⬇ Export CSV</a>
+  </div>
+</div>
+</body>
+</html>

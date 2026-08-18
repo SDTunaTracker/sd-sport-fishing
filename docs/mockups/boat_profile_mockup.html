@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — Boat Profile (mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#FCFBF8;--surface:#FFFFFF;--ink:#1B3A33;--muted:#5C7068;--faint:#8A8275;--line:#E7E2D8;--band:#F5F2EB;--accent:#CF6A3C;--accent-ink:#B4572D;--good:#2E7D5B;--teal:#14403A;--mono:'DM Mono',monospace;--serif:'Fraunces'}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .nav{display:flex;align-items:center;gap:22px;height:56px;border-bottom:1px solid var(--line);padding:0 30px;background:var(--surface)}
+  .bd b{font-family:var(--serif);font-weight:600;font-size:17px}.bd span{display:block;font:500 8px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .lk{display:flex;gap:16px;font-size:12.5px;font-weight:500;color:var(--muted)}.lk a.on{color:var(--ink)}
+  .nav .me{margin-left:auto;font-size:12.5px;font-weight:600}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 26px}
+  .crumb{font:500 11.5px/1 var(--mono);color:var(--faint);padding:16px 0}
+  .crumb a{color:var(--accent-ink)}
+
+  /* hero */
+  .hero{position:relative;border-radius:16px;overflow:hidden;color:#EFece;color:#F1ECDD;
+    background:linear-gradient(110deg,rgba(10,22,18,.9),rgba(10,22,18,.35)),radial-gradient(80% 130% at 88% 0,rgba(207,106,60,.55),transparent 55%),linear-gradient(160deg,#1d4a42,#0e2a24);
+    min-height:260px;display:flex;align-items:flex-end;padding:26px}
+  .hero .badges{position:absolute;top:18px;left:26px;display:flex;gap:8px}
+  .live{display:inline-flex;align-items:center;gap:7px;background:rgba(46,125,91,.9);color:#fff;font:600 11px/1 var(--mono);letter-spacing:.04em;padding:7px 11px;border-radius:999px}
+  .live i{width:7px;height:7px;border-radius:50%;background:#9af5cf;box-shadow:0 0 0 3px rgba(154,245,207,.3)}
+  .rank-b{background:rgba(245,158,11,.92);color:#1a1205;font:600 11px/1 var(--mono);padding:7px 11px;border-radius:999px}
+  .hero .who{position:relative;flex:1}
+  .hero .nm{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1;letter-spacing:-.015em;color:#fff;margin-bottom:8px}
+  .hero .land{font:500 12.5px/1 var(--mono);color:#CFD9CE}
+  .hero .specs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .hero .specs span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:6px 10px;font:500 11px/1 var(--mono);color:#E7DCC9}
+  .hero .actions{position:relative;display:flex;flex-direction:column;gap:9px;align-self:flex-end}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;white-space:nowrap;cursor:pointer}
+  .btn.coral{background:var(--accent);color:#fff}
+  .btn.follow{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff}
+
+  /* stat row */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:16px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .stat .v{font:500 27px/1 var(--mono);letter-spacing:-.02em}
+  .stat .v .sm{font-size:13px;color:var(--accent-ink)}
+  .stat .k{font:600 9.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-top:8px}
+  .stat .sub{font:500 10.5px/1 var(--mono);color:var(--muted);margin-top:4px}
+
+  .sec{margin-top:26px}
+  .eyebrow{font:600 10.5px/1 var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent-ink)}
+  .sec h2{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em;margin:6px 0 14px}
+  .sec h2 .new{font:600 9px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--accent);padding:3px 6px;border-radius:5px;vertical-align:middle;margin-left:9px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+
+  /* upcoming trips */
+  .trip{display:flex;align-items:center;gap:16px;padding:15px 20px;border-bottom:1px solid var(--line)}
+  .trip:last-child{border-bottom:0}
+  .trip .date{font-family:var(--serif);font-weight:600;font-size:16px;width:96px}
+  .trip .date small{display:block;font:500 10.5px/1 var(--mono);color:var(--faint);margin-top:3px;font-family:var(--mono)}
+  .trip .info{flex:1;font:500 12.5px/1.4 var(--mono);color:var(--muted)}
+  .trip .spots{font:600 11px/1 var(--mono);color:var(--good);margin-right:4px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+
+  /* mini bar viz */
+  .bars{padding:18px 20px}
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .bar:last-child{margin:0}
+  .bar .bl{width:78px;font:500 12px/1 var(--mono);color:var(--ink)}
+  .bar .track{flex:1;height:8px;background:var(--band);border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--accent);border-radius:5px}
+  .bar .bv{font:500 12px/1 var(--mono);color:var(--muted);width:34px;text-align:right}
+  .specialty{margin:0 20px 18px;background:var(--band);border-radius:10px;padding:11px 13px;font:500 12px/1.4 var(--mono);color:var(--ink)}
+  .specialty b{color:var(--accent-ink);font-weight:500}
+
+  table{width:100%;border-collapse:collapse}
+  thead th{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:right;padding:11px 20px;border-bottom:1px solid var(--line)}
+  thead th:first-child{text-align:left}
+  tbody td{padding:13px 20px;text-align:right;font-family:var(--mono);font-size:12.5px}
+  tbody td:first-child{text-align:left;font-family:'Inter'}
+  tbody tr{border-bottom:1px solid var(--line)}
+  .catch{color:var(--ink)}
+  .chip{display:inline-flex;padding:3px 8px;border-radius:999px;font:600 10px/1 'Inter'}
+  .chip.good{background:#E2F0E7;color:var(--good)}.chip.avg{background:#EEEDE6;color:var(--muted)}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:0}
+  .tabs button{border:0;background:transparent;font:600 13px/1 'Inter';padding:13px 14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+  .tabs button.on{color:var(--ink);border-color:var(--accent)}
+
+  .note{max-width:1000px;margin:0 auto;padding:8px 26px;color:var(--faint);font:500 11px/1.5 var(--mono)}
+  .legend-new{display:inline-block;font:600 9px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--accent);padding:3px 6px;border-radius:5px}
+  @media(max-width:760px){.lk{display:none}.stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.hero{flex-direction:column;align-items:flex-start}.hero .actions{flex-direction:row;margin-top:16px}}
+</style>
+</head>
+<body>
+<div class="nav"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div>
+  <div class="lk"><a>Today</a><a>Forecast</a><a>Charts</a><a class="on">Boats</a><a>Analytics</a><a>Trip Planner</a></div>
+  <div class="me">Sign In</div></div>
+
+<div class="note">MOCKUP · Boat profile — <span class="legend-new">NEW</span> marks additions; everything else you already render in <b>drilldown.jsx</b></div>
+
+<div class="wrap">
+  <div class="crumb"><a>Boats</a> › Pacific Voyager</div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badges">
+      <span class="live"><i></i>OUT NOW · RETURNS ~3:30 PM</span>
+      <span class="rank-b">#3 OF 62 THIS SEASON</span>
+    </div>
+    <div class="who">
+      <div class="nm">Pacific Voyager</div>
+      <div class="land">Seaforth Sportfishing · Capt. Ryan Bostian &amp; Drew Card</div>
+      <div class="specs"><span>124 ft</span><span>36 passengers</span><span>Built 2008</span><span>1.5–3 day trips</span><span>★ 4.7 · 38 reviews</span></div>
+    </div>
+    <div class="actions">
+      <a class="btn coral">Book next trip →</a>
+      <a class="btn follow">＋ Follow</a>
+    </div>
+  </div>
+
+  <!-- STAT ROW -->
+  <div class="stats">
+    <div class="stat"><div class="v">1.91 <span class="sm">#3</span></div><div class="k">TPA / Day · season</div><div class="sub">of 62 boats</div></div>
+    <div class="stat"><div class="v">3.2</div><div class="k">Fish / angler</div><div class="sub">last 10 trips</div></div>
+    <div class="stat"><div class="v">78%</div><div class="k">Outfished fleet</div><div class="sub">comparable trips</div></div>
+    <div class="stat"><div class="v">1,240</div><div class="k">Fish landed</div><div class="sub">2026 season · 29 trips</div></div>
+  </div>
+
+  <!-- UPCOMING TRIPS (NEW) -->
+  <div class="sec">
+    <div class="eyebrow">Book a trip</div>
+    <h2>Upcoming trips with open spots <span class="new">New</span></h2>
+    <div class="card">
+      <div class="trip"><div class="date">Sat Jun 7<small>6:00 AM</small></div><div class="info">1.5 Day · $310 · 24-angler load</div><span class="spots">6 spots left</span><a class="btn coral" style="padding:9px 15px">Book →</a></div>
+      <div class="trip"><div class="date">Wed Jun 11<small>10:00 PM</small></div><div class="info">2 Day · $545 · limited load</div><span class="spots">11 spots left</span><a class="btn coral" style="padding:9px 15px">Book →</a></div>
+      <div class="trip"><div class="date">Sat Jun 14<small>6:00 AM</small></div><div class="info">1.5 Day · $310</div><span class="spots">Filling</span><a class="btn coral" style="padding:9px 15px">Book →</a></div>
+    </div>
+  </div>
+
+  <!-- PERFORMANCE -->
+  <div class="sec">
+    <div class="eyebrow">Performance</div>
+    <h2>How this boat fishes</h2>
+    <div class="grid2">
+      <div class="card">
+        <div class="bars">
+          <div style="font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:14px">Catch / angler by month · vs landing avg</div>
+          <div class="bar"><span class="bl">Mar</span><span class="track"><span class="fill" style="width:30%"></span></span><span class="bv">0.6</span></div>
+          <div class="bar"><span class="bl">Apr</span><span class="track"><span class="fill" style="width:48%"></span></span><span class="bv">1.0</span></div>
+          <div class="bar"><span class="bl">May</span><span class="track"><span class="fill" style="width:72%"></span></span><span class="bv">1.5</span></div>
+          <div class="bar"><span class="bl">Jun</span><span class="track"><span class="fill" style="width:92%"></span></span><span class="bv">1.9</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="bars">
+          <div style="font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:14px">Species mix · catch / angler</div>
+          <div class="bar"><span class="bl">Bluefin</span><span class="track"><span class="fill" style="width:88%"></span></span><span class="bv">1.1</span></div>
+          <div class="bar"><span class="bl">Yellowtail</span><span class="track"><span class="fill" style="width:46%"></span></span><span class="bv">0.6</span></div>
+          <div class="bar"><span class="bl">Dorado</span><span class="track"><span class="fill" style="width:24%"></span></span><span class="bv">0.3</span></div>
+          <div class="bar"><span class="bl">Yellowfin</span><span class="track"><span class="fill" style="width:12%"></span></span><span class="bv">0.1</span></div>
+        </div>
+        <div class="specialty"><b>★ Bluefin specialist</b> — 58% of its catch is bluefin, well above the fleet. Best on 1.5-day trips.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT TRIPS + TABS -->
+  <div class="sec">
+    <div class="tabs"><button class="on">Trip history</button><button>Reviews (38)</button><button>Reddit reports</button></div>
+    <div class="card" style="border-top:0;border-radius:0 0 14px 14px">
+      <table>
+        <thead><tr><th>Date</th><th>Trip</th><th>Anglers</th><th>Catch</th><th>Rating</th></tr></thead>
+        <tbody>
+          <tr><td>Jun 4</td><td>2 Day</td><td>31</td><td class="catch">26 Bluefin · 11 Yellowtail · 4 Dorado</td><td><span class="chip good">Above avg</span></td></tr>
+          <tr><td>Jun 1</td><td>1.5 Day</td><td>24</td><td class="catch">19 Bluefin · 6 Yellowtail</td><td><span class="chip good">Above avg</span></td></tr>
+          <tr><td>May 28</td><td>2 Day</td><td>28</td><td class="catch">14 Bluefin · 9 Yellowtail</td><td><span class="chip avg">Average</span></td></tr>
+          <tr><td>May 24</td><td>1.5 Day</td><td>22</td><td class="catch">22 Bluefin · 3 Dorado</td><td><span class="chip good">Above avg</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div style="height:50px"></div>
+</body>
+</html>

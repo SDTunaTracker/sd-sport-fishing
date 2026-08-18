@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tuna Tracker — Magazine layout, 5 color/type treatments</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800;900&family=Fraunces:opsz,wght@9..144,600;9..144,900&family=DM+Serif+Display&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#171f29;font-family:'Inter',sans-serif;color:#cbd6e2;-webkit-font-smoothing:antialiased}
+  .page{max-width:1120px;margin:0 auto;padding:26px 22px 90px}
+  .page-h h1{color:#fff;font-size:23px;font-weight:800;letter-spacing:-.02em}
+  .page-h p{color:#89a0b4;font-size:14px;margin-top:8px;max-width:800px;line-height:1.55}
+  .lab{display:flex;align-items:baseline;gap:12px;margin:34px 0 12px}
+  .lab .n{font:700 12px/1 'DM Mono',monospace;letter-spacing:.1em;color:#37BDF7;background:#0c1a28;border:1px solid #24384c;border-radius:7px;padding:7px 10px}
+  .lab .t{color:#fff;font-size:17px;font-weight:700}
+  .lab .d{color:#89a0b4;font-size:13px}
+  .frame{border-radius:16px;overflow:hidden;border:1px solid #2a3947;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+
+  /* ===== magazine base (scoped to .mag) ===== */
+  .mag{background:var(--bg);color:var(--ink)}
+  .mag .nav{display:flex;align-items:center;gap:22px;height:52px;padding:0 30px;border-bottom:1px solid var(--line)}
+  .mag .nav .bd b{font-family:var(--serif);font-weight:var(--bw,800);font-size:18px;color:var(--ink);letter-spacing:-.01em}
+  .mag .nav .bd span{display:block;font:500 8.5px/1 'DM Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .mag .nav .lk{display:flex;gap:17px;font-size:12.5px;font-weight:500;color:var(--muted)}
+  .mag .nav .si{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 13px}
+
+  .mag .hero{position:relative;height:284px;display:flex;align-items:flex-end;padding:32px;background:var(--herobg);color:var(--heroink)}
+  .mag .hero .kick{font:600 11px/1 'DM Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--herokick)}
+  .mag .hero h1{font-family:var(--serif);font-weight:var(--hw,900);font-size:56px;line-height:.95;letter-spacing:-.01em;color:var(--heroh);margin:14px 0 10px;max-width:620px}
+  .mag .hero .by{color:var(--herosub);font-size:13.5px}
+  .mag .hero .by b{font-family:'DM Mono',monospace;font-weight:500;color:var(--heroh)}
+
+  .mag .strip{display:grid;grid-template-columns:1.45fr 1fr}
+  .mag .feature{padding:26px 30px;border-right:1px solid var(--line)}
+  .mag .lbl{font:600 10.5px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .mag .feature h2{font-family:var(--serif);font-weight:var(--h2w,800);font-size:30px;letter-spacing:-.01em;margin:10px 0;color:var(--ink)}
+  .mag .feature p{color:var(--muted);font-size:13.5px;line-height:1.6;max-width:390px}
+  .mag .feature .big{margin-top:18px;display:flex;align-items:baseline;gap:11px}
+  .mag .feature .big .v{font:500 42px/1 'DM Mono',monospace;letter-spacing:-.02em;color:var(--ink)}
+  .mag .feature .big .u{font:600 11px/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+  .mag .lead{padding:26px 30px}
+  .mag .lead .lbl{color:var(--faint);margin-bottom:6px}
+  .mag .row{display:flex;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .mag .row:last-child{border-bottom:0}
+  .mag .row .rk{font-family:var(--serif);font-weight:var(--h2w,800);font-size:23px;color:var(--rank);width:26px}
+  .mag .row .nm{font-weight:600;font-size:14px;color:var(--ink)}
+  .mag .row .s{font:500 10.5px/1 'DM Mono',monospace;color:var(--faint);margin-top:2px}
+  .mag .row .v{margin-left:auto;font:500 17px/1 'DM Mono',monospace;color:var(--ink)}
+
+  /* ===== A · Heritage Cream (Playfair + warm amber) ===== */
+  .A{--bg:#FBF8F1;--ink:#211C14;--muted:#5C5446;--faint:#9A9078;--line:#EBE3D3;--accent:#B6722A;--rank:#C9A05A;--serif:'Playfair Display';
+     --herobg:linear-gradient(120deg,rgba(24,17,8,.74),rgba(24,17,8,.12)),radial-gradient(85% 110% at 82% 0,rgba(245,158,11,.9),transparent 60%),linear-gradient(180deg,#5a3d1f,#2a1c10);
+     --heroink:#F3EADB;--heroh:#fff;--herosub:#E7DCC9;--herokick:#F4D9A8;}
+  /* ===== B · Ocean Editorial (Fraunces + teal, cool white) ===== */
+  .B{--bg:#FCFDFE;--ink:#10222F;--muted:#52677A;--faint:#93A4B3;--line:#E6EDF2;--accent:#0E7C8B;--rank:#0E7C8B;--serif:'Fraunces';--hw:900;--h2w:600;
+     --herobg:linear-gradient(120deg,rgba(6,22,32,.78),rgba(6,22,32,.2)),radial-gradient(90% 110% at 85% 0,rgba(13,148,136,.7),transparent 62%),linear-gradient(180deg,#0c3a45,#072028);
+     --heroink:#EAF4F6;--heroh:#fff;--herosub:#C4D8DE;--herokick:#7FD9D0;}
+  /* ===== C · Bold Contrast (DM Serif + electric orange, bright white) ===== */
+  .C{--bg:#FFFFFF;--ink:#0B0B0C;--muted:#56565B;--faint:#9A9AA0;--line:#ECECEE;--accent:#F2541B;--rank:#0B0B0C;--serif:'DM Serif Display';--hw:400;--h2w:400;--bw:400;
+     --herobg:linear-gradient(120deg,rgba(10,10,11,.82),rgba(10,10,11,.3)),radial-gradient(80% 110% at 84% 0,rgba(242,84,27,.85),transparent 58%),linear-gradient(180deg,#1a1714,#0b0b0c);
+     --heroink:#F6F6F6;--heroh:#fff;--herosub:#C9C9CC;--herokick:#FFB495;}
+  /* ===== D · Night Luxe (Cormorant + brass, dark) ===== */
+  .D{--bg:#13141A;--ink:#EFE9DC;--muted:#A39C8C;--faint:#6E685C;--line:#25262E;--accent:#C9A24B;--rank:#C9A24B;--serif:'Cormorant Garamond';--hw:700;--h2w:700;--bw:700;
+     --herobg:radial-gradient(95% 120% at 82% 0,rgba(201,162,75,.42),transparent 58%),linear-gradient(180deg,#1c1d24,#101117);
+     --heroink:#EFE9DC;--heroh:#fff;--herosub:#BDB5A4;--herokick:#E0C98A;}
+  .D .nav .si{border-color:#33343d}
+  /* ===== E · Coastal Warm (Fraunces + coral, oat) ===== */
+  .E{--bg:#F4EFE2;--ink:#1B3A33;--muted:#5C7068;--faint:#9C9279;--line:#E5DCC7;--accent:#CF6A3C;--rank:#CF6A3C;--serif:'Fraunces';--hw:900;--h2w:600;
+     --herobg:linear-gradient(120deg,rgba(12,30,26,.74),rgba(12,30,26,.16)),radial-gradient(90% 120% at 85% 0,rgba(207,106,60,.7),transparent 60%),linear-gradient(180deg,#16443b,#0e2c25);
+     --heroink:#F1ECDD;--heroh:#fff;--herosub:#CFD9CE;--herokick:#F2C7A6;}
+
+  @media(max-width:640px){.mag .nav .lk{display:none}.mag .strip{grid-template-columns:1fr}.mag .feature{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-h"><h1>Magazine layout — 5 color &amp; type treatments</h1>
+    <p>Same editorial structure (full-bleed hero, serif headline, "boat of the day" feature + season leaders). Only the palette and typeface change. Pick a look — or mix (e.g. "Ocean's colors with Heritage's Playfair").</p></div>
+
+  <div class="lab"><span class="n">A</span><span class="t">Heritage Cream</span><span class="d">Playfair Display · warm cream paper · sunset amber — timeless, classic editorial</span></div>
+  <div class="frame"><div class="mag A"></div></div>
+
+  <div class="lab"><span class="n">B</span><span class="t">Ocean Editorial</span><span class="d">Fraunces · cool white · deep teal — crisp, modern, coastal</span></div>
+  <div class="frame"><div class="mag B"></div></div>
+
+  <div class="lab"><span class="n">C</span><span class="t">Bold Contrast</span><span class="d">DM Serif Display · bright white · electric orange — punchy, high-impact magazine</span></div>
+  <div class="frame"><div class="mag C"></div></div>
+
+  <div class="lab"><span class="n">D</span><span class="t">Night Luxe</span><span class="d">Cormorant · dark charcoal · brass gold — premium, moody, upscale</span></div>
+  <div class="frame"><div class="mag D"></div></div>
+
+  <div class="lab"><span class="n">E</span><span class="t">Coastal Warm</span><span class="d">Fraunces · oat &amp; forest teal · coral — friendly lifestyle-brand warmth</span></div>
+  <div class="frame"><div class="mag E"></div></div>
+</div>
+
+<script>
+var BODY = `
+  <div class="nav"><div class="bd"><b>The Tuna Tracker</b><span>San Diego</span></div>
+    <div class="lk"><span>Today</span><span>Forecast</span><span>Charts</span><span>Boats</span><span>Trip Planner</span></div>
+    <span class="si">Sign In</span></div>
+  <div class="hero"><div>
+    <div class="kick">Today · San Diego · June 5</div>
+    <h1>The bite is on.</h1>
+    <div class="by">The fleet is running <b>+622%</b> above the 30-day average</div>
+  </div></div>
+  <div class="strip">
+    <div class="feature">
+      <div class="lbl">Boat of the day</div>
+      <h2>El Gato Dos</h2>
+      <p>Seaforth's full-day boat came back loaded — the standout of a red-hot Tuesday on the water, running well above the fleet pace.</p>
+      <div class="big"><span class="v">1.60</span><span class="u">Tuna / angler / day · ★ Top</span></div>
+    </div>
+    <div class="lead">
+      <div class="lbl">Season leaders</div>
+      <div class="row"><span class="rk">1</span><div><div class="nm">Pacific Queen</div><div class="s">Fisherman's · 12 trips</div></div><span class="v">2.01</span></div>
+      <div class="row"><span class="rk">2</span><div><div class="nm">New Lo-An</div><div class="s">Point Loma · 8 trips</div></div><span class="v">1.99</span></div>
+      <div class="row"><span class="rk">3</span><div><div class="nm">Pacific Voyager</div><div class="s">Seaforth · 29 trips</div></div><span class="v">1.91</span></div>
+    </div>
+  </div>`;
+document.querySelectorAll('.mag').forEach(function(el){el.innerHTML=BODY});
+</script>
+</body>
+</html>
