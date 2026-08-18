@@ -4,6 +4,24 @@ __pycache__/
 venv/
 *.log
 tracker.db-journal
+tracker.db-shm
+tracker.db-wal
+
+# Debug screenshots
+scripts/*.png
+verify-*.png
 logs/
 .vscode/
 .env
+
+# Local tool state / caches
+.claude/
+node_modules/
+downloaded_files/
+_seaforth_dump/
+data/.mmsi-search-cache.json
+
+# Local DB backups / recovery snapshots (keep on disk, off git)
+tracker.db.*
+tracker_*.db
+tracker_dump.sql
