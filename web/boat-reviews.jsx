@@ -10,8 +10,8 @@ const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mkoepqrz';
 //   3. Paste your cloud name + upload preset name below.
 // If either is empty, the form falls back to text-only submission (photos are
 // silently dropped with a user-facing note).
-const CLOUDINARY_CLOUD_NAME    = '';  // e.g. 'tunatracker'
-const CLOUDINARY_UPLOAD_PRESET = '';  // e.g. 'boat_reviews_unsigned'
+const CLOUDINARY_CLOUD_NAME    = 'w91356vj';
+const CLOUDINARY_UPLOAD_PRESET = 'boat_reviews_unsigned';
 
 async function uploadToCloudinary(file) {
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
