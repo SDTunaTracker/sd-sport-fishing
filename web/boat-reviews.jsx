@@ -352,6 +352,14 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Lock body scroll while the modal is mounted — prevents the page from
+  // scrolling behind the modal on mobile and stealing touch scroll.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   if (status === 'success') return <SuccessScreen boat={displayBoat} onClose={onClose}/>;
 
   const STEPS = ['Trip info', 'Ratings', 'Details'];
