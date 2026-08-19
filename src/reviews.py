@@ -1,9 +1,15 @@
 """Boat review helpers — DB insert, approve/reject, export, CLI.
 
+Auto-approve mode: `add_review()` inserts new reviews with
+status='approved' by default. To restore a moderation queue, pass
+status='pending' explicitly or flip the AUTO_APPROVE constant below.
+
 CLI usage:
     python -m src.reviews list              # show pending reviews
-    python -m src.reviews approve <id>      # approve a review
-    python -m src.reviews reject <id>       # reject a review
+    python -m src.reviews approve <id>      # approve a single review
+    python -m src.reviews reject <id>       # reject a single review
+    python -m src.reviews approve-all       # approve every pending review
+    python -m src.reviews add <file.json>   # insert (auto-approved)
 """
 from __future__ import annotations
 
@@ -21,14 +27,24 @@ OVERNIGHT_LENGTHS = {
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / 'tracker.db'
 
+# When True, new reviews land as 'approved' and go live immediately.
+# Flip to False to restore a manual moderation queue.
+AUTO_APPROVE = True
 
-def add_review(conn, data: dict, ip: str = '') -> int:
-    """Insert a new review with status='pending'. Returns row id."""
+
+def add_review(conn, data: dict, ip: str = '', status: str | None = None) -> int:
+    """Insert a new review. Returns row id.
+
+    Status defaults to 'approved' when AUTO_APPROVE is True, else 'pending'.
+    Pass status='pending' (or any other value) to override.
+    """
     ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16] if ip else None
     now = datetime.now(timezone.utc).isoformat(timespec='seconds')
     photos = data.get('photos')
     if photos and not isinstance(photos, str):
         photos = json.dumps(list(photos))
+    if status is None:
+        status = 'approved' if AUTO_APPROVE else 'pending'
     cur = conn.execute(
         """INSERT INTO boat_reviews
            (boat, landing, reviewer_name, trip_date, trip_length,
@@ -44,7 +60,7 @@ def add_review(conn, data: dict, ip: str = '') -> int:
             data.get('fish_finding_rating'), data.get('galley_rating'), data.get('bunks_rating'),
             data.get('title'), data.get('body'),
             data.get('species_caught'), data.get('tuna_count'), data.get('would_rebook'),
-            'pending', now, ip_hash, photos,
+            status, now, ip_hash, photos,
         ),
     )
     return cur.lastrowid
@@ -52,6 +68,12 @@ def add_review(conn, data: dict, ip: str = '') -> int:
 
 def approve_review(conn, review_id: int) -> None:
     conn.execute("UPDATE boat_reviews SET status='approved' WHERE id=?", (review_id,))
+
+
+def approve_all_pending(conn) -> int:
+    """Flip every pending review to approved. Returns the number updated."""
+    cur = conn.execute("UPDATE boat_reviews SET status='approved' WHERE status='pending'")
+    return cur.rowcount
 
 
 def reject_review(conn, review_id: int) -> None:
@@ -169,14 +191,16 @@ def _cli():
         elif cmd == 'approve' and len(args) > 1:
             approve_review(conn, int(args[1]))
             print(f'Approved review {args[1]}.')
+        elif cmd in ('approve-all', 'approve_all'):
+            n = approve_all_pending(conn)
+            print(f'Approved {n} pending review(s).')
         elif cmd == 'reject' and len(args) > 1:
             reject_review(conn, int(args[1]))
             print(f'Rejected review {args[1]}.')
         elif cmd == 'add' and len(args) > 1:
             data = json.loads(Path(args[1]).read_text())
             rid = add_review(conn, data)
-            approve_review(conn, rid)
-            print(f'Added and approved review {rid} for {data.get("boat")}.')
+            print(f'Added review {rid} for {data.get("boat")} (auto-approved).')
         else:
             print(__doc__)
 
