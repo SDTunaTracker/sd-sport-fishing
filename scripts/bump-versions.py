@@ -1,35 +1,76 @@
 #!/usr/bin/env python3
 """
-Auto-bump cache-bust version strings in web/index.html for any JSX or CSS
-file that was modified today.
+Auto-bump cache-bust version strings in web/index.html for any JSX/JS/CSS
+source file that is in the current commit (staged) or, as a fallback,
+modified today. Using the staged-files signal makes this reliable when
+run from the pre-commit hook, where file mtimes can race with the hook.
 
 Usage:  python scripts/bump-versions.py
         python scripts/bump-versions.py --dry-run
+        python scripts/bump-versions.py --all      # bump every referenced file
 
 The version format is ?v=YYYYMMDD-N where N starts at 1 and increments if
 the date already exists in the file.
 """
-import os, re, sys
+import os, re, subprocess, sys
 from datetime import date
 
 dry_run = "--dry-run" in sys.argv
+force_all = "--all" in sys.argv
 
 here  = os.path.dirname(os.path.abspath(__file__))
-web   = os.path.normpath(os.path.join(here, "..", "web"))
+repo  = os.path.normpath(os.path.join(here, ".."))
+web   = os.path.join(repo, "web")
 html  = os.path.join(web, "index.html")
 today = date.today().strftime("%Y%m%d")
 
 text = open(html, encoding="utf-8").read()
-original = text
-today_mtime = date.today()
+today_date = date.today()
+
+
+def staged_web_files():
+    """Return set of 'basename.ext' of every staged file under web/.
+    Silent no-op if git isn't available or we're outside a repo."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", repo, "diff", "--cached", "--name-only"],
+            capture_output=True, text=True, check=True,
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return set()
+    result = set()
+    for line in out.splitlines():
+        line = line.strip()
+        if not line or not line.startswith("web/"):
+            continue
+        result.add(os.path.basename(line))
+    return result
 
 
 def file_modified_today(filename):
     path = os.path.join(web, filename)
     if not os.path.exists(path):
         return False
-    mtime = date.fromtimestamp(os.path.getmtime(path))
-    return mtime == today_mtime
+    return date.fromtimestamp(os.path.getmtime(path)) == today_date
+
+
+staged = staged_web_files()
+
+
+def should_bump(source_filename):
+    """A source is bumped if it's staged OR (as a fallback) modified today.
+    --all forces bumping every referenced file."""
+    if force_all:
+        return True
+    # For source .jsx: check the .jsx directly. For compiled dist/*.js: check
+    # both the .js (staged rebuild) and its .jsx source.
+    if source_filename in staged:
+        return True
+    if source_filename.endswith(".jsx"):
+        compiled = source_filename[:-4] + ".js"
+        if compiled in staged:
+            return True
+    return file_modified_today(source_filename)
 
 
 def next_version(current_tag, base_date):
@@ -47,12 +88,11 @@ for m in re.finditer(r'(?:src|href)="(?:dist/)?([^"?]+\.(jsx|js|css))\?v=([^"]+)
     filename   = os.path.basename(m.group(1))
     old_ver    = m.group(3)
 
-    # Check if the source file was modified today
+    # Compiled dist/foo.js corresponds to source foo.jsx
     source = filename.replace(".js", ".jsx") if filename.endswith(".js") else filename
-    if not file_modified_today(source):
+    if not should_bump(source):
         continue
 
-    # Already stamped with today? bump the counter. Otherwise reset to today-1.
     if old_ver.startswith(today):
         new_tag = next_version(f"?v={old_ver}", today)
     else:
@@ -71,4 +111,4 @@ if bumped:
         open(html, "w", encoding="utf-8").write(text)
         print(f"Wrote {html}")
 else:
-    print("No files modified today — nothing to bump.")
+    print("No source files staged or modified today — nothing to bump.")
