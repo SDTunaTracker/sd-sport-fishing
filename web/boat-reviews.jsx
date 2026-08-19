@@ -1,5 +1,15 @@
-// Boat review system — 3-step modal, Expedia-style display, highlights
-// Formspree endpoint: go to formspree.io, create a form, paste the URL below.
+// Boat review system — 3-step modal, Expedia-style display, highlights.
+//
+// Submissions POST to the review-ingest Cloudflare Worker, which stores them
+// in KV and returns them via GET /reviews. The site hydrates from the Worker
+// on page load and merges with any legacy reviews baked into web/data.js.
+//
+// Set WORKER_ENDPOINT to your deployed Worker URL (no trailing slash), e.g.
+//   const WORKER_ENDPOINT = 'https://review-ingest.YOUR-ACCT.workers.dev';
+// While empty, the form falls back to the legacy Formspree endpoint (which
+// doesn't support Cloudinary URLs cleanly, but keeps the site functional
+// during the transition).
+const WORKER_ENDPOINT = '';
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mkoepqrz';
 
 // Cloudinary direct upload — photos go to Cloudinary from the browser,
@@ -37,6 +47,84 @@ const OVERNIGHT_LENGTHS = new Set([
   'Overnight','1.5 Day','2 Day','2.5 Day','3 Day',
   '4 Day','5 Day','6 Day','7 Day','Long Range',
 ]);
+
+// ── Hydration: pull reviews from the Worker and merge into window.SD.REVIEWS ──
+// Runs once at page load; components re-render via a custom event.
+function _recomputeSummary(byBoat) {
+  const summary = {};
+  for (const [boat, reviews] of Object.entries(byBoat)) {
+    const avg = (field) => {
+      const vals = reviews.map(r => r[field]).filter(v => v != null && v !== '');
+      return vals.length ? Math.round(vals.reduce((a,b) => a+Number(b), 0) / vals.length * 10) / 10 : null;
+    };
+    const overnightReviews = reviews.filter(
+      r => OVERNIGHT_LENGTHS.has(r.trip_length || '') && r.bunks_rating != null,
+    );
+    const rebookYes = reviews.filter(r => r.would_rebook === true).length;
+    summary[boat] = {
+      avg_overall:      avg('overall_rating'),
+      avg_captain:      avg('captain_rating'),
+      avg_crew:         avg('crew_rating'),
+      avg_fish_finding: avg('fish_finding_rating'),
+      avg_galley:       avg('galley_rating'),
+      avg_bunks:        overnightReviews.length
+        ? Math.round(overnightReviews.reduce((a,r) => a+r.bunks_rating, 0) / overnightReviews.length * 10) / 10
+        : null,
+      total_reviews:    reviews.length,
+      would_rebook_pct: reviews.length ? Math.round(rebookYes / reviews.length * 100) : null,
+    };
+  }
+  return summary;
+}
+
+async function hydrateReviewsFromWorker() {
+  if (!WORKER_ENDPOINT) return;
+  let incoming;
+  try {
+    const resp = await fetch(`${WORKER_ENDPOINT}/reviews`, { headers: { 'Accept': 'application/json' } });
+    if (!resp.ok) return;
+    incoming = await resp.json();
+    if (!Array.isArray(incoming)) return;
+  } catch { return; }
+
+  window.SD = window.SD || {};
+  const base = window.SD.REVIEWS || { byBoat: {}, summary: {} };
+  const byBoat = { ...(base.byBoat || {}) };
+
+  for (const r of incoming) {
+    if (!r?.boat) continue;
+    const list = byBoat[r.boat] ? [...byBoat[r.boat]] : [];
+    if (r.id && list.some(x => x.id === r.id)) continue;
+    list.push(r);
+    byBoat[r.boat] = list;
+  }
+  // Newest first per boat, matching reviews_for_export ordering
+  for (const boat of Object.keys(byBoat)) {
+    byBoat[boat].sort((a, b) => (b.submitted_at || '').localeCompare(a.submitted_at || ''));
+  }
+
+  window.SD.REVIEWS = { byBoat, summary: _recomputeSummary(byBoat) };
+  window.dispatchEvent(new CustomEvent('tt-reviews-updated'));
+}
+
+// Kick off hydration as soon as this script loads. If window.SD isn't ready
+// yet (rare — data.js loads first per index.html), retry once after DOMContentLoaded.
+if (typeof window !== 'undefined') {
+  if (window.SD) hydrateReviewsFromWorker();
+  else window.addEventListener('DOMContentLoaded', hydrateReviewsFromWorker, { once: true });
+}
+
+// Hook: bumps a counter whenever hydration fires, forcing consumers to re-read
+// window.SD.REVIEWS. Sidesteps the need for a full context refactor.
+function useReviewsVersion() {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const bump = () => setV(x => x + 1);
+    window.addEventListener('tt-reviews-updated', bump);
+    return () => window.removeEventListener('tt-reviews-updated', bump);
+  }, []);
+  return v;
+}
 
 const TRIP_LENGTH_OPTIONS = [
   'Full Day','3/4 Day','Overnight','1.5 Day','2 Day','2.5 Day',
@@ -287,7 +375,7 @@ function SuccessScreen({ boat, onClose }) {
           <div className="rv-success-icon">✓</div>
           <div className="rv-success-title">Thanks for your review!</div>
           <div className="rv-success-body">
-            It will appear after a quick moderation check.
+            Your review is live on {boat}’s page.
           </div>
           <div className="rv-success-share">
             <div className="rv-success-share-label">Help other anglers find this —</div>
@@ -373,15 +461,17 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
       would_rebook: form.would_rebook,
       photos: photoUrls,
     };
-    if (!FORMSPREE_ENDPOINT) { setStatus('success'); return; }
+    // Prefer the Worker endpoint; fall back to Formspree during rollout.
+    const endpoint = WORKER_ENDPOINT ? `${WORKER_ENDPOINT}/reviews` : FORMSPREE_ENDPOINT;
+    if (!endpoint) { setStatus('success'); return; }
     try {
-      const resp = await fetch(FORMSPREE_ENDPOINT, {
+      const resp = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!resp.ok) {
-        let msg = `Formspree returned ${resp.status}`;
+        let msg = `Submission returned ${resp.status}`;
         try {
           const err = await resp.json();
           if (err?.error) msg += `: ${err.error}`;
@@ -391,6 +481,9 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
         return;
       }
       setStatus('success');
+      // Re-hydrate so the user sees their just-submitted review appear
+      // as soon as they close the success screen.
+      if (WORKER_ENDPOINT) hydrateReviewsFromWorker().catch(() => {});
     } catch (e) {
       setErrorDetail(e?.message || 'Network error — please try again.');
       setStatus('error');
@@ -665,6 +758,7 @@ function ReviewsSection({ boat, landing, openSignal }) {
   const [showModal, setShowModal] = useState(false);
   const [sort, setSort] = useState('recent');
   const [page, setPage] = useState(0);
+  const reviewsVersion = useReviewsVersion();
   const PER_PAGE = 5;
 
   // Auto-open from URL param (e.g. from Today's Report ⭐ click)
@@ -689,7 +783,7 @@ function ReviewsSection({ boat, landing, openSignal }) {
     if (sort === 'highest') copy.sort((a, b) => (b.overall_rating||0) - (a.overall_rating||0));
     else copy.sort((a, b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
     return copy;
-  }, [boat, sort]);
+  }, [boat, sort, reviewsVersion]);
 
   const summary = window.SD.REVIEWS?.summary?.[boat];
   const totalPages = Math.ceil(reviews.length / PER_PAGE);
@@ -749,6 +843,7 @@ function ReviewsSection({ boat, landing, openSignal }) {
 
 // ── Compact star badge (inline with boat name) ────────────────────────────────
 function ReviewBadge({ boat }) {
+  useReviewsVersion();  // re-render when hydration completes
   const summary = window.SD.REVIEWS?.summary?.[boat];
   if (!summary || summary.total_reviews < 3 || !summary.avg_overall) return null;
   const { label, color } = getReviewLabel(summary.avg_overall);
@@ -764,6 +859,7 @@ function ReviewBadge({ boat }) {
 
 // ── Expedia-style card badge (trip planner) ───────────────────────────────────
 function ReviewCardBadge({ boat }) {
+  useReviewsVersion();  // re-render when hydration completes
   const summary = window.SD.REVIEWS?.summary?.[boat];
   if (!summary || summary.total_reviews < 3 || !summary.avg_overall) return null;
   const { label, color } = getReviewLabel(summary.avg_overall);

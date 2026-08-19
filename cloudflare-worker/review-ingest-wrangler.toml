@@ -1,0 +1,14 @@
+name               = "review-ingest"
+main               = "review-ingest.js"
+compatibility_date = "2024-09-23"
+workers_dev        = true
+
+# ── KV namespace ──────────────────────────────────────────────────────────────
+# 1. Create KV namespace in CF dashboard → Workers & Pages → KV
+#    Name: REVIEWS
+# 2. Copy the namespace ID + preview ID and paste below.
+#    (Or run: wrangler kv:namespace create REVIEWS  and  wrangler kv:namespace create REVIEWS --preview)
+[[kv_namespaces]]
+binding    = "REVIEWS"
+id         = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
