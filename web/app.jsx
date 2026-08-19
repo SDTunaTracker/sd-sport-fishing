@@ -429,7 +429,7 @@ function App() {
       <main className="main-content" data-screen-label={route.view}>{content}</main>
       <AppFooter/>
 
-      {route.view !== 'charts' && <ChatBot pageContext={pageContext}/>}
+      {route.view === 'tripplanner' && <ChatBot pageContext={pageContext}/>}
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">
