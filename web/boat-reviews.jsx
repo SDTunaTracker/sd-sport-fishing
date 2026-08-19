@@ -2,6 +2,35 @@
 // Formspree endpoint: go to formspree.io, create a form, paste the URL below.
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mkoepqrz';
 
+// Cloudinary direct upload — photos go to Cloudinary from the browser,
+// then only the returned URLs are sent to Formspree (keeps Formspree free tier).
+// Setup:
+//   1. Sign up at cloudinary.com (free tier: 25 GB storage/bandwidth per month)
+//   2. Settings → Upload → Add upload preset → set "Signing Mode" to "Unsigned"
+//   3. Paste your cloud name + upload preset name below.
+// If either is empty, the form falls back to text-only submission (photos are
+// silently dropped with a user-facing note).
+const CLOUDINARY_CLOUD_NAME    = '';  // e.g. 'tunatracker'
+const CLOUDINARY_UPLOAD_PRESET = '';  // e.g. 'boat_reviews_unsigned'
+
+async function uploadToCloudinary(file) {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  const resp = await fetch(url, { method: 'POST', body: fd });
+  if (!resp.ok) {
+    let msg = `Cloudinary upload failed (${resp.status})`;
+    try {
+      const err = await resp.json();
+      if (err?.error?.message) msg += `: ${err.error.message}`;
+    } catch {}
+    throw new Error(msg);
+  }
+  const data = await resp.json();
+  return data.secure_url;
+}
+
 const { useState, useMemo, useEffect, useRef } = React;
 
 const OVERNIGHT_LENGTHS = new Set([
@@ -295,12 +324,38 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
   const displayBoat = initBoat || form.boat || '';
   const isOvernight = OVERNIGHT_LENGTHS.has(form.trip_length);
 
+  const [errorDetail, setErrorDetail] = useState('');
+
   const handleSubmit = async () => {
     if (!form.overall_rating) {
       alert('Please add an Overall rating on Step 2.');
       setStep(2);
       return;
     }
+    setErrorDetail('');
+
+    // Upload photos to Cloudinary first (if configured), then send URLs to Formspree.
+    let photoUrls = [];
+    const hasPhotos = form.photos && form.photos.length > 0;
+    const cloudinaryReady = CLOUDINARY_CLOUD_NAME && CLOUDINARY_UPLOAD_PRESET;
+
+    if (hasPhotos && !cloudinaryReady) {
+      setErrorDetail('Photo hosting isn’t set up yet — please remove photos and resubmit, or contact the site owner.');
+      setStatus('error');
+      return;
+    }
+
+    if (hasPhotos) {
+      setStatus('uploading');
+      try {
+        photoUrls = await Promise.all(form.photos.map(p => uploadToCloudinary(p.file)));
+      } catch (e) {
+        setErrorDetail(e?.message || 'Photo upload failed.');
+        setStatus('error');
+        return;
+      }
+    }
+
     setStatus('submitting');
     const payload = {
       boat: displayBoat, landing: initLanding || '',
@@ -316,32 +371,30 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
       title: form.title,
       body: form.body,
       would_rebook: form.would_rebook,
+      photos: photoUrls,
     };
     if (!FORMSPREE_ENDPOINT) { setStatus('success'); return; }
     try {
-      let resp;
-      if (form.photos && form.photos.length > 0) {
-        // Multipart submit — Formspree accepts files via FormData
-        const fd = new FormData();
-        for (const [k, v] of Object.entries(payload)) {
-          fd.append(k, v == null ? '' : String(v));
-        }
-        fd.append('photo_count', String(form.photos.length));
-        form.photos.forEach((p, i) => fd.append(`photo_${i + 1}`, p.file, p.file.name));
-        resp = await fetch(FORMSPREE_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json' },  // let browser set multipart boundary
-          body: fd,
-        });
-      } else {
-        resp = await fetch(FORMSPREE_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+      const resp = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!resp.ok) {
+        let msg = `Formspree returned ${resp.status}`;
+        try {
+          const err = await resp.json();
+          if (err?.error) msg += `: ${err.error}`;
+        } catch {}
+        setErrorDetail(msg);
+        setStatus('error');
+        return;
       }
-      setStatus(resp.ok ? 'success' : 'error');
-    } catch { setStatus('error'); }
+      setStatus('success');
+    } catch (e) {
+      setErrorDetail(e?.message || 'Network error — please try again.');
+      setStatus('error');
+    }
   };
 
   // Free blob URLs from photo previews when the modal unmounts
@@ -402,28 +455,37 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
             <button className="rv-back-btn" onClick={() => setStep(s => s - 1)}>← Back</button>
           )}
           <div style={{flex:1}}/>
-          {step < 3 ? (
-            <>
-              {step === 2 && (
-                <button className="rv-submit-quick" onClick={handleSubmit}
-                        disabled={!form.overall_rating || status === 'submitting'}>
-                  {status === 'submitting' ? 'Submitting…' : 'Submit ↗'}
-                </button>
-              )}
-              <button className="rv-next-btn" onClick={() => setStep(s => s + 1)}>
-                {step === 2 ? 'Add details →' : 'Next →'}
+          {(() => {
+            const busy = status === 'submitting' || status === 'uploading';
+            const busyLabel = status === 'uploading' ? 'Uploading photos…' : 'Submitting…';
+            if (step < 3) {
+              return (
+                <>
+                  {step === 2 && (
+                    <button className="rv-submit-quick" onClick={handleSubmit}
+                            disabled={!form.overall_rating || busy}>
+                      {busy ? busyLabel : 'Submit ↗'}
+                    </button>
+                  )}
+                  <button className="rv-next-btn" onClick={() => setStep(s => s + 1)}>
+                    {step === 2 ? 'Add details →' : 'Next →'}
+                  </button>
+                </>
+              );
+            }
+            return (
+              <button className="rv-submit-btn" onClick={handleSubmit}
+                      disabled={!form.overall_rating || busy}>
+                {busy ? busyLabel : 'Submit Review →'}
               </button>
-            </>
-          ) : (
-            <button className="rv-submit-btn" onClick={handleSubmit}
-                    disabled={!form.overall_rating || status === 'submitting'}>
-              {status === 'submitting' ? 'Submitting…' : 'Submit Review →'}
-            </button>
-          )}
+            );
+          })()}
         </div>
 
         {status === 'error' && (
-          <div className="rv-error">Submission failed — please try again.</div>
+          <div className="rv-error">
+            {errorDetail || 'Submission failed — please try again.'}
+          </div>
         )}
       </div>
     </div>
