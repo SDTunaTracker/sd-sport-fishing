@@ -124,6 +124,7 @@ window.ttPathFromRoute = pathFromRoute;
 
 function App() {
   const [route, setRoute] = useS(() => routeFromLocation());
+  const [navBusy, setNavBusy] = useS(false);
   const [filters, setFilters] = useS({ ...DEFAULT_FILTERS });
   const [tweaks, setTweaksState] = useTweaks(TWEAK_DEFAULTS);
   const [chartsReady, setChartsReady] = useS(function() {
@@ -370,6 +371,14 @@ function App() {
 
   const navigate = (view, params = {}) => {
     const nextPath = pathFromRoute(view, params, regions);
+    const changing = nextPath !== window.location.pathname || view !== route.view;
+    if (changing) {
+      // Flash a top progress bar so mobile users know the tap registered
+      // while the new page renders. Timer restarts on rapid re-taps.
+      setNavBusy(true);
+      window.clearTimeout(window.__ttNavBusyTimer);
+      window.__ttNavBusyTimer = window.setTimeout(() => setNavBusy(false), 500);
+    }
     if (window.location.pathname !== nextPath) {
       history.pushState(null, '', nextPath); // pushState does not fire popstate
       // Belt-and-suspenders: some mobile browsers dropped the setRoute() call
@@ -423,6 +432,7 @@ function App() {
 
   return (
     <React.Fragment>
+      <div className={`tt-nav-progress${navBusy ? ' on' : ''}`} aria-hidden="true"/>
       <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
                  hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>

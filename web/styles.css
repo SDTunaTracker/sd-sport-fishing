@@ -1,5 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
+/* ── Top navigation progress bar (mobile only) ──────────────────────────────
+   Flashes a thin bar at the top when the user taps a nav link so it's clear
+   the tap registered while the new page renders. Desktop navigation is
+   snappy enough not to need it. */
+.tt-nav-progress {
+  position: fixed; top: 0; left: 0;
+  height: 3px; width: 0;
+  background: linear-gradient(to right, #0F4C81, #38BDF8);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+  z-index: 3000; pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+@media (max-width: 768px) {
+  .tt-nav-progress.on {
+    width: 100%; opacity: 1;
+    transition: width .45s cubic-bezier(.15, .85, .2, 1);
+  }
+}
+
 /* Modal overlay (Trip Finder) */
 .modal-backdrop {
   position: fixed; inset: 0;
