@@ -2,6 +2,7 @@
 const { useEffect, useMemo } = React;
 function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
   const [detailTab, setDetailTab] = React.useState('overview');
+  const [reviewOpenSignal, setReviewOpenSignal] = React.useState(0);
   const [isSaved, setIsSaved] = React.useState(function() { return window.getSavedBoats().has(boat); });
   useEffect(function() {
     function sync() { setIsSaved(window.getSavedBoats().has(boat)); }
@@ -135,7 +136,8 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
                   style={{width:'100%', marginBottom:6}}>
             Head-to-Head
           </button>
-          <button className="btn primary" onClick={() => setDetailTab('reviews')}
+          <button className="btn primary"
+                  onClick={() => { setDetailTab('reviews'); setReviewOpenSignal(s => s + 1); }}
                   style={{background:'#0F4C81', color:'#fff', border:'none', width:'100%', marginBottom:6}}>
             Write a Review
           </button>
@@ -296,7 +298,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
       </div>
 
       {detailTab === 'reviews' && (
-        <ReviewsSection boat={boat} landing={meta.landing}/>
+        <ReviewsSection boat={boat} landing={meta.landing} openSignal={reviewOpenSignal}/>
       )}
 
       {detailTab === 'reddit' && (

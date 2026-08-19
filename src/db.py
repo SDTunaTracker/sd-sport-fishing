@@ -202,7 +202,8 @@ CREATE TABLE IF NOT EXISTS boat_reviews (
     verified INTEGER DEFAULT 0,
     status TEXT DEFAULT 'pending',
     submitted_at TEXT,
-    ip_hash TEXT
+    ip_hash TEXT,
+    photos TEXT
 );
 
 CREATE TABLE IF NOT EXISTS boat_profiles (
@@ -328,6 +329,10 @@ def _migrate(conn: sqlite3.Connection) -> None:
     for col, defn in _NEW_SCHED_COLUMNS:
         if col not in sched_existing:
             conn.execute(f"ALTER TABLE scheduled_trips ADD COLUMN {col} {defn}")
+    # boat_reviews: photos stored as a JSON array of URLs
+    rev_cols = {row[1] for row in conn.execute("PRAGMA table_info(boat_reviews)").fetchall()}
+    if rev_cols and "photos" not in rev_cols:
+        conn.execute("ALTER TABLE boat_reviews ADD COLUMN photos TEXT")
     # forecast_scores was redesigned to track per-segment A/B/C ensemble scores.
     # Drop+recreate when the old single-row-per-date schema is detected.
     fs_cols = {row[1] for row in conn.execute("PRAGMA table_info(forecast_scores)").fetchall()}

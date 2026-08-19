@@ -26,14 +26,17 @@ def add_review(conn, data: dict, ip: str = '') -> int:
     """Insert a new review with status='pending'. Returns row id."""
     ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16] if ip else None
     now = datetime.now(timezone.utc).isoformat(timespec='seconds')
+    photos = data.get('photos')
+    if photos and not isinstance(photos, str):
+        photos = json.dumps(list(photos))
     cur = conn.execute(
         """INSERT INTO boat_reviews
            (boat, landing, reviewer_name, trip_date, trip_length,
             overall_rating, captain_rating, crew_rating, fish_finding_rating,
             galley_rating, bunks_rating,
             title, body, species_caught, tuna_count, would_rebook,
-            status, submitted_at, ip_hash)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            status, submitted_at, ip_hash, photos)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             data.get('boat'), data.get('landing'),
             data.get('reviewer_name'), data.get('trip_date'), data.get('trip_length'),
@@ -41,7 +44,7 @@ def add_review(conn, data: dict, ip: str = '') -> int:
             data.get('fish_finding_rating'), data.get('galley_rating'), data.get('bunks_rating'),
             data.get('title'), data.get('body'),
             data.get('species_caught'), data.get('tuna_count'), data.get('would_rebook'),
-            'pending', now, ip_hash,
+            'pending', now, ip_hash, photos,
         ),
     )
     return cur.lastrowid
@@ -60,6 +63,17 @@ def reviews_for_export(conn) -> dict:
     rows = conn.execute(
         "SELECT * FROM boat_reviews WHERE status='approved' ORDER BY submitted_at DESC"
     ).fetchall()
+
+    def _decode_photos(raw):
+        if not raw:
+            return []
+        try:
+            val = json.loads(raw)
+            return [str(u) for u in val if u]
+        except (ValueError, TypeError):
+            return []
+
+    row_keys = set(rows[0].keys()) if rows else set()
 
     by_boat: dict[str, list] = {}
     for r in rows:
@@ -82,6 +96,7 @@ def reviews_for_export(conn) -> dict:
             'body': r['body'],
             'would_rebook': bool(r['would_rebook']),
             'submitted_at': (r['submitted_at'] or '')[:10],
+            'photos': _decode_photos(r['photos']) if 'photos' in row_keys else [],
         }
         by_boat.setdefault(boat, []).append(entry)
 

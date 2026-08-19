@@ -67,7 +67,11 @@ const BLANK_FORM = {
   overall_rating: 0, captain_rating: 0, crew_rating: 0,
   fish_finding_rating: 0, galley_rating: 0, bunks_rating: 0,
   title: '', body: '', would_rebook: null,
+  photos: [],  // { file: File, previewUrl: string }
 };
+
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_MB = 10;
 
 // ── Step sub-components ───────────────────────────────────────────────────────
 function StepWhichTrip({ form, set, initBoat }) {
@@ -152,6 +156,37 @@ function StepHowWasIt({ form, set }) {
 }
 
 function StepTellUsMore({ form, set }) {
+  const fileInputRef = useRef(null);
+  const [photoError, setPhotoError] = useState('');
+
+  const addPhotos = (fileList) => {
+    setPhotoError('');
+    const incoming = Array.from(fileList || []);
+    if (!incoming.length) return;
+    const room = MAX_PHOTOS - form.photos.length;
+    if (room <= 0) {
+      setPhotoError(`Max ${MAX_PHOTOS} photos.`);
+      return;
+    }
+    const accepted = [];
+    const rejected = [];
+    for (const f of incoming.slice(0, room)) {
+      if (!f.type.startsWith('image/')) { rejected.push(`${f.name} (not an image)`); continue; }
+      if (f.size > MAX_PHOTO_MB * 1024 * 1024) { rejected.push(`${f.name} (over ${MAX_PHOTO_MB} MB)`); continue; }
+      accepted.push({ file: f, previewUrl: URL.createObjectURL(f) });
+    }
+    if (rejected.length) setPhotoError(`Skipped: ${rejected.join(', ')}`);
+    if (accepted.length) set('photos', [...form.photos, ...accepted]);
+  };
+
+  const removePhoto = (idx) => {
+    const p = form.photos[idx];
+    if (p?.previewUrl) URL.revokeObjectURL(p.previewUrl);
+    set('photos', form.photos.filter((_, i) => i !== idx));
+  };
+
+  const remaining = MAX_PHOTOS - form.photos.length;
+
   return (
     <div className="rv-step">
       <div className="rv-step-head">
@@ -168,6 +203,32 @@ function StepTellUsMore({ form, set }) {
         <textarea className="rv-modal-textarea" rows={4}
                   placeholder="Tell us about the trip — crew, conditions, catch…"
                   value={form.body} onChange={e => set('body', e.target.value)}/>
+      </div>
+      <div className="rv-modal-field">
+        <label className="rv-modal-label">
+          Photos <span className="rv-optional">(optional · up to {MAX_PHOTOS}, {MAX_PHOTO_MB} MB each)</span>
+        </label>
+        <input ref={fileInputRef} type="file" accept="image/*" multiple
+               style={{display:'none'}}
+               onChange={e => { addPhotos(e.target.files); e.target.value = ''; }}/>
+        <button type="button" className="rv-photo-add-btn"
+                disabled={remaining <= 0}
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}>
+          {remaining > 0 ? `📷 Add photos (${remaining} left)` : `Max ${MAX_PHOTOS} photos`}
+        </button>
+        {photoError && <div className="rv-photo-error">{photoError}</div>}
+        {form.photos.length > 0 && (
+          <div className="rv-photo-previews">
+            {form.photos.map((p, i) => (
+              <div key={i} className="rv-photo-thumb">
+                <img src={p.previewUrl} alt={`Upload ${i+1}`}/>
+                <button type="button" className="rv-photo-remove"
+                        aria-label={`Remove photo ${i+1}`}
+                        onClick={() => removePhoto(i)}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="rv-modal-field">
         <label className="rv-modal-label">Your name <span className="rv-optional">(optional)</span></label>
@@ -258,14 +319,38 @@ function ReviewModal({ boat: initBoat, landing: initLanding, prefill = {}, onClo
     };
     if (!FORMSPREE_ENDPOINT) { setStatus('success'); return; }
     try {
-      const resp = await fetch(FORMSPREE_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      let resp;
+      if (form.photos && form.photos.length > 0) {
+        // Multipart submit — Formspree accepts files via FormData
+        const fd = new FormData();
+        for (const [k, v] of Object.entries(payload)) {
+          fd.append(k, v == null ? '' : String(v));
+        }
+        fd.append('photo_count', String(form.photos.length));
+        form.photos.forEach((p, i) => fd.append(`photo_${i + 1}`, p.file, p.file.name));
+        resp = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },  // let browser set multipart boundary
+          body: fd,
+        });
+      } else {
+        resp = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
       setStatus(resp.ok ? 'success' : 'error');
     } catch { setStatus('error'); }
   };
+
+  // Free blob URLs from photo previews when the modal unmounts
+  useEffect(() => {
+    return () => {
+      form.photos.forEach(p => { if (p?.previewUrl) URL.revokeObjectURL(p.previewUrl); });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (status === 'success') return <SuccessScreen boat={displayBoat} onClose={onClose}/>;
 
@@ -429,9 +514,11 @@ const BODY_LIMIT = 220;
 
 function ReviewCard({ review }) {
   const [expanded, setExpanded] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
   const isOvernight = OVERNIGHT_LENGTHS.has(review.trip_length || '');
   const body = review.body || '';
   const isLong = body.length > BODY_LIMIT;
+  const photos = Array.isArray(review.photos) ? review.photos : [];
   return (
     <div className="rv-card">
       <div className="rv-card-head">
@@ -456,6 +543,23 @@ function ReviewCard({ review }) {
               {expanded ? ' Show less' : ' Read more'}
             </button>
           )}
+        </div>
+      )}
+      {photos.length > 0 && (
+        <div className="rv-card-photos">
+          {photos.map((url, i) => (
+            <button key={i} type="button" className="rv-card-photo"
+                    onClick={() => setLightbox(url)}
+                    aria-label={`View photo ${i+1} of ${photos.length}`}>
+              <img src={url} alt={`Review photo ${i+1}`} loading="lazy"/>
+            </button>
+          ))}
+        </div>
+      )}
+      {lightbox && (
+        <div className="rv-lightbox" onClick={() => setLightbox(null)}>
+          <img src={lightbox} alt="Review photo (enlarged)" onClick={e => e.stopPropagation()}/>
+          <button className="rv-lightbox-close" onClick={() => setLightbox(null)} aria-label="Close">✕</button>
         </div>
       )}
       <div className="rv-card-sub-ratings">
@@ -487,7 +591,7 @@ const SORT_OPTIONS = [
 ];
 
 // ── Reviews section (boat detail tab) ────────────────────────────────────────
-function ReviewsSection({ boat, landing }) {
+function ReviewsSection({ boat, landing, openSignal }) {
   const [showModal, setShowModal] = useState(false);
   const [sort, setSort] = useState('recent');
   const [page, setPage] = useState(0);
@@ -503,6 +607,11 @@ function ReviewsSection({ boat, landing }) {
       history.replaceState(null, '', newSearch ? `?${newSearch}` : window.location.pathname);
     }
   }, []);
+
+  // Open modal on external signal (e.g. Write a Review button in the boat header)
+  useEffect(() => {
+    if (openSignal) setShowModal(true);
+  }, [openSignal]);
 
   const reviews = useMemo(() => {
     const all = window.SD.REVIEWS?.byBoat?.[boat] || [];
