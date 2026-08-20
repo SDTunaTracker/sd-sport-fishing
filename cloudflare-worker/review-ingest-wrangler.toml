@@ -10,5 +10,5 @@ workers_dev        = true
 #    (Or run: wrangler kv:namespace create REVIEWS  and  wrangler kv:namespace create REVIEWS --preview)
 [[kv_namespaces]]
 binding    = "REVIEWS"
-id         = "REPLACE_WITH_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
+id         = "ea3335c0cfea42b899348d589c3adc13"
+preview_id = "7c1e5cc81666459ab08ef460f17aaf76"

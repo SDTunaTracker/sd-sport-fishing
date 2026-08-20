@@ -9,7 +9,7 @@
 // While empty, the form falls back to the legacy Formspree endpoint (which
 // doesn't support Cloudinary URLs cleanly, but keeps the site functional
 // during the transition).
-const WORKER_ENDPOINT = '';
+const WORKER_ENDPOINT = 'https://review-ingest.tylerjchristian.workers.dev';
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mkoepqrz';
 
 // Cloudinary direct upload — photos go to Cloudinary from the browser,
