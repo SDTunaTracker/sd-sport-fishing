@@ -379,8 +379,12 @@
     "338526081": {
       "name": "Sea Star",
       "landing": "Oceanside Sea Center"
+    },
+    "368052510": {
+      "name": "Gentleman",
+      "landing": "Channel Islands Sportfishing"
     }
   },
-  "_last_discover_run": "2026-08-23T14:48:59.829222+00:00",
-  "_vessel_count": 93
+  "_last_discover_run": "2026-08-23T22:31:33.177882+00:00",
+  "_vessel_count": 94
 }
