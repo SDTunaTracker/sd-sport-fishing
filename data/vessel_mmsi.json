@@ -391,8 +391,12 @@
     "367146720": {
       "name": "Malihini",
       "landing": "H&M Landing"
+    },
+    "368078070": {
+      "name": "Thunderbird",
+      "landing": "Davey's Locker"
     }
   },
-  "_last_discover_run": "2026-08-28T00:03:10.444221+00:00",
-  "_vessel_count": 96
+  "_last_discover_run": "2026-08-28T06:11:11.974274+00:00",
+  "_vessel_count": 97
 }
