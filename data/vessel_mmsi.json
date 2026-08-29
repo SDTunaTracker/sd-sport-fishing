@@ -395,8 +395,12 @@
     "368078070": {
       "name": "Thunderbird",
       "landing": "Davey's Locker"
+    },
+    "338054072": {
+      "name": "Freedom",
+      "landing": "22nd Street Landing"
     }
   },
-  "_last_discover_run": "2026-08-28T06:11:11.974274+00:00",
-  "_vessel_count": 97
+  "_last_discover_run": "2026-08-29T00:00:06.201553+00:00",
+  "_vessel_count": 98
 }
