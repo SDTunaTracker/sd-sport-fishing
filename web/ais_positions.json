@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:53:11.458461+00:00",
+    "updated_at": "2026-08-29T04:44:12.047255+00:00",
     "trail": []
   },
   {
@@ -68,7 +68,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:59:55.166507+00:00",
+    "updated_at": "2026-08-29T04:41:54.183665+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:04:20.342555+00:00",
+    "updated_at": "2026-08-29T04:31:19.581998+00:00",
     "trail": []
   },
   {
@@ -128,7 +128,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:59:08.726555+00:00",
+    "updated_at": "2026-08-29T04:41:08.166484+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:53:12.184165+00:00",
+    "updated_at": "2026-08-29T04:05:12.862668+00:00",
     "trail": []
   },
   {
@@ -188,7 +188,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:36:27.088567+00:00",
+    "updated_at": "2026-08-29T04:44:39.283492+00:00",
     "trail": []
   },
   {
@@ -224,7 +224,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:58:29.636827+00:00",
+    "updated_at": "2026-08-29T04:46:38.230186+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:58:10.341182+00:00",
+    "updated_at": "2026-08-29T04:45:48.547315+00:00",
     "trail": []
   },
   {
@@ -272,7 +272,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-27T23:27:46.577532+00:00",
+    "updated_at": "2026-08-29T04:07:03.989451+00:00",
     "trail": []
   },
   {
@@ -344,7 +344,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T00:02:42.140688+00:00",
+    "updated_at": "2026-08-29T04:25:58.780496+00:00",
     "trail": []
   },
   {
@@ -356,7 +356,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:59:50.036455+00:00",
+    "updated_at": "2026-08-29T03:40:29.911233+00:00",
     "trail": []
   },
   {
@@ -428,7 +428,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-26T14:39:38.567396+00:00",
+    "updated_at": "2026-08-29T04:42:23.091672+00:00",
     "trail": []
   },
   {
@@ -488,7 +488,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T22:08:35.676360+00:00",
+    "updated_at": "2026-08-29T03:20:37.279188+00:00",
     "trail": []
   },
   {
@@ -560,7 +560,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:55:58.334011+00:00",
+    "updated_at": "2026-08-29T04:44:15.277846+00:00",
     "trail": []
   },
   {
@@ -764,7 +764,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-28T23:56:35.283274+00:00",
+    "updated_at": "2026-08-29T04:46:47.212493+00:00",
     "trail": []
   },
   {
@@ -1173,6 +1173,18 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-08-28T23:12:26.880757+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "338500000",
+    "name": "Californian",
+    "landing": "Ventura Harbor Sportfishing",
+    "lat": 33.74609,
+    "lng": -120.96411,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-08-29T04:07:37.307575+00:00",
     "trail": []
   }
 ]
