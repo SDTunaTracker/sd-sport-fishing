@@ -403,8 +403,12 @@
     "338500000": {
       "name": "Californian",
       "landing": "Ventura Harbor Sportfishing"
+    },
+    "477188500": {
+      "name": "Dana Pride",
+      "landing": "Dana Wharf Sportfishing"
     }
   },
-  "_last_discover_run": "2026-08-29T18:29:55.591032+00:00",
-  "_vessel_count": 99
+  "_last_discover_run": "2026-08-30T00:34:35.663800+00:00",
+  "_vessel_count": 100
 }
