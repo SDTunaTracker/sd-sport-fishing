@@ -407,8 +407,12 @@
     "477188500": {
       "name": "Dana Pride",
       "landing": "Dana Wharf Sportfishing"
+    },
+    "349970764": {
+      "name": "Poseidon",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-08-30T18:23:43.654312+00:00",
-  "_vessel_count": 100
+  "_last_discover_run": "2026-08-31T00:38:28.892837+00:00",
+  "_vessel_count": 101
 }

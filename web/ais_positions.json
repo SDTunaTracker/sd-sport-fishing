@@ -8,7 +8,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:23:16.694128+00:00",
+    "updated_at": "2026-08-31T00:37:19.809259+00:00",
     "trail": []
   },
   {
@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T17:47:11.001962+00:00",
+    "updated_at": "2026-08-31T00:35:10.695839+00:00",
     "trail": []
   },
   {
@@ -68,7 +68,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:20:54.973137+00:00",
+    "updated_at": "2026-08-31T00:35:56.525449+00:00",
     "trail": []
   },
   {
@@ -80,7 +80,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-24T14:56:13.431589+00:00",
+    "updated_at": "2026-08-31T00:37:19.552307+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:22:26.425493+00:00",
+    "updated_at": "2026-08-31T00:33:07.815454+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:22:20.247593+00:00",
+    "updated_at": "2026-08-31T00:34:19.873564+00:00",
     "trail": []
   },
   {
@@ -128,7 +128,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:23:39.101631+00:00",
+    "updated_at": "2026-08-31T00:35:28.599028+00:00",
     "trail": []
   },
   {
@@ -164,7 +164,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:21:36.951744+00:00",
+    "updated_at": "2026-08-31T00:36:36.864705+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:20:11.583080+00:00",
+    "updated_at": "2026-08-31T00:38:13.601709+00:00",
     "trail": []
   },
   {
@@ -204,6 +204,18 @@
     "trail": []
   },
   {
+    "mmsi": "349970764",
+    "name": "Poseidon",
+    "landing": "Fisherman's Landing",
+    "lat": 32.68714,
+    "lng": -117.23629,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-08-31T00:37:00.598495+00:00",
+    "trail": []
+  },
+  {
     "mmsi": "366977380",
     "name": "Freelance",
     "landing": "Davey's Locker",
@@ -224,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:18:06.276943+00:00",
+    "updated_at": "2026-08-31T00:18:02.495670+00:00",
     "trail": []
   },
   {
@@ -236,7 +248,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:22:26.535334+00:00",
+    "updated_at": "2026-08-31T00:37:37.904229+00:00",
     "trail": []
   },
   {
@@ -332,7 +344,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-27T23:06:36.653641+00:00",
+    "updated_at": "2026-08-30T23:27:23.637556+00:00",
     "trail": []
   },
   {
@@ -728,7 +740,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-03T16:31:28.568596+00:00",
+    "updated_at": "2026-08-30T23:41:19.542900+00:00",
     "trail": []
   },
   {
@@ -764,7 +776,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:22:55.756186+00:00",
+    "updated_at": "2026-08-31T00:34:59.211565+00:00",
     "trail": []
   },
   {
@@ -1004,7 +1016,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-29T23:11:54.787794+00:00",
+    "updated_at": "2026-08-31T00:02:15.680559+00:00",
     "trail": []
   },
   {
@@ -1184,7 +1196,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:23:37.556210+00:00",
+    "updated_at": "2026-08-31T00:37:32.256655+00:00",
     "trail": []
   },
   {
@@ -1196,7 +1208,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-30T18:21:36.855114+00:00",
+    "updated_at": "2026-08-31T00:36:36.448649+00:00",
     "trail": []
   }
 ]
