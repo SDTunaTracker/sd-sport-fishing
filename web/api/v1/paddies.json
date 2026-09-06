@@ -1,0 +1,76 @@
+{
+  "build": "68106e62",
+  "generated_at": "2026-09-06T22:25:34Z",
+  "window_days": 14,
+  "banks": {
+    "371": {
+      "name": "371",
+      "mentions_14d": 1,
+      "paddies_reported_14d": 0,
+      "holding_ratio_14d": 0.0,
+      "last_report": "2026-09-05",
+      "recent": [
+        {
+          "trip_date": "2026-09-05",
+          "paddy_count": 0,
+          "holding": false,
+          "species": [],
+          "quote": "We saw no paddies, birds, dolphin, of any sign of live.",
+          "url": "https://www.bdoutdoors.com/forums/threads/371-9-5-26.870079/"
+        }
+      ]
+    },
+    "302": {
+      "name": "302",
+      "mentions_14d": 1,
+      "paddies_reported_14d": 3,
+      "holding_ratio_14d": 0.0,
+      "last_report": "2026-09-04",
+      "recent": [
+        {
+          "trip_date": "2026-09-04",
+          "paddy_count": 3,
+          "holding": false,
+          "species": [],
+          "quote": "Found a few micro paddies around 302 for nada.",
+          "url": "https://www.bdoutdoors.com/forums/threads/sd-local-banks-9-4.870096/"
+        }
+      ]
+    },
+    "horseshoe": {
+      "name": "Horseshoe",
+      "mentions_14d": 1,
+      "paddies_reported_14d": 0,
+      "holding_ratio_14d": 0.0,
+      "last_report": "2026-09-04",
+      "recent": [
+        {
+          "trip_date": "2026-09-04",
+          "paddy_count": null,
+          "holding": false,
+          "species": [],
+          "quote": "Got there an hour later despite the persistent southeast wind and I trolled in with an X rap and only got a calico",
+          "url": "https://www.bdoutdoors.com/forums/threads/9-4-horseshoe-and-105.870037/"
+        }
+      ]
+    },
+    "barn-kelp": {
+      "name": "Barn Kelp",
+      "mentions_14d": 1,
+      "paddies_reported_14d": 0,
+      "holding_ratio_14d": 0.0,
+      "last_report": "2026-09-03",
+      "recent": [
+        {
+          "trip_date": "2026-09-03",
+          "paddy_count": null,
+          "holding": false,
+          "species": [],
+          "quote": "Upon arrival at barn kelp there were great marks under the boat but we couldn't get them to commit",
+          "url": "https://www.bdoutdoors.com/forums/threads/9-3-local-oside.870020/"
+        }
+      ]
+    }
+  },
+  "unresolved": 4
+}

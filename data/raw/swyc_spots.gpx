@@ -1,0 +1,3506 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<gpx version="1.1" creator="GPS Visualizer http://www.gpsvisualizer.com/" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<wpt lat="34.448598" lon="-120.471551">
+  <name>Point Conception</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="30.4667" lon="-116.7695">
+  <name>[South Boundary]</name>
+  <desc>30.4667°, -116.7695°</desc>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="30.4667" lon="-123.0">
+  <name>[West Boundary]</name>
+  <desc>30.4667°, -123.°</desc>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="34.44859" lon="-123.0">
+  <name>[North Boundary]</name>
+  <desc>34.44859, -123</desc>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.8333" lon="-119.5">
+  <name>Area 1.1</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.8333" lon="-118.8333">
+  <name>Area 1.2</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.3333" lon="-118.8333">
+  <name>Area 1.3</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.3333" lon="-119.6167">
+  <name>Area 1.4</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.0" lon="-119.6167">
+  <name>Area 1.5</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.0" lon="-119.8833">
+  <name>Area 1.6</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.55" lon="-119.8833">
+  <name>Area 1.7</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.55" lon="-119.5">
+  <name>Area 1.8</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.7" lon="-118.0333">
+  <name>Area 2.1</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.7" lon="-117.8333">
+  <name>Area 2.2</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.6117" lon="-117.8333">
+  <name>Area 2.3</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.5" lon="-117.8917">
+  <name>Area 2.4</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.5" lon="-118.0333">
+  <name>Area 2.5</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.386484" lon="-117.5956193">
+  <name>Orange County Line</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="31.94284" lon="-116.75719">
+  <name>50 Miles South of Point Loma Light (Coast)</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.6651294" lon="-117.2426581">
+  <name>New Point Loma Lighthouse</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.66512" lon="-118.1023">
+  <name>50 Miles West of Point Loma Light</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="31.94284" lon="-118.1023">
+  <name>50 Miles South &amp; 50 Miles West of Point Loma Light</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="31.94284" lon="-117.24265">
+  <name>50 Miles South of Point Loma Light</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="33.38648" lon="-118.1023">
+  <name>50 Miles West of Orange County Line</name>
+  <sym>http://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</sym>
+</wpt>
+<wpt lat="32.7572" lon="-117.2292">
+  <name>Famousa Slough SMCA (No-Take)</name>
+  <desc>State Marine Conservation Area (No-Take)  &lt;br>An MPA designation that generally prohibits the take of living, geological, and cultural marine resources, but allows potentially affected and ongoing permitted activities such as dredging and maintenance to continue.</desc>
+  <sym>http://www.gstatic.com/mapspro/images/stock/1125-crisis-caution.png</sym>
+</wpt>
+<wpt lat="33.5752" lon="-117.8562">
+  <name>#1 Spot</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8338" lon="-117.3052">
+  <name>1 ¼ Spot</name>
+  <desc>La Jolla</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.25" lon="-117.25">
+  <name>101</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.7639" lon="-117.7333">
+  <name>1010 Trench</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.64" lon="-118.1965">
+  <name>105 Spot</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.6167" lon="-117.8833">
+  <name>1067 Knuckle</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.3" lon="-117.1833">
+  <name>1140 Finger</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4833" lon="-118.7139">
+  <name>125</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.78" lon="-117.8125">
+  <name>138 (Middle Of Ridge)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3984" lon="-118.0034">
+  <name>14 Mile Bank</name>
+  <desc>Google Maps</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5953" lon="-118.1537">
+  <name>150 Bubbles East</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6023" lon="-118.183">
+  <name>150 Bubbles West</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5947" lon="-118.1515">
+  <name>150 Kelp Reef North</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.58" lon="-118.1433">
+  <name>150 Kelp Reef South</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.5937" lon="-118.1625">
+  <name>150 Spot</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5923" lon="-118.1707">
+  <name>150 Spot Hump</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.2467" lon="-118.1806">
+  <name>152</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3806" lon="-118.4667">
+  <name>157</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.73" lon="-119.1622">
+  <name>17 Fa Spot</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7389" lon="-119.2667">
+  <name>170</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5033" lon="-118.8417">
+  <name>172</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6142" lon="-118.952">
+  <name>175</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7" lon="-117.4886">
+  <name>178</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7708" lon="-118.4387">
+  <name>18-20 Fathom Spot Rockfish</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.574" lon="-117.9988">
+  <name>180′ Section Sculpin Hole</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.9139" lon="-117.8833">
+  <name>181</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6883" lon="-117.705">
+  <name>182</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.4333" lon="-121.9333">
+  <name>1908</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.55" lon="-122.05">
+  <name>1978</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0967" lon="-117.8667">
+  <name>209</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.8033" lon="-117.8633">
+  <name>213</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.5833" lon="-117.6417">
+  <name>220-220</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5056" lon="-117.6333">
+  <name>226</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.28" lon="-116.8467">
+  <name>230</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.357" lon="-117.707">
+  <name>230</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.557" lon="-117.207">
+  <name>238</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.2911" lon="-118.4717">
+  <name>245</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.3122" lon="-118.3458">
+  <name>250</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5" lon="-118.6833">
+  <name>267 (The Condom)</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6833" lon="-118.5806">
+  <name>270</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.5667" lon="-117.4833">
+  <name>270 (Redondo Knoll)</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.2" lon="-118.0889">
+  <name>277</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.2967" lon="-117.8192">
+  <name>279/267</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5806" lon="-118.6">
+  <name>286</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.9333" lon="-118.0972">
+  <name>289</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7667" lon="-118.4083">
+  <name>29 Fathom Spot</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.5667" lon="-117.4333">
+  <name>295 (Boot)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.309" lon="-118.3548">
+  <name>3 V's</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4483" lon="-117.58">
+  <name>302</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7917" lon="-118.5333">
+  <name>307</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6167" lon="-120.25">
+  <name>311</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0236" lon="-117.8083">
+  <name>312</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7918" lon="-118.4903">
+  <name>36 Fathom Pinnacle</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7967" lon="-118.4558">
+  <name>37 Fathom Spot</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.27" lon="-117.5467">
+  <name>371</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.387" lon="-118.5408">
+  <name>372</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.9" lon="-117.8333">
+  <name>378</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.0833" lon="-117.8333">
+  <name>380 Fathom</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6833" lon="-118.6083">
+  <name>381</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.6" lon="-117.2639">
+  <name>385</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.075" lon="-117.82">
+  <name>390</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7808" lon="-118.4667">
+  <name>40 Fathom Curve</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.1167" lon="-117.8583">
+  <name>421</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.25" lon="-117.3867">
+  <name>425</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.655" lon="-117.9725">
+  <name>43 (Fathom Spot)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.5333" lon="-118.2">
+  <name>437</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4972" lon="-117.4">
+  <name>439</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.4533" lon="-117.0875">
+  <name>450</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7878" lon="-118.4903">
+  <name>47 Fathom Ridge</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.1639" lon="-118.9167">
+  <name>474</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.6" lon="-117.0833">
+  <name>475</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.0667" lon="-117.1167">
+  <name>475 Knuckle</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.4667" lon="-118.0667">
+  <name>483 – 500</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.275" lon="-118.7417">
+  <name>499</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6812" lon="-117.2693">
+  <name>5 Tanks</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3823" lon="-117.2253">
+  <name>5-Minute Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="31.6167" lon="-116.8333">
+  <name>51 (Banda Bank)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.1136" lon="-116.5708">
+  <name>52</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.3847" lon="-116.7695">
+  <name>60</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7897" lon="-117.3717">
+  <name>60 Fathom Curve - Rockfish</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.0167" lon="-118.2">
+  <name>60 Mile Bank</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.0667" lon="-118.2472">
+  <name>60 Mile Bank (Middle)</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.6667" lon="-116.8333">
+  <name>65 (Tip Of Lower Finger)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.1333" lon="-119.05">
+  <name>711</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7195" lon="-118.4061">
+  <name>81</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.725" lon="-118.4567">
+  <name>86</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.655" lon="-117.4433">
+  <name>9 Mile Bank (N)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5267" lon="-117.34">
+  <name>9 Mile Bank (S)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.9667" lon="-116.8728">
+  <name>97</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5527" lon="-117.8218">
+  <name>Abalone Point</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.8015" lon="-118.1208">
+  <name>Airplane</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.9667" lon="-119.9472">
+  <name>Albatross Knoll</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5063" lon="-117.7588">
+  <name>Aliso Pipe</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.1128" lon="-117.335">
+  <name>Anderson Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5837" lon="-117.8662">
+  <name>Arch Rock - Half Spot</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="34.3667" lon="-121.0667">
+  <name>Arguello Canyon</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4117" lon="-118.225">
+  <name>Avalon Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.347" lon="-118.3205">
+  <name>Avalon Harbor</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.0083" lon="-116.8775">
+  <name>Bajamar</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.65" lon="-116.8667">
+  <name>Banda Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3097" lon="-117.4855">
+  <name>Barn Kelp</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.3507" lon="-117.2312">
+  <name>Barrys Spot</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0033" lon="-120.0">
+  <name>Bechers Bay (big area)</name>
+  <desc>Channel Islands - Santa Rosa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.605" lon="-118.93">
+  <name>Bell Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.357" lon="-118.4902">
+  <name>Ben Weston</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6145" lon="-117.9727">
+  <name>Bend in Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.019" lon="-118.7847">
+  <name>Big Kelp Reef - BKR</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.445" lon="-118.4888">
+  <name>Bird Rock Reef</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.5482" lon="-117.8155">
+  <name>Blue Roof</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3215" lon="-117.5087">
+  <name>Box Canyon</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.318" lon="-117.5293">
+  <name>Box Canyon #2</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.1723" lon="-117.3783">
+  <name>Buccaneer Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3933" lon="-117.2298">
+  <name>Bull Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.635" lon="-118.2342">
+  <name>Bull Kelp (LA)</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.525" lon="-117.1433">
+  <name>Bull Ring</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.6219" lon="-117.2453">
+  <name>Buoy #1 (Whistler Buoy)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6367" lon="-117.2273">
+  <name>Buoy #3</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6521" lon="-117.2273">
+  <name>Buoy #5</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6649" lon="-117.229">
+  <name>Buoy #7</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6733" lon="-117.2304">
+  <name>Buoy #9</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0873" lon="-117.3197">
+  <name>Carlsbad Art Reef - Ponto</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.04" lon="-120.0883">
+  <name>Carrington Point (stay west of MPA line)</name>
+  <desc>Channel Islands - Santa Rosa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.035" lon="-118.6142">
+  <name>Castle Rock</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4233" lon="-118.5083">
+  <name>Cat Harbor</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0027" lon="-119.423">
+  <name>Cat Rock</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.8731" lon="-119.4214">
+  <name>Cherry Banks</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3283" lon="-118.4688">
+  <name>China Point - Catalina</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7958" lon="-118.4333">
+  <name>China Point - San Clemente Island</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0242" lon="-119.6117">
+  <name>Chinese Harbor</name>
+  <desc>Channel Islands - Santa Cruz Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.2968" lon="-118.3267">
+  <name>Church Rock</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4667" lon="-118.6193">
+  <name>CI - Rockfish #1</name>
+  <desc>Catalina Island - West End Humps</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.4647" lon="-118.6195">
+  <name>CI - Rockfish #2</name>
+  <desc>Catalina Island - West End Humps</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.464" lon="-118.6138">
+  <name>CI - Rockfish #3</name>
+  <desc>Catalina Island - West End Humps</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.9225" lon="-120.1883">
+  <name>Cluster Point Reef</name>
+  <desc>Channel Islands - Santa Rosa Island</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7197" lon="-117.2772">
+  <name>College Area</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="30.8967" lon="-116.5033">
+  <name>Colonet</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.505" lon="-117.2917">
+  <name>Coronado Canyon</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4403" lon="-119.1306">
+  <name>Cortes Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.45" lon="-119.1283">
+  <name>Cortez Bank (Bishop Rock)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5637" lon="-117.8385">
+  <name>Crystal Cove (#2 Spot)</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.793" lon="-117.2763">
+  <name>Crystal Pier</name>
+  <desc>Stay north of MPA at 32.7991</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4544" lon="-117.6895">
+  <name>Dana Harbor</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.445" lon="-117.6833">
+  <name>Dana Hard Bottom</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.95" lon="-117.2792">
+  <name>Del Mar Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.9494" lon="-117.2767">
+  <name>Del Mar Kelp South End</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.9594" lon="-117.2791">
+  <name>Del Mar Kelp, downhill current only</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.2473" lon="-117.0146">
+  <name>Descanso Rockfish 1</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2408" lon="-116.976">
+  <name>Descanso Rockfish 2</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.7587" lon="-118.4087">
+  <name>Desperation Reef</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.975" lon="-117.59">
+  <name>Dolly Parton Bank</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.9083" lon="-118.425">
+  <name>Dome</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3632" lon="-117.563">
+  <name>Domes</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5902" lon="-118.1315">
+  <name>Double Rigs Reef</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="31.7" lon="-118.5639">
+  <name>Dumping Grounds</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.991" lon="-118.5895">
+  <name>Dunes</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4603" lon="-118.5073">
+  <name>Eagle Reef</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.9317" lon="-120.0017">
+  <name>Eagle's Nest</name>
+  <desc>Channel Islands - Santa Rosa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0358" lon="-119.3108">
+  <name>East Anacapa Reef #1</name>
+  <desc>Channel Islands - East Anacapa Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="34.0208" lon="-119.345">
+  <name>East Anacapa Reef #2</name>
+  <desc>Channel Islands - East Anacapa Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="34.0208" lon="-119.3307">
+  <name>East Anacapa Reef #3</name>
+  <desc>Channel Islands - East Anacapa Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.4745" lon="-118.5845">
+  <name>East Beach</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.2736" lon="-118.1">
+  <name>East Butterfly</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.25" lon="-118.1047">
+  <name>East Butterfly (267)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3062" lon="-118.3033">
+  <name>East End - Seal Rocks</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="34.0058" lon="-119.3817">
+  <name>East Fish Camp</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.645" lon="-118.2045">
+  <name>East Horseshoe</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.45" lon="-117.235">
+  <name>East of Pukey Point – Yellowtail &amp; Rockfish</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.9075" lon="-119.9658">
+  <name>East Point</name>
+  <desc>Channel Islands - Santa Rosa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.922" lon="-118.4517">
+  <name>El Segundo Pipe</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.8667" lon="-119.4667">
+  <name>Elephant</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.1343" lon="-117.3477">
+  <name>Encina Powerplant Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6105" lon="-117.9763">
+  <name>End of Old Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.755" lon="-117.3683">
+  <name>Fad A (Missing)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7853" lon="-117.5583">
+  <name>Fad B (Missing)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3427" lon="-118.5168">
+  <name>Farnsworth Bank</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7008" lon="-118.2905">
+  <name>Fermin Reef 65ft</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.0478" lon="-117.0417">
+  <name>Finger Bank</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8342" lon="-118.3557">
+  <name>Fish Hook</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4333" lon="-117.15">
+  <name>Flats</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0525" lon="-119.9145">
+  <name>Forney's Cove</name>
+  <desc>Channel Islands - Weatherside Spots</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.03" lon="-119.9">
+  <name>Forney's/Christy Beach/Black Point squid zone (big area)</name>
+  <desc>Channel Islands - Weatherside Spots</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3625" lon="-118.3338">
+  <name>Frog Rock</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.3705" lon="-118.3453">
+  <name>Gallaghers - 12 fathoms</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.413" lon="-117.2621">
+  <name>Genoa Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.4158" lon="-118.3958">
+  <name>Goat Harbor</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.24" lon="-117.4378">
+  <name>Golf Ball</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7102" lon="-117.279">
+  <name>Green Tank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7085" lon="-117.2773">
+  <name>Green Tank #2</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4228" lon="-117.251">
+  <name>Gunsight</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5683" lon="-119.6995">
+  <name>Hancock Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.449071" lon="-118.488659">
+  <name>Harbor Reef</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.6375" lon="-117.2417">
+  <name>Hardbottom</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.4058" lon="-118.3655">
+  <name>Hen Rock</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.8537" lon="-118.4133">
+  <name>Hermosa Beach Artificial Reef</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.8682" lon="-118.4205">
+  <name>Hermosa Hard Bottom</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.9" lon="-117.5">
+  <name>Hidden Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7283" lon="-119.16">
+  <name>Hidden Reef</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7297" lon="-117.2752">
+  <name>Hill Street</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7802" lon="-117.2823">
+  <name>HMCS Yukon</name>
+  <desc>Wreck</desc>
+  <sym>images/icon-5.png</sym>
+</wpt>
+<wpt lat="33.64" lon="-118.2333">
+  <name>Horseshoe</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6667" lon="-118.2223">
+  <name>Horseshoe North</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6645" lon="-118.225">
+  <name>Horseshoe South</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4917" lon="-117.785">
+  <name>Hospital - 100 Fathom Curve</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.858" lon="-116.6612">
+  <name>Hotel Coral Marina Entrance</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6683" lon="-117.188">
+  <name>Hotel Del Hardbottom</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="34.0278" lon="-119.526">
+  <name>Hungryman's Gulch</name>
+  <desc>Channel Islands - Santa Cruz Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5667" lon="-117.2">
+  <name>Imperial Beach Flats</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.575" lon="-117.16">
+  <name>Imperial Beach Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.55" lon="-117.15">
+  <name>Imperial Beach Kelp South End</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.58" lon="-117.135">
+  <name>Imperial Beach Pier</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5383" lon="-117.18">
+  <name>Imperial Beach Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.823" lon="-117.3018">
+  <name>Inside Bull Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.8812" lon="-118.5355">
+  <name>Inside South Bank Pinnacle 26 Fathom</name>
+  <desc>33.52.870 x 118.32.130 Inside South Bank Pinnacle 26 Fathom</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.8658" lon="-118.5073">
+  <name>Inside SW Bank 33 Fathoms</name>
+  <desc>33.51.950 x 118.30.440 Inside SW Bank 33 Fathoms</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.5445" lon="-117.2482">
+  <name>International #1</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5443" lon="-117.2483">
+  <name>International #2</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5438" lon="-117.2472">
+  <name>International #3</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.544" lon="-117.2467">
+  <name>International #4</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5447" lon="-117.2465">
+  <name>International #5</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5445" lon="-117.2481">
+  <name>International Reef A</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5445" lon="-117.2483">
+  <name>International Reef B</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5438" lon="-117.2472">
+  <name>International Reef C</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5441" lon="-117.2467">
+  <name>International Reef D</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5453" lon="-117.2474">
+  <name>International Reef E</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5428" lon="-117.2464">
+  <name>International Reef F</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.5416" lon="-117.2465">
+  <name>International Reef Missle Tower</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.4465" lon="-118.5767">
+  <name>Iron Bound cove</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.455" lon="-118.4902">
+  <name>Isthmus High Spot</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4125" lon="-118.3833">
+  <name>Italian Gardens area</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6505" lon="-118.1013">
+  <name>Izors Reef (Bolsa Chica Artificial Reef)</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.4775" lon="-118.5893">
+  <name>Johnson Rock - Caution Boiler rocks</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.4325" lon="-117.2963">
+  <name>Keyhole</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5745" lon="-119.0142">
+  <name>Kidney Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.125" lon="-117.1167">
+  <name>Knuckle</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.141" lon="-116.9025">
+  <name>La Fonda</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.875" lon="-117.3167">
+  <name>La Jolla Canyon Shelf Rockfish Area</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.8555" lon="-117.2717">
+  <name>La Jolla Cove</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.855" lon="-117.3208">
+  <name>La Jolla Shelf Hardbottom</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.3882" lon="-117.2428">
+  <name>Lighthouse</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.657" lon="-117.2628">
+  <name>Lighthouse Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.4472" lon="-118.5008">
+  <name>Lions Head</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4063" lon="-118.3653">
+  <name>Long Point</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.851" lon="-118.5035">
+  <name>Lost Point</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.175" lon="-117.0417">
+  <name>Lower 500</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.0" lon="-118.0">
+  <name>Lower Cross</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0367" lon="-118.3933">
+  <name>Mackerel Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5383" lon="-117.7917">
+  <name>Main Beach</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0248" lon="-118.6505">
+  <name>Malibu Artificial Reef</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.88" lon="-118.4333">
+  <name>Manhattan Hard Bottom</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8363" lon="-117.2953">
+  <name>Marine Street</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.734" lon="-118.401">
+  <name>Marineland Reef 80ft</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.43" lon="-117.28">
+  <name>Middle Grounds</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.423" lon="-117.6587">
+  <name>Middle Kelp - Hard Bottom</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.7576" lon="-117.2599">
+  <name>Mission Bay Jetty</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.77" lon="-117.2678">
+  <name>Mission Bay Park Artificial Kelp Reef</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.7655" lon="-117.2713">
+  <name>Mission Bay Park Ingrahm Street Bridge Rubble</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.7728" lon="-117.2675">
+  <name>Mission Bay Park NEL Tower</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7642" lon="-117.2753">
+  <name>Mission Bay Park Pier Pilings</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7705" lon="-117.2717">
+  <name>Mission Beach</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.4828" lon="-117.7345">
+  <name>Monarch Boiler Rocks</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.0667" lon="-118.5">
+  <name>Mushroom</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6857" lon="-117.2665">
+  <name>New Hope Rock</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.6107" lon="-117.9738">
+  <name>New Pipe</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.604" lon="-117.9772">
+  <name>New Pipe 2</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6033" lon="-117.9633">
+  <name>Newport Reef #1</name>
+  <desc>Newport Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.6013" lon="-117.9587">
+  <name>Newport Reef #2</name>
+  <desc>Newport Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.6022" lon="-117.9583">
+  <name>Newport Reef #3</name>
+  <desc>Newport Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.6027" lon="-117.9573">
+  <name>Newport Reef #4</name>
+  <desc>Newport Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.6012" lon="-117.9588">
+  <name>Newport Reef #5</name>
+  <desc>Newport Beach</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.4563" lon="-117.3">
+  <name>North of North Island rockfish area</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.9" lon="-118.6078">
+  <name>North west South Bank</name>
+  <desc>33.54.000 x 118.36.470 North west South Bank</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3467" lon="-119.64">
+  <name>Northeast Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8438" lon="-117.3077">
+  <name>Northwest Corner</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0333" lon="-118.5875">
+  <name>Northwest Harbor</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.987" lon="-118.503">
+  <name>Ocean Park Reef</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.1828" lon="-117.417">
+  <name>Oceanside Artificial Reef 1 general area</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.2058" lon="-117.4345">
+  <name>Oceanside Artificial Reef 2 general area</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.2062" lon="-117.4">
+  <name>Oceanside Harbor</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6388" lon="-118.2347">
+  <name>Olympic Rock</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.3015" lon="-118.3405">
+  <name>Orange Rocks</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.36" lon="-119.0417">
+  <name>Osborn Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.793" lon="-117.2763">
+  <name>Pacific Beach</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.8102" lon="-117.2922">
+  <name>Pacific Beach Point</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.8236" lon="-118.4147">
+  <name>Palawan Wreck Artificial Reef</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.322" lon="-118.3713">
+  <name>Palisades</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0167" lon="-118.7833">
+  <name>Paradise Cove</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5" lon="-120.5">
+  <name>Patton Ridge</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.3333" lon="-116.75">
+  <name>Peanut Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.53" lon="-117.7808">
+  <name>Pinnacles</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.85" lon="-117.2792">
+  <name>Point La Jolla</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7" lon="-117.2717">
+  <name>Point Loma Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.6633" lon="-117.2417">
+  <name>Point Loma Light</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6725" lon="-117.2833">
+  <name>Point Loma Pipe</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.9767" lon="-119.8667">
+  <name>Posa Anchorage</name>
+  <desc>Channel Islands - Weatherside Spots</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.25" lon="-119.8267">
+  <name>Potato Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6217" lon="-117.9978">
+  <name>Power Plant / Huntington Beach Artificial Reef</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.4475" lon="-117.3038">
+  <name>Pukey Point</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.7458" lon="-116.7333">
+  <name>Punta Banda</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.2647" lon="-117.0315">
+  <name>Punta Descanso</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.1597" lon="-116.9133">
+  <name>Punta Mesquite</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="31.9731" lon="-116.8335">
+  <name>Punta Salsipuedes</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8705" lon="-118.4125">
+  <name>Purse Seine Rock</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.8167" lon="-118.3833">
+  <name>Pyramid Cove</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8146" lon="-118.3979">
+  <name>Pyramid Cove Anchorage</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8167" lon="-118.35">
+  <name>Pyramid Head</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8" lon="-118.3583">
+  <name>Pyramid Reef</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.8372" lon="-118.4089">
+  <name>Redondo Beach Artificial Reef Center</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.834" lon="-118.4367">
+  <name>Redondo Canyon West Wall</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.965" lon="-118.4862">
+  <name>Reef #1 - 65 ft</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.9683" lon="-118.4863">
+  <name>Reef #2 - 65 ft</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.4133" lon="-117.2313">
+  <name>Ribbon Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.44" lon="-118.5722">
+  <name>Ribbon Rock</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.4423" lon="-118.4662">
+  <name>Rock Quarry</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2917" lon="-117.175">
+  <name>Rockpile</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2833" lon="-117.1583">
+  <name>Rockpile #2</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.771" lon="-118.4387">
+  <name>Rocky Point 85ft</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.777" lon="-118.4297">
+  <name>Rocky Point Pinnacle 25ft</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="34.0467" lon="-121.05">
+  <name>Rodriguez Seamount</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.35" lon="-117.1083">
+  <name>Rosarito Flats</name>
+  <desc>Big Area</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4775" lon="-117.723">
+  <name>Salt Creek</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3138" lon="-118.4213">
+  <name>Salta Verde</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3982" lon="-117.62">
+  <name>San Clemente Artificial Reef</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.4075" lon="-117.6357">
+  <name>San Clemente Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.0633" lon="-120.9767">
+  <name>San Juan Seamount</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3827" lon="-117.6133">
+  <name>San Mateo Point</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.348" lon="-117.5675">
+  <name>San Onofre</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3167" lon="-117.9">
+  <name>San Salvador Knoll</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.6843" lon="-118.1288">
+  <name>Sand Bass Junction</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4867" lon="-119.03">
+  <name>Santa Barbara Island Light</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0095" lon="-118.5297">
+  <name>Santa Monica Artificial Reef</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="34.013" lon="-118.5425">
+  <name>Santa Monica Bay Artificial Reef</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.9675" lon="-120.236">
+  <name>Santa Rosa Reef</name>
+  <desc>Channel Islands - Santa Rosa Island</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.8858" lon="-118.525">
+  <name>Sculpin Hardbottom Area</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4388" lon="-118.4353">
+  <name>Seabass Rock 75ft</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.5447" lon="-117.8057">
+  <name>Seal Rock</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.3062" lon="-118.3057">
+  <name>Seal Rocks</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.4047" lon="-117.6177">
+  <name>Seal Rocks</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.368" lon="-118.4883">
+  <name>Sentinel Rock</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.476" lon="-118.5928">
+  <name>Shiners</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.916" lon="-118.5528">
+  <name>Short Bank</name>
+  <desc>33.54.960 x 118.33.170 Short Bank</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3183" lon="-118.3915">
+  <name>Silver Canyon</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.322" lon="-118.3038">
+  <name>Slide - Quarry</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0223" lon="-119.5373">
+  <name>Smuggler's Cove</name>
+  <desc>Channel Islands - Santa Cruz Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.0995" lon="-118.4153">
+  <name>Sniffer</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.8833" lon="-118.5635">
+  <name>South Bank 33 Fathoms</name>
+  <desc>33.53.000 x 118.33.810 South Bank 33 Fathoms</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.8983" lon="-118.5812">
+  <name>South Bank Bumps</name>
+  <desc>33.53.900 x 118.34.870 South Bank Bumps</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.8805" lon="-118.6187">
+  <name>South Bank Outside Edge</name>
+  <desc>33.52.830 x 118.37.120 South Bank Outside Edge</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.892" lon="-118.594">
+  <name>South Bank West</name>
+  <desc>33.53.520 x 118.35.640 South Bank West</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.5688" lon="-118.1387">
+  <name>South East Bank</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4" lon="-117.2375">
+  <name>South Island Anchorage</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3667" lon="-117.221">
+  <name>South Kelp Ridge (SKR)</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="32.7145" lon="-117.2325">
+  <name>Southwestern Yacht Club</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>http://www.gstatic.com/mapspro/images/stock/1197-fac-headquarters.png</sym>
+</wpt>
+<wpt lat="33.992" lon="-118.5212">
+  <name>Star of Scotland Shipwreck</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.48" lon="-118.5983">
+  <name>Starlight</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8323" lon="-117.2982">
+  <name>Streets</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.2228" lon="-116.9636">
+  <name>Sugarloaf Rock</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.1472" lon="-120.45">
+  <name>Sverdrup Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.8678" lon="-118.5825">
+  <name>SW Bank 40 Fathoms</name>
+  <desc>33.52.070 x 118.34.950 SW Bank 40 Fathoms</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8065" lon="-117.2967">
+  <name>SW Corner</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8405" lon="-117.2982">
+  <name>SW Corner of Round Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.0333" lon="-117.3">
+  <name>Swami's Reef</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7" lon="-119.1333">
+  <name>Tanner Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7785" lon="-117.3482">
+  <name>The 270 Spot - Rockfish</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.8453" lon="-117.2958">
+  <name>The 3/4 Spot</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8458" lon="-117.3325">
+  <name>The 32 Spot - Rockfish</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.7595" lon="-117.3077">
+  <name>The Airplane (Rockfish Area)</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="34.0173" lon="-119.3535">
+  <name>The Arch</name>
+  <desc>Channel Islands - Anacapa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.7306" lon="-118.7056">
+  <name>The Boot</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8582" lon="-117.2818">
+  <name>The Bump</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8075" lon="-118.4028">
+  <name>The Caves</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6267" lon="-117.8233">
+  <name>The Corner</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8557" lon="-117.277">
+  <name>The Cove</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.75" lon="-121.65">
+  <name>The Donut</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6525" lon="-117.262">
+  <name>The Dropoff</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.025" lon="-119.4917">
+  <name>The Gap</name>
+  <desc>Channel Islands - Anacapa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8537" lon="-117.2937">
+  <name>The Half Spot</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.6908" lon="-117.2718">
+  <name>The Lab</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8" lon="-118.525">
+  <name>The Nipple</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.75" lon="-119.0667">
+  <name>The Pistol</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.2833" lon="-118.2445">
+  <name>The Slide</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.2417" lon="-118.865">
+  <name>The Snail (267)</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.9833" lon="-119.0167">
+  <name>The Worm</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4948" lon="-117.7443">
+  <name>Thousand Steps</name>
+  <desc>Laguna Beach</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.8125" lon="-116.8125">
+  <name>Todos Santos Light</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0272" lon="-118.5325">
+  <name>Topanga Artificial Reef</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.8867" lon="-117.2638">
+  <name>Torrey Pines #1</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.893" lon="-117.2597">
+  <name>Torrey Pines #2</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.8867" lon="-117.2639">
+  <name>Torrey Pines Artificial Reef 1</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7889" lon="-117.2783">
+  <name>Torrey Pines Artificial Reef 1A</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.79" lon="-117.275">
+  <name>Torrey Pines Artificial Reef 1B</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7917" lon="-117.27">
+  <name>Torrey Pines Artificial Reef 1C</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.8931" lon="-117.2597">
+  <name>Torrey Pines Artificial Reef 2</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7903" lon="-117.2792">
+  <name>Torrey Pines Artificial Reef 2A</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7917" lon="-117.275">
+  <name>Torrey Pines Artificial Reef 2B</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7933" lon="-117.27">
+  <name>Torrey Pines Artificial Reef 2C</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7931" lon="-117.2806">
+  <name>Torrey Pines Artificial Reef 3A</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7939" lon="-117.2761">
+  <name>Torrey Pines Artificial Reef 3B</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7956" lon="-117.2706">
+  <name>Torrey Pines Artificial Reef 3C</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7945" lon="-117.282">
+  <name>Torrey Pines Artificial Reef 4A</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7989" lon="-117.2764">
+  <name>Torrey Pines Artificial Reef 4B</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="32.7972" lon="-117.2717">
+  <name>Torrey Pines Artificial Reef 4C</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.9833" lon="-118.4833">
+  <name>Twin Towers - Halibut</name>
+  <desc>Santa Monica / Malibu</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.2333" lon="-117.1183">
+  <name>UFB 27 Fathom Spot</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2413" lon="-117.1888">
+  <name>UFB 71 Fathom Spot</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2727" lon="-117.1745">
+  <name>UFB Rockfish 180ft</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2522" lon="-117.171">
+  <name>UFB Rockfish 240ft</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.2518" lon="-117.1825">
+  <name>UFB Rockfish 300ft</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.2993" lon="-118.3167">
+  <name>Under the light</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.7667" lon="-117.5">
+  <name>Upper 500</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.0" lon="-118.0">
+  <name>Upper Cross</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.1133" lon="-117.0733">
+  <name>Upper Finger</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.05" lon="-117.4667">
+  <name>Upper Hidden Bank</name>
+  <desc>Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.8018" lon="-117.2818">
+  <name>Variety Kelp</name>
+  <desc>Kelp</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<wpt lat="33.985" lon="-118.4767">
+  <name>Venice Pier Reef</name>
+  <desc>Marina Del Rey</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.9783" lon="-118.4933">
+  <name>Venice Reef</name>
+  <desc>Man-Made Reef</desc>
+  <sym>images/icon-4.png</sym>
+</wpt>
+<wpt lat="33.7388" lon="-118.415">
+  <name>Vicente Outside Rock 80ft</name>
+  <desc>Pointe Vincente / LA Harbor / Huntington Beach</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.475" lon="-118.587">
+  <name>West Beach</name>
+  <desc>Catalina Island - Frontside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.3667" lon="-118.2917">
+  <name>West Butterfly (162)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0083" lon="-118.5945">
+  <name>West Cove</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.4788" lon="-118.6033">
+  <name>West End</name>
+  <desc>Catalina Island - Backside</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0167" lon="-119.45">
+  <name>West End</name>
+  <desc>Channel Islands - Anacapa Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.0345" lon="-118.613">
+  <name>West End (Castle Rock)</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.4792" lon="-118.6113">
+  <name>West End (Catalina)</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.4102" lon="-117.2358">
+  <name>White Rock</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.893" lon="-118.4393">
+  <name>White Rock</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="33.0367" lon="-118.517">
+  <name>White Spot</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.9488" lon="-118.5647">
+  <name>Whitefish</name>
+  <desc>San Clemente Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="32.7662" lon="-117.3695">
+  <name>Widow Rock</name>
+  <desc>Rocky</desc>
+  <sym>images/icon-3.png</sym>
+</wpt>
+<wpt lat="32.8286" lon="-117.2918">
+  <name>Windansea</name>
+  <desc>Stay north of MPA at 32.8262</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="31.5833" lon="-116.8">
+  <name>Worm Bank</name>
+  <desc>SWYC Fishing Spot</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="34.0247" lon="-119.4885">
+  <name>Yellow Banks</name>
+  <desc>Channel Islands - Santa Cruz Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.9843" lon="-119.6383">
+  <name>Yellow Bluff</name>
+  <desc>Channel Islands - Santa Cruz Island</desc>
+  <sym>images/icon-1.png</sym>
+</wpt>
+<wpt lat="33.3" lon="-117.5047">
+  <name>Yellowtail Kelp</name>
+  <desc>Dana Point</desc>
+  <sym>images/icon-2.png</sym>
+</wpt>
+<trk>
+  <name>SWYC Competition Boundary</name>
+  <trkseg>
+    <trkpt lat="34.44859" lon="-123.0"></trkpt>
+    <trkpt lat="30.4667" lon="-123.0"></trkpt>
+    <trkpt lat="30.4667" lon="-116.7695"></trkpt>
+    <trkpt lat="30.466209" lon="-116.769561"></trkpt>
+    <trkpt lat="30.467324" lon="-116.041183"></trkpt>
+    <trkpt lat="30.474643" lon="-116.048594"></trkpt>
+    <trkpt lat="30.488172" lon="-116.044679"></trkpt>
+    <trkpt lat="30.581992" lon="-116.025833"></trkpt>
+    <trkpt lat="30.67463" lon="-116.02207"></trkpt>
+    <trkpt lat="30.716503" lon="-116.043544"></trkpt>
+    <trkpt lat="30.77845" lon="-116.045921"></trkpt>
+    <trkpt lat="30.827416" lon="-116.073034"></trkpt>
+    <trkpt lat="30.82154" lon="-116.1053"></trkpt>
+    <trkpt lat="30.865182" lon="-116.153388"></trkpt>
+    <trkpt lat="30.862849" lon="-116.169919"></trkpt>
+    <trkpt lat="30.885284" lon="-116.20302"></trkpt>
+    <trkpt lat="30.916019" lon="-116.212953"></trkpt>
+    <trkpt lat="30.93859" lon="-116.243852"></trkpt>
+    <trkpt lat="30.974306" lon="-116.275516"></trkpt>
+    <trkpt lat="30.95735" lon="-116.32101"></trkpt>
+    <trkpt lat="30.971721" lon="-116.333759"></trkpt>
+    <trkpt lat="31.15563" lon="-116.307044"></trkpt>
+    <trkpt lat="31.214869" lon="-116.34536"></trkpt>
+    <trkpt lat="31.265289" lon="-116.374796"></trkpt>
+    <trkpt lat="31.329209" lon="-116.447546"></trkpt>
+    <trkpt lat="31.343846" lon="-116.451662"></trkpt>
+    <trkpt lat="31.369596" lon="-116.48052"></trkpt>
+    <trkpt lat="31.408787" lon="-116.494983"></trkpt>
+    <trkpt lat="31.442111" lon="-116.530064"></trkpt>
+    <trkpt lat="31.467588" lon="-116.55919"></trkpt>
+    <trkpt lat="31.470474" lon="-116.598284"></trkpt>
+    <trkpt lat="31.505565" lon="-116.614761"></trkpt>
+    <trkpt lat="31.521863" lon="-116.645053"></trkpt>
+    <trkpt lat="31.542765" lon="-116.664518"></trkpt>
+    <trkpt lat="31.555332" lon="-116.663645"></trkpt>
+    <trkpt lat="31.557031" lon="-116.685293"></trkpt>
+    <trkpt lat="31.568649" lon="-116.683292"></trkpt>
+    <trkpt lat="31.57792" lon="-116.643512"></trkpt>
+    <trkpt lat="31.610477" lon="-116.65964"></trkpt>
+    <trkpt lat="31.66643" lon="-116.646248"></trkpt>
+    <trkpt lat="31.716367" lon="-116.695034"></trkpt>
+    <trkpt lat="31.715745" lon="-116.710216"></trkpt>
+    <trkpt lat="31.743724" lon="-116.730998"></trkpt>
+    <trkpt lat="31.691023" lon="-116.633767"></trkpt>
+    <trkpt lat="31.702446" lon="-116.62332"></trkpt>
+    <trkpt lat="31.770893" lon="-116.605148"></trkpt>
+    <trkpt lat="31.847095" lon="-116.607243"></trkpt>
+    <trkpt lat="31.862662" lon="-116.619604"></trkpt>
+    <trkpt lat="31.870054" lon="-116.671799"></trkpt>
+    <trkpt lat="31.901342" lon="-116.702038"></trkpt>
+    <trkpt lat="31.91046" lon="-116.748774"></trkpt>
+    <trkpt lat="31.9627105" lon="-116.7599483"></trkpt>
+    <trkpt lat="31.980954" lon="-116.7899014"></trkpt>
+    <trkpt lat="31.9799654" lon="-116.8308851"></trkpt>
+    <trkpt lat="31.9887429" lon="-116.8500525"></trkpt>
+    <trkpt lat="32.0184806" lon="-116.8774695"></trkpt>
+    <trkpt lat="32.0430146" lon="-116.8856141"></trkpt>
+    <trkpt lat="32.0659282" lon="-116.8794812"></trkpt>
+    <trkpt lat="32.128406" lon="-116.885708"></trkpt>
+    <trkpt lat="32.16878" lon="-116.906709"></trkpt>
+    <trkpt lat="32.216127" lon="-116.914678"></trkpt>
+    <trkpt lat="32.232765" lon="-116.925687"></trkpt>
+    <trkpt lat="32.249401" lon="-116.947002"></trkpt>
+    <trkpt lat="32.269289" lon="-117.022276"></trkpt>
+    <trkpt lat="32.286398" lon="-117.039992"></trkpt>
+    <trkpt lat="32.332094" lon="-117.052978"></trkpt>
+    <trkpt lat="32.397512" lon="-117.089341"></trkpt>
+    <trkpt lat="32.449173" lon="-117.109114"></trkpt>
+    <trkpt lat="32.469391" lon="-117.120317"></trkpt>
+    <trkpt lat="32.494822" lon="-117.123284"></trkpt>
+    <trkpt lat="32.534172" lon="-117.124689"></trkpt>
+    <trkpt lat="32.534156" lon="-117.124862"></trkpt>
+    <trkpt lat="32.544491" lon="-117.125874"></trkpt>
+    <trkpt lat="32.554324" lon="-117.129178"></trkpt>
+    <trkpt lat="32.560316" lon="-117.132071"></trkpt>
+    <trkpt lat="32.571786" lon="-117.133039"></trkpt>
+    <trkpt lat="32.575625" lon="-117.133363"></trkpt>
+    <trkpt lat="32.579951" lon="-117.133282"></trkpt>
+    <trkpt lat="32.583954" lon="-117.133208"></trkpt>
+    <trkpt lat="32.584029" lon="-117.133206"></trkpt>
+    <trkpt lat="32.585631" lon="-117.133176"></trkpt>
+    <trkpt lat="32.597054" lon="-117.132963"></trkpt>
+    <trkpt lat="32.604533" lon="-117.134238"></trkpt>
+    <trkpt lat="32.618754" lon="-117.136664"></trkpt>
+    <trkpt lat="32.627054" lon="-117.139464"></trkpt>
+    <trkpt lat="32.629727" lon="-117.141087"></trkpt>
+    <trkpt lat="32.6367" lon="-117.145321"></trkpt>
+    <trkpt lat="32.636878" lon="-117.145429"></trkpt>
+    <trkpt lat="32.650037" lon="-117.15342"></trkpt>
+    <trkpt lat="32.660652" lon="-117.159865"></trkpt>
+    <trkpt lat="32.668995" lon="-117.16651"></trkpt>
+    <trkpt lat="32.671952" lon="-117.168866"></trkpt>
+    <trkpt lat="32.672202" lon="-117.169246"></trkpt>
+    <trkpt lat="32.673428" lon="-117.171116"></trkpt>
+    <trkpt lat="32.675494" lon="-117.174266"></trkpt>
+    <trkpt lat="32.676325" lon="-117.175534"></trkpt>
+    <trkpt lat="32.678046" lon="-117.178157"></trkpt>
+    <trkpt lat="32.679352" lon="-117.180148"></trkpt>
+    <trkpt lat="32.683959" lon="-117.187465"></trkpt>
+    <trkpt lat="32.686099" lon="-117.193937"></trkpt>
+    <trkpt lat="32.687232" lon="-117.197361"></trkpt>
+    <trkpt lat="32.687751" lon="-117.213068"></trkpt>
+    <trkpt lat="32.685821" lon="-117.217502"></trkpt>
+    <trkpt lat="32.68324" lon="-117.223433"></trkpt>
+    <trkpt lat="32.683118" lon="-117.223715"></trkpt>
+    <trkpt lat="32.683051" lon="-117.223868"></trkpt>
+    <trkpt lat="32.671355" lon="-117.236237"></trkpt>
+    <trkpt lat="32.671353" lon="-117.236239"></trkpt>
+    <trkpt lat="32.667489" lon="-117.237294"></trkpt>
+    <trkpt lat="32.66454" lon="-117.243128"></trkpt>
+    <trkpt lat="32.669352" lon="-117.246069"></trkpt>
+    <trkpt lat="32.700051" lon="-117.255169"></trkpt>
+    <trkpt lat="32.707523" lon="-117.255859"></trkpt>
+    <trkpt lat="32.710848" lon="-117.256166"></trkpt>
+    <trkpt lat="32.713245" lon="-117.256387"></trkpt>
+    <trkpt lat="32.715216" lon="-117.256569"></trkpt>
+    <trkpt lat="32.718759" lon="-117.256897"></trkpt>
+    <trkpt lat="32.725874" lon="-117.257554"></trkpt>
+    <trkpt lat="32.72605" lon="-117.25757"></trkpt>
+    <trkpt lat="32.728645" lon="-117.257276"></trkpt>
+    <trkpt lat="32.730232" lon="-117.257096"></trkpt>
+    <trkpt lat="32.73729" lon="-117.256295"></trkpt>
+    <trkpt lat="32.740364" lon="-117.255947"></trkpt>
+    <trkpt lat="32.741548" lon="-117.255812"></trkpt>
+    <trkpt lat="32.743443" lon="-117.255597"></trkpt>
+    <trkpt lat="32.745449" lon="-117.25537"></trkpt>
+    <trkpt lat="32.746684" lon="-117.254909"></trkpt>
+    <trkpt lat="32.747379" lon="-117.254649"></trkpt>
+    <trkpt lat="32.751859" lon="-117.252977"></trkpt>
+    <trkpt lat="32.752948" lon="-117.25257"></trkpt>
+    <trkpt lat="32.752949" lon="-117.25257"></trkpt>
+    <trkpt lat="32.754106" lon="-117.252751"></trkpt>
+    <trkpt lat="32.759052" lon="-117.253524"></trkpt>
+    <trkpt lat="32.760839" lon="-117.253803"></trkpt>
+    <trkpt lat="32.767536" lon="-117.254102"></trkpt>
+    <trkpt lat="32.781826" lon="-117.254741"></trkpt>
+    <trkpt lat="32.784317" lon="-117.254852"></trkpt>
+    <trkpt lat="32.786478" lon="-117.254949"></trkpt>
+    <trkpt lat="32.786948" lon="-117.25497"></trkpt>
+    <trkpt lat="32.790372" lon="-117.256259"></trkpt>
+    <trkpt lat="32.795772" lon="-117.258292"></trkpt>
+    <trkpt lat="32.80058" lon="-117.260103"></trkpt>
+    <trkpt lat="32.800726" lon="-117.260158"></trkpt>
+    <trkpt lat="32.803148" lon="-117.26107"></trkpt>
+    <trkpt lat="32.804717" lon="-117.262252"></trkpt>
+    <trkpt lat="32.807074" lon="-117.264028"></trkpt>
+    <trkpt lat="32.807564" lon="-117.267245"></trkpt>
+    <trkpt lat="32.807809" lon="-117.267842"></trkpt>
+    <trkpt lat="32.808688" lon="-117.269986"></trkpt>
+    <trkpt lat="32.811211" lon="-117.269887"></trkpt>
+    <trkpt lat="32.81329" lon="-117.271825"></trkpt>
+    <trkpt lat="32.815001" lon="-117.273421"></trkpt>
+    <trkpt lat="32.815824" lon="-117.273992"></trkpt>
+    <trkpt lat="32.818125" lon="-117.275588"></trkpt>
+    <trkpt lat="32.822247" lon="-117.280971"></trkpt>
+    <trkpt lat="32.82234" lon="-117.280977"></trkpt>
+    <trkpt lat="32.826191" lon="-117.281244"></trkpt>
+    <trkpt lat="32.831714" lon="-117.281627"></trkpt>
+    <trkpt lat="32.836657" lon="-117.28197"></trkpt>
+    <trkpt lat="32.839547" lon="-117.28217"></trkpt>
+    <trkpt lat="32.843047" lon="-117.28117"></trkpt>
+    <trkpt lat="32.851447" lon="-117.27387"></trkpt>
+    <trkpt lat="32.851228" lon="-117.273091"></trkpt>
+    <trkpt lat="32.849875" lon="-117.268275"></trkpt>
+    <trkpt lat="32.849616" lon="-117.267353"></trkpt>
+    <trkpt lat="32.849023" lon="-117.26524"></trkpt>
+    <trkpt lat="32.848947" lon="-117.26497"></trkpt>
+    <trkpt lat="32.850053" lon="-117.263684"></trkpt>
+    <trkpt lat="32.852647" lon="-117.26067"></trkpt>
+    <trkpt lat="32.859447" lon="-117.25617"></trkpt>
+    <trkpt lat="32.863383" lon="-117.254981"></trkpt>
+    <trkpt lat="32.871574" lon="-117.252507"></trkpt>
+    <trkpt lat="32.874346" lon="-117.25167"></trkpt>
+    <trkpt lat="32.87857" lon="-117.251314"></trkpt>
+    <trkpt lat="32.884412" lon="-117.252762"></trkpt>
+    <trkpt lat="32.889951" lon="-117.253363"></trkpt>
+    <trkpt lat="32.900146" lon="-117.25447"></trkpt>
+    <trkpt lat="32.912867" lon="-117.257777"></trkpt>
+    <trkpt lat="32.917296" lon="-117.258929"></trkpt>
+    <trkpt lat="32.927957" lon="-117.260107"></trkpt>
+    <trkpt lat="32.928281" lon="-117.260143"></trkpt>
+    <trkpt lat="32.931245" lon="-117.26047"></trkpt>
+    <trkpt lat="32.938109" lon="-117.262463"></trkpt>
+    <trkpt lat="32.939414" lon="-117.262842"></trkpt>
+    <trkpt lat="32.939542" lon="-117.262879"></trkpt>
+    <trkpt lat="32.939738" lon="-117.262936"></trkpt>
+    <trkpt lat="32.951936" lon="-117.266478"></trkpt>
+    <trkpt lat="32.957257" lon="-117.268023"></trkpt>
+    <trkpt lat="32.960632" lon="-117.268545"></trkpt>
+    <trkpt lat="32.968165" lon="-117.269709"></trkpt>
+    <trkpt lat="32.978311" lon="-117.272249"></trkpt>
+    <trkpt lat="32.980434" lon="-117.272781"></trkpt>
+    <trkpt lat="32.980515" lon="-117.272801"></trkpt>
+    <trkpt lat="32.990734" lon="-117.27536"></trkpt>
+    <trkpt lat="33.001138" lon="-117.277965"></trkpt>
+    <trkpt lat="33.007046" lon="-117.279444"></trkpt>
+    <trkpt lat="33.012343" lon="-117.28077"></trkpt>
+    <trkpt lat="33.015615" lon="-117.282437"></trkpt>
+    <trkpt lat="33.029417" lon="-117.28947"></trkpt>
+    <trkpt lat="33.031456" lon="-117.290992"></trkpt>
+    <trkpt lat="33.034642" lon="-117.29337"></trkpt>
+    <trkpt lat="33.035829" lon="-117.294293"></trkpt>
+    <trkpt lat="33.038579" lon="-117.296433"></trkpt>
+    <trkpt lat="33.045006" lon="-117.29763"></trkpt>
+    <trkpt lat="33.048105" lon="-117.298904"></trkpt>
+    <trkpt lat="33.052228" lon="-117.300599"></trkpt>
+    <trkpt lat="33.064561" lon="-117.305669"></trkpt>
+    <trkpt lat="33.07454" lon="-117.309771"></trkpt>
+    <trkpt lat="33.081812" lon="-117.312084"></trkpt>
+    <trkpt lat="33.086808" lon="-117.313673"></trkpt>
+    <trkpt lat="33.086936" lon="-117.313713"></trkpt>
+    <trkpt lat="33.087295" lon="-117.313827"></trkpt>
+    <trkpt lat="33.093617" lon="-117.315838"></trkpt>
+    <trkpt lat="33.105826" lon="-117.321254"></trkpt>
+    <trkpt lat="33.121502" lon="-117.328208"></trkpt>
+    <trkpt lat="33.121842" lon="-117.328359"></trkpt>
+    <trkpt lat="33.135873" lon="-117.338662"></trkpt>
+    <trkpt lat="33.144187" lon="-117.344766"></trkpt>
+    <trkpt lat="33.144415" lon="-117.344933"></trkpt>
+    <trkpt lat="33.144742" lon="-117.345173"></trkpt>
+    <trkpt lat="33.163809" lon="-117.359174"></trkpt>
+    <trkpt lat="33.163963" lon="-117.359287"></trkpt>
+    <trkpt lat="33.164133" lon="-117.359412"></trkpt>
+    <trkpt lat="33.164231" lon="-117.359484"></trkpt>
+    <trkpt lat="33.168437" lon="-117.362572"></trkpt>
+    <trkpt lat="33.172781" lon="-117.36623"></trkpt>
+    <trkpt lat="33.175539" lon="-117.368554"></trkpt>
+    <trkpt lat="33.176531" lon="-117.369389"></trkpt>
+    <trkpt lat="33.176622" lon="-117.369465"></trkpt>
+    <trkpt lat="33.184848" lon="-117.376393"></trkpt>
+    <trkpt lat="33.185181" lon="-117.376673"></trkpt>
+    <trkpt lat="33.190587" lon="-117.381226"></trkpt>
+    <trkpt lat="33.19432" lon="-117.384371"></trkpt>
+    <trkpt lat="33.198576" lon="-117.387955"></trkpt>
+    <trkpt lat="33.202762" lon="-117.39148"></trkpt>
+    <trkpt lat="33.207388" lon="-117.396908"></trkpt>
+    <trkpt lat="33.207402" lon="-117.396924"></trkpt>
+    <trkpt lat="33.206848" lon="-117.399453"></trkpt>
+    <trkpt lat="33.20587" lon="-117.399681"></trkpt>
+    <trkpt lat="33.205605" lon="-117.402385"></trkpt>
+    <trkpt lat="33.205558" lon="-117.40286"></trkpt>
+    <trkpt lat="33.206245" lon="-117.40301"></trkpt>
+    <trkpt lat="33.20921" lon="-117.40577"></trkpt>
+    <trkpt lat="33.213847" lon="-117.405692"></trkpt>
+    <trkpt lat="33.215291" lon="-117.404387"></trkpt>
+    <trkpt lat="33.218288" lon="-117.406218"></trkpt>
+    <trkpt lat="33.256854" lon="-117.436443"></trkpt>
+    <trkpt lat="33.268517" lon="-117.445583"></trkpt>
+    <trkpt lat="33.296417" lon="-117.469794"></trkpt>
+    <trkpt lat="33.333253" lon="-117.505919"></trkpt>
+    <trkpt lat="33.364878" lon="-117.547834"></trkpt>
+    <trkpt lat="33.370519" lon="-117.560396"></trkpt>
+    <trkpt lat="33.375296" lon="-117.568996"></trkpt>
+    <trkpt lat="33.378988" lon="-117.571722"></trkpt>
+    <trkpt lat="33.380522" lon="-117.575177"></trkpt>
+    <trkpt lat="33.380939" lon="-117.580399"></trkpt>
+    <trkpt lat="33.381772" lon="-117.582126"></trkpt>
+    <trkpt lat="33.382734" lon="-117.588423"></trkpt>
+    <trkpt lat="33.38408" lon="-117.589959"></trkpt>
+    <trkpt lat="33.386629" lon="-117.59588"></trkpt>
+    <trkpt lat="33.387168" lon="-117.596147"></trkpt>
+    <trkpt lat="33.399496" lon="-117.602263"></trkpt>
+    <trkpt lat="33.405559" lon="-117.607278"></trkpt>
+    <trkpt lat="33.406317" lon="-117.607905"></trkpt>
+    <trkpt lat="33.408417" lon="-117.609747"></trkpt>
+    <trkpt lat="33.411549" lon="-117.612495"></trkpt>
+    <trkpt lat="33.416196" lon="-117.617294"></trkpt>
+    <trkpt lat="33.419458" lon="-117.620036"></trkpt>
+    <trkpt lat="33.421996" lon="-117.62217"></trkpt>
+    <trkpt lat="33.424632" lon="-117.625891"></trkpt>
+    <trkpt lat="33.430528" lon="-117.631682"></trkpt>
+    <trkpt lat="33.430574" lon="-117.63174"></trkpt>
+    <trkpt lat="33.432201" lon="-117.63378"></trkpt>
+    <trkpt lat="33.439234" lon="-117.642595"></trkpt>
+    <trkpt lat="33.440728" lon="-117.645582"></trkpt>
+    <trkpt lat="33.440734" lon="-117.64559"></trkpt>
+    <trkpt lat="33.440951" lon="-117.645874"></trkpt>
+    <trkpt lat="33.444625" lon="-117.650688"></trkpt>
+    <trkpt lat="33.446154" lon="-117.652692"></trkpt>
+    <trkpt lat="33.44955" lon="-117.658067"></trkpt>
+    <trkpt lat="33.451981" lon="-117.663589"></trkpt>
+    <trkpt lat="33.454933" lon="-117.668314"></trkpt>
+    <trkpt lat="33.458102" lon="-117.673385"></trkpt>
+    <trkpt lat="33.461754" lon="-117.681025"></trkpt>
+    <trkpt lat="33.46191" lon="-117.684241"></trkpt>
+    <trkpt lat="33.461927" lon="-117.684584"></trkpt>
+    <trkpt lat="33.461658" lon="-117.68942"></trkpt>
+    <trkpt lat="33.457846" lon="-117.689933"></trkpt>
+    <trkpt lat="33.456627" lon="-117.691984"></trkpt>
+    <trkpt lat="33.454355" lon="-117.691353"></trkpt>
+    <trkpt lat="33.454028" lon="-117.691384"></trkpt>
+    <trkpt lat="33.455604" lon="-117.694693"></trkpt>
+    <trkpt lat="33.457878" lon="-117.704675"></trkpt>
+    <trkpt lat="33.460285" lon="-117.707093"></trkpt>
+    <trkpt lat="33.46063" lon="-117.70855"></trkpt>
+    <trkpt lat="33.460332" lon="-117.709652"></trkpt>
+    <trkpt lat="33.460019" lon="-117.713371"></trkpt>
+    <trkpt lat="33.459914" lon="-117.714617"></trkpt>
+    <trkpt lat="33.460556" lon="-117.715349"></trkpt>
+    <trkpt lat="33.461675" lon="-117.715657"></trkpt>
+    <trkpt lat="33.462657" lon="-117.715688"></trkpt>
+    <trkpt lat="33.463262" lon="-117.714783"></trkpt>
+    <trkpt lat="33.464463" lon="-117.715102"></trkpt>
+    <trkpt lat="33.472911" lon="-117.720363"></trkpt>
+    <trkpt lat="33.473427" lon="-117.721616"></trkpt>
+    <trkpt lat="33.481512" lon="-117.725553"></trkpt>
+    <trkpt lat="33.483317" lon="-117.726433"></trkpt>
+    <trkpt lat="33.483427" lon="-117.726486"></trkpt>
+    <trkpt lat="33.484659" lon="-117.731953"></trkpt>
+    <trkpt lat="33.484963" lon="-117.7333"></trkpt>
+    <trkpt lat="33.485824" lon="-117.73416"></trkpt>
+    <trkpt lat="33.488598" lon="-117.73693"></trkpt>
+    <trkpt lat="33.489519" lon="-117.73785"></trkpt>
+    <trkpt lat="33.49333" lon="-117.739057"></trkpt>
+    <trkpt lat="33.494886" lon="-117.73955"></trkpt>
+    <trkpt lat="33.500455" lon="-117.7459"></trkpt>
+    <trkpt lat="33.500795" lon="-117.746288"></trkpt>
+    <trkpt lat="33.510494" lon="-117.753647"></trkpt>
+    <trkpt lat="33.512243" lon="-117.754974"></trkpt>
+    <trkpt lat="33.514417" lon="-117.759725"></trkpt>
+    <trkpt lat="33.516326" lon="-117.761387"></trkpt>
+    <trkpt lat="33.51891" lon="-117.763187"></trkpt>
+    <trkpt lat="33.521605" lon="-117.765063"></trkpt>
+    <trkpt lat="33.525132" lon="-117.769151"></trkpt>
+    <trkpt lat="33.529324" lon="-117.77396"></trkpt>
+    <trkpt lat="33.531837" lon="-117.776844"></trkpt>
+    <trkpt lat="33.535185" lon="-117.779624"></trkpt>
+    <trkpt lat="33.538878" lon="-117.78269"></trkpt>
+    <trkpt lat="33.541525" lon="-117.784888"></trkpt>
+    <trkpt lat="33.542618" lon="-117.788621"></trkpt>
+    <trkpt lat="33.542739" lon="-117.789037"></trkpt>
+    <trkpt lat="33.543749" lon="-117.792488"></trkpt>
+    <trkpt lat="33.543859" lon="-117.792863"></trkpt>
+    <trkpt lat="33.54388" lon="-117.792936"></trkpt>
+    <trkpt lat="33.546324" lon="-117.801288"></trkpt>
+    <trkpt lat="33.547782" lon="-117.804937"></trkpt>
+    <trkpt lat="33.548573" lon="-117.806916"></trkpt>
+    <trkpt lat="33.548829" lon="-117.806981"></trkpt>
+    <trkpt lat="33.550951" lon="-117.807515"></trkpt>
+    <trkpt lat="33.55232" lon="-117.811379"></trkpt>
+    <trkpt lat="33.551209" lon="-117.813513"></trkpt>
+    <trkpt lat="33.55179" lon="-117.814558"></trkpt>
+    <trkpt lat="33.55403" lon="-117.818587"></trkpt>
+    <trkpt lat="33.554716" lon="-117.819821"></trkpt>
+    <trkpt lat="33.556682" lon="-117.820072"></trkpt>
+    <trkpt lat="33.558505" lon="-117.820304"></trkpt>
+    <trkpt lat="33.563001" lon="-117.826188"></trkpt>
+    <trkpt lat="33.564216" lon="-117.828969"></trkpt>
+    <trkpt lat="33.566173" lon="-117.833446"></trkpt>
+    <trkpt lat="33.567206" lon="-117.834408"></trkpt>
+    <trkpt lat="33.56728" lon="-117.834476"></trkpt>
+    <trkpt lat="33.569672" lon="-117.836703"></trkpt>
+    <trkpt lat="33.572712" lon="-117.839534"></trkpt>
+    <trkpt lat="33.573523" lon="-117.840289"></trkpt>
+    <trkpt lat="33.579593" lon="-117.853332"></trkpt>
+    <trkpt lat="33.58261" lon="-117.858586"></trkpt>
+    <trkpt lat="33.584073" lon="-117.861134"></trkpt>
+    <trkpt lat="33.585874" lon="-117.86427"></trkpt>
+    <trkpt lat="33.587339" lon="-117.866148"></trkpt>
+    <trkpt lat="33.59093" lon="-117.870749"></trkpt>
+    <trkpt lat="33.592933" lon="-117.873352"></trkpt>
+    <trkpt lat="33.592322" lon="-117.87679"></trkpt>
+    <trkpt lat="33.593066" lon="-117.878897"></trkpt>
+    <trkpt lat="33.598275" lon="-117.893642"></trkpt>
+    <trkpt lat="33.600253" lon="-117.899242"></trkpt>
+    <trkpt lat="33.600259" lon="-117.89926"></trkpt>
+    <trkpt lat="33.606853" lon="-117.926632"></trkpt>
+    <trkpt lat="33.607187" lon="-117.928019"></trkpt>
+    <trkpt lat="33.620021" lon="-117.940591"></trkpt>
+    <trkpt lat="33.629578" lon="-117.95731"></trkpt>
+    <trkpt lat="33.629681" lon="-117.957491"></trkpt>
+    <trkpt lat="33.629714" lon="-117.957548"></trkpt>
+    <trkpt lat="33.629936" lon="-117.957936"></trkpt>
+    <trkpt lat="33.634001" lon="-117.965048"></trkpt>
+    <trkpt lat="33.637334" lon="-117.97088"></trkpt>
+    <trkpt lat="33.647063" lon="-117.987899"></trkpt>
+    <trkpt lat="33.654319" lon="-118.000593"></trkpt>
+    <trkpt lat="33.654481" lon="-118.000806"></trkpt>
+    <trkpt lat="33.658023" lon="-118.005471"></trkpt>
+    <trkpt lat="33.660083" lon="-118.008184"></trkpt>
+    <trkpt lat="33.660269" lon="-118.008428"></trkpt>
+    <trkpt lat="33.668133" lon="-118.018784"></trkpt>
+    <trkpt lat="33.676418" lon="-118.029694"></trkpt>
+    <trkpt lat="33.678906" lon="-118.032225"></trkpt>
+    <trkpt lat="33.679509" lon="-118.032839"></trkpt>
+    <trkpt lat="33.681563" lon="-118.034928"></trkpt>
+    <trkpt lat="33.701575" lon="-118.055288"></trkpt>
+    <trkpt lat="33.711018" lon="-118.064895"></trkpt>
+    <trkpt lat="33.711462" lon="-118.065423"></trkpt>
+    <trkpt lat="33.722634" lon="-118.078717"></trkpt>
+    <trkpt lat="33.723289" lon="-118.079497"></trkpt>
+    <trkpt lat="33.729573" lon="-118.086975"></trkpt>
+    <trkpt lat="33.731214" lon="-118.088928"></trkpt>
+    <trkpt lat="33.733871" lon="-118.094862"></trkpt>
+    <trkpt lat="33.742282" lon="-118.113647"></trkpt>
+    <trkpt lat="33.743295" lon="-118.115411"></trkpt>
+    <trkpt lat="33.745176" lon="-118.11442"></trkpt>
+    <trkpt lat="33.744668" lon="-118.117804"></trkpt>
+    <trkpt lat="33.753158" lon="-118.132595"></trkpt>
+    <trkpt lat="33.753217" lon="-118.132698"></trkpt>
+    <trkpt lat="33.754546" lon="-118.136935"></trkpt>
+    <trkpt lat="33.755597" lon="-118.140286"></trkpt>
+    <trkpt lat="33.757566" lon="-118.146563"></trkpt>
+    <trkpt lat="33.759317" lon="-118.152144"></trkpt>
+    <trkpt lat="33.760661" lon="-118.156429"></trkpt>
+    <trkpt lat="33.760742" lon="-118.156758"></trkpt>
+    <trkpt lat="33.761515" lon="-118.159907"></trkpt>
+    <trkpt lat="33.763134" lon="-118.166497"></trkpt>
+    <trkpt lat="33.76323" lon="-118.166887"></trkpt>
+    <trkpt lat="33.763617" lon="-118.1755"></trkpt>
+    <trkpt lat="33.763588" lon="-118.176199"></trkpt>
+    <trkpt lat="33.76358" lon="-118.176376"></trkpt>
+    <trkpt lat="33.763413" lon="-118.18035"></trkpt>
+    <trkpt lat="33.759181" lon="-118.17962"></trkpt>
+    <trkpt lat="33.758962" lon="-118.179849"></trkpt>
+    <trkpt lat="33.75444" lon="-118.184575"></trkpt>
+    <trkpt lat="33.751441" lon="-118.187709"></trkpt>
+    <trkpt lat="33.750534" lon="-118.188657"></trkpt>
+    <trkpt lat="33.749408" lon="-118.189833"></trkpt>
+    <trkpt lat="33.738566" lon="-118.185952"></trkpt>
+    <trkpt lat="33.738254" lon="-118.18584"></trkpt>
+    <trkpt lat="33.737616" lon="-118.185734"></trkpt>
+    <trkpt lat="33.723186" lon="-118.183342"></trkpt>
+    <trkpt lat="33.723125" lon="-118.197436"></trkpt>
+    <trkpt lat="33.723086" lon="-118.206534"></trkpt>
+    <trkpt lat="33.71453" lon="-118.232948"></trkpt>
+    <trkpt lat="33.714529" lon="-118.232952"></trkpt>
+    <trkpt lat="33.71075" lon="-118.244618"></trkpt>
+    <trkpt lat="33.709732" lon="-118.247763"></trkpt>
+    <trkpt lat="33.705024" lon="-118.262297"></trkpt>
+    <trkpt lat="33.70403" lon="-118.269645"></trkpt>
+    <trkpt lat="33.704877" lon="-118.271737"></trkpt>
+    <trkpt lat="33.707091" lon="-118.277208"></trkpt>
+    <trkpt lat="33.707277" lon="-118.277974"></trkpt>
+    <trkpt lat="33.707279" lon="-118.27798"></trkpt>
+    <trkpt lat="33.70863" lon="-118.283541"></trkpt>
+    <trkpt lat="33.708814" lon="-118.284296"></trkpt>
+    <trkpt lat="33.707911" lon="-118.285412"></trkpt>
+    <trkpt lat="33.707518" lon="-118.285898"></trkpt>
+    <trkpt lat="33.705819" lon="-118.287999"></trkpt>
+    <trkpt lat="33.705516" lon="-118.288373"></trkpt>
+    <trkpt lat="33.705233" lon="-118.292873"></trkpt>
+    <trkpt lat="33.705112" lon="-118.294788"></trkpt>
+    <trkpt lat="33.70582" lon="-118.29511"></trkpt>
+    <trkpt lat="33.708792" lon="-118.296463"></trkpt>
+    <trkpt lat="33.712932" lon="-118.310155"></trkpt>
+    <trkpt lat="33.713496" lon="-118.311562"></trkpt>
+    <trkpt lat="33.714531" lon="-118.314141"></trkpt>
+    <trkpt lat="33.71363" lon="-118.317482"></trkpt>
+    <trkpt lat="33.717186" lon="-118.320359"></trkpt>
+    <trkpt lat="33.717524" lon="-118.321216"></trkpt>
+    <trkpt lat="33.717958" lon="-118.322315"></trkpt>
+    <trkpt lat="33.718653" lon="-118.324075"></trkpt>
+    <trkpt lat="33.722132" lon="-118.332894"></trkpt>
+    <trkpt lat="33.725971" lon="-118.342622"></trkpt>
+    <trkpt lat="33.727681" lon="-118.352052"></trkpt>
+    <trkpt lat="33.732317" lon="-118.354705"></trkpt>
+    <trkpt lat="33.732392" lon="-118.354802"></trkpt>
+    <trkpt lat="33.736817" lon="-118.360505"></trkpt>
+    <trkpt lat="33.737865" lon="-118.363714"></trkpt>
+    <trkpt lat="33.737998" lon="-118.364121"></trkpt>
+    <trkpt lat="33.738086" lon="-118.367945"></trkpt>
+    <trkpt lat="33.736315" lon="-118.36931"></trkpt>
+    <trkpt lat="33.73641" lon="-118.36972"></trkpt>
+    <trkpt lat="33.737319" lon="-118.373635"></trkpt>
+    <trkpt lat="33.737718" lon="-118.375352"></trkpt>
+    <trkpt lat="33.737934" lon="-118.376283"></trkpt>
+    <trkpt lat="33.740444" lon="-118.376531"></trkpt>
+    <trkpt lat="33.742875" lon="-118.381749"></trkpt>
+    <trkpt lat="33.741417" lon="-118.385006"></trkpt>
+    <trkpt lat="33.739553" lon="-118.389794"></trkpt>
+    <trkpt lat="33.738345" lon="-118.392896"></trkpt>
+    <trkpt lat="33.736247" lon="-118.398286"></trkpt>
+    <trkpt lat="33.739401" lon="-118.402885"></trkpt>
+    <trkpt lat="33.741171" lon="-118.404415"></trkpt>
+    <trkpt lat="33.741985" lon="-118.411211"></trkpt>
+    <trkpt lat="33.742339" lon="-118.411397"></trkpt>
+    <trkpt lat="33.747585" lon="-118.414152"></trkpt>
+    <trkpt lat="33.747705" lon="-118.414216"></trkpt>
+    <trkpt lat="33.747828" lon="-118.41428"></trkpt>
+    <trkpt lat="33.759475" lon="-118.418352"></trkpt>
+    <trkpt lat="33.761807" lon="-118.42057"></trkpt>
+    <trkpt lat="33.763351" lon="-118.422039"></trkpt>
+    <trkpt lat="33.763779" lon="-118.422446"></trkpt>
+    <trkpt lat="33.764283" lon="-118.422925"></trkpt>
+    <trkpt lat="33.766224" lon="-118.423945"></trkpt>
+    <trkpt lat="33.767216" lon="-118.424467"></trkpt>
+    <trkpt lat="33.768109" lon="-118.424936"></trkpt>
+    <trkpt lat="33.769355" lon="-118.421917"></trkpt>
+    <trkpt lat="33.772373" lon="-118.423733"></trkpt>
+    <trkpt lat="33.772516" lon="-118.423819"></trkpt>
+    <trkpt lat="33.772318" lon="-118.427147"></trkpt>
+    <trkpt lat="33.774496" lon="-118.428292"></trkpt>
+    <trkpt lat="33.774715" lon="-118.428407"></trkpt>
+    <trkpt lat="33.776699" lon="-118.427048"></trkpt>
+    <trkpt lat="33.780594" lon="-118.42438"></trkpt>
+    <trkpt lat="33.782015" lon="-118.423407"></trkpt>
+    <trkpt lat="33.782756" lon="-118.422658"></trkpt>
+    <trkpt lat="33.785149" lon="-118.420238"></trkpt>
+    <trkpt lat="33.785293" lon="-118.420093"></trkpt>
+    <trkpt lat="33.787919" lon="-118.417438"></trkpt>
+    <trkpt lat="33.79189" lon="-118.406999"></trkpt>
+    <trkpt lat="33.79349" lon="-118.407409"></trkpt>
+    <trkpt lat="33.796961" lon="-118.408297"></trkpt>
+    <trkpt lat="33.800215" lon="-118.405007"></trkpt>
+    <trkpt lat="33.802125" lon="-118.400022"></trkpt>
+    <trkpt lat="33.804289" lon="-118.394376"></trkpt>
+    <trkpt lat="33.804315" lon="-118.394307"></trkpt>
+    <trkpt lat="33.815415" lon="-118.391507"></trkpt>
+    <trkpt lat="33.815425" lon="-118.391506"></trkpt>
+    <trkpt lat="33.824525" lon="-118.391054"></trkpt>
+    <trkpt lat="33.828118" lon="-118.390875"></trkpt>
+    <trkpt lat="33.828844" lon="-118.390839"></trkpt>
+    <trkpt lat="33.835434" lon="-118.390511"></trkpt>
+    <trkpt lat="33.835437" lon="-118.390511"></trkpt>
+    <trkpt lat="33.838771" lon="-118.391103"></trkpt>
+    <trkpt lat="33.838723" lon="-118.392027"></trkpt>
+    <trkpt lat="33.838848" lon="-118.392228"></trkpt>
+    <trkpt lat="33.840816" lon="-118.395388"></trkpt>
+    <trkpt lat="33.843508" lon="-118.399709"></trkpt>
+    <trkpt lat="33.847951" lon="-118.401798"></trkpt>
+    <trkpt lat="33.848479" lon="-118.401714"></trkpt>
+    <trkpt lat="33.849382" lon="-118.40157"></trkpt>
+    <trkpt lat="33.850137" lon="-118.400096"></trkpt>
+    <trkpt lat="33.850454" lon="-118.399479"></trkpt>
+    <trkpt lat="33.851723" lon="-118.399484"></trkpt>
+    <trkpt lat="33.853759" lon="-118.399493"></trkpt>
+    <trkpt lat="33.856905" lon="-118.400872"></trkpt>
+    <trkpt lat="33.861561" lon="-118.402912"></trkpt>
+    <trkpt lat="33.861675" lon="-118.402962"></trkpt>
+    <trkpt lat="33.876703" lon="-118.409548"></trkpt>
+    <trkpt lat="33.876911" lon="-118.40964"></trkpt>
+    <trkpt lat="33.883884" lon="-118.412695"></trkpt>
+    <trkpt lat="33.883913" lon="-118.412708"></trkpt>
+    <trkpt lat="33.887608" lon="-118.414654"></trkpt>
+    <trkpt lat="33.889425" lon="-118.415611"></trkpt>
+    <trkpt lat="33.890658" lon="-118.41626"></trkpt>
+    <trkpt lat="33.893097" lon="-118.417545"></trkpt>
+    <trkpt lat="33.896286" lon="-118.419224"></trkpt>
+    <trkpt lat="33.89669" lon="-118.419437"></trkpt>
+    <trkpt lat="33.899815" lon="-118.421083"></trkpt>
+    <trkpt lat="33.901487" lon="-118.421963"></trkpt>
+    <trkpt lat="33.901591" lon="-118.422018"></trkpt>
+    <trkpt lat="33.904699" lon="-118.423655"></trkpt>
+    <trkpt lat="33.904736" lon="-118.423674"></trkpt>
+    <trkpt lat="33.916271" lon="-118.429749"></trkpt>
+    <trkpt lat="33.91677" lon="-118.430012"></trkpt>
+    <trkpt lat="33.926617" lon="-118.435198"></trkpt>
+    <trkpt lat="33.940312" lon="-118.44241"></trkpt>
+    <trkpt lat="33.940462" lon="-118.442491"></trkpt>
+    <trkpt lat="33.951114" lon="-118.448226"></trkpt>
+    <trkpt lat="33.955666" lon="-118.450677"></trkpt>
+    <trkpt lat="33.96263" lon="-118.455822"></trkpt>
+    <trkpt lat="33.969111" lon="-118.460611"></trkpt>
+    <trkpt lat="33.978354" lon="-118.468641"></trkpt>
+    <trkpt lat="33.983453" lon="-118.47307"></trkpt>
+    <trkpt lat="33.987517" lon="-118.4766"></trkpt>
+    <trkpt lat="33.99542" lon="-118.483467"></trkpt>
+    <trkpt lat="33.997183" lon="-118.484998"></trkpt>
+    <trkpt lat="33.997744" lon="-118.485543"></trkpt>
+    <trkpt lat="33.99981" lon="-118.487552"></trkpt>
+    <trkpt lat="33.999844" lon="-118.487584"></trkpt>
+    <trkpt lat="34.005533" lon="-118.493115"></trkpt>
+    <trkpt lat="34.0076" lon="-118.495125"></trkpt>
+    <trkpt lat="34.015509" lon="-118.502813"></trkpt>
+    <trkpt lat="34.015518" lon="-118.502826"></trkpt>
+    <trkpt lat="34.020399" lon="-118.509619"></trkpt>
+    <trkpt lat="34.025615" lon="-118.516878"></trkpt>
+    <trkpt lat="34.027509" lon="-118.519514"></trkpt>
+    <trkpt lat="34.027608" lon="-118.519727"></trkpt>
+    <trkpt lat="34.035245" lon="-118.536114"></trkpt>
+    <trkpt lat="34.038508" lon="-118.543115"></trkpt>
+    <trkpt lat="34.040201" lon="-118.549076"></trkpt>
+    <trkpt lat="34.037762" lon="-118.554891"></trkpt>
+    <trkpt lat="34.038172" lon="-118.555873"></trkpt>
+    <trkpt lat="34.04079" lon="-118.562149"></trkpt>
+    <trkpt lat="34.041389" lon="-118.567141"></trkpt>
+    <trkpt lat="34.041417" lon="-118.567374"></trkpt>
+    <trkpt lat="34.04149" lon="-118.567986"></trkpt>
+    <trkpt lat="34.04164" lon="-118.569235"></trkpt>
+    <trkpt lat="34.041498" lon="-118.569735"></trkpt>
+    <trkpt lat="34.040081" lon="-118.574725"></trkpt>
+    <trkpt lat="34.039745" lon="-118.575908"></trkpt>
+    <trkpt lat="34.039799" lon="-118.579253"></trkpt>
+    <trkpt lat="34.039807" lon="-118.579737"></trkpt>
+    <trkpt lat="34.037475" lon="-118.583902"></trkpt>
+    <trkpt lat="34.037595" lon="-118.584351"></trkpt>
+    <trkpt lat="34.03986" lon="-118.592815"></trkpt>
+    <trkpt lat="34.039048" lon="-118.603572"></trkpt>
+    <trkpt lat="34.036424" lon="-118.609652"></trkpt>
+    <trkpt lat="34.037599" lon="-118.617338"></trkpt>
+    <trkpt lat="34.038428" lon="-118.622757"></trkpt>
+    <trkpt lat="34.038154" lon="-118.623493"></trkpt>
+    <trkpt lat="34.036868" lon="-118.626946"></trkpt>
+    <trkpt lat="34.036302" lon="-118.63525"></trkpt>
+    <trkpt lat="34.036256" lon="-118.635921"></trkpt>
+    <trkpt lat="34.036229" lon="-118.636314"></trkpt>
+    <trkpt lat="34.036263" lon="-118.636464"></trkpt>
+    <trkpt lat="34.03793" lon="-118.643847"></trkpt>
+    <trkpt lat="34.037531" lon="-118.649901"></trkpt>
+    <trkpt lat="34.038551" lon="-118.657381"></trkpt>
+    <trkpt lat="34.038887" lon="-118.668358"></trkpt>
+    <trkpt lat="34.038847" lon="-118.66856"></trkpt>
+    <trkpt lat="34.037479" lon="-118.67543"></trkpt>
+    <trkpt lat="34.03614" lon="-118.677696"></trkpt>
+    <trkpt lat="34.03311" lon="-118.678849"></trkpt>
+    <trkpt lat="34.030723" lon="-118.683183"></trkpt>
+    <trkpt lat="34.032245" lon="-118.690213"></trkpt>
+    <trkpt lat="34.032519" lon="-118.697388"></trkpt>
+    <trkpt lat="34.029383" lon="-118.706215"></trkpt>
+    <trkpt lat="34.031255" lon="-118.714155"></trkpt>
+    <trkpt lat="34.031329" lon="-118.714468"></trkpt>
+    <trkpt lat="34.031107" lon="-118.719236"></trkpt>
+    <trkpt lat="34.031093" lon="-118.719538"></trkpt>
+    <trkpt lat="34.032743" lon="-118.732391"></trkpt>
+    <trkpt lat="34.032103" lon="-118.744952"></trkpt>
+    <trkpt lat="34.031203" lon="-118.748231"></trkpt>
+    <trkpt lat="34.030747" lon="-118.749892"></trkpt>
+    <trkpt lat="34.030076" lon="-118.752339"></trkpt>
+    <trkpt lat="34.025719" lon="-118.756402"></trkpt>
+    <trkpt lat="34.025231" lon="-118.767741"></trkpt>
+    <trkpt lat="34.022571" lon="-118.779057"></trkpt>
+    <trkpt lat="34.021543" lon="-118.783433"></trkpt>
+    <trkpt lat="34.019555" lon="-118.787075"></trkpt>
+    <trkpt lat="34.019545" lon="-118.787094"></trkpt>
+    <trkpt lat="34.019543" lon="-118.787096"></trkpt>
+    <trkpt lat="34.019486" lon="-118.787138"></trkpt>
+    <trkpt lat="34.013071" lon="-118.791916"></trkpt>
+    <trkpt lat="34.011171" lon="-118.793331"></trkpt>
+    <trkpt lat="34.007413" lon="-118.794289"></trkpt>
+    <trkpt lat="34.006712" lon="-118.800541"></trkpt>
+    <trkpt lat="34.004473" lon="-118.803753"></trkpt>
+    <trkpt lat="34.001239" lon="-118.805114"></trkpt>
+    <trkpt lat="34.000198" lon="-118.806367"></trkpt>
+    <trkpt lat="34.001622" lon="-118.808901"></trkpt>
+    <trkpt lat="34.001829" lon="-118.809114"></trkpt>
+    <trkpt lat="34.013804" lon="-118.82142"></trkpt>
+    <trkpt lat="34.013939" lon="-118.821558"></trkpt>
+    <trkpt lat="34.013959" lon="-118.821579"></trkpt>
+    <trkpt lat="34.014233" lon="-118.821958"></trkpt>
+    <trkpt lat="34.024959" lon="-118.836822"></trkpt>
+    <trkpt lat="34.027527" lon="-118.84038"></trkpt>
+    <trkpt lat="34.028883" lon="-118.842678"></trkpt>
+    <trkpt lat="34.031257" lon="-118.8467"></trkpt>
+    <trkpt lat="34.034215" lon="-118.854653"></trkpt>
+    <trkpt lat="34.035309" lon="-118.859205"></trkpt>
+    <trkpt lat="34.034554" lon="-118.862499"></trkpt>
+    <trkpt lat="34.037648" lon="-118.874853"></trkpt>
+    <trkpt lat="34.0381" lon="-118.882023"></trkpt>
+    <trkpt lat="34.039165" lon="-118.895628"></trkpt>
+    <trkpt lat="34.039207" lon="-118.896159"></trkpt>
+    <trkpt lat="34.041488" lon="-118.905781"></trkpt>
+    <trkpt lat="34.041753" lon="-118.915968"></trkpt>
+    <trkpt lat="34.044475" lon="-118.921269"></trkpt>
+    <trkpt lat="34.045847" lon="-118.928048"></trkpt>
+    <trkpt lat="34.045536" lon="-118.931549"></trkpt>
+    <trkpt lat="34.043507" lon="-118.93481"></trkpt>
+    <trkpt lat="34.043383" lon="-118.938081"></trkpt>
+    <trkpt lat="34.045418" lon="-118.944862"></trkpt>
+    <trkpt lat="34.046563" lon="-118.944502"></trkpt>
+    <trkpt lat="34.046006" lon="-118.946823"></trkpt>
+    <trkpt lat="34.048167" lon="-118.954722"></trkpt>
+    <trkpt lat="34.051032" lon="-118.958598"></trkpt>
+    <trkpt lat="34.052206" lon="-118.964534"></trkpt>
+    <trkpt lat="34.056743" lon="-118.970007"></trkpt>
+    <trkpt lat="34.059822" lon="-118.977751"></trkpt>
+    <trkpt lat="34.060334" lon="-118.983303"></trkpt>
+    <trkpt lat="34.062967" lon="-118.987631"></trkpt>
+    <trkpt lat="34.065943" lon="-118.99698"></trkpt>
+    <trkpt lat="34.066231" lon="-119.004644"></trkpt>
+    <trkpt lat="34.066793" lon="-119.008981"></trkpt>
+    <trkpt lat="34.070769" lon="-119.016039"></trkpt>
+    <trkpt lat="34.083111" lon="-119.037494"></trkpt>
+    <trkpt lat="34.084934" lon="-119.046502"></trkpt>
+    <trkpt lat="34.08423" lon="-119.052086"></trkpt>
+    <trkpt lat="34.085638" lon="-119.056278"></trkpt>
+    <trkpt lat="34.085387" lon="-119.061217"></trkpt>
+    <trkpt lat="34.085625" lon="-119.061627"></trkpt>
+    <trkpt lat="34.09047" lon="-119.069959"></trkpt>
+    <trkpt lat="34.099266" lon="-119.085994"></trkpt>
+    <trkpt lat="34.099856" lon="-119.098116"></trkpt>
+    <trkpt lat="34.09592" lon="-119.108812"></trkpt>
+    <trkpt lat="34.096904" lon="-119.115942"></trkpt>
+    <trkpt lat="34.10084" lon="-119.129252"></trkpt>
+    <trkpt lat="34.108414" lon="-119.14266"></trkpt>
+    <trkpt lat="34.119654" lon="-119.159554"></trkpt>
+    <trkpt lat="34.119697" lon="-119.159618"></trkpt>
+    <trkpt lat="34.131918" lon="-119.177988"></trkpt>
+    <trkpt lat="34.139005" lon="-119.18864"></trkpt>
+    <trkpt lat="34.144505" lon="-119.20314"></trkpt>
+    <trkpt lat="34.144905" lon="-119.211241"></trkpt>
+    <trkpt lat="34.146001" lon="-119.215992"></trkpt>
+    <trkpt lat="34.146017" lon="-119.216062"></trkpt>
+    <trkpt lat="34.146105" lon="-119.216441"></trkpt>
+    <trkpt lat="34.158307" lon="-119.225268"></trkpt>
+    <trkpt lat="34.158791" lon="-119.225619"></trkpt>
+    <trkpt lat="34.159441" lon="-119.226088"></trkpt>
+    <trkpt lat="34.161728" lon="-119.227743"></trkpt>
+    <trkpt lat="34.173175" lon="-119.235386"></trkpt>
+    <trkpt lat="34.175804" lon="-119.237142"></trkpt>
+    <trkpt lat="34.197419" lon="-119.248613"></trkpt>
+    <trkpt lat="34.213304" lon="-119.257043"></trkpt>
+    <trkpt lat="34.227492" lon="-119.264254"></trkpt>
+    <trkpt lat="34.234609" lon="-119.265927"></trkpt>
+    <trkpt lat="34.234691" lon="-119.265935"></trkpt>
+    <trkpt lat="34.236064" lon="-119.266064"></trkpt>
+    <trkpt lat="34.240198" lon="-119.266453"></trkpt>
+    <trkpt lat="34.249209" lon="-119.269071"></trkpt>
+    <trkpt lat="34.252903" lon="-119.270144"></trkpt>
+    <trkpt lat="34.25875" lon="-119.273694"></trkpt>
+    <trkpt lat="34.266902" lon="-119.278644"></trkpt>
+    <trkpt lat="34.271397" lon="-119.285555"></trkpt>
+    <trkpt lat="34.274902" lon="-119.290945"></trkpt>
+    <trkpt lat="34.275268" lon="-119.295256"></trkpt>
+    <trkpt lat="34.272761" lon="-119.302131"></trkpt>
+    <trkpt lat="34.274696" lon="-119.307617"></trkpt>
+    <trkpt lat="34.276356" lon="-119.312323"></trkpt>
+    <trkpt lat="34.280285" lon="-119.317042"></trkpt>
+    <trkpt lat="34.282884" lon="-119.320164"></trkpt>
+    <trkpt lat="34.283912" lon="-119.322477"></trkpt>
+    <trkpt lat="34.290576" lon="-119.337475"></trkpt>
+    <trkpt lat="34.304383" lon="-119.349187"></trkpt>
+    <trkpt lat="34.319486" lon="-119.370356"></trkpt>
+    <trkpt lat="34.321118" lon="-119.37578"></trkpt>
+    <trkpt lat="34.317398" lon="-119.388249"></trkpt>
+    <trkpt lat="34.318198" lon="-119.390449"></trkpt>
+    <trkpt lat="34.334221" lon="-119.405522"></trkpt>
+    <trkpt lat="34.337355" lon="-119.410695"></trkpt>
+    <trkpt lat="34.353016" lon="-119.42777"></trkpt>
+    <trkpt lat="34.355297" lon="-119.431066"></trkpt>
+    <trkpt lat="34.355839" lon="-119.435888"></trkpt>
+    <trkpt lat="34.355994" lon="-119.443418"></trkpt>
+    <trkpt lat="34.365501" lon="-119.451304"></trkpt>
+    <trkpt lat="34.374064" lon="-119.461036"></trkpt>
+    <trkpt lat="34.37572" lon="-119.467751"></trkpt>
+    <trkpt lat="34.375628" lon="-119.472678"></trkpt>
+    <trkpt lat="34.374106" lon="-119.476528"></trkpt>
+    <trkpt lat="34.375104" lon="-119.47598"></trkpt>
+    <trkpt lat="34.376532" lon="-119.47818"></trkpt>
+    <trkpt lat="34.379417" lon="-119.477837"></trkpt>
+    <trkpt lat="34.373275" lon="-119.47863"></trkpt>
+    <trkpt lat="34.380046" lon="-119.483395"></trkpt>
+    <trkpt lat="34.380983" lon="-119.486135"></trkpt>
+    <trkpt lat="34.382189" lon="-119.489662"></trkpt>
+    <trkpt lat="34.384814" lon="-119.497339"></trkpt>
+    <trkpt lat="34.384527" lon="-119.502477"></trkpt>
+    <trkpt lat="34.384439" lon="-119.504046"></trkpt>
+    <trkpt lat="34.384487" lon="-119.504217"></trkpt>
+    <trkpt lat="34.386293" lon="-119.510649"></trkpt>
+    <trkpt lat="34.386295" lon="-119.510655"></trkpt>
+    <trkpt lat="34.389282" lon="-119.5188"></trkpt>
+    <trkpt lat="34.393188" lon="-119.523563"></trkpt>
+    <trkpt lat="34.395157" lon="-119.529208"></trkpt>
+    <trkpt lat="34.395862" lon="-119.53123"></trkpt>
+    <trkpt lat="34.395919" lon="-119.5369"></trkpt>
+    <trkpt lat="34.403484" lon="-119.545683"></trkpt>
+    <trkpt lat="34.405166" lon="-119.547635"></trkpt>
+    <trkpt lat="34.413395" lon="-119.559459"></trkpt>
+    <trkpt lat="34.41532" lon="-119.563986"></trkpt>
+    <trkpt lat="34.41465" lon="-119.566715"></trkpt>
+    <trkpt lat="34.414218" lon="-119.568473"></trkpt>
+    <trkpt lat="34.414122" lon="-119.568916"></trkpt>
+    <trkpt lat="34.41254" lon="-119.576247"></trkpt>
+    <trkpt lat="34.412646" lon="-119.576648"></trkpt>
+    <trkpt lat="34.414081" lon="-119.582091"></trkpt>
+    <trkpt lat="34.417998" lon="-119.590177"></trkpt>
+    <trkpt lat="34.418487" lon="-119.593439"></trkpt>
+    <trkpt lat="34.420445" lon="-119.606513"></trkpt>
+    <trkpt lat="34.420661" lon="-119.610575"></trkpt>
+    <trkpt lat="34.420746" lon="-119.612171"></trkpt>
+    <trkpt lat="34.420755" lon="-119.61235"></trkpt>
+    <trkpt lat="34.420903" lon="-119.615124"></trkpt>
+    <trkpt lat="34.420995" lon="-119.616862"></trkpt>
+    <trkpt lat="34.420556" lon="-119.617603"></trkpt>
+    <trkpt lat="34.419839" lon="-119.618811"></trkpt>
+    <trkpt lat="34.419237" lon="-119.619827"></trkpt>
+    <trkpt lat="34.418606" lon="-119.62089"></trkpt>
+    <trkpt lat="34.419661" lon="-119.629568"></trkpt>
+    <trkpt lat="34.416868" lon="-119.633998"></trkpt>
+    <trkpt lat="34.415696" lon="-119.638864"></trkpt>
+    <trkpt lat="34.417396" lon="-119.648664"></trkpt>
+    <trkpt lat="34.416814" lon="-119.65906"></trkpt>
+    <trkpt lat="34.416096" lon="-119.671866"></trkpt>
+    <trkpt lat="34.415126" lon="-119.676262"></trkpt>
+    <trkpt lat="34.414111" lon="-119.680857"></trkpt>
+    <trkpt lat="34.412497" lon="-119.688167"></trkpt>
+    <trkpt lat="34.410326" lon="-119.686357"></trkpt>
+    <trkpt lat="34.408297" lon="-119.684666"></trkpt>
+    <trkpt lat="34.403154" lon="-119.691749"></trkpt>
+    <trkpt lat="34.402486" lon="-119.696532"></trkpt>
+    <trkpt lat="34.402013" lon="-119.699921"></trkpt>
+    <trkpt lat="34.398733" lon="-119.70162"></trkpt>
+    <trkpt lat="34.395397" lon="-119.709067"></trkpt>
+    <trkpt lat="34.395716" lon="-119.713848"></trkpt>
+    <trkpt lat="34.396078" lon="-119.719261"></trkpt>
+    <trkpt lat="34.395861" lon="-119.723177"></trkpt>
+    <trkpt lat="34.39578" lon="-119.724638"></trkpt>
+    <trkpt lat="34.395857" lon="-119.727738"></trkpt>
+    <trkpt lat="34.395897" lon="-119.729369"></trkpt>
+    <trkpt lat="34.396851" lon="-119.731301"></trkpt>
+    <trkpt lat="34.401701" lon="-119.74112"></trkpt>
+    <trkpt lat="34.402215" lon="-119.742989"></trkpt>
+    <trkpt lat="34.402898" lon="-119.74547"></trkpt>
+    <trkpt lat="34.40375" lon="-119.750414"></trkpt>
+    <trkpt lat="34.405597" lon="-119.755761"></trkpt>
+    <trkpt lat="34.405649" lon="-119.755913"></trkpt>
+    <trkpt lat="34.415997" lon="-119.785871"></trkpt>
+    <trkpt lat="34.416111" lon="-119.786255"></trkpt>
+    <trkpt lat="34.418289" lon="-119.793567"></trkpt>
+    <trkpt lat="34.417988" lon="-119.802363"></trkpt>
+    <trkpt lat="34.416497" lon="-119.807055"></trkpt>
+    <trkpt lat="34.4167" lon="-119.815195"></trkpt>
+    <trkpt lat="34.417112" lon="-119.825178"></trkpt>
+    <trkpt lat="34.417096" lon="-119.825305"></trkpt>
+    <trkpt lat="34.415796" lon="-119.835771"></trkpt>
+    <trkpt lat="34.415598" lon="-119.836274"></trkpt>
+    <trkpt lat="34.414679" lon="-119.838604"></trkpt>
+    <trkpt lat="34.413975" lon="-119.84039"></trkpt>
+    <trkpt lat="34.409275" lon="-119.841868"></trkpt>
+    <trkpt lat="34.404301" lon="-119.844485"></trkpt>
+    <trkpt lat="34.404494" lon="-119.84497"></trkpt>
+    <trkpt lat="34.407639" lon="-119.852873"></trkpt>
+    <trkpt lat="34.407996" lon="-119.853771"></trkpt>
+    <trkpt lat="34.407996" lon="-119.853777"></trkpt>
+    <trkpt lat="34.408001" lon="-119.8539"></trkpt>
+    <trkpt lat="34.408194" lon="-119.858774"></trkpt>
+    <trkpt lat="34.408345" lon="-119.862596"></trkpt>
+    <trkpt lat="34.408752" lon="-119.872888"></trkpt>
+    <trkpt lat="34.408795" lon="-119.873971"></trkpt>
+    <trkpt lat="34.406913" lon="-119.878199"></trkpt>
+    <trkpt lat="34.409601" lon="-119.881164"></trkpt>
+    <trkpt lat="34.410018" lon="-119.881625"></trkpt>
+    <trkpt lat="34.41335" lon="-119.885301"></trkpt>
+    <trkpt lat="34.416651" lon="-119.888942"></trkpt>
+    <trkpt lat="34.419229" lon="-119.891786"></trkpt>
+    <trkpt lat="34.419604" lon="-119.8922"></trkpt>
+    <trkpt lat="34.420821" lon="-119.899166"></trkpt>
+    <trkpt lat="34.421076" lon="-119.899599"></trkpt>
+    <trkpt lat="34.428363" lon="-119.911966"></trkpt>
+    <trkpt lat="34.430444" lon="-119.915497"></trkpt>
+    <trkpt lat="34.431828" lon="-119.919358"></trkpt>
+    <trkpt lat="34.432754" lon="-119.921943"></trkpt>
+    <trkpt lat="34.433931" lon="-119.925227"></trkpt>
+    <trkpt lat="34.43461" lon="-119.929546"></trkpt>
+    <trkpt lat="34.435701" lon="-119.936489"></trkpt>
+    <trkpt lat="34.434476" lon="-119.949696"></trkpt>
+    <trkpt lat="34.435288" lon="-119.956433"></trkpt>
+    <trkpt lat="34.444641" lon="-119.971951"></trkpt>
+    <trkpt lat="34.45083" lon="-119.984899"></trkpt>
+    <trkpt lat="34.449837" lon="-119.990033"></trkpt>
+    <trkpt lat="34.455394" lon="-119.997686"></trkpt>
+    <trkpt lat="34.460447" lon="-120.008077"></trkpt>
+    <trkpt lat="34.46117" lon="-120.019453"></trkpt>
+    <trkpt lat="34.458584" lon="-120.021444"></trkpt>
+    <trkpt lat="34.458431" lon="-120.02254"></trkpt>
+    <trkpt lat="34.458277" lon="-120.023641"></trkpt>
+    <trkpt lat="34.461695" lon="-120.031989"></trkpt>
+    <trkpt lat="34.463434" lon="-120.038828"></trkpt>
+    <trkpt lat="34.461651" lon="-120.050682"></trkpt>
+    <trkpt lat="34.461429" lon="-120.060036"></trkpt>
+    <trkpt lat="34.46255" lon="-120.071061"></trkpt>
+    <trkpt lat="34.460817" lon="-120.072592"></trkpt>
+    <trkpt lat="34.460208" lon="-120.088591"></trkpt>
+    <trkpt lat="34.461809" lon="-120.097212"></trkpt>
+    <trkpt lat="34.469927" lon="-120.118411"></trkpt>
+    <trkpt lat="34.47294" lon="-120.133296"></trkpt>
+    <trkpt lat="34.473405" lon="-120.141165"></trkpt>
+    <trkpt lat="34.473275" lon="-120.151562"></trkpt>
+    <trkpt lat="34.471831" lon="-120.163142"></trkpt>
+    <trkpt lat="34.469732" lon="-120.168774"></trkpt>
+    <trkpt lat="34.470693" lon="-120.174878"></trkpt>
+    <trkpt lat="34.470372" lon="-120.183505"></trkpt>
+    <trkpt lat="34.470587" lon="-120.225498"></trkpt>
+    <trkpt lat="34.470454" lon="-120.226813"></trkpt>
+    <trkpt lat="34.469701" lon="-120.234252"></trkpt>
+    <trkpt lat="34.468098" lon="-120.238002"></trkpt>
+    <trkpt lat="34.467451" lon="-120.25777"></trkpt>
+    <trkpt lat="34.468354" lon="-120.283001"></trkpt>
+    <trkpt lat="34.470623" lon="-120.295051"></trkpt>
+    <trkpt lat="34.469731" lon="-120.299169"></trkpt>
+    <trkpt lat="34.467077" lon="-120.301822"></trkpt>
+    <trkpt lat="34.463372" lon="-120.322198"></trkpt>
+    <trkpt lat="34.462589" lon="-120.335001"></trkpt>
+    <trkpt lat="34.459686" lon="-120.337091"></trkpt>
+    <trkpt lat="34.458789" lon="-120.341369"></trkpt>
+    <trkpt lat="34.458148" lon="-120.350546"></trkpt>
+    <trkpt lat="34.457864" lon="-120.354602"></trkpt>
+    <trkpt lat="34.457102" lon="-120.36551"></trkpt>
+    <trkpt lat="34.455338" lon="-120.406781"></trkpt>
+    <trkpt lat="34.452986" lon="-120.417223"></trkpt>
+    <trkpt lat="34.452972" lon="-120.417284"></trkpt>
+    <trkpt lat="34.450401" lon="-120.421541"></trkpt>
+    <trkpt lat="34.449924" lon="-120.426105"></trkpt>
+    <trkpt lat="34.451512" lon="-120.441975"></trkpt>
+    <trkpt lat="34.447094" lon="-120.451425"></trkpt>
+    <trkpt lat="34.442442" lon="-120.452811"></trkpt>
+    <trkpt lat="34.445342" lon="-120.459245"></trkpt>
+    <trkpt lat="34.448676" lon="-120.463264"></trkpt>
+    <trkpt lat="34.447846" lon="-120.471376"></trkpt>
+    <trkpt lat="34.44859" lon="-123.0"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>ILTT Competition Boundary</name>
+  <trkseg>
+    <trkpt lat="34.082367" lon="-117.23"></trkpt>
+    <trkpt lat="34.078846" lon="-117.349753"></trkpt>
+    <trkpt lat="34.068298" lon="-117.468922"></trkpt>
+    <trkpt lat="34.050776" lon="-117.586927"></trkpt>
+    <trkpt lat="34.026364" lon="-117.703194"></trkpt>
+    <trkpt lat="33.995183" lon="-117.817155"></trkpt>
+    <trkpt lat="33.957383" lon="-117.928255"></trkpt>
+    <trkpt lat="33.913148" lon="-118.035954"></trkpt>
+    <trkpt lat="33.862695" lon="-118.139726"></trkpt>
+    <trkpt lat="33.806269" lon="-118.239066"></trkpt>
+    <trkpt lat="33.744145" lon="-118.33349"></trkpt>
+    <trkpt lat="33.676626" lon="-118.422538"></trkpt>
+    <trkpt lat="33.60404" lon="-118.505776"></trkpt>
+    <trkpt lat="33.526742" lon="-118.582799"></trkpt>
+    <trkpt lat="33.445107" lon="-118.65323"></trkpt>
+    <trkpt lat="33.359534" lon="-118.716728"></trkpt>
+    <trkpt lat="33.270439" lon="-118.772983"></trkpt>
+    <trkpt lat="33.178256" lon="-118.821721"></trkpt>
+    <trkpt lat="33.083436" lon="-118.862703"></trkpt>
+    <trkpt lat="32.986439" lon="-118.895732"></trkpt>
+    <trkpt lat="32.887737" lon="-118.920645"></trkpt>
+    <trkpt lat="32.787813" lon="-118.937322"></trkpt>
+    <trkpt lat="32.687153" lon="-118.94568"></trkpt>
+    <trkpt lat="32.586247" lon="-118.94568"></trkpt>
+    <trkpt lat="32.485587" lon="-118.937322"></trkpt>
+    <trkpt lat="32.385663" lon="-118.920645"></trkpt>
+    <trkpt lat="32.286961" lon="-118.895732"></trkpt>
+    <trkpt lat="32.189964" lon="-118.862703"></trkpt>
+    <trkpt lat="32.095144" lon="-118.821721"></trkpt>
+    <trkpt lat="32.002961" lon="-118.772983"></trkpt>
+    <trkpt lat="31.913866" lon="-118.716728"></trkpt>
+    <trkpt lat="31.828293" lon="-118.65323"></trkpt>
+    <trkpt lat="31.746658" lon="-118.582799"></trkpt>
+    <trkpt lat="31.66936" lon="-118.505776"></trkpt>
+    <trkpt lat="31.596774" lon="-118.422538"></trkpt>
+    <trkpt lat="31.529255" lon="-118.33349"></trkpt>
+    <trkpt lat="31.467131" lon="-118.239066"></trkpt>
+    <trkpt lat="31.410705" lon="-118.139726"></trkpt>
+    <trkpt lat="31.360252" lon="-118.035954"></trkpt>
+    <trkpt lat="31.316017" lon="-117.928255"></trkpt>
+    <trkpt lat="31.278217" lon="-117.817155"></trkpt>
+    <trkpt lat="31.247036" lon="-117.703194"></trkpt>
+    <trkpt lat="31.222624" lon="-117.586927"></trkpt>
+    <trkpt lat="31.205102" lon="-117.468922"></trkpt>
+    <trkpt lat="31.194554" lon="-117.349753"></trkpt>
+    <trkpt lat="31.191033" lon="-117.23"></trkpt>
+    <trkpt lat="31.194554" lon="-117.110247"></trkpt>
+    <trkpt lat="31.205102" lon="-116.991078"></trkpt>
+    <trkpt lat="31.222624" lon="-116.873073"></trkpt>
+    <trkpt lat="31.247036" lon="-116.756806"></trkpt>
+    <trkpt lat="31.278217" lon="-116.642845"></trkpt>
+    <trkpt lat="31.316017" lon="-116.531745"></trkpt>
+    <trkpt lat="31.360252" lon="-116.424046"></trkpt>
+    <trkpt lat="31.410705" lon="-116.320274"></trkpt>
+    <trkpt lat="31.467131" lon="-116.220934"></trkpt>
+    <trkpt lat="31.529255" lon="-116.12651"></trkpt>
+    <trkpt lat="31.596774" lon="-116.037462"></trkpt>
+    <trkpt lat="31.66936" lon="-115.954224"></trkpt>
+    <trkpt lat="31.746658" lon="-115.877201"></trkpt>
+    <trkpt lat="31.828293" lon="-115.80677"></trkpt>
+    <trkpt lat="31.913866" lon="-115.743272"></trkpt>
+    <trkpt lat="32.002961" lon="-115.687017"></trkpt>
+    <trkpt lat="32.095144" lon="-115.638279"></trkpt>
+    <trkpt lat="32.189964" lon="-115.597297"></trkpt>
+    <trkpt lat="32.286961" lon="-115.564268"></trkpt>
+    <trkpt lat="32.385663" lon="-115.539355"></trkpt>
+    <trkpt lat="32.485587" lon="-115.522678"></trkpt>
+    <trkpt lat="32.586247" lon="-115.51432"></trkpt>
+    <trkpt lat="32.687153" lon="-115.51432"></trkpt>
+    <trkpt lat="32.787813" lon="-115.522678"></trkpt>
+    <trkpt lat="32.887737" lon="-115.539355"></trkpt>
+    <trkpt lat="32.986439" lon="-115.564268"></trkpt>
+    <trkpt lat="33.083436" lon="-115.597297"></trkpt>
+    <trkpt lat="33.178256" lon="-115.638279"></trkpt>
+    <trkpt lat="33.270439" lon="-115.687017"></trkpt>
+    <trkpt lat="33.359534" lon="-115.743272"></trkpt>
+    <trkpt lat="33.445107" lon="-115.80677"></trkpt>
+    <trkpt lat="33.526742" lon="-115.877201"></trkpt>
+    <trkpt lat="33.60404" lon="-115.954224"></trkpt>
+    <trkpt lat="33.676626" lon="-116.037462"></trkpt>
+    <trkpt lat="33.744145" lon="-116.12651"></trkpt>
+    <trkpt lat="33.806269" lon="-116.220934"></trkpt>
+    <trkpt lat="33.862695" lon="-116.320274"></trkpt>
+    <trkpt lat="33.913148" lon="-116.424046"></trkpt>
+    <trkpt lat="33.957383" lon="-116.531745"></trkpt>
+    <trkpt lat="33.995183" lon="-116.642845"></trkpt>
+    <trkpt lat="34.026364" lon="-116.756806"></trkpt>
+    <trkpt lat="34.050776" lon="-116.873073"></trkpt>
+    <trkpt lat="34.068298" lon="-116.991078"></trkpt>
+    <trkpt lat="34.078846" lon="-117.110247"></trkpt>
+    <trkpt lat="34.082367" lon="-117.23"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>Cowcod Conservation Area #1</name>
+  <trkseg>
+    <trkpt lat="33.8333" lon="-119.5"></trkpt>
+    <trkpt lat="33.55" lon="-119.5"></trkpt>
+    <trkpt lat="33.55" lon="-119.8833"></trkpt>
+    <trkpt lat="33.0" lon="-119.8833"></trkpt>
+    <trkpt lat="33.0" lon="-119.6167"></trkpt>
+    <trkpt lat="32.3333" lon="-119.6167"></trkpt>
+    <trkpt lat="32.3333" lon="-118.8333"></trkpt>
+    <trkpt lat="33.8333" lon="-118.8333"></trkpt>
+    <trkpt lat="33.8333" lon="-119.5"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>Cowcod Conservation Area #2</name>
+  <trkseg>
+    <trkpt lat="32.7" lon="-118.0333"></trkpt>
+    <trkpt lat="32.5" lon="-118.0333"></trkpt>
+    <trkpt lat="32.5" lon="-117.8719"></trkpt>
+    <trkpt lat="32.6117" lon="-117.8333"></trkpt>
+    <trkpt lat="32.7" lon="-117.8333"></trkpt>
+    <trkpt lat="32.7" lon="-118.0333"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>Yellowtail Derby Competition Boundary</name>
+  <trkseg>
+    <trkpt lat="33.3864119" lon="-117.5955332"></trkpt>
+    <trkpt lat="33.3864079" lon="-118.1022135"></trkpt>
+    <trkpt lat="32.6650479" lon="-118.1022135"></trkpt>
+    <trkpt lat="31.9427679" lon="-118.1022135"></trkpt>
+    <trkpt lat="31.9427679" lon="-117.2425642"></trkpt>
+    <trkpt lat="31.9427679" lon="-116.7571046"></trkpt>
+    <trkpt lat="31.9580271" lon="-116.7597743"></trkpt>
+    <trkpt lat="31.9721202" lon="-116.7703425"></trkpt>
+    <trkpt lat="31.9820269" lon="-116.8006414"></trkpt>
+    <trkpt lat="31.9759102" lon="-116.8247197"></trkpt>
+    <trkpt lat="31.9849324" lon="-116.8487987"></trkpt>
+    <trkpt lat="32.0053034" lon="-116.8736219"></trkpt>
+    <trkpt lat="32.0338231" lon="-116.887469"></trkpt>
+    <trkpt lat="32.0658561" lon="-116.8793957"></trkpt>
+    <trkpt lat="32.0831334" lon="-116.8866279"></trkpt>
+    <trkpt lat="32.1283339" lon="-116.8856225"></trkpt>
+    <trkpt lat="32.1584573" lon="-116.8998627"></trkpt>
+    <trkpt lat="32.1664886" lon="-116.9113617"></trkpt>
+    <trkpt lat="32.2095697" lon="-116.916754"></trkpt>
+    <trkpt lat="32.2410302" lon="-116.9303937"></trkpt>
+    <trkpt lat="32.2692169" lon="-117.0221904"></trkpt>
+    <trkpt lat="32.2827008" lon="-117.0393809"></trkpt>
+    <trkpt lat="32.3351916" lon="-117.0576793"></trkpt>
+    <trkpt lat="32.4158692" lon="-117.0986245"></trkpt>
+    <trkpt lat="32.4397348" lon="-117.1025449"></trkpt>
+    <trkpt lat="32.4520094" lon="-117.1160819"></trkpt>
+    <trkpt lat="32.4814614" lon="-117.1249858"></trkpt>
+    <trkpt lat="32.5405357" lon="-117.1243641"></trkpt>
+    <trkpt lat="32.5517028" lon="-117.1270414"></trkpt>
+    <trkpt lat="32.5557073" lon="-117.1298909"></trkpt>
+    <trkpt lat="32.5602439" lon="-117.1319853"></trkpt>
+    <trkpt lat="32.5695262" lon="-117.1332738"></trkpt>
+    <trkpt lat="32.5790978" lon="-117.1327599"></trkpt>
+    <trkpt lat="32.5979517" lon="-117.1331055"></trkpt>
+    <trkpt lat="32.6269819" lon="-117.1393783"></trkpt>
+    <trkpt lat="32.6651801" lon="-117.1628769"></trkpt>
+    <trkpt lat="32.6741968" lon="-117.1742461"></trkpt>
+    <trkpt lat="32.6838869" lon="-117.1873792"></trkpt>
+    <trkpt lat="32.6859414" lon="-117.1965098"></trkpt>
+    <trkpt lat="32.6865506" lon="-117.2047822"></trkpt>
+    <trkpt lat="32.6865211" lon="-117.213979"></trkpt>
+    <trkpt lat="32.6831679" lon="-117.2233472"></trkpt>
+    <trkpt lat="32.6676698" lon="-117.237412"></trkpt>
+    <trkpt lat="32.666873" lon="-117.237854"></trkpt>
+    <trkpt lat="32.6657871" lon="-117.2390041"></trkpt>
+    <trkpt lat="32.6653676" lon="-117.2407999"></trkpt>
+    <trkpt lat="32.6651287" lon="-117.241995"></trkpt>
+    <trkpt lat="32.6646008" lon="-117.2427608"></trkpt>
+    <trkpt lat="32.6664393" lon="-117.2447443"></trkpt>
+    <trkpt lat="32.6680623" lon="-117.2449869"></trkpt>
+    <trkpt lat="32.6685653" lon="-117.2447145"></trkpt>
+    <trkpt lat="32.6690114" lon="-117.2448563"></trkpt>
+    <trkpt lat="32.6691233" lon="-117.2453093"></trkpt>
+    <trkpt lat="32.66947" lon="-117.2454619"></trkpt>
+    <trkpt lat="32.6736025" lon="-117.2455143"></trkpt>
+    <trkpt lat="32.6742128" lon="-117.2461032"></trkpt>
+    <trkpt lat="32.6821627" lon="-117.2496397"></trkpt>
+    <trkpt lat="32.700448" lon="-117.2555018"></trkpt>
+    <trkpt lat="32.7193111" lon="-117.2563871"></trkpt>
+    <trkpt lat="32.7817539" lon="-117.2546552"></trkpt>
+    <trkpt lat="32.7956999" lon="-117.2582062"></trkpt>
+    <trkpt lat="32.8045576" lon="-117.2656732"></trkpt>
+    <trkpt lat="32.8071594" lon="-117.2706854"></trkpt>
+    <trkpt lat="32.8124619" lon="-117.2756686"></trkpt>
+    <trkpt lat="32.8180529" lon="-117.2755022"></trkpt>
+    <trkpt lat="32.8191041" lon="-117.2793953"></trkpt>
+    <trkpt lat="32.8204438" lon="-117.2819152"></trkpt>
+    <trkpt lat="32.8273202" lon="-117.2805925"></trkpt>
+    <trkpt lat="32.8331869" lon="-117.2823598"></trkpt>
+    <trkpt lat="32.8370964" lon="-117.2819853"></trkpt>
+    <trkpt lat="32.839547" lon="-117.28217"></trkpt>
+    <trkpt lat="32.843047" lon="-117.28117"></trkpt>
+    <trkpt lat="32.8447709" lon="-117.2790403"></trkpt>
+    <trkpt lat="32.8474576" lon="-117.2788627"></trkpt>
+    <trkpt lat="32.848666" lon="-117.2767967"></trkpt>
+    <trkpt lat="32.8513749" lon="-117.2737842"></trkpt>
+    <trkpt lat="32.8490093" lon="-117.2671946"></trkpt>
+    <trkpt lat="32.8489509" lon="-117.2651542"></trkpt>
+    <trkpt lat="32.8540187" lon="-117.2606194"></trkpt>
+    <trkpt lat="32.8596272" lon="-117.2574145"></trkpt>
+    <trkpt lat="32.8663559" lon="-117.2544352"></trkpt>
+    <trkpt lat="32.8742739" lon="-117.2515842"></trkpt>
+    <trkpt lat="32.8874622" lon="-117.2571039"></trkpt>
+    <trkpt lat="32.9003622" lon="-117.2561008"></trkpt>
+    <trkpt lat="32.9105014" lon="-117.2578408"></trkpt>
+    <trkpt lat="32.919776" lon="-117.2623281"></trkpt>
+    <trkpt lat="32.9235844" lon="-117.2608382"></trkpt>
+    <trkpt lat="32.9360381" lon="-117.2634682"></trkpt>
+    <trkpt lat="32.9461044" lon="-117.2658104"></trkpt>
+    <trkpt lat="32.9482887" lon="-117.2683543"></trkpt>
+    <trkpt lat="32.9588278" lon="-117.2712419"></trkpt>
+    <trkpt lat="32.9693671" lon="-117.2705258"></trkpt>
+    <trkpt lat="32.9799064" lon="-117.27599"></trkpt>
+    <trkpt lat="32.9946199" lon="-117.2773774"></trkpt>
+    <trkpt lat="32.9980894" lon="-117.2797879"></trkpt>
+    <trkpt lat="33.0081815" lon="-117.2808254"></trkpt>
+    <trkpt lat="33.013393" lon="-117.2822138"></trkpt>
+    <trkpt lat="33.0188922" lon="-117.2853191"></trkpt>
+    <trkpt lat="33.0336878" lon="-117.2921863"></trkpt>
+    <trkpt lat="33.0343933" lon="-117.2964794"></trkpt>
+    <trkpt lat="33.0376891" lon="-117.2980259"></trkpt>
+    <trkpt lat="33.0503948" lon="-117.301022"></trkpt>
+    <trkpt lat="33.0744679" lon="-117.3096851"></trkpt>
+    <trkpt lat="33.1173444" lon="-117.3278623"></trkpt>
+    <trkpt lat="33.1441149" lon="-117.3446801"></trkpt>
+    <trkpt lat="33.2073159" lon="-117.3968221"></trkpt>
+    <trkpt lat="33.3183836" lon="-117.4916908"></trkpt>
+    <trkpt lat="33.3575368" lon="-117.537541"></trkpt>
+    <trkpt lat="33.3864119" lon="-117.5955332"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>Cabrillo SMR</name>
+  <desc>State Marine Reserve (SMR) 	&lt;br>An MPA designation that prohibits damage or take of all marine resources (living, geologic, or cultural) including recreational and commercial take.</desc>
+  <trkseg>
+    <trkpt lat="32.6767" lon="-117.247"></trkpt>
+    <trkpt lat="32.6767" lon="-117.25"></trkpt>
+    <trkpt lat="32.6617" lon="-117.25"></trkpt>
+    <trkpt lat="32.6617" lon="-117.2383"></trkpt>
+    <trkpt lat="32.6667" lon="-117.2383"></trkpt>
+    <trkpt lat="32.664673" lon="-117.242847"></trkpt>
+    <trkpt lat="32.667267" lon="-117.244852"></trkpt>
+    <trkpt lat="32.671808" lon="-117.245826"></trkpt>
+    <trkpt lat="32.6767" lon="-117.247"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>Tijuana River Mouth SMCA</name>
+  <desc>State Marine Conservation Area (SMCA)  &lt;br>An MPA designation that may allow some recreational and/or commercial take of marine resources (restrictions vary).</desc>
+  <trkseg>
+    <trkpt lat="32.5667" lon="-117.133"></trkpt>
+    <trkpt lat="32.5667" lon="-117.15"></trkpt>
+    <trkpt lat="32.5328" lon="-117.15"></trkpt>
+    <trkpt lat="32.5344" lon="-117.1238"></trkpt>
+    <trkpt lat="32.5513517" lon="-117.1270514"></trkpt>
+    <trkpt lat="32.5561737" lon="-117.1301797"></trkpt>
+    <trkpt lat="32.560316" lon="-117.132071"></trkpt>
+    <trkpt lat="32.5640058" lon="-117.132519"></trkpt>
+    <trkpt lat="32.5657146" lon="-117.1329313"></trkpt>
+    <trkpt lat="32.5667" lon="-117.133"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>South La Jolla SMCA</name>
+  <desc>State Marine Conservation Area (SMCA)  &lt;br>An MPA designation that may allow some recreational and/or commercial take of marine resources (restrictions vary).</desc>
+  <trkseg>
+    <trkpt lat="32.8262" lon="-117.3167"></trkpt>
+    <trkpt lat="32.8262" lon="-117.3421"></trkpt>
+    <trkpt lat="32.7991" lon="-117.3345"></trkpt>
+    <trkpt lat="32.7991" lon="-117.3167"></trkpt>
+    <trkpt lat="32.8262" lon="-117.3167"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>South La Jolla SMR</name>
+  <desc>State Marine Reserve (SMR)  &lt;br>An MPA designation that prohibits damage or take of all marine resources (living, geologic, or cultural) including recreational and commercial take.</desc>
+  <trkseg>
+    <trkpt lat="32.8262" lon="-117.2797"></trkpt>
+    <trkpt lat="32.8262" lon="-117.3167"></trkpt>
+    <trkpt lat="32.7991" lon="-117.3167"></trkpt>
+    <trkpt lat="32.7991" lon="-117.2583"></trkpt>
+    <trkpt lat="32.807074" lon="-117.264028"></trkpt>
+    <trkpt lat="32.807809" lon="-117.267842"></trkpt>
+    <trkpt lat="32.81329" lon="-117.271825"></trkpt>
+    <trkpt lat="32.8145204" lon="-117.2741278"></trkpt>
+    <trkpt lat="32.8170825" lon="-117.2738377"></trkpt>
+    <trkpt lat="32.8183463" lon="-117.274921"></trkpt>
+    <trkpt lat="32.8198975" lon="-117.2784511"></trkpt>
+    <trkpt lat="32.8206395" lon="-117.2813418"></trkpt>
+    <trkpt lat="32.822247" lon="-117.280971"></trkpt>
+    <trkpt lat="32.8262" lon="-117.2797"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>Matlahuayl SMR</name>
+  <desc>State Marine Reserve (SMR)  &lt;br>An MPA designation that prohibits damage or take of all marine resources (living, geologic, or cultural) including recreational and commercial take.</desc>
+  <trkseg>
+    <trkpt lat="32.8661" lon="-117.2542"></trkpt>
+    <trkpt lat="32.8661" lon="-117.2733"></trkpt>
+    <trkpt lat="32.8511" lon="-117.2733"></trkpt>
+    <trkpt lat="32.8487257" lon="-117.2677617"></trkpt>
+    <trkpt lat="32.8487642" lon="-117.2663658"></trkpt>
+    <trkpt lat="32.848947" lon="-117.26497"></trkpt>
+    <trkpt lat="32.8524346" lon="-117.2612142"></trkpt>
+    <trkpt lat="32.8546341" lon="-117.2597711"></trkpt>
+    <trkpt lat="32.8598981" lon="-117.2563694"></trkpt>
+    <trkpt lat="32.8661" lon="-117.2542"></trkpt>
+  </trkseg>
+</trk>
+<trk>
+  <name>San Diego-Scripps Costal SMCA</name>
+  <desc>State Marine Conservation Area (SMCA)  &lt;br>An MPA designation that may allow some recreational and/or commercial take of marine resources (restrictions vary).</desc>
+  <trkseg>
+    <trkpt lat="32.8833" lon="-117.2528"></trkpt>
+    <trkpt lat="32.8833" lon="-117.2733"></trkpt>
+    <trkpt lat="32.8661" lon="-117.2733"></trkpt>
+    <trkpt lat="32.8661" lon="-117.2542"></trkpt>
+    <trkpt lat="32.8671883" lon="-117.2545331"></trkpt>
+    <trkpt lat="32.8713043" lon="-117.2532355"></trkpt>
+    <trkpt lat="32.874346" lon="-117.25167"></trkpt>
+    <trkpt lat="32.8786286" lon="-117.2516547"></trkpt>
+    <trkpt lat="32.8810724" lon="-117.2520128"></trkpt>
+    <trkpt lat="32.8833" lon="-117.2528"></trkpt>
+  </trkseg>
+</trk>
+</gpx>

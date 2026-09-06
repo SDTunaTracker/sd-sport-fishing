@@ -237,3 +237,42 @@ Unregister-ScheduledTask -TaskName "SD Sport Fishing - Daily Scrape" -Confirm:$f
 - Data-source URLs discovered by inspecting each landing's homepage —
   3 of 4 landings turned out to share a fishcounts.com backend, which let
   one parser handle three landings.
+- **Spot list courtesy SWYC Anglers** (Southwestern Yacht Club Anglers).
+  Public offshore spot list credited to Michael Mooradian, source at
+  <https://swycanglers.org/resources/local-offshore-fishing-spots/>.
+  Used to generate `data/banks.geojson` via
+  `scraper/paddies/build_gazetteer.py`.
+- **Group membership is name-based.** The `catalina` and
+  `san-clemente-island` group features contain only waypoints whose name
+  matches specific keywords (Catalina/Avalon/Isthmus/Two Harbors and
+  San Clemente/Pyramid/China Point/Castle Rock/Northwest Harbor
+  respectively). Well-known Catalina-area spots like **Farnsworth Bank**,
+  **Ship Rock**, **The V's** don't carry those keywords and remain
+  independent features. This means paddy counts for "at Catalina" and
+  "at Farnsworth" are tallied separately in `/api/v1/paddies.json`.
+
+## Paddies pipeline
+
+`scraper/paddies/` ingests public forum reports (Bloodydecks SoCal
+Offshore) and turns them into structured "paddies by bank" data.
+
+Body-source policy:
+- **Primary source is the per-forum RSS feed.** `content:encoded`
+  carries the full post body for short posts.
+- **Longer posts are truncated by RSS at ~500 chars** with a trailing
+  "Read more" marker. `ingest_bd.py` detects this and issues ONE
+  additional polite `GET` per truncated post to the thread URL, extracts
+  the OP's `.bbWrapper` via `bs4`, and replaces `raw_text` with the full
+  body. Guarded by:
+  - `TunaTracker/1.0 (+https://thetunatracker.com)` UA.
+  - 1 request/sec between thread fetches.
+  - 25 fetches per run maximum.
+  - Immediate STOP on any `HTTP 403` or `HTTP 429` — no retries, no UA
+    rotation. Remaining truncated rows keep `truncated=1` and get a
+    "post is truncated" hint added to their extraction prompt.
+- Phase 0 probe verified both `robots.txt` (no disallow on our forum
+  path) and the XenForo terms page (default boilerplate, no anti-scrape
+  clause).
+
+Backfill: none in v1. Coverage = current RSS depth (~25 items, ~3 days
+of activity at typical posting frequency).

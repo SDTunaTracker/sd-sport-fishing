@@ -30,6 +30,8 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
 
     steps:
       - name: Check out repository
@@ -191,4 +193,67 @@ jobs:
               echo "push race, retry $i"; sleep $((RANDOM % 8 + 3))
             done
             [ "$pushed" = 1 ] || { echo "push still failing after retries"; exit 1; }
+          fi
+
+  # ------------------------------------------------------------------
+  # Paddies pipeline — deliberately in its own job so a Claude-API break
+  # (extract.py exit 2) reds only this job, NOT the landing/SST deploy
+  # which has already been committed by `scrape` above.
+  #
+  # `needs: scrape` guarantees we check out AFTER scrape's push, so this
+  # job's tracker.db already has today's trips baked in before we add
+  # paddy_sources / paddy_mentions rows on top of it.
+  # ------------------------------------------------------------------
+  paddies:
+    needs: scrape
+    if: needs.scrape.outputs.mode == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository (latest main, includes scrape's commit)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Paddies — ingest BD forum posts
+        run: python -m scraper.paddies.ingest_bd
+
+      - name: Paddies — extract mentions with Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m scraper.paddies.extract
+
+      - name: Paddies — write /api/v1/*.json
+        run: python -m scraper.paddies.write_json
+
+      - name: Commit and push paddies data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tracker.db web/api/v1/paddies.json web/api/v1/banks.json \
+                  data/paddies_ingest_state.json
+          if git diff --staged --quiet; then
+            echo "No paddies changes to commit."
+          else
+            git commit --no-verify -m "Paddies: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            pushed=0
+            for i in $(seq 1 5); do
+              git rebase --abort 2>/dev/null || true
+              git reset --hard HEAD
+              git pull --rebase origin main && git push origin main && { pushed=1; break; }
+              echo "push race, retry $i"; sleep $((RANDOM % 8 + 3))
+            done
+            [ "$pushed" = 1 ] || { echo "paddies push still failing after retries"; exit 1; }
           fi
