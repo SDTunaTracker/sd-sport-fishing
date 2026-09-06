@@ -23,9 +23,11 @@ import argparse
 import json
 import logging
 import os
+import re
 import sqlite3
 import sys
 import time
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -55,6 +57,41 @@ TRUNCATED_HINT = (
 )
 
 ALLOWED_SPECIES = {"yellowtail", "dorado", "yellowfin", "bluefin"}
+
+
+# ------------------------------------------------------------------ quote/source comparison
+
+def _normalize_for_quote_match(s: str) -> str:
+    """
+    Prep a string for verbatim quote-in-source comparison.
+
+    - NFKC: fold typographic variants (curly quotes, non-breaking spaces,
+      fullwidth punctuation) into their canonical forms so `couldn’t`
+      (U+2019) compares equal to `couldn't` (U+0027).
+    - Whitespace collapsed to single spaces (line breaks in source don't
+      matter for quote matching).
+
+    We deliberately keep the model's quote as-returned in the DB (per spec
+    for the mentions field) — the normalization is only for verification.
+    """
+    if not s:
+        return ""
+    s = unicodedata.normalize("NFKC", s)
+    s = s.replace("‘", "'").replace("’", "'")   # left/right single quotes
+    s = s.replace("“", '"').replace("”", '"')   # left/right double quotes
+    s = s.replace("–", "-").replace("—", "-")   # en/em dash
+    s = s.replace("…", "...")                          # horizontal ellipsis
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def quote_matches_source(quote: str, source_text: str) -> bool:
+    """True iff `quote` appears as a substring of `source_text` after both
+    are NFKC-normalized. Used by verification tooling — does not change
+    what gets stored."""
+    if not quote or not source_text:
+        return False
+    return _normalize_for_quote_match(quote) in _normalize_for_quote_match(source_text)
 
 log = logging.getLogger("paddies.extract")
 

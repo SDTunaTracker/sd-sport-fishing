@@ -311,6 +311,36 @@ def test_reextract_replaces_prior_mentions(db, gaz):
 # API failure: don't mark extracted
 # ---------------------------------------------------------------------
 
+def test_quote_matches_source_curly_apostrophe():
+    """Regression: XenForo posts contain U+2019 (curly '), Claude returns
+    U+0027 (straight '). Verify our matcher folds them via NFKC."""
+    source = "Upon arrival at barn kelp we couldn’t get them to commit."
+    quote  = "we couldn't get them to commit"
+    assert ex.quote_matches_source(quote, source) is True
+
+
+def test_quote_matches_source_curly_double_quote_and_dash():
+    source = "They yelled “wide open on dorados!” out to 60 miles — wild."
+    quote  = 'wide open on dorados!" out to 60 miles - wild'
+    assert ex.quote_matches_source(quote, source) is True
+
+
+def test_quote_matches_source_negative():
+    assert ex.quote_matches_source("no match here", "totally different text") is False
+
+
+def test_quote_matches_source_empty_inputs():
+    assert ex.quote_matches_source("", "abc") is False
+    assert ex.quote_matches_source("abc", "") is False
+
+
+def test_quote_matches_source_whitespace_collapsed():
+    """Line breaks / multiple spaces in the source don't defeat the match."""
+    source = "line one.\n\nUpon arrival\tat  barn kelp    we couldn't get them to commit"
+    quote  = "Upon arrival at barn kelp we couldn't get them to commit"
+    assert ex.quote_matches_source(quote, source) is True
+
+
 def test_main_exits_nonzero_when_all_posts_fail(db, monkeypatch, capsys):
     """If every post fails (e.g. Claude client broken), main() must exit non-zero
     so the nightly workflow surfaces the failure."""
