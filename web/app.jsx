@@ -416,7 +416,15 @@ function App() {
   } else if (route.view === 'tripplanner') {
     content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} regions={regions}/>;
   } else if (route.view === 'forecast') {
-    content = <ForecastView navigate={navigate}/>;
+    // Forecast page soft-retired (2026-09-06). Rewrite the URL hash to
+    // #charts and render Charts. Route entry + ForecastView import kept
+    // so `git revert` restores the page in one line.
+    if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+      try { window.history.replaceState(null, '', '#charts'); } catch (e) {}
+    }
+    content = chartsReady
+      ? <ChartsView navigate={navigate} settings={settings}/>
+      : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'charts') {
     content = chartsReady
       ? <ChartsView navigate={navigate} settings={settings}/>

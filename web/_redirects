@@ -1,0 +1,9 @@
+# Cloudflare Pages redirects.
+# Format: <from> <to> <status>
+# https://developers.cloudflare.com/pages/configuration/redirects/
+
+# Forecast page soft-retired 2026-09-06.
+# See web/app.jsx (hash-route rewrite) and web/ui.jsx (nav removal).
+# Revert by deleting these two lines + the changes in that commit.
+/sd/forecast     /sd/charts    301
+/sd/forecast/*   /sd/charts    301

@@ -797,7 +797,7 @@ def _write_sitemap(data_js_path: Path, boats: list[dict]) -> None:
     entries = [
         (base + "/",                      "1.0", "daily"),
         (base + "/sd/today",              "0.9", "daily"),
-        (base + "/sd/forecast",           "0.7", "weekly"),
+        # /sd/forecast removed 2026-09-06 (soft-retire); web/_redirects 301s it to /sd/charts.
         (base + "/sd/boats",              "0.8", "weekly"),
         (base + "/sd/analytics/overview", "0.7", "weekly"),
         (base + "/sd/tripplanner",        "0.6", "daily"),

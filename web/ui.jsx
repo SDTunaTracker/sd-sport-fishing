@@ -92,7 +92,7 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
 
   const NAV = [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
-    { id: 'forecast',    label: 'Forecast',     icon: 'fa-cloud-sun-rain' },
+    // Forecast entry removed 2026-09-06 (soft-retire). See _redirects for /sd/forecast handling.
     { id: 'charts',      label: 'Charts',       icon: 'fa-map' },
     { id: 'boats',       label: 'Boats',        icon: 'fa-sailboat' },
     { id: 'analytics',   label: 'Analytics',    icon: 'fa-magnifying-glass-chart' },
@@ -585,7 +585,7 @@ function AppFooter() {
           <div className="app-footer-col-head">Navigate</div>
           <a href="/sd/home"               className="app-footer-nav-link">Home</a>
           <a href="/sd/today"              className="app-footer-nav-link">Today's Report</a>
-          <a href="/sd/forecast"           className="app-footer-nav-link">Forecast</a>
+          {/* Forecast link removed 2026-09-06 (soft-retire); /sd/forecast 301s to /sd/charts via web/_redirects. */}
           <a href="/sd/charts"             className="app-footer-nav-link">Charts</a>
           <a href="/sd/boats"              className="app-footer-nav-link">Boats</a>
           <a href="/sd/analytics/overview" className="app-footer-nav-link">Analytics</a>

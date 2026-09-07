@@ -430,7 +430,7 @@
   function BottomNav({ navigate, active }) {
     const items = [
       { id: 'home', label: 'Today' },
-      { id: 'forecast', label: 'Forecast' },
+      // Forecast entry removed 2026-09-06 (soft-retire); route redirects to Charts.
       { id: 'charts', label: 'Charts' },
       { id: 'boats', label: 'Boats' },
       { id: 'tripplanner', label: 'Plan' },
