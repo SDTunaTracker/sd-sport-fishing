@@ -415,8 +415,12 @@
     "368254830": {
       "name": "Voyager",
       "landing": "Seaforth Sportfishing"
+    },
+    "367125000": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-09-20T00:17:24.563369+00:00",
-  "_vessel_count": 102
+  "_last_discover_run": "2026-09-20T17:46:12.163363+00:00",
+  "_vessel_count": 103
 }
