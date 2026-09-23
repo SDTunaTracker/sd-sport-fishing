@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:27:11.787993+00:00",
+    "updated_at": "2026-09-23T00:51:10.998137+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-21T23:44:06.040963+00:00",
+    "updated_at": "2026-09-22T23:54:23.582659+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:28:20.806865+00:00",
+    "updated_at": "2026-09-23T00:46:19.525304+00:00",
     "trail": []
   },
   {
@@ -128,7 +128,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:38:01.369193+00:00",
+    "updated_at": "2026-09-23T00:50:11.452674+00:00",
     "trail": []
   },
   {
@@ -164,7 +164,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:35:36.785859+00:00",
+    "updated_at": "2026-09-23T00:38:35.723199+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:35:53.372604+00:00",
+    "updated_at": "2026-09-23T00:44:51.576955+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:33:00.305556+00:00",
+    "updated_at": "2026-09-23T00:51:01.776897+00:00",
     "trail": []
   },
   {
@@ -248,7 +248,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:37:25.683706+00:00",
+    "updated_at": "2026-09-23T00:51:21.491117+00:00",
     "trail": []
   },
   {
@@ -284,7 +284,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-21T00:00:18.914801+00:00",
+    "updated_at": "2026-09-23T00:49:43.236882+00:00",
     "trail": []
   },
   {
@@ -464,7 +464,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-14T23:37:15.002277+00:00",
+    "updated_at": "2026-09-23T00:43:11.386285+00:00",
     "trail": []
   },
   {
@@ -476,7 +476,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:32:37.530904+00:00",
+    "updated_at": "2026-09-23T00:49:59.057941+00:00",
     "trail": []
   },
   {
@@ -668,7 +668,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:26:42.766667+00:00",
+    "updated_at": "2026-09-23T00:47:42.117647+00:00",
     "trail": []
   },
   {
@@ -776,7 +776,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:34:23.616697+00:00",
+    "updated_at": "2026-09-23T00:37:29.394647+00:00",
     "trail": []
   },
   {
@@ -1052,7 +1052,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:35:46.222192+00:00",
+    "updated_at": "2026-09-23T00:46:42.001288+00:00",
     "trail": []
   },
   {
@@ -1160,7 +1160,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-22T18:29:51.619834+00:00",
+    "updated_at": "2026-09-23T00:47:53.324497+00:00",
     "trail": []
   },
   {
@@ -1233,6 +1233,18 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-09-22T01:09:45.004060+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "338360469",
+    "name": "El Patron",
+    "landing": "Long Beach Sportfishing",
+    "lat": 33.4599,
+    "lng": -117.70177,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-09-23T00:43:49.210703+00:00",
     "trail": []
   }
 ]

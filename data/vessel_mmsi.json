@@ -419,8 +419,12 @@
     "367125000": {
       "name": "Liberty",
       "landing": "Fisherman's Landing"
+    },
+    "338360469": {
+      "name": "El Patron",
+      "landing": "Long Beach Sportfishing"
     }
   },
-  "_last_discover_run": "2026-09-22T18:38:32.902545+00:00",
-  "_vessel_count": 103
+  "_last_discover_run": "2026-09-23T00:51:52.965580+00:00",
+  "_vessel_count": 104
 }
