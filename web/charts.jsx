@@ -2166,8 +2166,10 @@ function ChartsView({ navigate, settings }) {
 
     if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
     basemapLayer.current = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-      { attribution: '© CARTO © OpenStreetMap', subdomains: 'abcd', maxZoom: 19 }
+      // Stadia key is domain-restricted (thetunatracker.com only) — safe to
+      // ship in client source; the token is worthless from any other origin.
+      'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=8a36ee0b-ea57-435e-8d59-6887fa9e997e',
+      { attribution: '© Stadia Maps © OpenMapTiles © OpenStreetMap', maxZoom: 20 }
     ).addTo(mapInstance.current);
 
     [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
@@ -2679,7 +2681,7 @@ function ChartsView({ navigate, settings }) {
           )}
         </div>
 
-        <div className="chart-attribution">Data: NASA GIBS · GEBCO · CARTO · Open-Meteo · NOAA · AISStream.io</div>
+        <div className="chart-attribution">Data: NASA GIBS · GEBCO · Stadia Maps · Open-Meteo · NOAA · AISStream.io</div>
       </div>
 
       {sheetOpen && (
@@ -2744,11 +2746,9 @@ function _prewarmCharts() {
   if (_chartsPrewarmed) return;
   _chartsPrewarmed = true;
 
-  // 1. CARTO Dark Matter tiles — the actual basemap in use.
-  var subs = 'abcd', si = 0;
+  // 1. Stadia Alidade Smooth Dark tiles — the actual basemap in use.
   _prewarmTiles(7, function(z, x, y) {
-    return 'https://' + subs[si++ % subs.length] +
-      '.basemaps.cartocdn.com/dark_nolabels/' + z + '/' + x + '/' + y + '.png';
+    return 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/' + z + '/' + x + '/' + y + '.png?api_key=8a36ee0b-ea57-435e-8d59-6887fa9e997e';
   });
 
   // 2. SST grid — prime the cache for the canvas raster layer.
