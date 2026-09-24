@@ -423,8 +423,12 @@
     "338360469": {
       "name": "El Patron",
       "landing": "Long Beach Sportfishing"
+    },
+    "338228246": {
+      "name": "MarDiosa",
+      "landing": "Long Beach Sportfishing"
     }
   },
-  "_last_discover_run": "2026-09-23T18:31:02.635036+00:00",
-  "_vessel_count": 104
+  "_last_discover_run": "2026-09-24T00:52:26.779086+00:00",
+  "_vessel_count": 105
 }
