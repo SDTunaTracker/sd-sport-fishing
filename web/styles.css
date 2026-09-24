@@ -4222,6 +4222,17 @@ a.app-footer-link:hover { color: var(--accent); }
   margin-left: 2px;
 }
 
+.layer-sim-badge {
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.85);
+  color: #1c1917;
+  padding: 1px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  margin-left: 4px;
+}
+
 .layer-sst-subrow {
   display: flex;
   flex-wrap: wrap;

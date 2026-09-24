@@ -265,7 +265,6 @@ var CURRENT_PARTICLE_COLORS = [
 ];
 var _CURR_NX = 9, _CURR_NY = 9;
 var _CURR_LO1 = -121.0, _CURR_LA1 = 35.0, _CURR_DX = 0.5, _CURR_DY = 0.5;
-var _CURR_CACHE_KEY = 'tt_currents_grid_v1', _CURR_CACHE_TTL = 6 * 3600000;
 
 function _buildCurrHeader(extra) {
   return Object.assign({
@@ -294,60 +293,12 @@ function _syntheticCurrentGrid() {
   ];
 }
 
-function _fetchCurrentGrid() {
-  // NOAA ERDDAP: HYCOM regional surface currents (water_u / water_v in m/s)
-  var url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/HYCOM_GLOBAL_UV_3z.json' +
-    '?u[(last)][0][(31.0):(35.0)][(-121.0):(-117.0)]' +
-    ',v[(last)][0][(31.0):(35.0)][(-121.0):(-117.0)]';
-  return fetch(url)
-    .then(function(r) {
-      if (!r.ok) throw new Error('ERDDAP HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function(json) {
-      // ERDDAP table format: rows = [time, depth, lat, lon, u, v]
-      var rows = (json.table && json.table.rows) || [];
-      if (rows.length === 0) throw new Error('ERDDAP returned empty table');
-
-      // Build a lat/lon → {u,v} lookup, then sample onto our 9×9 grid
-      var lookup = {};
-      rows.forEach(function(row) {
-        var lat = Math.round(row[2] * 10) / 10;
-        var lon = Math.round(row[3] * 10) / 10;
-        lookup[lat + ',' + lon] = { u: row[4] || 0, v: row[5] || 0 };
-      });
-
-      var uArr = [], vArr = [];
-      for (var j = 0; j < _CURR_NY; j++) {
-        for (var i = 0; i < _CURR_NX; i++) {
-          var lat = Math.round((_CURR_LA1 - j * _CURR_DY) * 10) / 10;
-          var lon = Math.round((_CURR_LO1 + i * _CURR_DX) * 10) / 10;
-          var pt = lookup[lat + ',' + lon] || { u: 0, v: 0 };
-          uArr.push(pt.u);
-          vArr.push(pt.v);
-        }
-      }
-      return [
-        { header: _buildCurrHeader({ parameterNumber: 2 }), data: uArr },
-        { header: _buildCurrHeader({ parameterNumber: 3 }), data: vArr },
-      ];
-    });
-}
-
 function getCachedCurrentGrid() {
-  try {
-    var c = JSON.parse(localStorage.getItem(_CURR_CACHE_KEY) || 'null');
-    if (c && Date.now() - c.ts < _CURR_CACHE_TTL) return Promise.resolve(c.data);
-  } catch(e) {}
-  return _withTimeout(_fetchCurrentGrid(), 6000, 'currents')
-    .then(function(data) {
-      try { localStorage.setItem(_CURR_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
-      return data;
-    })
-    .catch(function(err) {
-      console.warn('Current grid fetch failed, using synthetic fallback:', err);
-      return _syntheticCurrentGrid();
-    });
+  // HYCOM_GLOBAL_UV_3z (the real-data source used previously) was retired
+  // from NOAA CoastWatch ERDDAP. Until a replacement is wired in, we serve
+  // the synthetic California-Current climatology directly. The layer button
+  // carries a DEMO badge so users don't mistake the arrows for real data.
+  return Promise.resolve(_syntheticCurrentGrid());
 }
 
 // ── 14-day forecast time series (wind + waves) ───────────────────────────────
@@ -1566,7 +1517,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
   var conds = [
     { id: 'wind',     icon: '💨', label: 'Wind' },
     { id: 'waves',    icon: '🌊', label: 'Swell' },
-    { id: 'currents', icon: '🌀', label: 'Currents' },
+    { id: 'currents', icon: '🌀', label: 'Currents', badge: 'DEMO' },
     { id: 'pressure', icon: '🔵', label: 'Pressure' },
   ];
   return (
@@ -1606,6 +1557,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
               <button key={c.id} className={'layer-btn' + (condLayers[c.id] ? ' active' : '')}
                 onClick={function() { onCond(c.id, !condLayers[c.id]); }}>
                 <span className="layer-btn-icon">{c.icon}</span>{c.label}
+                {c.badge ? <span className="layer-sim-badge">{c.badge}</span> : null}
               </button>
             );
           })}
@@ -1673,7 +1625,7 @@ function ChartsHeader({ baseLayer, condLayers, sstMode }) {
     satellite:   'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.',
     wind:        'Animated wind flow. Green = calm (<8 kt), yellow = moderate, red = rough. Data: Open-Meteo.',
     waves:       'Animated swell field. Particles colored by height (blue=calm, red=rough 3m+). Data: Open-Meteo Marine.',
-    currents:    'Animated surface current flow. Particles show direction and speed. Data: HYCOM.',
+    currents:    'Animated surface current flow. Simulated California-Current climatology — HYCOM live feed was retired, so arrows are illustrative, not real-time.',
     pressure:    'Atmospheric pressure isobars (hPa). Tightly-spaced lines = strong winds. Blue = low pressure, red = high pressure. Data: Open-Meteo.',
   };
   var cl = condLayers || {};
