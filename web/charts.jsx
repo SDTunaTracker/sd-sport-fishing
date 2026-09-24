@@ -1999,6 +1999,26 @@ function ChartsView({ navigate, settings }) {
       maxBoundsViscosity: 0.7,
     });
 
+    // Leaflet caches container width at init; if the immersive layout, font
+    // load, or a panel transition shifts width afterward, tiles render only
+    // for the original width (the "map is 2/3 wide" bug). Poke it after
+    // layout settles, and again on any container resize.
+    var _rafInvalidate = requestAnimationFrame(function() {
+      if (mapInstance.current) mapInstance.current.invalidateSize(false);
+    });
+    var _resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined' && mapRef.current) {
+      _resizeObserver = new ResizeObserver(function() {
+        if (mapInstance.current) mapInstance.current.invalidateSize(false);
+      });
+      _resizeObserver.observe(mapRef.current);
+    }
+    function _onWinResize() {
+      if (mapInstance.current) mapInstance.current.invalidateSize(false);
+    }
+    window.addEventListener('resize', _onWinResize);
+    window.addEventListener('orientationchange', _onWinResize);
+
     addLandingPins(mapInstance.current);
     addBankMarkers(mapInstance.current);
 
@@ -2121,6 +2141,10 @@ function ChartsView({ navigate, settings }) {
     });
 
     return function() {
+      cancelAnimationFrame(_rafInvalidate);
+      window.removeEventListener('resize', _onWinResize);
+      window.removeEventListener('orientationchange', _onWinResize);
+      if (_resizeObserver) { _resizeObserver.disconnect(); _resizeObserver = null; }
       delete window.ttOpenWaypointModal;
       delete window._ttCatchNav;
       userLocMarkerRef.current = null;
