@@ -646,6 +646,14 @@ function ReturnVisitToast({ navigate }) {
 function TodayView({ navigate, settings, regions }) {
   const currentYear = String(window.TT_DATES.getPacificYear());
 
+  // preprocessTrips runs in a useEffect in app.jsx (post-mount), so
+  // SD_PROC_TRIPS is null on the first render. Without this guard,
+  // filterTrips falls back to raw SD.TRIPS (analytics.js:67), which lack
+  // the preprocessed totalTuna / calcDays fields — every leaderboard row
+  // then computes as 0.00. Same fix as HomeTop5 (dashboard.jsx) and
+  // AnalyticsView (analytics.jsx).
+  if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
+
   const yearTrips = useMemo(
     () => SDA.filterTrips({ ...DEFAULT_FILTERS, year: currentYear }, regions),
     [settings, regions]
