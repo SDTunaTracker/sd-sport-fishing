@@ -20,7 +20,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:07:23.186767+00:00",
+    "updated_at": "2026-09-26T17:41:20.734978+00:00",
     "trail": []
   },
   {
@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:06:11.903267+00:00",
+    "updated_at": "2026-09-26T18:03:11.703773+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:10:28.118933+00:00",
+    "updated_at": "2026-09-26T18:01:20.357618+00:00",
     "trail": []
   },
   {
@@ -164,7 +164,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:05:38.467665+00:00",
+    "updated_at": "2026-09-26T18:05:38.829285+00:00",
     "trail": []
   },
   {
@@ -212,7 +212,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:07:57.190210+00:00",
+    "updated_at": "2026-09-26T18:05:11.044348+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:03:05.615235+00:00",
+    "updated_at": "2026-09-26T18:05:58.256450+00:00",
     "trail": []
   },
   {
@@ -248,7 +248,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:12:29.710486+00:00",
+    "updated_at": "2026-09-26T18:06:11.895001+00:00",
     "trail": []
   },
   {
@@ -320,7 +320,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T00:54:30.076987+00:00",
+    "updated_at": "2026-09-26T18:05:13.650548+00:00",
     "trail": []
   },
   {
@@ -380,7 +380,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-24T00:51:47.610157+00:00",
+    "updated_at": "2026-09-26T18:05:36.452014+00:00",
     "trail": []
   },
   {
@@ -452,7 +452,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-19T17:16:19.228036+00:00",
+    "updated_at": "2026-09-26T18:05:57.907201+00:00",
     "trail": []
   },
   {
@@ -476,7 +476,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:05:59.270925+00:00",
+    "updated_at": "2026-09-26T18:03:00.611852+00:00",
     "trail": []
   },
   {
@@ -548,7 +548,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-23T18:29:38.859618+00:00",
+    "updated_at": "2026-09-26T18:05:19.773599+00:00",
     "trail": []
   },
   {
@@ -584,7 +584,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-25T18:14:47.826896+00:00",
+    "updated_at": "2026-09-26T18:05:51.750196+00:00",
     "trail": []
   },
   {
@@ -668,7 +668,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:08:43.340063+00:00",
+    "updated_at": "2026-09-26T18:01:22.505147+00:00",
     "trail": []
   },
   {
@@ -776,7 +776,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:09:30.962617+00:00",
+    "updated_at": "2026-09-26T18:03:32.672198+00:00",
     "trail": []
   },
   {
@@ -1052,7 +1052,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:05:17.371943+00:00",
+    "updated_at": "2026-09-26T17:28:31.778396+00:00",
     "trail": []
   },
   {
@@ -1160,7 +1160,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-26T01:02:15.603508+00:00",
+    "updated_at": "2026-09-26T17:46:02.668773+00:00",
     "trail": []
   },
   {
@@ -1257,6 +1257,18 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-09-23T23:40:14.382492+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "367186270",
+    "name": "Pacific Queen",
+    "landing": "Fisherman's Landing",
+    "lat": 32.71656,
+    "lng": -117.21902,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-09-26T16:51:34.614759+00:00",
     "trail": []
   }
 ]
