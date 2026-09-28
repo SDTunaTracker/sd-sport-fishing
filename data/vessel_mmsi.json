@@ -431,8 +431,12 @@
     "367186270": {
       "name": "Pacific Queen",
       "landing": "Fisherman's Landing"
+    },
+    "338434559": {
+      "name": "Enterprise",
+      "landing": "Pierpoint Landing"
     }
   },
-  "_last_discover_run": "2026-09-27T18:42:57.579670+00:00",
-  "_vessel_count": 106
+  "_last_discover_run": "2026-09-28T00:57:04.911286+00:00",
+  "_vessel_count": 107
 }
