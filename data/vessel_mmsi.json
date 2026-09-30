@@ -435,8 +435,12 @@
     "338434559": {
       "name": "Enterprise",
       "landing": "Pierpoint Landing"
+    },
+    "338252148": {
+      "name": "Voyager",
+      "landing": "Seaforth Sportfishing"
     }
   },
-  "_last_discover_run": "2026-09-29T19:54:45.919477+00:00",
-  "_vessel_count": 107
+  "_last_discover_run": "2026-09-30T01:36:49.374000+00:00",
+  "_vessel_count": 108
 }
