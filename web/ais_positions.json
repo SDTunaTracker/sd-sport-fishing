@@ -20,7 +20,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-01T01:05:38.315954+00:00",
+    "updated_at": "2026-10-04T18:37:38.654351+00:00",
     "trail": []
   },
   {
@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:48:11.748290+00:00",
+    "updated_at": "2026-10-04T18:36:15.394730+00:00",
     "trail": []
   },
   {
@@ -104,7 +104,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-03T23:32:35.708080+00:00",
+    "updated_at": "2026-10-04T18:41:06.538824+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:43:23.105929+00:00",
+    "updated_at": "2026-10-04T18:37:21.187442+00:00",
     "trail": []
   },
   {
@@ -164,7 +164,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:41:35.126796+00:00",
+    "updated_at": "2026-10-04T18:02:35.244554+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:39:41.859529+00:00",
+    "updated_at": "2026-10-04T18:39:42.240953+00:00",
     "trail": []
   },
   {
@@ -188,7 +188,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-02T01:08:43.441314+00:00",
+    "updated_at": "2026-10-04T18:37:10.877698+00:00",
     "trail": []
   },
   {
@@ -212,7 +212,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:47:58.739002+00:00",
+    "updated_at": "2026-10-04T18:39:02.823374+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:42:33.311650+00:00",
+    "updated_at": "2026-10-04T18:27:38.238613+00:00",
     "trail": []
   },
   {
@@ -356,7 +356,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-03T23:04:35.603278+00:00",
+    "updated_at": "2026-10-04T17:03:24.380661+00:00",
     "trail": []
   },
   {
@@ -368,7 +368,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-03T01:40:56.908637+00:00",
+    "updated_at": "2026-10-04T18:39:22.985336+00:00",
     "trail": []
   },
   {
@@ -476,7 +476,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:33:40.787794+00:00",
+    "updated_at": "2026-10-04T18:39:40.643582+00:00",
     "trail": []
   },
   {
@@ -548,7 +548,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-09-30T19:48:29.880081+00:00",
+    "updated_at": "2026-10-04T18:39:31.290516+00:00",
     "trail": []
   },
   {
@@ -668,7 +668,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:21:31.082047+00:00",
+    "updated_at": "2026-10-04T18:37:19.412536+00:00",
     "trail": []
   },
   {
@@ -680,7 +680,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-02T01:49:03.560760+00:00",
+    "updated_at": "2026-10-04T18:40:54.919561+00:00",
     "trail": []
   },
   {
@@ -776,7 +776,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:43:03.265099+00:00",
+    "updated_at": "2026-10-04T18:39:48.546236+00:00",
     "trail": []
   },
   {
@@ -896,7 +896,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-06-27T15:52:48.795388+00:00",
+    "updated_at": "2026-10-04T18:37:18.783947+00:00",
     "trail": []
   },
   {
@@ -1032,6 +1032,18 @@
     "trail": []
   },
   {
+    "mmsi": "367150450",
+    "name": "Wildcard 95",
+    "landing": "Point Loma Sportfishing",
+    "lat": 32.72302,
+    "lng": -117.22601,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-10-04T18:37:10.877666+00:00",
+    "trail": []
+  },
+  {
     "mmsi": "338314837",
     "name": "Aloha Spirit",
     "landing": "Channel Islands Sportfishing",
@@ -1040,7 +1052,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:45:06.724957+00:00",
+    "updated_at": "2026-10-04T18:36:07.415674+00:00",
     "trail": []
   },
   {
@@ -1076,7 +1088,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-08-17T14:30:39.278650+00:00",
+    "updated_at": "2026-10-04T17:31:14.645364+00:00",
     "trail": []
   },
   {
@@ -1160,7 +1172,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-04T00:47:32.091471+00:00",
+    "updated_at": "2026-10-04T18:40:52.593854+00:00",
     "trail": []
   },
   {

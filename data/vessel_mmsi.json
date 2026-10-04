@@ -439,8 +439,12 @@
     "338252148": {
       "name": "Voyager",
       "landing": "Seaforth Sportfishing"
+    },
+    "367150450": {
+      "name": "Wildcard 95",
+      "landing": "Point Loma Sportfishing"
     }
   },
-  "_last_discover_run": "2026-10-04T00:48:38.933380+00:00",
-  "_vessel_count": 108
+  "_last_discover_run": "2026-10-04T18:41:07.582167+00:00",
+  "_vessel_count": 109
 }
