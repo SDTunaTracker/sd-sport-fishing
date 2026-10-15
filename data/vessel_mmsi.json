@@ -443,8 +443,12 @@
     "367150450": {
       "name": "Wildcard 95",
       "landing": "Point Loma Sportfishing"
+    },
+    "338144392": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-10-14T18:52:49.845367+00:00",
-  "_vessel_count": 109
+  "_last_discover_run": "2026-10-15T01:06:37.980396+00:00",
+  "_vessel_count": 110
 }
