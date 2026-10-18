@@ -56,7 +56,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T16:54:11.949337+00:00",
+    "updated_at": "2026-10-18T00:00:11.298715+00:00",
     "trail": []
   },
   {
@@ -80,7 +80,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T15:18:03.827337+00:00",
+    "updated_at": "2026-10-18T00:08:43.672687+00:00",
     "trail": []
   },
   {
@@ -116,7 +116,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T16:52:20.211759+00:00",
+    "updated_at": "2026-10-18T00:04:22.084288+00:00",
     "trail": []
   },
   {
@@ -152,7 +152,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T15:29:03.085525+00:00",
+    "updated_at": "2026-10-18T00:08:41.321671+00:00",
     "trail": []
   },
   {
@@ -176,7 +176,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T17:11:47.876299+00:00",
+    "updated_at": "2026-10-18T00:04:01.100714+00:00",
     "trail": []
   },
   {
@@ -236,7 +236,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T17:12:33.167097+00:00",
+    "updated_at": "2026-10-17T23:54:37.229609+00:00",
     "trail": []
   },
   {
@@ -332,7 +332,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T16:54:47.799568+00:00",
+    "updated_at": "2026-10-18T00:03:46.161279+00:00",
     "trail": []
   },
   {
@@ -476,7 +476,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T17:06:42.164944+00:00",
+    "updated_at": "2026-10-18T00:09:41.507787+00:00",
     "trail": []
   },
   {
@@ -668,7 +668,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T16:50:53.437912+00:00",
+    "updated_at": "2026-10-18T00:08:55.466080+00:00",
     "trail": []
   },
   {
@@ -776,7 +776,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T17:12:35.759071+00:00",
+    "updated_at": "2026-10-18T00:02:53.598964+00:00",
     "trail": []
   },
   {
@@ -1052,7 +1052,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T17:12:56.314321+00:00",
+    "updated_at": "2026-10-17T23:54:56.005063+00:00",
     "trail": []
   },
   {
@@ -1172,7 +1172,7 @@
     "sog": null,
     "cog": null,
     "heading": null,
-    "updated_at": "2026-10-17T00:31:40.840380+00:00",
+    "updated_at": "2026-10-18T00:08:01.567833+00:00",
     "trail": []
   },
   {
@@ -1317,6 +1317,18 @@
     "cog": null,
     "heading": null,
     "updated_at": "2026-10-15T00:13:40.297535+00:00",
+    "trail": []
+  },
+  {
+    "mmsi": "338054481",
+    "name": "Freedom",
+    "landing": "22nd Street Landing",
+    "lat": 33.46962,
+    "lng": -117.77392,
+    "sog": null,
+    "cog": null,
+    "heading": null,
+    "updated_at": "2026-10-17T22:11:10.001313+00:00",
     "trail": []
   }
 ]
