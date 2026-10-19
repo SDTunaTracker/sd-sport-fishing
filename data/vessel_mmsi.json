@@ -451,8 +451,12 @@
     "338054481": {
       "name": "Freedom",
       "landing": "22nd Street Landing"
+    },
+    "338388403": {
+      "name": "Liberty",
+      "landing": "Fisherman's Landing"
     }
   },
-  "_last_discover_run": "2026-10-18T17:38:42.280396+00:00",
-  "_vessel_count": 111
+  "_last_discover_run": "2026-10-19T00:21:38.836155+00:00",
+  "_vessel_count": 112
 }
