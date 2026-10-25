@@ -455,8 +455,12 @@
     "338388403": {
       "name": "Liberty",
       "landing": "Fisherman's Landing"
+    },
+    "367394780": {
+      "name": "Electra",
+      "landing": "H&M Landing"
     }
   },
-  "_last_discover_run": "2026-10-25T00:23:22.757936+00:00",
-  "_vessel_count": 112
+  "_last_discover_run": "2026-10-25T17:50:41.885928+00:00",
+  "_vessel_count": 113
 }
