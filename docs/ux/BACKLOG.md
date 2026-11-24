@@ -29,5 +29,7 @@ Files the redesign session currently has uncommitted (don't edit here until it l
 | 15 | App | Today | Web preview shows June 21 data (mock?) on Nov 24; dev overlay error "`<button>` cannot contain a nested `<button>`" (real a11y/HTML bug in the report card). | Check data source; un-nest the expand button. | todo (need app folder access) |
 | 16 | Web + App | All | Two visual languages: app has pine header + Playfair/JetBrains Mono, site has cream + Fraunces/DM Mono. App counts "tuna counted" (147), site "total fish". | User chose: app switches to Fraunces + DM Mono. Metric names still open. | app fonts on tuna-tracker branch `claude/app-fonts-match-site` (7c2876a, not pushed); metric names open |
 
+| 17 | App (iOS) | Charts, Today | DM Mono has no bold weight. Web and Android fake the bold, but iPhone shows the lighter 500 weight for bold numbers (pin counts, readings, wind kt). | Keep DM Mono 500 on iOS, or move the key figures to Inter 700. Charts UX agent agrees the web/Android result is right. | decide |
+
 ## Done
 - (none yet)
