@@ -152,10 +152,15 @@ def test_migration_adds_truncated_and_backfills(tmp_path):
     ingest_bd.ensure_schema(conn)
     cols = {r[1] for r in conn.execute("PRAGMA table_info(paddy_sources)")}
     assert "truncated" in cols
+    assert "feed_id" in cols   # v2 migration added feed_id
     a_trunc = conn.execute("SELECT truncated FROM paddy_sources WHERE id='a'").fetchone()[0]
     b_trunc = conn.execute("SELECT truncated FROM paddy_sources WHERE id='b'").fetchone()[0]
     assert a_trunc == 0
     assert b_trunc == 1
+    # feed_id backfilled to bd-socal-offshore for both v1 rows
+    for rid in ("a", "b"):
+        fid = conn.execute("SELECT feed_id FROM paddy_sources WHERE id=?", (rid,)).fetchone()[0]
+        assert fid == "bd-socal-offshore"
     conn.close()
 
 

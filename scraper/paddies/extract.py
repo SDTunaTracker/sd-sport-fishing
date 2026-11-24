@@ -31,6 +31,8 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
+from . import coords
+
 # Load .env from project root if present (matches src/reddit_insights.py).
 # No-op if python-dotenv isn't installed or .env is absent.
 try:
@@ -44,7 +46,7 @@ DB_PATH = ROOT / "tracker.db"
 GAZETTEER_PATH = ROOT / "data" / "banks.geojson"
 
 MODEL = "claude-sonnet-4-6"  # matches src/reddit_insights.py
-MAX_TOKENS = 1500
+MAX_TOKENS = 3000            # wider v2 schema can yield more mentions per post
 REQUEST_SLEEP = 0.5          # polite gap between successful calls (seconds)
 RETRY_BACKOFF = 2.0          # single retry after this many seconds
 DB_TIMEOUT_SECONDS = 30
@@ -57,6 +59,32 @@ TRUNCATED_HINT = (
 )
 
 ALLOWED_SPECIES = {"yellowtail", "dorado", "yellowfin", "bluefin"}
+# Bite widens the species list per v2 spec.
+ALLOWED_SPECIES_BITE = ALLOWED_SPECIES | {
+    "calico", "rockfish", "marlin", "wahoo", "seabass",
+    "halibut", "barracuda", "bonito",
+}
+ALLOWED_METHOD      = {"flyline","yoyo","surface_iron","troll","kite",
+                       "sonar","dropper","other"}
+ALLOWED_BAIT        = {"sardine","anchovy","mackerel","squid","artificial"}
+ALLOWED_OUTCOME     = {"wide_open","steady","scratchy","skunk"}
+ALLOWED_WATER_COLOR = {"blue","green","dirty","off"}
+ALLOWED_CURRENT     = {"strong","light","none"}
+ALLOWED_LIFE        = {"birds","porpoise","jumpers","breezers","mola"}
+ALLOWED_SEA_STATE   = {"flat","bumpy","rough"}
+
+MENTION_TYPES = {"paddy", "bite", "conditions", "position"}
+
+# Generic-word bank ids — matching these caps confidence at 0.5 per rule 7 of
+# the gazetteer spec. Kept small and hand-curated; grow via evidence, not
+# guesses.
+GENERIC_BANK_IDS = {
+    "the-corner", "the-worm", "the-boot", "the-slide",
+    "the-airplane", "rockpile", "hardbottom",
+}
+
+MAX_CONF_GENERIC = 0.5   # generic-term bank match
+MAX_CONF_OFFSET  = 0.7   # position with precision=offset
 
 
 # ------------------------------------------------------------------ quote/source comparison
@@ -95,26 +123,33 @@ def quote_matches_source(quote: str, source_text: str) -> bool:
 
 log = logging.getLogger("paddies.extract")
 
-MENTIONS_SCHEMA = """
-CREATE TABLE IF NOT EXISTS paddy_mentions (
+REPORT_MENTIONS_SCHEMA = """
+-- v2 report_mentions supersedes v1 paddy_mentions. Wider schema: each
+-- mention is typed (paddy | bite | conditions | position), carries its
+-- feed_id and resolved coordinate (when the model or code produced one),
+-- and stores type-specific fields in `payload` (JSON).
+CREATE TABLE IF NOT EXISTS report_mentions (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     source_id      TEXT NOT NULL,
+    feed_id        TEXT NOT NULL,
+    type           TEXT NOT NULL,              -- paddy | bite | conditions | position
     trip_date      TEXT,                       -- YYYY-MM-DD or NULL
     bank           TEXT,                       -- gazetteer feature id or NULL
-    route_json     TEXT NOT NULL DEFAULT '[]', -- JSON array of feature ids
-    paddy_count    INTEGER,
-    holding        INTEGER,                    -- 0 / 1 / NULL
-    species_json   TEXT NOT NULL DEFAULT '[]',
-    water_temp_f   REAL,
+    lat            REAL,                       -- resolved coordinate, if any
+    lon            REAL,
+    "precision"    TEXT,                       -- gps | offset | bank | NULL
+    payload        TEXT NOT NULL DEFAULT '{}', -- type-specific fields (JSON)
     confidence     REAL,
     quote          TEXT,
     extracted_at   TEXT NOT NULL,
     FOREIGN KEY (source_id) REFERENCES paddy_sources(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_paddy_mentions_source ON paddy_mentions(source_id);
-CREATE INDEX IF NOT EXISTS idx_paddy_mentions_bank   ON paddy_mentions(bank);
-CREATE INDEX IF NOT EXISTS idx_paddy_mentions_date   ON paddy_mentions(trip_date);
+CREATE INDEX IF NOT EXISTS idx_report_mentions_source  ON report_mentions(source_id);
+CREATE INDEX IF NOT EXISTS idx_report_mentions_bank    ON report_mentions(bank);
+CREATE INDEX IF NOT EXISTS idx_report_mentions_date    ON report_mentions(trip_date);
+CREATE INDEX IF NOT EXISTS idx_report_mentions_type    ON report_mentions(type);
+CREATE INDEX IF NOT EXISTS idx_report_mentions_feed    ON report_mentions(feed_id);
 """
 
 
@@ -134,31 +169,35 @@ def _get_client():
 # ------------------------------------------------------------------ gazetteer
 
 def load_gazetteer(path: Path = GAZETTEER_PATH) -> dict:
-    """Return {'valid_ids': set[str], 'prompt_lines': str}."""
+    """Return {'valid_ids': set[str], 'prompt_lines': str, 'id_to_coord': dict}."""
     data = json.loads(path.read_text(encoding="utf-8"))
     valid_ids: set[str] = set()
+    id_to_coord: dict[str, tuple[float, float]] = {}
     lines: list[str] = []
     for feat in data["features"]:
         p = feat["properties"]
         if p["kind"] == "admin":
             continue  # per rule 6: admin excluded from matching
         valid_ids.add(p["id"])
+        lon, lat = feat["geometry"]["coordinates"]
+        id_to_coord[p["id"]] = (lat, lon)
         aliases = p.get("aliases") or []
-        # compact "id (name): alias, alias, ..." line
         head = p["id"]
         if p["name"].lower() != p["id"].replace("-", " "):
             head += f" ({p['name']})"
         if aliases:
             head += ": " + ", ".join(aliases)
         lines.append(head)
-    return {"valid_ids": valid_ids, "prompt_lines": "\n".join(sorted(lines))}
+    return {
+        "valid_ids":  valid_ids,
+        "prompt_lines": "\n".join(sorted(lines)),
+        "id_to_coord": id_to_coord,
+    }
 
 
 # ------------------------------------------------------------------ prompt
 
-PROMPT_TEMPLATE = """You are extracting paddy (floating kelp paddy) sightings from a SoCal offshore fishing report.
-
-Context: paddies are drifting kelp mats offshore. Yellowtail (YT), dorado (dodo/dorados), and sometimes yellowfin school under them. Fishermen scout for paddies, note whether fish are "holding" (present under them), and refer to locations by numbered bank ("the 43", "182", "9-mile"), named bank, or general area.
+PROMPT_TEMPLATE = """You extract fishing observations from a SoCal offshore forum post.
 
 TITLE: {title}
 PUBLISHED: {published_at}
@@ -167,30 +206,69 @@ BODY:
 {body}
 \"\"\"
 
-Named locations you may reference. Only use ids from THIS list in "bank" and "route":
+GAZETTEER (id → aliases; only ids from this list are valid):
 {gazetteer_lines}
 
-Return a JSON ARRAY. One element per distinct paddy sighting or paddy summary. Each element:
-{{
-  "trip_date": "YYYY-MM-DD" or null,   // date the trip actually happened; null if unclear
-  "bank": "<id from list above>" or null,
-  "route": ["<id>", ...],              // ordered banks visited on the trip; [] if not a loop
-  "paddy_count": integer or null,      // "a few"=3, "several"=5, "handful"=4, "10 to 15"=12, "none/no kelp"=0
-  "holding": true or false or null,    // fish caught on/around the paddy
-  "species": [...],                    // subset of ["yellowtail","dorado","yellowfin","bluefin"], on the paddy specifically
-  "water_temp_f": number or null,
-  "confidence": 0.0-1.0,
-  "quote": "<= 25 words verbatim from the body that supports this mention"
-}}
+Return a JSON ARRAY of TYPED observations. Every element has these common fields:
+  "type":         "paddy" | "bite" | "conditions" | "position"
+  "trip_date":    "YYYY-MM-DD" or null   (day the trip actually happened)
+  "bank":         "<gazetteer id>" or null
+  "position_ref": integer index into THIS array pointing to a "position" element, or null
+  "confidence":   0.0-1.0
+  "quote":        "<=25 words verbatim from BODY that supports this element"
+
+Type-specific fields:
+
+type="paddy"  (kelp paddy sighting)
+  "paddy_count":  int or null   ("a few"=3, "several"=5, "10 to 15"=12, "no kelp"=0)
+  "holding":      true|false|null   (were fish holding under the paddy?)
+  "species":      subset of ["yellowtail","dorado","yellowfin","bluefin"]
+  "water_temp_f": number or null
+  "route":        ordered list of ["<gazetteer id>", ...] if a multi-bank loop is described
+
+type="bite"  (fish caught or bites reported)
+  "species":  subset of ["yellowtail","dorado","yellowfin","bluefin","calico",
+                          "rockfish","marlin","wahoo","seabass","halibut",
+                          "barracuda","bonito"]
+  "count":    int or null
+  "size_lb":  number or null
+  "method":   one of ["flyline","yoyo","surface_iron","troll","kite","sonar","dropper","other"] or null
+  "bait":     one of ["sardine","anchovy","mackerel","squid","artificial"] or null
+  "outcome":  one of ["wide_open","steady","scratchy","skunk"] or null
+
+type="conditions"  (water / weather / life observations)
+  "water_temp_f":  number or null
+  "water_color":   one of ["blue","green","dirty","off"] or null
+  "current":       one of ["strong","light","none"] or null
+  "bait_marks":    true|false|null
+  "life":          subset of ["birds","porpoise","jumpers","breezers","mola"]
+  "sea_state":     one of ["flat","bumpy","rough"] or null
+
+type="position"  (explicit coordinate or offset from a bank)
+  "raw":         "<the coordinate or bearing text EXACTLY as written in BODY>"
+  "kind":        "gps" or "offset"
+  For kind="gps":
+    "lat", "lon" numbers (we re-parse "raw" in code and will use our parse if they disagree)
+  For kind="offset":
+    "ref_bank":     "<gazetteer id>" (the bank the offset is measured from)
+    "bearing_deg":  0-360 (from ref_bank toward the target)
+    "distance_nm":  number
 
 Rules:
-- If the post has no paddy or kelp language at all, return [].
-- Emit one element per paddy sighting. Multi-bank trips with paddies at each bank -> multiple elements.
-- Only put a bank id if it clearly appears in the alias list above. If a place is named but you cannot find it in the list, use null and mention the raw name in "quote".
-- For bare-number references that could match multiple features, pick the primary if the alias list resolves it; otherwise use null.
-- "quote" must be verbatim words from BODY (no paraphrase).
-- If a generic term is used ("the corner", "the ridge") that literally matches only one feature name in the list, use that id; otherwise null with confidence <= 0.5.
-- Return ONLY the JSON array. No prose, no markdown fences.
+- If the post has no relevant observations, return [].
+- Emit one element per distinct observation. A trip that fishes 3 banks and
+  reports a bite at one, a paddy at another, and conditions at all three
+  -> up to 5 elements. Do NOT emit more than 12 elements — split hairs and
+  merge related observations if you're heading over that.
+- Only use bank ids from the gazetteer above.
+- "position_ref" ties a non-position element to an explicit position element
+  in the same array. Do not set both bank AND position_ref for the same
+  element unless the bank is genuinely different from the position (rare).
+- Only emit type="position" if the post EXPLICITLY writes a coordinate or a
+  bearing+distance from a named bank. Do not invent positions.
+- "quote" must be verbatim. Do not paraphrase.
+- Prefer null over a guess.
+- Return ONLY the JSON array. No markdown fences, no prose.
 """
 
 
@@ -286,17 +364,67 @@ def _valid_date(s):
         return None
 
 
-def validate_mention(m: dict, valid_ids: set[str], source_id: str) -> dict | None:
-    """Coerce and clean one mention dict. None if we can't salvage it."""
-    if not isinstance(m, dict):
-        log.warning("[%s] mention not a dict: %r", source_id, m)
-        return None
+def _pick_enum(m, key, allowed):
+    v = m.get(key)
+    if isinstance(v, str) and v.lower() in allowed:
+        return v.lower()
+    return None
 
+
+def _subset_of(m, key, allowed):
+    v = m.get(key) or []
+    if not isinstance(v, list):
+        return []
+    return sorted({s.lower() for s in v
+                    if isinstance(s, str) and s.lower() in allowed})
+
+
+def _cap_conf(conf, ceiling):
+    return None if conf is None else min(conf, ceiling)
+
+
+def _validate_common(m, valid_ids, source_id):
+    """Return (bank, confidence, quote, trip_date, position_ref)."""
     bank = m.get("bank")
     if bank is not None and bank not in valid_ids:
         log.info("[%s] unknown bank id %r -> null", source_id, bank)
         bank = None
 
+    conf = _as_float(m.get("confidence"))
+    if conf is not None:
+        conf = max(0.0, min(1.0, conf))
+
+    quote = m.get("quote")
+    if isinstance(quote, str):
+        quote = quote.strip()
+        words = quote.split()
+        if len(words) > 30:
+            quote = " ".join(words[:30])
+    else:
+        quote = None
+
+    return (bank, conf, quote,
+            _valid_date(m.get("trip_date")),
+            _as_int(m.get("position_ref")))
+
+
+def _base_row(mtype, bank, conf, quote, trip_date, pos_ref):
+    """Skeleton row shared across paddy/bite/conditions (positions set their own)."""
+    return {
+        "type":         mtype,
+        "trip_date":    trip_date,
+        "bank":         bank,
+        "lat":          None,
+        "lon":          None,
+        "precision":    "bank" if bank else None,
+        "confidence":   conf,
+        "quote":        quote,
+        "position_ref": pos_ref,   # transient — stripped in validate_mentions
+    }
+
+
+def _validate_paddy(m, valid_ids, source_id):
+    bank, conf, quote, trip_date, pos_ref = _validate_common(m, valid_ids, source_id)
     route = m.get("route") or []
     if not isinstance(route, list):
         route = []
@@ -306,49 +434,270 @@ def validate_mention(m: dict, valid_ids: set[str], source_id: str) -> dict | Non
             clean_route.append(r)
         elif isinstance(r, str):
             log.info("[%s] unknown route id %r -> dropped", source_id, r)
-
-    species = m.get("species") or []
-    if not isinstance(species, list):
-        species = []
-    clean_species = []
-    for s in species:
-        if isinstance(s, str) and s.lower() in ALLOWED_SPECIES:
-            clean_species.append(s.lower())
-    clean_species = sorted(set(clean_species))
-
-    confidence = _as_float(m.get("confidence"))
-    if confidence is not None:
-        confidence = max(0.0, min(1.0, confidence))
-
-    quote = m.get("quote")
-    if isinstance(quote, str):
-        quote = quote.strip()
-        # cap at 25 words softly
-        words = quote.split()
-        if len(words) > 30:
-            quote = " ".join(words[:30])
-    else:
-        quote = None
-
-    return {
-        "trip_date":    _valid_date(m.get("trip_date")),
-        "bank":         bank,
-        "route_json":   json.dumps(clean_route),
+    payload = {
+        "route":        clean_route,
         "paddy_count":  _as_int(m.get("paddy_count")),
         "holding":      _as_bool(m.get("holding")),
-        "species_json": json.dumps(clean_species),
+        "species":      _subset_of(m, "species", ALLOWED_SPECIES),
         "water_temp_f": _as_float(m.get("water_temp_f")),
-        "confidence":   confidence,
-        "quote":        quote,
     }
+    if bank in GENERIC_BANK_IDS:
+        conf = _cap_conf(conf, MAX_CONF_GENERIC)
+    row = _base_row("paddy", bank, conf, quote, trip_date, pos_ref)
+    row["payload"] = json.dumps(payload)
+    return row
+
+
+def _validate_bite(m, valid_ids, source_id):
+    bank, conf, quote, trip_date, pos_ref = _validate_common(m, valid_ids, source_id)
+    payload = {
+        "species": _subset_of(m, "species", ALLOWED_SPECIES_BITE),
+        "count":   _as_int(m.get("count")),
+        "size_lb": _as_float(m.get("size_lb")),
+        "method":  _pick_enum(m, "method",  ALLOWED_METHOD),
+        "bait":    _pick_enum(m, "bait",    ALLOWED_BAIT),
+        "outcome": _pick_enum(m, "outcome", ALLOWED_OUTCOME),
+    }
+    if bank in GENERIC_BANK_IDS:
+        conf = _cap_conf(conf, MAX_CONF_GENERIC)
+    row = _base_row("bite", bank, conf, quote, trip_date, pos_ref)
+    row["payload"] = json.dumps(payload)
+    return row
+
+
+def _validate_conditions(m, valid_ids, source_id):
+    bank, conf, quote, trip_date, pos_ref = _validate_common(m, valid_ids, source_id)
+    payload = {
+        "water_temp_f": _as_float(m.get("water_temp_f")),
+        "water_color":  _pick_enum(m, "water_color", ALLOWED_WATER_COLOR),
+        "current":      _pick_enum(m, "current",     ALLOWED_CURRENT),
+        "bait_marks":   _as_bool(m.get("bait_marks")),
+        "life":         _subset_of(m, "life",        ALLOWED_LIFE),
+        "sea_state":    _pick_enum(m, "sea_state",   ALLOWED_SEA_STATE),
+    }
+    if bank in GENERIC_BANK_IDS:
+        conf = _cap_conf(conf, MAX_CONF_GENERIC)
+    row = _base_row("conditions", bank, conf, quote, trip_date, pos_ref)
+    row["payload"] = json.dumps(payload)
+    return row
+
+
+def _validate_position(m, valid_ids, source_id, id_to_coord):
+    """
+    kind='gps': parse `raw` in code; if model supplied lat/lon and it disagrees
+                with the code parse by more than the tolerance, code wins.
+                Sanity + on-land test either way.
+    kind='offset': resolve ref_bank via gazetteer, take bearing/distance from
+                the raw text (fall back to model's values), apply flat-earth
+                offset. If bearing/distance absent, precision falls back to
+                'bank' with the ref bank's own coords.
+    """
+    _, conf, quote, trip_date, _ = _validate_common(m, valid_ids, source_id)
+    raw = m.get("raw") if isinstance(m.get("raw"), str) else ""
+    kind = m.get("kind") if m.get("kind") in ("gps", "offset") else None
+
+    lat = lon = None
+    precision = None
+    ref_bank_id = None
+    bearing_deg = None
+    distance_nm = None
+
+    if kind == "gps":
+        parsed = coords.parse_coords(raw)
+        model_lat = _as_float(m.get("lat"))
+        model_lon = _as_float(m.get("lon"))
+        if parsed:
+            code_pair = (parsed["lat"], parsed["lon"])
+            if model_lat is not None and model_lon is not None:
+                if not coords.coords_agree((model_lat, model_lon), code_pair):
+                    log.info("[%s] model/code coord disagree: model=(%s,%s) "
+                             "code=%s -> using code parse",
+                             source_id, model_lat, model_lon, code_pair)
+            if coords.valid_offshore(*code_pair):
+                lat, lon = code_pair
+                precision = "gps"
+            else:
+                log.info("[%s] gps parse out of sanity or on land: %s",
+                         source_id, code_pair)
+        else:
+            log.info("[%s] raw coord %r unparseable", source_id, raw)
+
+    elif kind == "offset":
+        ref_bank = m.get("ref_bank")
+        if isinstance(ref_bank, str) and ref_bank in valid_ids:
+            ref_bank_id = ref_bank
+            model_bearing  = _as_float(m.get("bearing_deg"))
+            model_distance = _as_float(m.get("distance_nm"))
+            code_bearing  = coords.bearing_from_words(raw)
+            code_distance = coords.distance_from_words(raw)
+            bearing_deg = code_bearing if code_bearing is not None else model_bearing
+            distance_nm = code_distance if code_distance is not None else model_distance
+            if id_to_coord and ref_bank_id in id_to_coord:
+                rlat, rlon = id_to_coord[ref_bank_id]
+                if bearing_deg is not None and distance_nm is not None:
+                    lat, lon = coords.apply_offset(rlat, rlon, bearing_deg, distance_nm)
+                    if coords.valid_offshore(lat, lon):
+                        precision = "offset"
+                    else:
+                        # Offset from an inshore ref (or in a direction that
+                        # crosses land) can land on shore. Fall back to the
+                        # ref bank's own coord — same as the no-distance path.
+                        log.info("[%s] offset result out of sanity: (%s,%s) "
+                                 "-> falling back to ref bank coord",
+                                 source_id, lat, lon)
+                        lat, lon = rlat, rlon
+                        precision = "bank"
+                else:
+                    # No distance/bearing -> use ref bank's own coord.
+                    lat, lon = rlat, rlon
+                    precision = "bank"
+        else:
+            log.info("[%s] offset ref_bank %r not in gazetteer",
+                     source_id, ref_bank)
+
+    payload = {
+        "raw":         raw,
+        "kind":        kind,
+        "ref_bank":    ref_bank_id,
+        "bearing_deg": bearing_deg,
+        "distance_nm": distance_nm,
+    }
+    if precision == "offset":
+        conf = _cap_conf(conf, MAX_CONF_OFFSET)
+
+    return {
+        "type":         "position",
+        "trip_date":    trip_date,
+        "bank":         None,           # positions don't attach to a bank
+        "lat":          lat,
+        "lon":          lon,
+        "precision":    precision,
+        "payload":      json.dumps(payload),
+        "confidence":   conf,
+        "quote":        quote,
+        "position_ref": None,
+    }
+
+
+def validate_mention(m: dict, valid_ids: set[str], source_id: str,
+                     id_to_coord: dict | None = None) -> dict | None:
+    """
+    Dispatch by type. Legacy v1 responses (no `type` field) are treated as
+    paddy. Returns a row dict compatible with report_mentions (still carries
+    a transient `position_ref` that validate_mentions() strips after
+    cross-resolution).
+    """
+    if not isinstance(m, dict):
+        log.warning("[%s] mention not a dict: %r", source_id, m)
+        return None
+    mtype = m.get("type", "paddy")
+    if mtype not in MENTION_TYPES:
+        log.warning("[%s] unknown mention type %r -> dropped", source_id, mtype)
+        return None
+    if mtype == "paddy":
+        return _validate_paddy(m, valid_ids, source_id)
+    if mtype == "bite":
+        return _validate_bite(m, valid_ids, source_id)
+    if mtype == "conditions":
+        return _validate_conditions(m, valid_ids, source_id)
+    # mtype == "position"
+    return _validate_position(m, valid_ids, source_id, id_to_coord)
+
+
+def validate_mentions(raw_list, valid_ids, source_id, id_to_coord=None):
+    """
+    Validate an entire model-returned array. Resolves position_ref: any
+    paddy/bite/conditions element pointing at a valid position inherits the
+    position's lat/lon/precision. Strips the transient position_ref field
+    before returning (not a report_mentions column).
+    """
+    if not isinstance(raw_list, list):
+        return []
+    validated = [
+        validate_mention(m, valid_ids, source_id, id_to_coord)
+        for m in raw_list
+    ]
+    for v in validated:
+        if v is None:
+            continue
+        pr = v.get("position_ref")
+        if pr is not None and 0 <= pr < len(validated):
+            pos = validated[pr]
+            if (pos and pos["type"] == "position"
+                    and pos["lat"] is not None and pos["lon"] is not None):
+                v["lat"] = pos["lat"]
+                v["lon"] = pos["lon"]
+                # Precision reflects strongest signal we now have on this row
+                v["precision"] = pos["precision"]
+    for v in validated:
+        if v is not None:
+            v.pop("position_ref", None)
+    return [v for v in validated if v is not None]
 
 
 # ------------------------------------------------------------------ DB
 
 def ensure_schema(conn):
+    """
+    Create report_mentions if missing, migrate v1 paddy_mentions rows if
+    they still exist, then drop the old table. Idempotent.
+    """
     conn.execute(f"PRAGMA busy_timeout = {DB_BUSY_TIMEOUT_MS}")
-    conn.executescript(MENTIONS_SCHEMA)
+
+    tables = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    )}
+    had_old = "paddy_mentions" in tables
+    had_new = "report_mentions" in tables
+
+    conn.executescript(REPORT_MENTIONS_SCHEMA)
+
+    # Migration: only run when the old table is present AND we're not
+    # colliding with a populated new table.
+    if had_old:
+        new_row_count = conn.execute(
+            "SELECT COUNT(*) FROM report_mentions"
+        ).fetchone()[0] if had_new else 0
+        if new_row_count == 0:
+            _migrate_paddy_mentions(conn)
+        conn.execute("DROP TABLE paddy_mentions")
     conn.commit()
+
+
+def _migrate_paddy_mentions(conn):
+    """Copy v1 paddy_mentions rows to report_mentions as type='paddy'."""
+    old_rows = list(conn.execute(
+        "SELECT source_id, trip_date, bank, route_json, paddy_count, holding, "
+        "species_json, water_temp_f, confidence, quote, extracted_at "
+        "FROM paddy_mentions"
+    ))
+    if not old_rows:
+        return
+    for r in old_rows:
+        (source_id, trip_date, bank, route_json, paddy_count, holding_int,
+         species_json, water_temp_f, confidence, quote, extracted_at) = r
+        holding = (bool(holding_int) if holding_int is not None else None)
+        payload = {
+            "route":        json.loads(route_json or "[]"),
+            "paddy_count":  paddy_count,
+            "holding":      holding,
+            "species":      json.loads(species_json or "[]"),
+            "water_temp_f": water_temp_f,
+        }
+        # Look up feed_id from paddy_sources (falls back to the v1 default).
+        row = conn.execute(
+            "SELECT feed_id FROM paddy_sources WHERE id = ?", (source_id,)
+        ).fetchone()
+        feed_id = row[0] if row and row[0] else "bd-socal-offshore"
+        precision = "bank" if bank else None
+        conn.execute(
+            'INSERT INTO report_mentions '
+            '(source_id, feed_id, type, trip_date, bank, lat, lon, "precision", '
+            ' payload, confidence, quote, extracted_at) '
+            "VALUES (?, ?, 'paddy', ?, ?, NULL, NULL, ?, ?, ?, ?, ?)",
+            (source_id, feed_id, trip_date, bank, precision,
+             json.dumps(payload), confidence, quote, extracted_at),
+        )
 
 
 def open_db(path: Path = None) -> sqlite3.Connection:
@@ -357,19 +706,26 @@ def open_db(path: Path = None) -> sqlite3.Connection:
     return conn
 
 
-def replace_mentions(conn, source_id: str, mentions: list[dict], extracted_at: str):
-    conn.execute("DELETE FROM paddy_mentions WHERE source_id = ?", (source_id,))
+def replace_mentions(conn, source_id: str, feed_id: str,
+                     mentions: list[dict], extracted_at: str):
+    """
+    Idempotent per source: wipe this source's mentions and insert the
+    fresh set. `mentions` come from validate_mention() and are already
+    typed report_mentions dicts.
+    """
+    conn.execute("DELETE FROM report_mentions WHERE source_id = ?", (source_id,))
     for m in mentions:
         row = dict(m)
         row["source_id"] = source_id
+        row["feed_id"] = feed_id
         row["extracted_at"] = extracted_at
         conn.execute("""
-            INSERT INTO paddy_mentions
-                (source_id, trip_date, bank, route_json, paddy_count, holding,
-                 species_json, water_temp_f, confidence, quote, extracted_at)
+            INSERT INTO report_mentions
+                (source_id, feed_id, type, trip_date, bank, lat, lon, "precision",
+                 payload, confidence, quote, extracted_at)
             VALUES
-                (:source_id, :trip_date, :bank, :route_json, :paddy_count, :holding,
-                 :species_json, :water_temp_f, :confidence, :quote, :extracted_at)
+                (:source_id, :feed_id, :type, :trip_date, :bank, :lat, :lon, :precision,
+                 :payload, :confidence, :quote, :extracted_at)
         """, row)
     conn.execute("UPDATE paddy_sources SET extracted = 1 WHERE id = ?", (source_id,))
 
@@ -383,6 +739,10 @@ def extract_one(conn, source_row, gaz, *, dry_run=False) -> dict:
         truncated = bool(source_row["truncated"])
     except (IndexError, KeyError):
         truncated = False
+    try:
+        feed_id = source_row["feed_id"] or "bd-socal-offshore"
+    except (IndexError, KeyError):
+        feed_id = "bd-socal-offshore"
     prompt = build_prompt(
         title=source_row["title"],
         published_at=source_row["published_at"],
@@ -394,19 +754,28 @@ def extract_one(conn, source_row, gaz, *, dry_run=False) -> dict:
     if raw is None:
         return {"ok": False, "mentions": 0, "unresolved": 0}
 
-    cleaned = []
+    cleaned = validate_mentions(
+        raw, gaz["valid_ids"], source_row["id"], gaz.get("id_to_coord"),
+    )
+    # Unresolved = paddy/bite/conditions with no bank AND no resolved lat/lon.
+    # Positions and pure route-only paddies aren't counted here.
     unresolved = 0
-    for m in raw:
-        v = validate_mention(m, gaz["valid_ids"], source_row["id"])
-        if v is None:
+    for v in cleaned:
+        if v["type"] not in ("paddy", "bite", "conditions"):
             continue
-        if v["bank"] is None and not json.loads(v["route_json"]):
+        if v["bank"] is None and v["lat"] is None:
+            # For paddy, having any route items also counts as "resolved enough"
+            if v["type"] == "paddy":
+                try:
+                    if json.loads(v["payload"]).get("route"):
+                        continue
+                except Exception:
+                    pass
             unresolved += 1
-        cleaned.append(v)
 
     if not dry_run:
         replace_mentions(
-            conn, source_row["id"], cleaned,
+            conn, source_row["id"], feed_id, cleaned,
             datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
         )
         conn.commit()
@@ -420,15 +789,21 @@ def run(limit: int | None = None, dry_run: bool = False, only_id: str | None = N
         ensure_schema(conn)
         gaz = load_gazetteer()
 
-        # tolerate old DBs without the truncated column
+        # Tolerate old DBs — ensure_schema (ingest_bd.ensure_schema, called
+        # by the workflow before extract) is responsible for adding
+        # truncated / feed_id. We still guard here in case someone runs
+        # extract standalone against a pre-migration DB.
         cols = {r[1] for r in conn.execute("PRAGMA table_info(paddy_sources)")}
-        trunc_col = "truncated" if "truncated" in cols else "0 AS truncated"
+        trunc_col   = "truncated" if "truncated" in cols else "0 AS truncated"
+        feed_col    = "feed_id"   if "feed_id"   in cols else "'bd-socal-offshore' AS feed_id"
 
-        q = (f"SELECT id, url, title, author, published_at, raw_text, {trunc_col} "
+        q = (f"SELECT id, url, title, author, published_at, raw_text, "
+             f"{trunc_col}, {feed_col} "
              "FROM paddy_sources WHERE extracted = 0 ORDER BY published_at ASC")
         params = ()
         if only_id:
-            q = (f"SELECT id, url, title, author, published_at, raw_text, {trunc_col} "
+            q = (f"SELECT id, url, title, author, published_at, raw_text, "
+                 f"{trunc_col}, {feed_col} "
                  "FROM paddy_sources WHERE id = ?")
             params = (only_id,)
         if limit and not only_id:

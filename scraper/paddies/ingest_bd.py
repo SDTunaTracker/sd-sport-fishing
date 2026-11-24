@@ -49,10 +49,11 @@ TRUNC_STOP_STATUSES = (403, 429)
 
 SCHEMA = """
 -- Free-text fishing reports we pull in from public forums, to be
--- extracted into structured paddy_mentions by scraper/paddies/extract.py.
+-- extracted into structured report_mentions by scraper/paddies/extract.py.
 CREATE TABLE IF NOT EXISTS paddy_sources (
     id            TEXT PRIMARY KEY,      -- sha1(canonical_url)
     source        TEXT NOT NULL,         -- 'bdoutdoors'
+    feed_id       TEXT NOT NULL DEFAULT 'bd-socal-offshore',  -- from feeds.py
     url           TEXT NOT NULL UNIQUE,
     title         TEXT,
     author        TEXT,
@@ -67,6 +68,8 @@ CREATE INDEX IF NOT EXISTS idx_paddy_sources_extracted
     ON paddy_sources(extracted);
 CREATE INDEX IF NOT EXISTS idx_paddy_sources_published
     ON paddy_sources(published_at);
+-- idx_paddy_sources_feed is created inside ensure_schema() AFTER the
+-- feed_id ALTER TABLE runs, so it's safe against pre-v2 databases.
 """
 
 
@@ -87,9 +90,8 @@ RSS_NS = {
 def ensure_schema(conn: sqlite3.Connection) -> None:
     conn.execute(f"PRAGMA busy_timeout = {DB_BUSY_TIMEOUT_MS}")
     conn.executescript(SCHEMA)
-    # Migration: pre-existing DBs lack the `truncated` column. Add it and
-    # backfill from the RSS "Read more" tail marker.
     cols = {r[1] for r in conn.execute("PRAGMA table_info(paddy_sources)")}
+    # Migration: v1 -> v1.1 (truncation-repair flag).
     if "truncated" not in cols:
         conn.execute(
             "ALTER TABLE paddy_sources ADD COLUMN truncated INTEGER NOT NULL DEFAULT 0"
@@ -98,6 +100,17 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             "UPDATE paddy_sources SET truncated = 1 "
             f"WHERE raw_text LIKE '%{TRUNC_MARKER}'"
         )
+    # Migration: v1 -> v2 (per-feed id). All v1 rows came from SoCal offshore.
+    if "feed_id" not in cols:
+        conn.execute(
+            "ALTER TABLE paddy_sources ADD COLUMN feed_id TEXT NOT NULL "
+            "DEFAULT 'bd-socal-offshore'"
+        )
+    # Always ensure the feed index exists (safe once feed_id is present).
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_paddy_sources_feed "
+        "ON paddy_sources(feed_id)"
+    )
     conn.commit()
 
 
@@ -239,11 +252,13 @@ def parse_feed(xml_bytes: bytes):
         }
 
 
-def upsert_source(conn: sqlite3.Connection, item: dict, fetched_at: datetime) -> bool:
+def upsert_source(conn: sqlite3.Connection, item: dict, fetched_at: datetime,
+                  feed_id: str = "bd-socal-offshore") -> bool:
     """Insert if new. Returns True if a new row was created."""
     row = {
         "id":           sha1_hex(item["url"]),
         "source":       "bdoutdoors",
+        "feed_id":      feed_id,
         "url":          item["url"],
         "title":        item["title"],
         "author":       item["author"],
@@ -254,9 +269,11 @@ def upsert_source(conn: sqlite3.Connection, item: dict, fetched_at: datetime) ->
     }
     cur = conn.execute("""
         INSERT INTO paddy_sources
-            (id, source, url, title, author, published_at, fetched_at, raw_text, extracted, truncated)
+            (id, source, feed_id, url, title, author, published_at, fetched_at,
+             raw_text, extracted, truncated)
         VALUES
-            (:id, :source, :url, :title, :author, :published_at, :fetched_at, :raw_text, 0, :truncated)
+            (:id, :source, :feed_id, :url, :title, :author, :published_at, :fetched_at,
+             :raw_text, 0, :truncated)
         ON CONFLICT(id) DO NOTHING
     """, row)
     return cur.rowcount == 1

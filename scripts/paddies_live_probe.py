@@ -1,7 +1,7 @@
 """
 Diagnostic live-run: extract mentions from the 5 most-recent unextracted
 paddy_sources rows. Reports raw Claude JSON, validated mentions, unresolved
-counts, and per-call token usage. WRITES to tracker.db (paddy_mentions +
+counts, and per-call token usage. WRITES to tracker.db (report_mentions +
 flips extracted=1). Ordinary CLI use should be `python -m scraper.paddies.extract`.
 """
 from __future__ import annotations
@@ -39,7 +39,7 @@ def main():
     ex.ensure_schema(conn)
 
     rows = list(conn.execute(
-        "SELECT id, url, title, author, published_at, raw_text "
+        "SELECT id, url, title, author, published_at, raw_text, feed_id "
         "FROM paddy_sources WHERE extracted = 0 "
         "ORDER BY published_at DESC LIMIT ?", (N_POSTS,)
     ))
@@ -93,11 +93,12 @@ def main():
             v = ex.validate_mention(m, gaz["valid_ids"], row["id"])
             if v is None:
                 continue
-            if v["bank"] is None and not json.loads(v["route_json"]):
+            payload = json.loads(v["payload"])
+            if v["bank"] is None and not payload.get("route"):
                 unresolved += 1
             cleaned.append(v)
         ex.replace_mentions(
-            conn, row["id"], cleaned,
+            conn, row["id"], row["feed_id"] or "bd-socal-offshore", cleaned,
             datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
         )
         conn.commit()
@@ -105,9 +106,11 @@ def main():
         print(f"    --- validated ---")
         print(f"    mentions_written={len(cleaned)}  unresolved={unresolved}")
         for k, v in enumerate(cleaned):
-            print(f"      [{k}] bank={v['bank']!r}  route={v['route_json']}  "
-                  f"paddy_count={v['paddy_count']}  holding={v['holding']}  "
-                  f"species={v['species_json']}  confidence={v['confidence']}")
+            payload = json.loads(v["payload"])
+            print(f"      [{k}] type={v['type']} bank={v['bank']!r} precision={v['precision']!r}")
+            print(f"          route={payload.get('route')} paddy_count={payload.get('paddy_count')} "
+                  f"holding={payload.get('holding')} species={payload.get('species')} "
+                  f"confidence={v['confidence']}")
             print(f"          quote={v['quote']!r}")
         print()
         time.sleep(0.5)
