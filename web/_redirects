@@ -7,3 +7,21 @@
 # Revert by deleting these two lines + the changes in that commit.
 /sd/forecast     /sd/charts    301
 /sd/forecast/*   /sd/charts    301
+
+# SPA routes: serve the app shell with HTTP 200.
+# Without these, Pages has no file for these paths and serves 404.html with
+# status 404 (it then bounces to "/" in JS). Browsers recover, but crawlers
+# stop at the 404, so none of these sitemap URLs get indexed. index.html has
+# <base href="/"> and app.jsx routes on location.pathname, so serving the same
+# shell at each path renders the right view directly.
+# Listed explicitly rather than /sd/* so the prerendered pages under
+# web/sd/boat, web/sd/landing and web/sd/species keep serving their own HTML.
+/sd                  /   200
+/sd/home             /   200
+/sd/today            /   200
+/sd/boats            /   200
+/sd/charts           /   200
+/sd/tripplanner      /   200
+/sd/account          /   200
+/sd/analytics        /   200
+/sd/analytics/*      /   200
