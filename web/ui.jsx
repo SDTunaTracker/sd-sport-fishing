@@ -619,9 +619,7 @@ function AppFooter() {
           <a href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
              className="app-footer-link">Contact</a>
           <span className="app-footer-sep">·</span>
-          <span className="app-footer-link muted">About</span>
-          <span className="app-footer-sep">·</span>
-          <span className="app-footer-link muted">Privacy</span>
+          <a href="/privacy/" className="app-footer-link">Privacy</a>
         </nav>
       </div>
     </footer>
