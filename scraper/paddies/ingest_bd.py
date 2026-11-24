@@ -1,25 +1,33 @@
 """
-Ingest new posts from the Bloodydecks SoCal Offshore Fishing Reports
-forum. Reads the per-forum RSS feed once and upserts each item into the
-`paddy_sources` table in tracker.db.
+Ingest new posts from the BloodyDecks forums (feeds.py lists which). Each
+run reads every enabled forum RSS feed and upserts the items into the
+`paddy_sources` table in data/paddies.db.
 
 - Idempotent: PK is sha1(canonical_url); re-running never duplicates.
-- No thread fetches — the RSS content:encoded carries the full post body.
-- No image downloads (HTML is stripped to text before storage).
-- No backfill in v1: coverage = whatever depth the feed exposes (~25 items).
+- Feed fetches retry transient errors (network, 5xx, 429) with backoff.
+- RSS bodies are ~500-char excerpts ending "Read more"; repair_truncated()
+  replaces them with the OP body from the thread page (capped, rate-limited).
+- Gap recovery: if a feed's ~25-item window no longer overlaps what we have
+  stored (we were down for days), the forum listing pages are walked back to
+  our newest stored post. `--backfill-since` forces that walk from a date.
+- Health state for alerting is written to data/paddies_ingest_state.json.
 
 Usage:
     .venv/Scripts/python.exe -m scraper.paddies.ingest_bd
+    .venv/Scripts/python.exe -m scraper.paddies.ingest_bd --backfill-since 2026-09-06
 """
 from __future__ import annotations
 
 import hashlib
 import html as html_module
+import argparse
 import json
+import os
 import re
 import sqlite3
 import sys
 import time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -27,16 +35,35 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
+from . import feeds as feeds_mod
+
 ROOT = Path(__file__).resolve().parents[2]
-DB_PATH = ROOT / "tracker.db"
+# Paddy data lives in its own SQLite file, NOT tracker.db. tracker.db is a
+# 45 MB binary the hourly landing scrape commits; a second workflow pushing
+# the same binary loses every rebase race. A dedicated file means the
+# paddies workflow and the scrape workflow never touch the same paths.
+DB_PATH = Path(os.environ.get("PADDIES_DB") or (ROOT / "data" / "paddies.db"))
 STATE_PATH = ROOT / "data" / "paddies_ingest_state.json"
 
 FEED_URL = (
     "https://www.bdoutdoors.com/forums/forum/"
     "southern-california-offshore-fishing-reports/index.rss"
 )
+PRIMARY_FEED_ID = "bd-socal-offshore"
 USER_AGENT = "TunaTracker/1.0 (+https://thetunatracker.com)"
 TIMEOUT_SECONDS = 15
+
+# Feed-fetch retry policy: transient network / 5xx / 429 errors are retried
+# with growing backoff before the feed counts as failed for this run.
+FETCH_ATTEMPTS = 4
+FETCH_BACKOFF_SECONDS = (5, 20, 60)
+
+# Listing-page backfill (forum page-N walk) used to recover posts that
+# scrolled out of the ~25-item RSS window. robots.txt allows these paths;
+# we stay well under one request per 2 s and stop on 403/429.
+BACKFILL_RATE_LIMIT_SECONDS = 2.0
+BACKFILL_MAX_PAGES = 40
+BACKFILL_MAX_THREADS = 600
 DB_TIMEOUT_SECONDS = 30
 DB_BUSY_TIMEOUT_MS = 30000
 
@@ -46,6 +73,7 @@ TRUNC_MAX_FETCHES_PER_RUN = 25
 TRUNC_RATE_LIMIT_SECONDS = 1.0
 TRUNC_MARKER = "Read more"
 TRUNC_STOP_STATUSES = (403, 429)
+TRUNC_MAX_ATTEMPTS_PER_ROW = 3   # give up on a thread page after this many misses
 
 SCHEMA = """
 -- Free-text fishing reports we pull in from public forums, to be
@@ -61,7 +89,8 @@ CREATE TABLE IF NOT EXISTS paddy_sources (
     fetched_at    TEXT NOT NULL,         -- ISO-8601 UTC
     raw_text      TEXT NOT NULL,         -- HTML-stripped post body
     extracted     INTEGER NOT NULL DEFAULT 0,
-    truncated     INTEGER NOT NULL DEFAULT 0
+    truncated     INTEGER NOT NULL DEFAULT 0,
+    repair_attempts INTEGER NOT NULL DEFAULT 0  -- thread-page fetch tries
 );
 
 CREATE INDEX IF NOT EXISTS idx_paddy_sources_extracted
@@ -106,6 +135,11 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             "ALTER TABLE paddy_sources ADD COLUMN feed_id TEXT NOT NULL "
             "DEFAULT 'bd-socal-offshore'"
         )
+    # Migration: cap thread-page re-fetches for rows that never repair.
+    if "repair_attempts" not in cols:
+        conn.execute(
+            "ALTER TABLE paddy_sources ADD COLUMN repair_attempts INTEGER NOT NULL DEFAULT 0"
+        )
     # Always ensure the feed index exists (safe once feed_id is present).
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_paddy_sources_feed "
@@ -115,7 +149,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
 
 def open_db(path: Path = None) -> sqlite3.Connection:
-    """Open tracker.db with the timeouts we need to coexist with the hourly scrape."""
+    """Open the paddies DB with the timeouts we need to coexist with the hourly scrape."""
     conn = sqlite3.connect(path or DB_PATH, timeout=DB_TIMEOUT_SECONDS)
     conn.execute(f"PRAGMA busy_timeout = {DB_BUSY_TIMEOUT_MS}")
     return conn
@@ -154,14 +188,44 @@ def strip_html(html: str) -> str:
     return s.strip()
 
 
-def fetch_feed(url: str = FEED_URL) -> bytes:
+def _fetch_once(url: str, accept: str) -> bytes:
     req = urllib.request.Request(url, headers={
         "User-Agent": USER_AGENT,
-        "Accept": "application/rss+xml, application/xml, text/xml, */*",
+        "Accept": accept,
         "Accept-Language": "en-US,en;q=0.9",
     })
     with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as r:
         return r.read()
+
+
+def _retryable(e: Exception) -> bool:
+    if isinstance(e, urllib.error.HTTPError):
+        return e.code == 429 or e.code >= 500
+    # URLError, timeouts, connection resets, truncated reads
+    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError, OSError))
+
+
+def fetch_with_retry(url: str, accept: str, *, attempts: int = FETCH_ATTEMPTS,
+                     backoff=FETCH_BACKOFF_SECONDS, sleep=time.sleep) -> bytes:
+    """GET with retry on transient failures. Raises the last error."""
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return _fetch_once(url, accept)
+        except Exception as e:  # noqa: BLE001
+            last = e
+            if not _retryable(e) or i == attempts - 1:
+                break
+            wait = backoff[min(i, len(backoff) - 1)]
+            print(f"[paddies:ingest_bd] fetch failed ({e!r}); retry {i + 1} in {wait}s",
+                  file=sys.stderr)
+            sleep(wait)
+    assert last is not None
+    raise last
+
+
+def fetch_feed(url: str = FEED_URL) -> bytes:
+    return fetch_with_retry(url, "application/rss+xml, application/xml, text/xml, */*")
 
 
 def fetch_thread_body(url: str) -> str | None:
@@ -287,7 +351,9 @@ def repair_truncated(conn: sqlite3.Connection, max_fetches: int = TRUNC_MAX_FETC
     """
     stats = {"attempted": 0, "repaired": 0, "no_change": 0, "blocked": False}
     rows = list(conn.execute(
-        "SELECT id, url FROM paddy_sources WHERE truncated = 1 ORDER BY published_at DESC"
+        "SELECT id, url FROM paddy_sources "
+        "WHERE truncated = 1 AND repair_attempts < ? ORDER BY published_at DESC",
+        (TRUNC_MAX_ATTEMPTS_PER_ROW,),
     ))
     if not rows:
         return stats
@@ -302,6 +368,10 @@ def repair_truncated(conn: sqlite3.Connection, max_fetches: int = TRUNC_MAX_FETC
             break
         if body is None:
             stats["no_change"] += 1
+            conn.execute(
+                "UPDATE paddy_sources SET repair_attempts = repair_attempts + 1 WHERE id = ?",
+                (row["id"],),
+            )
         else:
             conn.execute(
                 "UPDATE paddy_sources "
@@ -315,49 +385,229 @@ def repair_truncated(conn: sqlite3.Connection, max_fetches: int = TRUNC_MAX_FETC
     return stats
 
 
-def run() -> dict:
+
+
+# ------------------------------------------------------------------ backfill
+
+BD_BASE = "https://www.bdoutdoors.com"
+HTML_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+
+
+def _parse_xf_time(s: str | None) -> datetime | None:
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z").astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
+def parse_listing(html_bytes: bytes):
+    """
+    Yield thread stubs from a XenForo forum listing page (forum/page-N):
+    {url, title, author, published_at, last_post_at, sticky}. Listing pages
+    are ordered by last-post date, newest first (stickies on top).
+    """
+    from bs4 import BeautifulSoup
+    from urllib.parse import urljoin
+
+    soup = BeautifulSoup(html_bytes, "lxml")
+    for div in soup.select("div.structItem--thread"):
+        a = None
+        for cand in div.select(".structItem-title a[href]"):
+            href = cand["href"]
+            if "/threads/" in href and not re.search(r"/(latest|unread|vote)\b", href):
+                a = cand
+                break
+        if a is None:
+            continue
+        times = div.select("time.u-dt")
+        start = _parse_xf_time(times[0].get("datetime")) if times else None
+        latest_el = div.select_one("time.structItem-latestDate")
+        latest = _parse_xf_time(latest_el.get("datetime")) if latest_el else start
+        if start is None:
+            continue
+        yield {
+            "url": canonical_url(urljoin(BD_BASE, a["href"])),
+            "title": a.get_text(strip=True) or None,
+            "author": div.get("data-author") or None,
+            "published_at": start,
+            "last_post_at": latest or start,
+            "sticky": "structItem--sticky" in (div.get("class") or []),
+        }
+
+
+def _listing_url(forum_url: str, page: int) -> str:
+    base = forum_url if forum_url.endswith("/") else forum_url + "/"
+    return base if page == 1 else f"{base}page-{page}"
+
+
+def backfill_from_listing(conn: sqlite3.Connection, feed: dict, since: datetime,
+                          fetched_at: datetime, *, max_pages: int = BACKFILL_MAX_PAGES,
+                          max_threads: int = BACKFILL_MAX_THREADS,
+                          sleep=time.sleep) -> dict:
+    """
+    Walk forum listing pages newest-first and insert every thread started at
+    or after `since` that we don't already have, fetching the OP body from
+    the thread page. Stops when a whole page is older than `since`, on
+    403/429, or at the page / thread caps. Idempotent (ON CONFLICT DO NOTHING).
+    Threads whose body can't be fetched are stored as title + truncation
+    marker so repair_truncated() retries them later.
+    """
+    stats = {"since": _iso(since), "pages": 0, "threads_in_window": 0,
+             "new_rows": 0, "body_failures": 0, "blocked": False,
+             "reached_since": False, "error": None}
+    attempted = 0
+    for page in range(1, max_pages + 1):
+        url = _listing_url(feed["forum_url"], page)
+        try:
+            html_bytes = fetch_with_retry(url, HTML_ACCEPT, sleep=sleep)
+        except urllib.error.HTTPError as e:
+            if e.code in TRUNC_STOP_STATUSES:
+                stats["blocked"] = True
+            stats["error"] = f"HTTP {e.code} on {url}"
+            break
+        except Exception as e:  # noqa: BLE001
+            stats["error"] = f"{e!r} on {url}"
+            break
+        stats["pages"] += 1
+        threads = list(parse_listing(html_bytes))
+        if not threads:
+            break
+        page_has_recent = False
+        for t in threads:
+            if not t["sticky"] and t["last_post_at"] >= since:
+                page_has_recent = True
+            if t["published_at"] < since:
+                continue
+            stats["threads_in_window"] += 1
+            sid = sha1_hex(t["url"])
+            if conn.execute("SELECT 1 FROM paddy_sources WHERE id = ?", (sid,)).fetchone():
+                continue
+            if attempted >= max_threads:
+                break
+            attempted += 1
+            try:
+                body = fetch_thread_body(t["url"])
+            except BotBlocked as e:
+                stats["blocked"] = True
+                stats["error"] = f"HTTP {e.status} on {e.url}"
+                break
+            sleep(BACKFILL_RATE_LIMIT_SECONDS)
+            if not body:
+                stats["body_failures"] += 1
+                body = f"{t['title'] or ''}\n\n{TRUNC_MARKER}"
+            item = {"url": t["url"], "title": t["title"], "author": t["author"],
+                    "published_at": t["published_at"], "raw_text": body}
+            if upsert_source(conn, item, fetched_at, feed_id=feed["id"]):
+                stats["new_rows"] += 1
+        conn.commit()
+        if stats["blocked"] or attempted >= max_threads:
+            break
+        if not page_has_recent:
+            stats["reached_since"] = True
+            break
+        sleep(BACKFILL_RATE_LIMIT_SECONDS)
+    return stats
+
+
+# ------------------------------------------------------------------ run
+
+def _iso(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _newest_published(conn: sqlite3.Connection, feed_id: str) -> datetime | None:
+    r = conn.execute(
+        "SELECT MAX(published_at) FROM paddy_sources WHERE feed_id = ?", (feed_id,)
+    ).fetchone()
+    if not r or not r[0]:
+        return None
+    return datetime.fromisoformat(r[0]).astimezone(timezone.utc)
+
+
+def run(feed_ids: list[str] | None = None, backfill_since: datetime | None = None,
+        max_pages: int = BACKFILL_MAX_PAGES, sleep=time.sleep) -> dict:
+    """
+    One ingest pass over every enabled feed:
+      1. fetch RSS (with retry) and upsert items;
+      2. if the feed window no longer overlaps what we already have (we were
+         down long enough for posts to scroll off), walk the forum listing
+         pages back to our newest stored post and backfill the gap;
+         `backfill_since` forces that walk from an explicit date;
+      3. repair truncated RSS bodies from thread pages.
+    """
     conn = open_db()
     conn.row_factory = sqlite3.Row
     try:
         ensure_schema(conn)
-        t0 = time.monotonic()
-        xml_bytes = fetch_feed()
-        fetch_elapsed = time.monotonic() - t0
-        fetched_at = datetime.now(timezone.utc)
+        feeds = [f for f in feeds_mod.enabled_feeds()
+                 if not feed_ids or f["id"] in feed_ids]
+        per_feed: dict[str, dict] = {}
+        for feed in feeds:
+            fs = {"ok": False, "items_seen": 0, "new_rows": 0, "overlap": 0,
+                  "gap_detected": False, "backfill": None, "error": None,
+                  "newest_published_at": None}
+            newest_before = _newest_published(conn, feed["id"])
+            t0 = time.monotonic()
+            try:
+                xml_bytes = fetch_feed(feed["rss_url"])
+                items = list(parse_feed(xml_bytes))
+            except Exception as e:  # noqa: BLE001
+                fs["error"] = repr(e)[:300]
+                per_feed[feed["id"]] = fs
+                print(f"[paddies:ingest_bd] {feed['id']}: FEED FAILED {e!r}", file=sys.stderr)
+                continue
+            fs["ok"] = True
+            fs["fetch_seconds"] = round(time.monotonic() - t0, 3)
+            fs["items_seen"] = len(items)
+            fetched_at = datetime.now(timezone.utc)
+            for item in items:
+                if conn.execute("SELECT 1 FROM paddy_sources WHERE id = ?",
+                                (sha1_hex(item["url"]),)).fetchone():
+                    fs["overlap"] += 1
+                elif upsert_source(conn, item, fetched_at, feed_id=feed["id"]):
+                    fs["new_rows"] += 1
+            conn.commit()
 
-        items_seen = 0
-        new_rows = 0
-        for item in parse_feed(xml_bytes):
-            items_seen += 1
-            if upsert_source(conn, item, fetched_at):
-                new_rows += 1
-        conn.commit()
+            since = backfill_since
+            if since is None and newest_before and items and fs["overlap"] == 0:
+                oldest = min(i["published_at"] for i in items)
+                if oldest > newest_before:
+                    fs["gap_detected"] = True
+                    since = newest_before
+                    print(f"[paddies:ingest_bd] {feed['id']}: GAP - oldest feed item "
+                          f"{_iso(oldest)} is newer than newest stored {_iso(newest_before)}; "
+                          f"backfilling from listing pages", file=sys.stderr)
+            if since is not None:
+                fs["backfill"] = backfill_from_listing(
+                    conn, feed, since, fetched_at, max_pages=max_pages, sleep=sleep)
+                fs["new_rows"] += fs["backfill"]["new_rows"]
+            newest = _newest_published(conn, feed["id"])
+            fs["newest_published_at"] = _iso(newest) if newest else None
+            per_feed[feed["id"]] = fs
 
         repair_stats = repair_truncated(conn)
 
-        total = conn.execute(
-            "SELECT COUNT(*) FROM paddy_sources WHERE source='bdoutdoors'"
-        ).fetchone()[0]
-        pending = conn.execute(
-            "SELECT COUNT(*) FROM paddy_sources WHERE source='bdoutdoors' AND extracted=0"
-        ).fetchone()[0]
-        still_truncated = conn.execute(
-            "SELECT COUNT(*) FROM paddy_sources WHERE source='bdoutdoors' AND truncated=1"
-        ).fetchone()[0]
+        def _count(where: str) -> int:
+            return conn.execute(
+                f"SELECT COUNT(*) FROM paddy_sources WHERE source='bdoutdoors' {where}"
+            ).fetchone()[0]
 
         return {
-            "feed_bytes": len(xml_bytes),
-            "fetch_seconds": round(fetch_elapsed, 3),
-            "items_seen": items_seen,
-            "new_rows": new_rows,
+            "feeds": per_feed,
+            "items_seen": sum(f["items_seen"] for f in per_feed.values()),
+            "new_rows": sum(f["new_rows"] for f in per_feed.values()),
             "truncation_repair": repair_stats,
-            "total_rows": total,
-            "pending_extract": pending,
-            "still_truncated": still_truncated,
+            "total_rows": _count(""),
+            "pending_extract": _count("AND extracted=0"),
+            "still_truncated": _count("AND truncated=1"),
         }
     finally:
         conn.close()
 
+
+# ------------------------------------------------------------------ state
 
 def _load_state() -> dict:
     if not STATE_PATH.exists():
@@ -370,41 +620,92 @@ def _load_state() -> dict:
 
 def _save_state(state: dict) -> None:
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    STATE_PATH.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+    STATE_PATH.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def main() -> int:
+def update_state(state: dict, stats: dict, now: datetime) -> dict:
+    """
+    Fold one run's stats into the persisted health state. This file is the
+    contract for data-health alerting (read by scraper/paddies/health.py):
+      last_success_utc         - last run where the primary feed fetched OK
+      last_new_row_utc         - last run that stored at least one new post
+      newest_post_published_at - newest stored post on the primary feed
+      consecutive_failures     - primary-feed fetch failures in a row
+    """
+    now_s = _iso(now)
+    state["last_run_utc"] = now_s
+    state["last_items_seen"] = stats["items_seen"]
+    state["consecutive_zero_runs"] = (
+        state.get("consecutive_zero_runs", 0) + 1 if stats["items_seen"] == 0 else 0)
+    feeds_state = state.setdefault("feeds", {})
+    for fid, fs in stats["feeds"].items():
+        st = feeds_state.setdefault(fid, {})
+        if fs["ok"]:
+            st["last_success_utc"] = now_s
+            st["consecutive_failures"] = 0
+            st["last_error"] = None
+        else:
+            st["consecutive_failures"] = st.get("consecutive_failures", 0) + 1
+            st["last_error"] = fs["error"]
+        if fs["new_rows"]:
+            st["last_new_row_utc"] = now_s
+        if fs.get("newest_published_at"):
+            st["newest_post_published_at"] = fs["newest_published_at"]
+        if fs.get("gap_detected"):
+            st["last_gap_utc"] = now_s
+    primary = feeds_state.get(PRIMARY_FEED_ID, {})
+    for k in ("last_success_utc", "last_new_row_utc", "newest_post_published_at",
+              "consecutive_failures", "last_error"):
+        if k in primary:
+            state[k] = primary[k]
+    state["total_rows"] = stats["total_rows"]
+    state["pending_extract"] = stats["pending_extract"]
+    return state
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description="Ingest BloodyDecks forum posts.")
+    ap.add_argument("--backfill-since", metavar="YYYY-MM-DD",
+                    help="walk forum listing pages and backfill threads started on/after this date")
+    ap.add_argument("--feed", action="append", dest="feeds",
+                    help="limit to this feed id (repeatable; default: all enabled)")
+    ap.add_argument("--max-pages", type=int, default=BACKFILL_MAX_PAGES)
+    args = ap.parse_args(argv if argv is not None else [])
+
+    since = None
+    if args.backfill_since:
+        since = datetime.strptime(args.backfill_since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
     print(f"[paddies:ingest_bd] db={DB_PATH}")
-    print(f"[paddies:ingest_bd] feed={FEED_URL}")
     try:
-        stats = run()
-    except Exception as e:
+        stats = run(feed_ids=args.feeds, backfill_since=since, max_pages=args.max_pages)
+    except Exception as e:  # noqa: BLE001
         print(f"[paddies:ingest_bd] FAILED: {e!r}", file=sys.stderr)
         return 1
+    for fid, fs in stats["feeds"].items():
+        print(f"  [{fid}] " + ", ".join(f"{k}={v}" for k, v in fs.items()))
     for k, v in stats.items():
-        print(f"  {k}: {v}")
+        if k != "feeds":
+            print(f"  {k}: {v}")
 
-    state = _load_state()
-    if stats["items_seen"] == 0:
-        state["consecutive_zero_runs"] = state.get("consecutive_zero_runs", 0) + 1
-    else:
-        state["consecutive_zero_runs"] = 0
-    state["last_run_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    state["last_items_seen"] = stats["items_seen"]
+    state = update_state(_load_state(), stats, datetime.now(timezone.utc))
     _save_state(state)
 
     if state["consecutive_zero_runs"] >= 2:
-        # GitHub Actions warning annotation (rendered prominently, does NOT fail the job).
         msg = (f"BD feed returned 0 items for {state['consecutive_zero_runs']} "
-               f"consecutive runs — feed may be broken.")
+               f"consecutive runs - feed may be broken.")
         print(f"::warning title=paddies ingest::{msg}")
         print(f"[paddies:ingest_bd] WARNING: {msg}", file=sys.stderr)
     elif stats["items_seen"] == 0:
-        # First zero-run — informational, not a warning.
         print("[paddies:ingest_bd] INFO: feed returned 0 items (not consecutive yet)",
               file=sys.stderr)
+
+    primary = stats["feeds"].get(PRIMARY_FEED_ID)
+    if primary is not None and not primary["ok"]:
+        print(f"::error title=paddies ingest::primary BD feed fetch failed: {primary['error']}")
+        return 1
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

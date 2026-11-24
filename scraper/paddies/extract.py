@@ -42,7 +42,7 @@ except ImportError:
     pass
 
 ROOT = Path(__file__).resolve().parents[2]
-DB_PATH = ROOT / "tracker.db"
+DB_PATH = Path(os.environ.get("PADDIES_DB") or (ROOT / "data" / "paddies.db"))
 GAZETTEER_PATH = ROOT / "data" / "banks.geojson"
 
 MODEL = "claude-sonnet-4-6"  # matches src/reddit_insights.py
@@ -156,6 +156,7 @@ CREATE INDEX IF NOT EXISTS idx_report_mentions_feed    ON report_mentions(feed_i
 # ------------------------------------------------------------------ client
 
 _client = None
+_last_error: str | None = None   # last Claude failure, recorded in health state
 
 
 def _get_client():
@@ -324,6 +325,8 @@ def call_claude(prompt: str) -> list | None:
         try:
             return _try_once()
         except Exception as e2:
+            global _last_error
+            _last_error = f"{type(e2).__name__}: {str(e2)[:200]}"
             log.error("Claude retry also failed: %r", e2)
             return None
 
@@ -830,6 +833,30 @@ def run(limit: int | None = None, dry_run: bool = False, only_id: str | None = N
         conn.close()
 
 
+def record_health(stats: dict, now: datetime | None = None,
+                  state_path: Path | None = None) -> dict:
+    """Fold this run into data/paddies_ingest_state.json (extract_* keys)."""
+    from . import ingest_bd
+    path = state_path or ingest_bd.STATE_PATH
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        state = {}
+    now_s = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    state["extract_last_run_utc"] = now_s
+    if stats["posts"] == 0 or stats["posts_failed"] < stats["posts"]:
+        state["extract_last_success_utc"] = now_s
+        state["extract_consecutive_failed_runs"] = 0
+        state["extract_last_error"] = None
+    else:
+        state["extract_consecutive_failed_runs"] = state.get("extract_consecutive_failed_runs", 0) + 1
+        state["extract_last_error"] = _last_error or "all posts failed"
+    state["pending_extract"] = max(0, state.get("pending_extract", 0) - stats["posts_extracted"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return state
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None,
@@ -849,6 +876,8 @@ def main() -> int:
     stats = run(limit=args.limit, dry_run=args.dry_run, only_id=args.only_id)
     for k, v in stats.items():
         print(f"  {k}: {v}")
+    if not args.dry_run and not args.only_id:
+        record_health(stats)
     # Fail loudly if EVERY post failed — usually means Claude client is broken
     # (bad ANTHROPIC_API_KEY, network partition, etc.). One-off post failures
     # per spec are non-fatal.

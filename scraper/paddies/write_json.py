@@ -19,7 +19,7 @@ from pathlib import Path
 from .feeds import enabled_feeds
 
 ROOT = Path(__file__).resolve().parents[2]
-DB_PATH = ROOT / "tracker.db"
+DB_PATH = Path(os.environ.get("PADDIES_DB") or (ROOT / "data" / "paddies.db"))
 GAZETTEER_PATH = ROOT / "data" / "banks.geojson"
 OUT_DIR = ROOT / "web" / "api" / "v1"
 PADDIES_OUT = OUT_DIR / "paddies.json"

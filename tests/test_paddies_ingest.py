@@ -12,7 +12,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
 
-from scraper.paddies import ingest_bd
+from scraper.paddies import feeds, ingest_bd
+
+
+@pytest.fixture(autouse=True)
+def _primary_feed_only(monkeypatch):
+    """Most tests model the single SoCal feed; multi-feed tests opt back in."""
+    primary = [f for f in feeds.FEEDS if f["id"] == ingest_bd.PRIMARY_FEED_ID]
+    monkeypatch.setattr(ingest_bd.feeds_mod, "enabled_feeds", lambda: primary)
+    monkeypatch.setattr(ingest_bd, "fetch_thread_body", lambda url: None)
 
 
 SAMPLE_FEED = ("""<?xml version="1.0" encoding="UTF-8"?>
@@ -219,7 +227,7 @@ def test_consecutive_zero_runs_warning_after_two(tmp_path, monkeypatch, capsys):
     # empty feed (0 items)
     empty_feed = (b'<?xml version="1.0"?><rss version="2.0"><channel>'
                   b'<title>x</title></channel></rss>')
-    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda: empty_feed)
+    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda *a, **k: empty_feed)
     # first zero-run: info only, no warning annotation
     ingest_bd.main()
     out = capsys.readouterr().out
@@ -237,12 +245,12 @@ def test_zero_run_counter_resets_on_success(tmp_path, monkeypatch):
     empty_feed = (b'<?xml version="1.0"?><rss version="2.0"><channel>'
                   b'<title>x</title></channel></rss>')
     # zero run
-    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda: empty_feed)
+    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda *a, **k: empty_feed)
     ingest_bd.main()
     st = json.loads((tmp_path / "state.json").read_text())
     assert st["consecutive_zero_runs"] == 1
     # non-zero run: counter resets
-    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda: SAMPLE_FEED)
+    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda *a, **k: SAMPLE_FEED)
     ingest_bd.main()
     st = json.loads((tmp_path / "state.json").read_text())
     assert st["consecutive_zero_runs"] == 0
@@ -253,7 +261,7 @@ def test_run_end_to_end_uses_mock_feed(tmp_path, monkeypatch):
     """Full run() with a mocked fetch_feed — verifies stats + schema install."""
     db = tmp_path / "t.db"
     monkeypatch.setattr(ingest_bd, "DB_PATH", db)
-    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda: SAMPLE_FEED)
+    monkeypatch.setattr(ingest_bd, "fetch_feed", lambda *a, **k: SAMPLE_FEED)
     stats = ingest_bd.run()
     assert stats["items_seen"] == 2
     assert stats["new_rows"] == 2

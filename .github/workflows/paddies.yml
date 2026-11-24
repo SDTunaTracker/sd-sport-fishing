@@ -1,0 +1,116 @@
+name: BloodyDecks Paddies
+
+# BloodyDecks (bdoutdoors.com) forum collection, split out of daily-scrape.yml.
+#
+# Why its own workflow (it used to be a job inside daily-scrape):
+#   * It only ran when daily-scrape picked "full" mode (14 UTC or stale SST),
+#     which GitHub's drifting cron hit about twice a month.
+#   * When it did run, a Claude extract failure aborted the job before the
+#     commit step, so even successfully ingested posts were thrown away.
+#   * It committed tracker.db, the 45 MB binary the hourly scrape also
+#     commits, so the two raced on every rebase.
+#
+# Now: paddy data lives in data/paddies.db (only this workflow writes it),
+# ingest is committed even if extraction fails, and the run is frequent enough
+# that the ~25-item RSS window (about 8 days of posts) can't scroll past
+# unseen posts. If it does stall, ingest_bd detects the gap on the next run
+# and backfills from the forum listing pages. scraper/paddies/health.py
+# turns the state file into a pass/fail check for data-health alerts.
+
+on:
+  schedule:
+    # Every 3 hours at an off-peak minute. GitHub often drops or delays
+    # scheduled runs by hours; with an ~8-day RSS window even one run a day
+    # loses nothing, so 8 attempts a day is plenty of margin.
+    - cron: '23 */3 * * *'
+  workflow_dispatch:
+    inputs:
+      backfill_since:
+        description: 'Optional YYYY-MM-DD: walk forum listing pages and backfill threads started on/after this date'
+        required: false
+        default: ''
+
+concurrency:
+  group: paddies
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  paddies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ingest BD forum posts
+        id: ingest
+        env:
+          BACKFILL_SINCE: ${{ github.event.inputs.backfill_since }}
+        run: |
+          if [ -n "$BACKFILL_SINCE" ]; then
+            python -m scraper.paddies.ingest_bd --backfill-since "$BACKFILL_SINCE"
+          else
+            python -m scraper.paddies.ingest_bd
+          fi
+
+      - name: Extract mentions with Claude
+        id: extract
+        # Raw posts are already saved; extraction can lag and catch up later.
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error title=paddies extract::ANTHROPIC_API_KEY secret is empty or not available to this workflow"
+          fi
+          python -m scraper.paddies.extract
+
+      - name: Write /api/v1/*.json
+        if: always() && steps.ingest.outcome != 'cancelled'
+        run: python -m scraper.paddies.write_json
+
+      - name: Health check
+        if: always()
+        continue-on-error: true
+        # --local: judge the files this run just wrote. The published check
+        # (what the data-health alerter runs) is `python -m scraper.paddies.health`.
+        run: python -m scraper.paddies.health --local
+
+      - name: Commit and push paddies data
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/paddies.db data/paddies_ingest_state.json \
+                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json
+          if git diff --staged --quiet; then
+            echo "No paddies changes to commit."
+            exit 0
+          fi
+          git commit --no-verify -m "Paddies: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Only this workflow touches these paths, so a rebase over the
+          # hourly scrape's commits never conflicts; retries cover push races.
+          for i in $(seq 1 6); do
+            git pull --rebase origin main && git push origin main && exit 0
+            git rebase --abort 2>/dev/null || true
+            echo "push race, retry $i"; sleep $((RANDOM % 15 + 5))
+          done
+          echo "::error title=paddies push::push still failing after retries"
+          exit 1

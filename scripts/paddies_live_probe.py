@@ -1,7 +1,7 @@
 """
 Diagnostic live-run: extract mentions from the 5 most-recent unextracted
 paddy_sources rows. Reports raw Claude JSON, validated mentions, unresolved
-counts, and per-call token usage. WRITES to tracker.db (report_mentions +
+counts, and per-call token usage. WRITES to data/paddies.db (report_mentions +
 flips extracted=1). Ordinary CLI use should be `python -m scraper.paddies.extract`.
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ import anthropic
 
 from scraper.paddies import extract as ex
 
-DB = ROOT / "tracker.db"
+DB = ROOT / "data" / "paddies.db"
 N_POSTS = 5
 
 def main():
