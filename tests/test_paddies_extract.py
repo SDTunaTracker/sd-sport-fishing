@@ -777,6 +777,7 @@ def test_main_exits_nonzero_when_all_posts_fail(db, monkeypatch, capsys):
     so the nightly workflow surfaces the failure."""
     conn, dbpath = db
     monkeypatch.setattr(ex, "DB_PATH", dbpath)
+    monkeypatch.setattr(ingest_bd, "STATE_PATH", dbpath.parent / "state.json")
     monkeypatch.setattr(ex, "call_claude", lambda prompt: None)
     monkeypatch.setattr(sys, "argv", ["extract", "--limit", "2"])
     rc = ex.main()
