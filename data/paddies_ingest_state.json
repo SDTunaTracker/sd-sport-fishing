@@ -1,5 +1,39 @@
 {
+  "consecutive_failures": 0,
   "consecutive_zero_runs": 0,
-  "last_run_utc": "2026-09-06T22:24:28Z",
-  "last_items_seen": 25
+  "extract_consecutive_failed_runs": 0,
+  "extract_last_error": null,
+  "extract_last_run_utc": "2026-11-24T22:05:54Z",
+  "extract_last_success_utc": "2026-11-24T22:05:54Z",
+  "feeds": {
+    "bd-baja": {
+      "consecutive_failures": 0,
+      "last_error": null,
+      "last_new_row_utc": "2026-11-24T22:06:38Z",
+      "last_success_utc": "2026-11-24T22:06:38Z",
+      "newest_post_published_at": "2026-11-23T16:49:03Z"
+    },
+    "bd-socal-offshore": {
+      "consecutive_failures": 0,
+      "last_error": null,
+      "last_new_row_utc": "2026-11-24T22:05:06Z",
+      "last_success_utc": "2026-11-24T22:06:38Z",
+      "newest_post_published_at": "2026-11-24T21:12:33Z"
+    },
+    "bd-spearfishing": {
+      "consecutive_failures": 0,
+      "last_error": null,
+      "last_new_row_utc": "2026-11-24T22:06:38Z",
+      "last_success_utc": "2026-11-24T22:06:38Z",
+      "newest_post_published_at": "2026-11-08T14:25:56Z"
+    }
+  },
+  "last_error": null,
+  "last_items_seen": 74,
+  "last_new_row_utc": "2026-11-24T22:05:06Z",
+  "last_run_utc": "2026-11-24T22:06:38Z",
+  "last_success_utc": "2026-11-24T22:06:38Z",
+  "newest_post_published_at": "2026-11-24T21:12:33Z",
+  "pending_extract": 279,
+  "total_rows": 282
 }
