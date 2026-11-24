@@ -392,10 +392,31 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
 # walking until empty. Cap at 50 as a runaway guard.
 _PAGE_OF_RE = re.compile(r"Page\s+\d+\s+of\s+(\d+)", re.I)
 _MAX_SCHEDULE_PAGES = 50
+_BLOCKED_RETRY_SECONDS = 8.0
+
+
+class ScheduleBlockedError(RuntimeError):
+    """The site answered 200 but not with a schedule (CAPTCHA / bot check)."""
+
+
+def _looks_like_schedule(html: str) -> bool:
+    # A real schedule page always carries the "Page N of M" pager, even when it
+    # lists no trips; a challenge page carries neither the pager nor trip ids.
+    return bool(_PAGE_OF_RE.search(html)) or "trip_id" in html or "data-trip-id" in html
 
 
 def _fetch_fishingreservations_all_pages(src: ScheduleSource) -> list[str]:
     first = _fetch(src, params={"page": 1})
+    if not _looks_like_schedule(first):
+        # fishingreservations.net throttles back-to-back runs with a 200
+        # challenge page. That used to parse as "0 upcoming trips" and wipe the
+        # landing's whole schedule. Back off once, then fail loudly.
+        time.sleep(_BLOCKED_RETRY_SECONDS)
+        first = _fetch(src, params={"page": 1})
+        if not _looks_like_schedule(first):
+            raise ScheduleBlockedError(
+                f"{src.name}: schedule page returned no pager or trip ids (likely a bot challenge)"
+            )
     m = _PAGE_OF_RE.search(first)
     total = min(int(m.group(1)), _MAX_SCHEDULE_PAGES) if m else 1
     pages = [first]
@@ -404,7 +425,16 @@ def _fetch_fishingreservations_all_pages(src: ScheduleSource) -> list[str]:
         # them; a small delay between page requests keeps us under the radar.
         time.sleep(1.0)
         try:
-            pages.append(_fetch(src, params={"page": p}))
+            html = _fetch(src, params={"page": p})
+            if not _looks_like_schedule(html):
+                # Blocked partway through: a partial list would replace a full
+                # one, so treat the whole landing as failed and keep old rows.
+                raise ScheduleBlockedError(
+                    f"{src.name}: page {p} of {total} returned a non-schedule page (likely a bot challenge)"
+                )
+            pages.append(html)
+        except ScheduleBlockedError:
+            raise
         except requests.HTTPError as e:
             # 404 on a page past the last one is fine — treat as end-of-list.
             if e.response is not None and e.response.status_code == 404:

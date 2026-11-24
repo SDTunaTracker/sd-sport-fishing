@@ -581,10 +581,27 @@ SCHEDULED_FIELDS = (
 )
 
 
-def replace_scheduled_trips(conn: sqlite3.Connection, trips: Iterable[dict]) -> int:
+def replace_scheduled_trips(
+    conn: sqlite3.Connection,
+    trips: Iterable[dict],
+    landings: Iterable[str] | None = None,
+) -> int:
     """DELETE + INSERT semantics for the scheduled_trips table — schedules are
-    snapshots, not history."""
-    conn.execute("DELETE FROM scheduled_trips")
+    snapshots, not history.
+
+    With `landings`, only those landings' rows are replaced; every other
+    landing keeps its previous snapshot. Callers pass the landings that scraped
+    cleanly so one blocked or failed source no longer wipes its schedule.
+    """
+    if landings is None:
+        conn.execute("DELETE FROM scheduled_trips")
+    else:
+        names = list(landings)
+        if names:
+            conn.execute(
+                f"DELETE FROM scheduled_trips WHERE landing IN ({','.join('?' * len(names))})",
+                names,
+            )
     placeholders = ",".join("?" * len(SCHEDULED_FIELDS))
     sql = f"INSERT INTO scheduled_trips ({','.join(SCHEDULED_FIELDS)}) VALUES ({placeholders})"
     rows = [tuple(t.get(k) for k in SCHEDULED_FIELDS) for t in trips]

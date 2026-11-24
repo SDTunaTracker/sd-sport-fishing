@@ -73,15 +73,27 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
 
             # Schedules: forward-looking, snapshot semantics (delete + reinsert).
             summary_lines.append("Schedule scrape:")
+            # Only landings that scraped cleanly are replaced; a failed or
+            # blocked landing keeps its last good snapshot instead of dropping
+            # to zero (Seaforth vanished from Trip Planner this way).
             all_scheduled: list[dict] = []
+            refreshed: list[str] = []
             for src, sched, err in scrape_all_schedules():
                 if err:
-                    summary_lines.append(f"  {src.name:30s} ERROR  {err}")
+                    kept = conn.execute(
+                        "SELECT COUNT(*) FROM scheduled_trips WHERE landing = ?", (src.name,)
+                    ).fetchone()[0]
+                    summary_lines.append(f"  {src.name:30s} ERROR  {err}  (kept {kept} previous rows)")
                     continue
                 summary_lines.append(f"  {src.name:30s} upcoming={len(sched)}")
+                refreshed.append(src.name)
                 all_scheduled.extend(sched)
-            db.replace_scheduled_trips(conn, all_scheduled)
-            summary_lines.append(f"  scheduled_trips refreshed: {len(all_scheduled)} rows")
+            db.replace_scheduled_trips(conn, all_scheduled, landings=refreshed)
+            total_sched = conn.execute("SELECT COUNT(*) FROM scheduled_trips").fetchone()[0]
+            summary_lines.append(
+                f"  scheduled_trips refreshed: {len(all_scheduled)} rows from {len(refreshed)} landings"
+                f" ({total_sched} total)"
+            )
 
             # Remove text_fallback rows that now have a real fish_count_page row.
             try:
