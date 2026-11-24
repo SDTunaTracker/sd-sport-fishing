@@ -31,5 +31,7 @@ Files the redesign session currently has uncommitted (don't edit here until it l
 
 | 17 | App (iOS) | Charts, Today | DM Mono has no bold weight. Web and Android fake the bold, but iPhone shows the lighter 500 weight for bold numbers (pin counts, readings, wind kt). | Keep DM Mono 500 on iOS, or move the key figures to Inter 700. Charts UX agent agrees the web/Android result is right. | decide |
 
+| 3b | Web both | Today | User: "could use some help so it doesn't look so cheesy". | Today v2 built per approved mockup (docs/ux/mockups): date as title, one-sentence summary, quiet species strip (zero species hidden), ranked boat list with "vs usual", no season leaderboard. | branch |
+
 ## Done
 - (none yet)
