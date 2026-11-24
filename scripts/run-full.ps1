@@ -1,4 +1,4 @@
-# Full daily run: scrape fish counts + SST + weather + Reddit + backtest + export.
+# Full daily run: scrape fish counts + SST + weather + backtest + export.
 # Runs once per day (separate from the 15-minute hourly task).
 # Designed to be invoked by Task Scheduler; logs to logs/ with one file per run.
 #

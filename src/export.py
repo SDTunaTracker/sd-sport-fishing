@@ -401,42 +401,6 @@ def _consensus_accuracy_correlation(conn: sqlite3.Connection) -> list[dict]:
         return []
 
 
-def _reddit_payload(conn: sqlite3.Connection) -> dict:
-    """Recent Reddit posts sorted by date, top 20."""
-    from datetime import datetime
-    rows = conn.execute(
-        """SELECT id, title, url, subreddit, score, num_comments,
-                  created_utc, author, snippet, boat_mentioned
-           FROM reddit_reports
-           ORDER BY created_utc DESC LIMIT 20"""
-    ).fetchall()
-    reports = []
-    for r in rows:
-        try:
-            d = datetime.utcfromtimestamp(r['created_utc']).strftime('%Y-%m-%d')
-        except Exception:
-            d = None
-        reports.append({
-            'id':            r['id'],
-            'title':         r['title'],
-            'url':           r['url'],
-            'subreddit':     r['subreddit'],
-            'score':         r['score'],
-            'num_comments':  r['num_comments'],
-            'date':          d,
-            'author':        r['author'],
-            'snippet':       r['snippet'],
-            'boat_mentioned': r['boat_mentioned'],
-        })
-    last_row = conn.execute(
-        "SELECT MAX(fetched_date) AS d FROM reddit_reports"
-    ).fetchone()
-    return {
-        'reports':      reports,
-        'last_updated': last_row['d'] if last_row else None,
-    }
-
-
 def _reviews_payload(conn: sqlite3.Connection) -> dict:
     try:
         from .reviews import reviews_for_export
@@ -451,21 +415,6 @@ def _reviews_admin_stats(conn: sqlite3.Connection) -> dict:
         return reviews_admin_stats(conn)
     except Exception:
         return {'total': 0, 'pending': 0, 'approved': 0, 'rejected': 0, 'pendingReviews': []}
-
-
-def _community_payload(conn: sqlite3.Connection) -> dict:
-    """Build window.SD.COMMUNITY from analyzed Reddit insights."""
-    try:
-        from .reddit_insights import community_payload
-        return community_payload(conn)
-    except Exception:
-        return {
-            'biteReport': {'updated': None, 'species': []},
-            'hotspots': [], 'weeklySummary': None,
-            'recentPosts': [], 'boatMentions': {},
-            'stats': {'totalAnalyzed': 0, 'weekAnalyzed': 0,
-                      'topSpeciesWeek': [], 'topLocsWeek': []},
-        }
 
 
 def _boat_profiles_payload(conn: sqlite3.Connection) -> dict:
@@ -728,9 +677,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
         "FORECAST": forecast_payload,
-        "REDDIT": _reddit_payload(conn),
         "REVIEWS": _reviews_payload(conn),
-        "COMMUNITY": _community_payload(conn),
         "BOAT_PROFILES": _boat_profiles_payload(conn),
         "ADMIN": _admin_payload(conn),
         "SCRAPE_STATUS": _scrape_status_payload(conn),

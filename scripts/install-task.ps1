@@ -7,7 +7,7 @@
 #
 # Task 2 - "SD Sport Fishing - Full Daily Run"
 #   Runs once per day at 7:00am.
-#   Full pipeline: SST + upwelling + chlorophyll + Reddit + backtest.
+#   Full pipeline: SST + upwelling + chlorophyll + backtest.
 #   Time limit: 30 minutes.
 [CmdletBinding()]
 param(
@@ -93,7 +93,7 @@ $fullXml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>Full daily pipeline: SST, upwelling, chlorophyll, Reddit, backtest. Once per day at 7am.</Description>
+    <Description>Full daily pipeline: SST, upwelling, chlorophyll, backtest. Once per day at 7am.</Description>
   </RegistrationInfo>
   <Triggers>
     <CalendarTrigger>

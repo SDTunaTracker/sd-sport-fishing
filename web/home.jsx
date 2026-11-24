@@ -409,12 +409,6 @@
 
         <CountsSection navigate={navigate} settings={settings} regions={regions}/>
 
-        {/* Community + Reddit stay, but below the fold */}
-        <div className="th-wrap th-below">
-          <WeeklySummaryWidget/>
-          <HotspotsWidget/>
-          <CommunityReportsWidget/>
-        </div>
 
         <footer className="ch-foot">
           <div className="ch-foot-in">

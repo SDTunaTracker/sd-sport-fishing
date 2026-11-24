@@ -173,31 +173,10 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  Forecast scoring ERROR (non-fatal): {e}")
 
-        if not hourly:
-            # Reddit fishing reports — once per day, rate-limited inside fetch.
-            try:
-                from .reddit import fetch_reddit_reports
-                n_reddit = fetch_reddit_reports(conn)
-                summary_lines.append(f"  Reddit: {n_reddit} posts fetched/updated")
-            except Exception as e:
-                summary_lines.append(f"  Reddit fetch ERROR (non-fatal): {e}")
-
-            # Reddit intelligence — Claude API analysis of fetched posts.
-            try:
-                from .reddit_insights import process_unanalyzed_posts, generate_weekly_summary
-                n_insights = process_unanalyzed_posts(conn)
-                summary_lines.append(f"  Reddit insights: {n_insights} posts analyzed")
-                # Weekly summary on Mondays
-                if datetime.now().weekday() == 0:
-                    ws_start = (date.today() - timedelta(days=7)).isoformat()
-                    ws_end   = (date.today() - timedelta(days=1)).isoformat()
-                    ws = generate_weekly_summary(conn, ws_start, ws_end)
-                    if ws:
-                        summary_lines.append(
-                            f"  Weekly summary generated: {ws['report_count']} reports"
-                        )
-            except Exception as e:
-                summary_lines.append(f"  Reddit insights ERROR (non-fatal): {e}")
+        # Reddit fetch + Claude "community insights" steps removed 2026-11-24: the
+        # site no longer shows Reddit content. src/reddit.py, src/reddit_insights.py
+        # and the reddit_reports / reddit_insights / weekly_summaries tables are
+        # left in place (history kept), just no longer run or exported.
 
         # Weather + swell forecast (for 7-day strip in data.js)
         weather_fc: list = []

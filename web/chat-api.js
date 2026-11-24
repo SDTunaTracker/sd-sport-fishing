@@ -142,7 +142,6 @@ function buildSystemPrompt(pageContext) {
   const today    = window.SD?.TODAY;
   const forecast = window.SD?.FORECAST;
   const meta     = window.SD?.META;
-  const community = window.SD?.COMMUNITY;
   const regions  = pageContext?.regions || ['san_diego'];
 
   const upcomingTrips = getUpcomingTripsForChat(regions);
@@ -211,9 +210,6 @@ ${upcomingSection}
 
 BOAT PERFORMANCE THIS SEASON:
 ${boatSection}
-
-COMMUNITY INTEL:
-${community?.biteReport?.species?.slice(0, 3)?.map(s => `${s.name}: ${s.status}`)?.join(', ') || 'No recent reports'}
 
 ${pageContext?.boat ? `USER IS VIEWING: ${pageContext.boat} boat page` : ''}
 ${pageContext?.page ? `CURRENT PAGE: ${pageContext.page}` : ''}

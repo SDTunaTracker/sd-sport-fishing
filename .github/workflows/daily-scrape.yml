@@ -3,7 +3,7 @@ name: Daily Scrape
 on:
   schedule:
     # Every hour, all 24 hours.  At 14:00 UTC (7am Pacific) run the full daily
-    # pipeline (SST, weather, Reddit, backtest).  All other hours run the fast
+    # pipeline (SST, weather, backtest).  All other hours run the fast
     # hourly-only scrape so we don't hammer NOAA/weather APIs 24x per day.
     #
     # NOTE: we deliberately avoid minute :00 — it is the single most
@@ -71,7 +71,7 @@ jobs:
 
           # Self-healing selector. The original design hard-gated the full pipeline on
           # `date -u +%H == 14`, but GitHub cron drift routinely shifts the :37 crontab
-          # to 13:xx UTC — meaning the daily SST/weather/reddit/backtest run stops
+          # to 13:xx UTC — meaning the daily SST/weather/backtest run stops
           # firing for weeks at a time. Instead: run full whenever offshore SST is
           # stale, and always run full at the target 14 UTC slot regardless.
           HOUR=$(date -u +%H)
@@ -102,7 +102,7 @@ jobs:
       - name: Run scrape
         run: |
           if [ "${{ steps.mode.outputs.mode }}" = "full" ]; then
-            echo "=== Full daily run (SST, weather, Reddit, backtest) ==="
+            echo "=== Full daily run (SST, weather, backtest) ==="
             python -m src.main
           else
             echo "=== Hourly scrape (fast) ==="
