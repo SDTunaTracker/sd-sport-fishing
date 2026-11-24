@@ -38,13 +38,15 @@ function _exportCSV() {
 
 function GatePrompt({ title, sub, onSignIn, onSignUp }) {
   return (
-    <div className="acct-gate">
-      <div className="acct-gate-t">{title}</div>
-      {sub && <div className="acct-gate-s">{sub}</div>}
-      <div className="acct-gate-btns">
-        <button className="acct-btn coral" onClick={onSignUp}>Create free account</button>
-        <button className="acct-btn" onClick={onSignIn}>Sign in</button>
+    // The page's hero already carries the big "Create free account" CTA, so each
+    // locked section is a quiet one-line row rather than repeating both buttons.
+    <div className="acct-gate acct-gate-compact">
+      <i className="fa-solid fa-lock acct-gate-icon" aria-hidden="true"></i>
+      <div className="acct-gate-copy">
+        <div className="acct-gate-t">{title}</div>
+        {sub && <div className="acct-gate-s">{sub}</div>}
       </div>
+      <button className="acct-gate-link" onClick={onSignIn}>Sign in <i className="fa-solid fa-arrow-right"></i></button>
     </div>
   );
 }

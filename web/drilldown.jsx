@@ -107,10 +107,12 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
         </div>
       )}
 
-      <div className="pagehead">
+      <div className={`pagehead boat-pagehead${profile?.photoUrl ? ' has-hero' : ''}`}>
         <div>
           <div style={{display:'flex', alignItems:'center', gap: 12, flexWrap:'wrap'}}>
-            <h1 style={{margin:0}}>{boat}</h1>
+            {/* With a hero photo the name is already on the photo; the h1 stays
+                for screen readers and search but is not shown twice. */}
+            <h1 style={{margin:0}} className={profile?.photoUrl ? 'sr-only' : ''}>{boat}</h1>
             {!profile?.photoUrl && label === 'Consistent' && <span className="tag consistent">Consistent Outperformer</span>}
             {!profile?.photoUrl && label === 'Spike' && <span className="tag spike">One-Off Spike</span>}
             {!profile?.photoUrl && <ReviewBadge boat={boat}/>}
@@ -124,25 +126,22 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
             {profile?.yearBuilt && ` · Built ${profile.yearBuilt}`}
           </div>
         </div>
-        <div className="actions">
-          <button className="btn-save-boat" onClick={function() { window.toggleSavedBoat(boat); }}>
-            {isSaved ? '✓ Saved' : '⭐ Save'}
+        {/* One primary action (book), secondary outline actions, and a quiet
+            compare link. "Upcoming Trips" went to the same page as Book. */}
+        <div className="actions boat-actions">
+          <button className="btn ghost" onClick={() => navigate('analytics', { subtab: 'headtohead' })}>
+            <i className="fa-solid fa-code-compare"></i> Compare
           </button>
-          <button className="btn ghost" onClick={() => navigate('tripplanner')}
-                  style={{width:'100%', marginBottom:6}}>
-            <i className="fa-solid fa-arrow-up-right-from-square"></i> Upcoming Trips
+          <button className={`btn secondary${isSaved ? ' is-on' : ''}`} aria-pressed={isSaved}
+                  onClick={function() { window.toggleSavedBoat(boat); }}>
+            <i className={`${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark`}></i> {isSaved ? 'Saved' : 'Save'}
           </button>
-          <button className="btn ghost" onClick={() => navigate('analytics', { subtab: 'headtohead' })}
-                  style={{width:'100%', marginBottom:6}}>
-            Head-to-Head
-          </button>
-          <button className="btn primary"
-                  onClick={() => { setDetailTab('reviews'); setReviewOpenSignal(s => s + 1); }}
-                  style={{background:'#0F4C81', color:'#fff', border:'none', width:'100%', marginBottom:6}}>
-            Write a Review
+          <button className="btn secondary"
+                  onClick={() => { setDetailTab('reviews'); setReviewOpenSignal(s => s + 1); }}>
+            <i className="fa-regular fa-pen-to-square"></i> Write a review
           </button>
           <button className="btn primary" onClick={() => navigate('tripplanner')}>
-            <i className="fa-solid fa-arrow-up-right-from-square"></i> Book Trip
+            Book a trip <i className="fa-solid fa-arrow-right"></i>
           </button>
         </div>
       </div>
@@ -258,59 +257,59 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
       {detailTab === 'overview' && <Panel title="Trip History" meta={`All ${sortedTrips.length} past trips for ${boat} · newest first`} padding={false}>
         {(() => {
           // 4 trophy-species columns replace the single Trophy total.
-          // Grid: Date | Species Mix bar | Trip Length | Anglers | BF | YF | YT | D | T/A | Moon
-          // Species columns sized so "Yellowtail" (longest header) fits without truncation.
-          const gridCols = '100px 1fr 80px 56px 80px 80px 88px 70px 60px 84px';
+          // Grid: Date | Trip Length | Anglers | BF | YF | YT | D | T/A | Moon
+          // The old "Species Mix" bar repeated the four species columns and
+          // collapsed to nothing on phones, so it is gone. Rows keep a minimum
+          // width and the list scrolls sideways on narrow screens.
+          const gridCols = '108px minmax(84px,1fr) 64px 76px 80px 88px 70px 60px 72px';
+          const TABLE_MIN = 720;
           const headerStyle = {
             padding:'8px 12px', borderBottom:'1px solid var(--ss-border-2)',
             display:'grid', gridTemplateColumns: gridCols, gap:8,
             font:'700 10px/12px var(--ss-font-sans)', textTransform:'uppercase', letterSpacing:'.06em',
             color:'var(--ss-slate)', background:'var(--ss-clay)',
-            position:'sticky', top:0, zIndex:1,
+            position:'sticky', top:0, zIndex:1, minWidth: TABLE_MIN,
           };
           const numStyle = { textAlign:'right' };
-          const speciesHeaderStyle = (sp) => ({ ...numStyle, color: SPECIES_COLORS[sp] });
+          const speciesHeaderStyle = () => numStyle;
+          const spHead = (sp) => (
+            <span style={speciesHeaderStyle(sp)}>
+              <i style={{display:'inline-block', width:7, height:7, borderRadius:7, background: SPECIES_COLORS[sp], marginRight:5, verticalAlign:'middle'}}></i>{sp}
+            </span>
+          );
           return (
             <React.Fragment>
-              <div style={headerStyle}>
-                <span>Date</span>
-                <span>Species Mix</span>
-                <span>Trip Length</span>
-                <span style={numStyle}>Anglers</span>
-                <span style={speciesHeaderStyle('Bluefin')}>Bluefin</span>
-                <span style={speciesHeaderStyle('Yellowfin')}>Yellowfin</span>
-                <span style={speciesHeaderStyle('Yellowtail')}>Yellowtail</span>
-                <span style={speciesHeaderStyle('Dorado')}>Dorado</span>
-                <span style={numStyle}>T/A</span>
-                <span>Moon</span>
-              </div>
-              <div style={{maxHeight: 480, overflow: 'auto'}}>
+              <div style={{maxHeight: 480, overflow: 'auto'}} className="dd-trip-scroll">
+                <div style={headerStyle}>
+                  <span>Date</span>
+                  <span>Trip Length</span>
+                  <span style={numStyle}>Anglers</span>
+                  {spHead('Bluefin')}
+                  {spHead('Yellowfin')}
+                  {spHead('Yellowtail')}
+                  {spHead('Dorado')}
+                  <span style={numStyle}>T/A</span>
+                  <span>Moon</span>
+                </div>
                 {sortedTrips.length === 0 && (
                   <div className="muted-block" style={{padding:'12px'}}>No trips logged yet.</div>
                 )}
                 {sortedTrips.map(t => {
-                  const trTotal = t.totalTuna || 1;
                   const rowStyle = {
                     padding:'8px 12px', borderBottom:'1px solid var(--ss-border-2)',
                     display:'grid', gridTemplateColumns: gridCols, gap:8, alignItems:'center',
-                    font:'400 12px/16px var(--ss-font-sans)',
+                    font:'400 13px/16px var(--ss-font-sans)', minWidth: TABLE_MIN,
                   };
                   const cell = (v, sp) => (
                     <span className="num" style={{
                       textAlign:'right', fontVariantNumeric:'tabular-nums',
-                      fontWeight: v > 0 ? 500 : 400,
-                      color: v > 0 ? SPECIES_COLORS[sp] : 'var(--ss-gray-2)',
+                      fontWeight: v > 0 ? 600 : 400,
+                      color: v > 0 ? 'var(--ink)' : 'var(--ss-gray-2)',
                     }}>{v > 0 ? v : '—'}</span>
                   );
                   return (
                     <div key={t.id} style={rowStyle}>
                       <span>{fmt.date(t.date)}</span>
-                      <span style={{display:'flex', height: 8, borderRadius: 2, overflow:'hidden', background:'var(--ss-border-2)'}}>
-                        {window.SD.SPECIES.map(sp => {
-                          const w = (t[sp]||0)/trTotal*100;
-                          return w > 0 ? <span key={sp} title={`${sp}: ${t[sp]}`} style={{width: `${w}%`, background: SPECIES_COLORS[sp]}}></span> : null;
-                        })}
-                      </span>
                       <span style={{font:'400 11px/14px var(--ss-font-sans)', color:'var(--ss-slate)'}}>{t.tripLength}</span>
                       <span className="num" style={{textAlign:'right', fontVariantNumeric:'tabular-nums'}}>{t.anglers}</span>
                       {cell(t.Bluefin, 'Bluefin')}

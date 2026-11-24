@@ -49,6 +49,10 @@ def _parse_index(index_html: str) -> dict:
     # styles.css version
     styles_m = re.search(r'href="styles\.css\?v=([^"]+)"', index_html)
     styles_ver = styles_m.group(1) if styles_m else "1"
+    # design-system.css loads after styles.css and overrides it; the generated
+    # pages need it too or they render in the old palette until the app mounts.
+    ds_m = re.search(r'href="design-system\.css\?v=([^"]+)"', index_html)
+    ds_ver = ds_m.group(1) if ds_m else "1"
 
     # Clerk SDK script tag from head
     clerk_m = re.search(r'<script\s[^>]*clerk[^>]*(?:/>|>.*?</script>)', index_html, re.S | re.I)
@@ -65,6 +69,7 @@ def _parse_index(index_html: str) -> dict:
 
     return dict(
         styles_ver=styles_ver,
+        ds_ver=ds_ver,
         clerk_sdk=clerk_sdk,
         vessel_script=vessel_script,
         body_scripts=body_scripts,
@@ -207,6 +212,7 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld: dict | None,
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
 <link rel="stylesheet" href="styles.css?v={shared['styles_ver']}">
+<link rel="stylesheet" href="design-system.css?v={shared['ds_ver']}">
 {shared['vessel_script']}
 {shared['clerk_sdk']}
 </head>"""

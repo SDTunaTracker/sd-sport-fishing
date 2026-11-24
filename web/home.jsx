@@ -409,13 +409,7 @@
 
         <CountsSection navigate={navigate} settings={settings} regions={regions}/>
 
-
-        <footer className="ch-foot">
-          <div className="ch-foot-in">
-            <b>The Tuna Tracker</b>
-            <span>· San Diego sportfishing analytics · H&amp;M · Fisherman's · Seaforth · Point Loma</span>
-          </div>
-        </footer>
+        {/* The extra brand band that sat here repeated the site footer directly below it. */}
       </React.Fragment>
     );
   }
@@ -442,5 +436,7 @@
   }
 
   // Override the home view. (Remove HomeView from dashboard.jsx once verified.)
-  Object.assign(window, { HomeView: HomeViewV2, THBottomNav: BottomNav });
+  // THCountsSection is also Today's report, so both pages share one date
+  // control, one row design and the same "vs usual" comparison.
+  Object.assign(window, { HomeView: HomeViewV2, THBottomNav: BottomNav, THCountsSection: CountsSection });
 })();

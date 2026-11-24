@@ -418,7 +418,7 @@ function TodayCatch({ navigate, settings, regions }) {
     <React.Fragment>
       <div className="today-banner">
         <div className="today-left">
-          <h2 className="today-head"><i className="fa-solid fa-fish-fins"></i> Today's Report</h2>
+          <h2 className="today-head">{isToday ? 'Today' : 'Report for'}</h2>
           <div className="today-date">{fmtDate(selectedDate)}</div>
           <div className="today-meta-row">
             <LastUpdated isoStr={window.SD?.META?.lastScrape}/>
@@ -439,8 +439,9 @@ function TodayCatch({ navigate, settings, regions }) {
         )}
 
         {/* Date picker */}
-        <div style={{display:'flex', alignItems:'center'}}>
-          <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)}>
+        <div className="today-date-pick">
+          <label htmlFor="today-date-select">Date</label>
+          <select id="today-date-select" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}>
             {dates.map(dt => (
               <option key={dt} value={dt}>{fmtDate(dt)}{dt === TODAY_ISO ? ' (today)' : ''}</option>
             ))}
@@ -455,7 +456,7 @@ function TodayCatch({ navigate, settings, regions }) {
           {isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}
         </div>
       ) : returnedBoats.length > 0 ? (
-        <Panel title="Today's Report" meta="Sorted by trophy fish per angler per day">
+        <Panel title="Boats reporting" meta={`${returnedBoats.length} boat${returnedBoats.length === 1 ? '' : 's'} · sorted by tuna per angler per day`}>
           <TodaySummaryBanner summary={perfSummary}/>
           <div className="today-boat-row today-boat-hd">
             <span>Boat</span>
@@ -469,6 +470,7 @@ function TodayCatch({ navigate, settings, regions }) {
             <span className="anglers-col">Anglers</span>
             <MetricLabel name="TPA/Day" tooltip="Tuna Per Angler per Day — normalizes catches across trip lengths so a 1-day local trip and a 3-day offshore trip are on the same scale. Higher is better." />
             <span className="rating-col">Rating</span>
+            <span className="row-actions" aria-hidden="true"></span>
           </div>
           {returnedBoats.map((b, i) => {
             const hasFc = b.fullCatch && Object.keys(b.fullCatch).length > 0;
@@ -492,24 +494,30 @@ function TodayCatch({ navigate, settings, regions }) {
                     {i === 0 && <span className="top-boat-chip" aria-label="Top boat by TPA/Day">★ Top</span>}
                   </span>
                   <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
-                  {hasFc && (
-                    <span className="catch-expand-btn" title="Full catch"
-                          onClick={e => { e.stopPropagation(); toggleCatch(expandKey); }}>
-                      {isExpanded ? '▲' : '▼'}
-                    </span>
-                  )}
-                  {selectedDate < TODAY_ISO && (
-                    <span className="today-review-star" title="Review this trip"
-                          onClick={e => {
-                            e.stopPropagation();
-                            const params = new URLSearchParams();
-                            params.set('openReview', '1');
-                            params.set('date', selectedDate);
-                            params.set('length', b.tripLength || '');
-                            history.replaceState(null, '', `?${params.toString()}`);
-                            navigate('boat', { boat: b.boat });
-                          }}>⭐</span>
-                  )}
+                  {/* One trailing cell keeps the row on a single grid line; the
+                      expand and review controls used to wrap onto a second row. */}
+                  <span className="row-actions">
+                    {selectedDate < TODAY_ISO && (
+                      <button type="button" className="today-review-star" title="Review this trip"
+                              aria-label={`Review ${b.boat}`}
+                              onClick={e => {
+                                e.stopPropagation();
+                                const params = new URLSearchParams();
+                                params.set('openReview', '1');
+                                params.set('date', selectedDate);
+                                params.set('length', b.tripLength || '');
+                                history.replaceState(null, '', `?${params.toString()}`);
+                                navigate('boat', { boat: b.boat });
+                              }}><i className="fa-regular fa-star"></i></button>
+                    )}
+                    {hasFc && (
+                      <button type="button" className="catch-expand-btn" title="Full catch"
+                              aria-expanded={!!isExpanded} aria-label="Show full catch"
+                              onClick={e => { e.stopPropagation(); toggleCatch(expandKey); }}>
+                        <i className={`fa-solid fa-chevron-${isExpanded ? 'up' : 'down'}`}></i>
+                      </button>
+                    )}
+                  </span>
                 </div>
                 {isExpanded && hasFc && <CatchDetail fullCatch={b.fullCatch}/>}
               </div>
@@ -564,29 +572,6 @@ function ReturnVisitToast({ navigate }) {
 }
 
 function TodayView({ navigate, settings, regions }) {
-  const currentYear = String(window.TT_DATES.getPacificYear());
-
-  // preprocessTrips runs in a useEffect in app.jsx (post-mount), so
-  // SD_PROC_TRIPS is null on the first render. Without this guard,
-  // filterTrips falls back to raw SD.TRIPS (analytics.js:67), which lack
-  // the preprocessed totalTuna / calcDays fields — every leaderboard row
-  // then computes as 0.00. Same fix as HomeTop5 (dashboard.jsx) and
-  // AnalyticsView (analytics.jsx).
-  if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
-
-  const yearTrips = useMemo(
-    () => SDA.filterTrips({ ...DEFAULT_FILTERS, year: currentYear }, regions),
-    [settings, regions]
-  );
-
-  const { rows: leaderboard } = useMemo(
-    () => SDA.boatLeaderboard(yearTrips, 'all', 5),
-    [yearTrips]
-  );
-
-  const topBoats = leaderboard.slice(0, 10);
-  const maxTPAPerDay = topBoats[0]?.avgTPAPerDay || 1;
-
   const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
 
   return (
@@ -594,52 +579,23 @@ function TodayView({ navigate, settings, regions }) {
       <ReturnVisitToast navigate={navigate}/>
       <div className="pagehead">
         <div>
-          <h1>The Tuna Tracker <span className="region-subtitle-badge">{regionLabel}</span></h1>
-          <p style={{fontSize:13, color:'#94A3B8', maxWidth:500, marginBottom:16, lineHeight:1.6}}>
-            Real-time sportfishing analytics for {regionLabel} — daily fish counts, boat leaderboards, and trip stats.
-            Compare boats, spot trends, plan your next trip.
+          <h1>Today's Report <span className="region-subtitle-badge">{regionLabel}</span></h1>
+          <p className="pagehead-lede">
+            Every boat that reported in, ranked by tuna per angler per day.
           </p>
         </div>
       </div>
 
-      <ForecastWidget navigate={navigate}/>
-
-      <TodayCatch navigate={navigate} settings={settings} regions={regions}/>
-
-      <div style={{marginTop: 20}}>
-        <Panel title={`Top Boats — ${currentYear} Season`}
-               meta={<React.Fragment>Ranked by avg tuna/angler/day · min 5 trips &nbsp;<LastUpdated isoStr={window.SD?.META?.lastScrape} compact/></React.Fragment>}
-               actions={<Button variant="ghost" size="sm" onClick={() => navigate('analytics', { subtab: 'overview' })}>Full Analytics →</Button>}>
-          {topBoats.length === 0 ? (
-            <div className="muted-block">No data yet for {currentYear}.</div>
-          ) : (
-            <React.Fragment>
-              <div style={{position: 'relative'}}>
-                {topBoats.map((b, i) => {
-                  const wpct = (b.avgTPAPerDay / maxTPAPerDay) * 100;
-                  return (
-                    <div key={b.boat} className={`bar-row ${b.label === 'Spike' ? 'spike' : 'consistent'}`}
-                         style={{cursor:'pointer'}}
-                         onClick={() => navigate('boat', { boat: b.boat })}>
-                      <div className="label">
-                        <span className="rank" style={{color: i < 3 ? 'var(--ss-orange-500)' : null, fontWeight: i < 3 ? 700 : 500}}>{i + 1}</span>
-                        <div style={{minWidth: 0, flex: 1}}>
-                          <div className="name">{b.boat}</div>
-                          <div className="lan">{b.landing.replace(' Sportfishing','').replace(' Landing','')} · {b.tripCount} trips</div>
-                        </div>
-                      </div>
-                      <div className="track">
-                        <div className="fill" style={{width: `${wpct}%`}}></div>
-                      </div>
-                      <div className="num">{fmt.tpa(b.avgTPAPerDay)}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </React.Fragment>
-          )}
-        </Panel>
-      </div>
+      {/* Same counts block as the home page (conditions band, one ‹ date ›
+          control, landing chips, two-line rows on phones, "vs usual" %).
+          It replaces the old forecast card + TodayCatch table, which showed
+          the date twice and used a different, louder rating language.
+          The season "Top Boats" card was removed from this page; the season
+          leaderboard lives on Home (rail) and Analytics, and the counts block
+          ends with a "Full season analytics →" link. */}
+      {window.THCountsSection
+        ? <window.THCountsSection navigate={navigate} settings={settings} regions={regions}/>
+        : <TodayCatch navigate={navigate} settings={settings} regions={regions}/>}
     </React.Fragment>
   );
 }

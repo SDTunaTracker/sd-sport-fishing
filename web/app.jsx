@@ -163,15 +163,22 @@ function App() {
   }, [regions]);
 
   // Settings: trophy species + trip length methodology, persisted to localStorage.
-  const [settings, setSettingsState] = useS(() => loadSettings());
+  // Trips are preprocessed (totalTuna, calcDays) synchronously, before the first
+  // render. When this ran in a post-mount effect, any page without its own guard
+  // (Boats, boat detail, landing detail) memoized the raw trips on first render
+  // and showed 0.00 tuna/angler and an empty catch-rate chart.
+  const [settings, setSettingsState] = useS(() => {
+    const s = loadSettings();
+    SDA.preprocessTrips(s);
+    SDA.preprocessHalfDayTrips(s);
+    return s;
+  });
   function onSettingsChange(next) {
     saveSettings(next);
     SDA.preprocessTrips(next);
     SDA.preprocessHalfDayTrips(next);
     setSettingsState(next);
   }
-  // Initialize processed trips on first render.
-  useE(() => { SDA.preprocessTrips(settings); SDA.preprocessHalfDayTrips(settings); }, []);
 
   // When a user signs in, pull their saved region and species from Clerk metadata.
   useE(() => {
