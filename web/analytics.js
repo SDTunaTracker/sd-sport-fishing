@@ -653,31 +653,47 @@
     const MIN_COMPARABLE = 3;
     const THREE_DAYS_MS  = 3 * 86400000;
 
-    const source = (tripsOverride || window.SD_PROC_TRIPS || window.SD.TRIPS)
-      .filter(t => t.trophyPerAnglerPerDay != null);
+    // Same result as before, computed differently. The old version filtered the
+    // whole trip-length bucket for every trip (O(n²) — ~14s for 43k trips, which
+    // froze the Boats and Trip Planner pages after a nav click). Each bucket is
+    // now sorted by date and every trip only scans its own ±3-day window.
+    // Memoized on the input list: SD_PROC_TRIPS is replaced (new array) whenever
+    // settings change, so a stale result can't be served.
+    const input = tripsOverride || window.SD_PROC_TRIPS || window.SD.TRIPS;
+    if (_tprCache.input === input) return _tprCache.out;
+    const source = input.filter(t => t.trophyPerAnglerPerDay != null);
 
-    // Pre-compute date timestamps and group by tripLength
-    const withMs = source.map(t => ({ ...t, _ms: new Date(t.date + 'T00:00:00Z').getTime() }));
-    const byLen  = {};
-    withMs.forEach(t => (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t));
+    const byLen = {};
+    for (const t of source) {
+      const e = { boat: t.boat, v: t.trophyPerAnglerPerDay, ms: Date.parse(t.date + 'T00:00:00Z') };
+      (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(e);
+    }
 
     const stats = {};   // boat → { wins, qualifying }
 
-    withMs.forEach(trip => {
-      const bucket     = byLen[trip.tripLength] || [];
-      const comparable = bucket.filter(t => t.boat !== trip.boat && Math.abs(t._ms - trip._ms) <= THREE_DAYS_MS);
-      if (comparable.length < MIN_COMPARABLE) return;
+    for (const bucket of Object.values(byLen)) {
+      bucket.sort((a, b) => a.ms - b.ms);
+      let lo = 0, hi = 0;   // window [lo, hi) of trips within ±3 days of `trip`
+      for (let i = 0; i < bucket.length; i++) {
+        const trip = bucket[i];
+        while (bucket[lo].ms < trip.ms - THREE_DAYS_MS) lo++;
+        while (hi < bucket.length && bucket[hi].ms <= trip.ms + THREE_DAYS_MS) hi++;
 
-      const r = stats[trip.boat] || (stats[trip.boat] = { wins: 0, qualifying: 0 });
-      r.qualifying++;
+        const vals = [trip.v];
+        for (let j = lo; j < hi; j++) {
+          if (bucket[j].boat !== trip.boat) vals.push(bucket[j].v);
+        }
+        if (vals.length - 1 < MIN_COMPARABLE) continue;
 
-      // Top-25% threshold across this trip + all comparable trips
-      const allTPAs = [trip.trophyPerAnglerPerDay, ...comparable.map(t => t.trophyPerAnglerPerDay)]
-        .sort((a, b) => b - a);
-      const threshold = allTPAs[Math.floor(allTPAs.length * 0.25)] ?? 0;
+        const r = stats[trip.boat] || (stats[trip.boat] = { wins: 0, qualifying: 0 });
+        r.qualifying++;
 
-      if (trip.trophyPerAnglerPerDay >= threshold) r.wins++;
-    });
+        // Top-25% threshold across this trip + all comparable trips
+        vals.sort((a, b) => b - a);
+        const threshold = vals[Math.floor(vals.length * 0.25)] ?? 0;
+        if (trip.v >= threshold) r.wins++;
+      }
+    }
 
     const out = {};
     for (const [boat, s] of Object.entries(stats)) {
@@ -690,8 +706,11 @@
         tier:  rate >= 0.50 ? 'top' : rate >= 0.35 ? 'strong' : rate >= 0.25 ? 'solid' : 'developing',
       };
     }
+    _tprCache.input = input;
+    _tprCache.out = out;
     return out;
   }
+  const _tprCache = { input: null, out: null };
 
   // Returns the best upcoming trip to book based on current-year boat rankings.
   // Scans window.SD.SCHEDULE for trips departing within 14 days with open spots,

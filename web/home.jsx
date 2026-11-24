@@ -402,7 +402,7 @@
             <h1 className="ch-h1">Stop guessing.<br/>Start catching.</h1>
             <p className="ch-by">
               See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.{' '}
-              <b>Trusted by {tripDisplay} trips since 2015.</b>
+              <b>Trusted by data from {tripDisplay} trips.</b>
             </p>
           </div>
         </section>

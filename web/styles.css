@@ -6894,3 +6894,14 @@ button.btn-save-boat[data-saved="true"],
   .th-bottomnav button.on .th-bn-dot { background: var(--accent); }
   body.th-has-bottomnav { padding-bottom: 76px; }
 }
+
+/* ── Nav menu above the Charts map ───────────────────────────────────────────
+   The map's panes and controls use z-index 400–1200. Without a stacking
+   context they competed with the site's own chrome: on phones the "Map Layers"
+   bar sat above the slide-out nav menu (z 500) and swallowed taps on Today /
+   Boats / Analytics / Trip Planner, so leaving Charts took more than one tap.
+   `isolation` keeps every map layer inside the map. */
+.charts-immersive { isolation: isolate; }
+@media (max-width: 768px) {
+  .mobile-menu-overlay { z-index: 4000; }
+}
