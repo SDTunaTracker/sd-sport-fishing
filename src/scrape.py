@@ -1351,22 +1351,40 @@ def reconcile_daily_counts(db_path: str = "tracker.db", lookback_days: int = 7) 
     Covers `lookback_days` of history (default 7) so text_fallback records that
     were added before the structured page updated are cleaned up on subsequent runs.
 
-    Returns a summary dict: {matched, flagged}.
+    The duplicate rules were widened on 2026-11-24 (see below). Duplicates
+    created before that sit outside the 7-day window, so the first run after
+    the change scans the full history once and records that in
+    maintenance_runs; later runs use `lookback_days` as usual.
+
+    Returns a summary dict: {matched, flagged, full_history}.
     """
     import sqlite3 as _sqlite3
     from datetime import timedelta
-    since = (pacific_today() - timedelta(days=lookback_days)).isoformat()
     conn = _sqlite3.connect(db_path)
     conn.row_factory = _sqlite3.Row
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS maintenance_runs (
+            name   TEXT PRIMARY KEY,
+            ran_at TEXT NOT NULL,
+            detail TEXT
+        )
+    """)
+    full_history = conn.execute(
+        "SELECT 1 FROM maintenance_runs WHERE name = ?", (_RECONCILE_BACKFILL,)
+    ).fetchone() is None
+    since = ("0000-01-01" if full_history
+             else (pacific_today() - timedelta(days=lookback_days)).isoformat())
     matched = 0
     flagged = 0
     try:
         written = conn.execute("""
-            SELECT id, date, boat, trip_length, landing, source
+            SELECT id, date, boat, trip_length, landing, source,
+                   bluefin, yellowfin, yellowtail, dorado, trophy_count
             FROM trips
             WHERE date >= ?
               AND source IN (
                 'text_preliminary', 'text_final', 'text_fallback',
+                'text_calledin_final', 'text_calledin_preliminary',
                 'written_update_final', 'written_update_preliminary'
               )
         """, (since,)).fetchall()
@@ -1381,6 +1399,31 @@ def reconcile_daily_counts(db_path: str = "tracker.db", lookback_days: int = 7) 
                   AND source = 'fish_count_page'
             """, (w["date"], w["boat"], w["trip_length"], w["landing"])).fetchone()
 
+            # The exact match above misses most duplicates in practice: an
+            # evening report scraped the next morning lands one day later, and
+            # the prose-guessed trip length ("Full Day" default) rarely equals
+            # the structured bucket. Treat the text row as a duplicate when the
+            # same boat at the same landing has a structured row on the same
+            # day or the day before with an identical trophy-species count.
+            # Landing homepages also keep old trip blurbs up for days, which
+            # get re-harvested under a later date (one June 16 Vendetta 2 trip
+            # was stored on 6/21, 6/22 and 7/03). For catches of 20+ fish an
+            # identical four-species count is not a coincidence, so look back
+            # 14 days for those.
+            if not structured and (w["trophy_count"] or 0) > 0:
+                lookback = 14 if (w["trophy_count"] or 0) >= 20 else 1
+                prev_day = (date.fromisoformat(w["date"]) - timedelta(days=lookback)).isoformat()
+                structured = conn.execute("""
+                    SELECT id FROM trips
+                    WHERE date BETWEEN ? AND ?
+                      AND boat = ?
+                      AND landing = ?
+                      AND source = 'fish_count_page'
+                      AND bluefin = ? AND yellowfin = ?
+                      AND yellowtail = ? AND dorado = ?
+                """, (prev_day, w["date"], w["boat"], w["landing"],
+                      w["bluefin"], w["yellowfin"], w["yellowtail"], w["dorado"])).fetchone()
+
             if structured:
                 conn.execute("DELETE FROM trips WHERE id = ?", (w["id"],))
                 matched += 1
@@ -1390,12 +1433,25 @@ def reconcile_daily_counts(db_path: str = "tracker.db", lookback_days: int = 7) 
                 conn.execute("UPDATE trips SET needs_review = 1 WHERE id = ?", (w["id"],))
                 flagged += 1
 
+        if full_history:
+            # Same transaction as the deletes: if anything above failed, the
+            # marker isn't written and the next run retries the full scan.
+            conn.execute(
+                "INSERT INTO maintenance_runs (name, ran_at, detail) VALUES (?, ?, ?)",
+                (_RECONCILE_BACKFILL, datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                 json.dumps({"matched": matched, "flagged": flagged})),
+            )
         conn.commit()
     finally:
         conn.close()
 
-    log.info("reconcile_daily_counts: %d matched+removed, %d flagged for review", matched, flagged)
-    return {"matched": matched, "flagged": flagged}
+    log.info("reconcile_daily_counts: %d matched+removed, %d flagged for review%s",
+             matched, flagged, " (one-time full-history pass)" if full_history else "")
+    return {"matched": matched, "flagged": flagged, "full_history": full_history}
+
+
+# maintenance_runs key for the one-time full-history reconcile pass.
+_RECONCILE_BACKFILL = "reconcile_dedupe_v2_full_history"
 
 
 def backfill_full_catch(db_path: str = "tracker.db", batch: int = 500) -> int:

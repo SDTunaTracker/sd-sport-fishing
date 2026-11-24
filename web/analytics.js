@@ -34,6 +34,13 @@
     const out = [];
     for (var i = 0; i < window.SD.TRIPS.length; i++) {
       var t = window.SD.TRIPS[i];
+      // Rows without an angler count can't produce a per-angler rate. Every
+      // aggregation below divides by Math.max(1, anglers) or sums fish against
+      // summed anglers, so a 0-angler row with 388 fish would count as 388
+      // fish/angler (or add fish with no angler-days). CLAUDE.md already
+      // documents "missing angler counts" as filtered out; this enforces it at
+      // the single choke point. These rows are mostly text_fallback reports.
+      if (!(t.anglers > 0)) continue;
       if (sixpackSet) {
         var key = String(t.boat || '').trim().toLowerCase();
         if (sixpackSet.has(key)) continue;
@@ -64,7 +71,13 @@
     var regionLandings = (effectiveRegion && window.getLandingsForRegion)
       ? window.getLandingsForRegion(effectiveRegion)
       : null;
-    const t = window.SD_PROC_TRIPS || window.SD.TRIPS;
+    // preprocessTrips normally runs from a useEffect in app.jsx, which fires
+    // after the first render. Falling back to raw SD.TRIPS here meant views
+    // that render first (Boats, boat detail, Today) received trips without
+    // totalTuna / calcDays, and every rate computed as 0.00. Preprocess with
+    // default settings instead; app.jsx re-runs it with the user's settings.
+    if (!window.SD_PROC_TRIPS) preprocessTrips(null);
+    const t = window.SD_PROC_TRIPS;
     return t.filter((r) => {
       if (regionLandings && regionLandings.length > 0 && !regionLandings.includes(r.landing)) return false;
       if (!_passes(r.year, filters.year, { toNumber: true })) return false;

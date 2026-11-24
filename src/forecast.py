@@ -576,45 +576,46 @@ def score_segment(
     if is_offshore is None and is_upwelling is None:
         _, is_offshore, is_upwelling = _classify_wind(conditions.get("wind_direction"))
 
-    f_moon    = _moon_score(conditions.get("moon_illum"))
-    f_wind    = _wind_score(conditions.get("wind_speed"))
-    f_swe     = _swell_score(conditions.get("swell_height"))
-    f_wdir    = _wind_direction_score(is_offshore, is_upwelling, segment)
-    f_grad    = _sst_gradient_score(conditions.get("sst_gradient"), segment)
-    f_chl     = score_chlorophyll(
-                    conditions.get("chlorophyll_nearshore"),
-                    conditions.get("chlorophyll_offshore"),
-                    segment,
-                )
-    f_upw     = _upwelling_score(conditions.get("upwelling_index"), segment)
-    # Monthly baseline: pre-computed from daily_segment_stats and passed in conditions.
-    # Defaults to 5.0 (neutral) when not present — callers should pass monthly_score.
-    f_monthly = float(conditions.get("monthly_score", 5.0))
+    # A factor whose input is missing scores None and drops out of the blend
+    # (see _blend). Previously each scorer returned a "neutral" 5–8 for None,
+    # so a day with no wind/swell data still reported e.g. wind 7.0 and moved
+    # the overall score as if conditions had been measured.
+    chl_near = conditions.get("chlorophyll_nearshore")
+    chl_off  = conditions.get("chlorophyll_offshore")
+    chl_ok   = (chl_near is not None) if segment != "offshore" else (
+                chl_near is not None and chl_off is not None)
 
-    total_score = (
-        f_sst_adj * w["sst"]     +
-        f_moon    * w["moon"]    +
-        f_wind    * w["wind_speed"] +
-        f_swe     * w["swell"]   +
-        f_wdir    * w["wind_dir"] +
-        f_grad    * w["gradient"] +
-        f_chl     * w["chlorophyll"] +
-        f_upw     * w["upwelling"] +
-        f_monthly * w["monthly"]
-    )
-    overall = round(min(10.0, max(1.0, total_score)), 1)
+    f_moon    = _moon_score(conditions.get("moon_illum")) if conditions.get("moon_illum") is not None else None
+    f_wind    = _wind_score(conditions["wind_speed"]) if conditions.get("wind_speed") is not None else None
+    f_swe     = _swell_score(conditions["swell_height"]) if conditions.get("swell_height") is not None else None
+    f_wdir    = (None if is_offshore is None and is_upwelling is None
+                 else _wind_direction_score(is_offshore, is_upwelling, segment))
+    f_grad    = (_sst_gradient_score(conditions["sst_gradient"], segment)
+                 if conditions.get("sst_gradient") is not None else None)
+    f_chl     = score_chlorophyll(chl_near, chl_off, segment) if chl_ok else None
+    f_upw     = (_upwelling_score(conditions["upwelling_index"], segment)
+                 if conditions.get("upwelling_index") is not None else None)
+    # Monthly baseline: pre-computed from daily_segment_stats and passed in conditions.
+    f_monthly = (float(conditions["monthly_score"])
+                 if conditions.get("monthly_score") is not None else None)
+    if sst_val is None:
+        f_sst_adj = None
 
     fs = {
         "sst":          f_sst_adj,
-        "wind_speed":   round(f_wind, 1),
-        "wind_dir":     round(f_wdir, 1),
-        "sst_gradient": round(f_grad, 1),
-        "chlorophyll":  round(f_chl, 1),
-        "moon":         round(f_moon, 1),
-        "swell":        round(f_swe, 1),
-        "upwelling":    round(f_upw, 1),
-        "monthly":      round(f_monthly, 1),
+        "wind_speed":   _r1(f_wind),
+        "wind_dir":     _r1(f_wdir),
+        "sst_gradient": _r1(f_grad),
+        "chlorophyll":  _r1(f_chl),
+        "moon":         _r1(f_moon),
+        "swell":        _r1(f_swe),
+        "upwelling":    _r1(f_upw),
+        "monthly":      _r1(f_monthly),
     }
+    weight_key = {"sst_gradient": "gradient"}
+    total_score, eff_w = _blend(
+        {k: (v, w[weight_key.get(k, k)]) for k, v in fs.items()})
+    overall = round(min(10.0, max(1.0, total_score)), 1)
     consensus        = calculate_consensus(fs, segment)
     ci_width, ci_label = _confidence_band(days_out)
     adj_width        = round(ci_width * consensus["interval_multiplier"], 1)
@@ -629,11 +630,36 @@ def score_segment(
         "season":           season,
         "segment":          segment,
         "factor_scores":    fs,
-        "factor_weights":   w,
+        # Effective weights: renormalized over the factors that had data, 0
+        # for missing ones, so the UI shows what actually drove the score.
+        "factor_weights":   {weight_key.get(k, k): v for k, v in eff_w.items()},
+        "missing_factors":  [k for k, v in fs.items() if v is None],
     }
 
 
 # ─── Scoring helpers ──────────────────────────────────────────────────────────
+
+def _r1(v: float | None) -> float | None:
+    return None if v is None else round(v, 1)
+
+
+def _blend(parts: dict[str, tuple[float | None, float]]) -> tuple[float, dict[str, float]]:
+    """Weighted average over the factors that have a score.
+
+    `parts` maps factor -> (score or None, weight). Missing factors are dropped
+    and the remaining weights renormalized, rather than imputing a neutral
+    score that would pose as a measurement. Returns (score, effective_weights),
+    where effective weights sum to 1 over present factors and are 0 for
+    missing ones. With nothing present, returns the neutral 5.0.
+    """
+    present = {k: (s, w) for k, (s, w) in parts.items() if s is not None and w > 0}
+    total_w = sum(w for _, w in present.values())
+    if total_w <= 0:
+        return 5.0, {k: 0.0 for k in parts}
+    score = sum(s * w for s, w in present.values()) / total_w
+    eff = {k: (round(present[k][1] / total_w, 4) if k in present else 0.0) for k in parts}
+    return score, eff
+
 
 def _conditions_label(score: float) -> str:
     for threshold, label in _CONDITIONS_LABELS:
@@ -803,36 +829,40 @@ def score_day(
     yellowfin_breaks = _breaks_from_weights(bw, "yellowfin_breaks", _YELLOWFIN_BREAKS)
 
     # Factor scores
-    f_sst  = _score(sst_f, overall_breaks) if sst_f is not None else 5.0
-    f_moon = _moon_score(moon_illum)
-    f_wind = _wind_score(wind_speed)
-    f_swe  = _swell_score(swell_height_ft)
-    f_pres = _pressure_score(pressure_trend)
+    # Missing inputs score None and drop out of the blend (see _blend) instead
+    # of imputing 7 (wind), 8 (swell) or 7 (pressure) as if measured.
+    f_moon = _moon_score(moon_illum) if moon_illum is not None else None
+    f_wind = _wind_score(wind_speed) if wind_speed is not None else None
+    f_swe  = _swell_score(swell_height_ft) if swell_height_ft is not None else None
+    f_pres = _pressure_score(pressure_trend) if pressure_trend is not None else None
     f_hist = historical_val
 
     # Anomaly nudges SST factor; scale by calibrated anomaly_weight (baseline 1.0 → ±0.4 pts)
     anom_mod = _anomaly_boost(anomaly) * (bw.get("anomaly_weight", 1.0) * 0.4)
-    f_sst_adj = round(min(10.0, max(1.0, f_sst + anom_mod)), 1)
+    f_sst_adj = (round(min(10.0, max(1.0, _score(sst_f, overall_breaks) + anom_mod)), 1)
+                 if sst_f is not None else None)
 
-    # Weighted average
-    total_w = sum(w.values())
-    overall = (
-        f_sst_adj * w["sst"]  +
-        f_moon    * w["moon"] +
-        f_wind    * w["wind"] +
-        f_swe     * w["swell"] +
-        f_pres    * w["pressure"] +
-        f_hist    * w["historical"]
-    ) / total_w
+    fs = {
+        "sst":        f_sst_adj,
+        "moon":       _r1(f_moon),
+        "wind":       _r1(f_wind),
+        "swell":      _r1(f_swe),
+        "pressure":   _r1(f_pres),
+        "historical": _r1(f_hist),
+    }
+    overall, eff_w = _blend({k: (v, w.get(k, 0.0)) for k, v in fs.items()})
     overall = round(min(10.0, max(1.0, overall)), 1)
 
-    # Species scores: SST-dominant blend with shared moon/wind/swell
-    non_sst_w = w["moon"] + w["wind"] + w["swell"]
-    non_sst_avg = (f_moon * w["moon"] + f_wind * w["wind"] + f_swe * w["swell"]) / max(non_sst_w, 0.001)
+    # Species scores: SST-dominant blend with shared moon/wind/swell, over
+    # whichever of those three were measured.
+    non_sst_avg, _ = _blend({k: (fs[k], w.get(k, 0.0)) for k in ("moon", "wind", "swell")})
+    has_non_sst = any(fs[k] is not None for k in ("moon", "wind", "swell"))
 
     def _sp(breaks: list, sp_w: float = 0.65) -> float:
         base = _score(sst_f, breaks) if sst_f is not None else 5.0
         base_adj = round(min(10.0, max(1.0, base + anom_mod)), 1)
+        if not has_non_sst:
+            return base_adj
         return round(min(10.0, max(1.0, base_adj * sp_w + non_sst_avg * (1 - sp_w))), 1)
 
     # Yellowtail: prefer the validated per-month T1 seasonal lookup when the
@@ -850,15 +880,9 @@ def score_day(
         "yellowtail_score": yt_score,
         "dorado_score":     _sp(_DORADO_BREAKS),
         "conditions_label": _conditions_label(overall),
-        "factor_scores": {
-            "sst":      f_sst_adj,
-            "moon":     round(f_moon, 1),
-            "wind":     round(f_wind, 1),
-            "swell":    round(f_swe, 1),
-            "pressure": round(f_pres, 1),
-            "historical": round(f_hist, 1),
-        },
-        "factor_weights": {k: round(v / total_w, 3) for k, v in w.items()},
+        "factor_scores":   fs,
+        "factor_weights":  {k: round(v, 3) for k, v in eff_w.items()},
+        "missing_factors": [k for k, v in fs.items() if v is None],
     }
 
 
@@ -866,9 +890,13 @@ def score_day(
 
 def _summary(scores: dict, sst_by_loc: dict, anomaly: float | None, moon_name: str | None) -> str:
     parts = []
-    ref = sst_by_loc.get("60-Mile Bank") or next(iter(sst_by_loc.values()), None)
+    # Name the location whose reading is shown. The fallback used to print
+    # another location's SST under the "60-Mile Bank" label.
+    ref_loc = "60-Mile Bank" if sst_by_loc.get("60-Mile Bank") else next(
+        (k for k, v in sst_by_loc.items() if v), None)
+    ref = sst_by_loc.get(ref_loc) if ref_loc else None
     if ref:
-        parts.append(f"60-Mile Bank {ref:.0f}°F")
+        parts.append(f"{ref_loc} {ref:.0f}°F")
     if anomaly is not None:
         direction = "above" if anomaly >= 0 else "below"
         parts.append(f"{abs(anomaly):.1f}° {direction} avg")
