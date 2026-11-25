@@ -1,20 +1,20 @@
 # Brand Guide (draft)
 
-Status: Phase 3 proposal, 2026-11-24. Assumes direction **A · Tail & Tally** and the name **Tuna Tracker**. Nothing here is live until the owner approves. Mockups: `docs/brand/mockups/` (`brand-review.html` shows everything together).
+Status: approved by the owner, 2026-11-25. Name **Tunatracker** (one word, capital T only), logo direction **A · Tail & Tally**. Applied on the website branch `claude/brand-be404f` and the app branch `claude/app-ux-ea6d35` (neither pushed yet). Mockups: `docs/brand/mockups/` (`brand-review.html` shows everything together; some mockups still show the earlier two-word styling).
 
 ---
 
 ## 1. Name in use
 
-- **Product name:** Tuna Tracker. Drop "The" in the logo, app name, headings and copy.
-- **Domain stays** thetunatracker.com. Writing "The Tuna Tracker" in running text is fine during the transition.
-- **Descriptor** (when scope needs saying): *SoCal sportboat fish counts*. Regional pages: *Tuna Tracker · San Diego*, *Tuna Tracker · OC / LA*.
-- **App-store name:** `Tuna Tracker: Fish Counts` (25 chars); subtitle `SoCal sportboat counts & boats`.
+- **Product name:** Tunatracker. One word, capital T, lowercase t in "tracker". Never "TunaTracker", "Tuna Tracker" or "The Tuna Tracker" in the logo, app name, headings or copy.
+- **Domain stays** thetunatracker.com for now (tunatracker.com belongs to someone else; plan in NAMING.md §7). In code the name comes from `BRAND_NAME` in `web/ui.jsx`.
+- **Descriptor** (when scope needs saying): *SoCal sportboat fish counts*. Regional pages: *Tunatracker · San Diego*, *Tunatracker · OC / LA*.
+- **App-store name:** `Tunatracker: SoCal Fish Counts` (30 chars); subtitle `Every sportboat, ranked fairly` (30 chars). Display name under the icon: `Tunatracker`.
 - **Assistant:** Co-Captain (always capitalised, hyphenated).
 
 ## 2. Logo
 
-**Parts.** The *symbol* (three rising count bars running into a tuna's crescent tail) and the *wordmark* ("Tuna Tracker" in Fraunces 600, tracking −0.025em).
+**Parts.** The *symbol* (three rising count bars running into a tuna's crescent tail) and the *wordmark* ("Tunatracker" in Fraunces 600, tracking −0.025em).
 
 | Asset | File | Use |
 |---|---|---|
@@ -31,7 +31,7 @@ Status: Phase 3 proposal, 2026-11-24. Assumes direction **A · Tail & Tally** an
 
 **Clear space** = the height of the tallest count bar on every side. **Minimum size:** lockup 120 px wide; symbol 48 px; below that use the small symbol.
 
-**Don't:** stretch, rotate, recolor outside the palette, add shadows, outline, put it on busy photos without a pine scrim, re-add "The" to the mark, or bring back the badge for anything but merch.
+**Don't:** stretch, rotate, recolor outside the palette, add shadows, outline, put it on busy photos without a pine scrim, re-add "The" or split the name into two words in the mark, or bring back the badge for anything but merch.
 
 ## 3. Color tokens
 
@@ -106,10 +106,10 @@ Forecast copy is always labeled experimental and never says predict, guarantee o
 ## 9. Applying it (after approval)
 
 Website, on the brand branch, through the design system, coordinated with the website UX session:
-1. `web/index.html`: theme-color → #17332C; favicon.svg + ICO + apple-touch PNG; `og:image`/`twitter:image` → the static card; titles use "Tuna Tracker".
+1. `web/index.html`: theme-color → #17332C; favicon.svg + ICO + apple-touch PNG; `og:image`/`twitter:image` → the static card; titles use "Tunatracker" (titles and og text are on the SEO branch).
 2. `web/manifest.webmanifest`: name/short_name, theme #17332C, background #FBFAF6, separate 192/512 maskable icons.
 3. `web/ui.jsx` header: add the symbol before the wordmark, drop "The".
 4. `web/home.jsx`: replace "★ San Diego's #1 Sportfishing Analytics" kicker.
 5. Keep `web/logo.png` available for any existing references until they're switched.
 
-App (handed to the app UX session, not changed directly): icon and adaptive icon from `app-icon.svg`, splash on pine with the symbol, store name and subtitle above.
+App (done by the app UX session on `claude/app-ux-ea6d35`): 1024 icon, Android adaptive icon (pine background, orange glyph inside the 66% safe zone, white monochrome layer), splash symbol and a 48 px tail-only favicon, all rendered from the mockup geometry; display name "Tunatracker". The splash background is #162c24 rather than pine #17332C so it fades into the app's Today header; that's an accepted exception for the app only. Store name and subtitle above go out with the next release metadata.
