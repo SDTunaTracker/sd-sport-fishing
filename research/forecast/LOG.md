@@ -543,7 +543,7 @@ Paired 14-day-block bootstrap:
 - ⇒ Adding the daily conditions block HURTS at every lead (fleet r −0.04 at L1). This matches the E16 factor report card:
   the conditions carry no residual signal and only add variance. The conditions stay OUT of the tuna model; wind and seas are
   shown as a separate comfort/cancellation layer.
-- L7 M3/M4 were still running when this was logged (data/round7.log, data/round7_tuna.csv).
+- L7 complete: M3 AUC 0.730, M4 +conditions 0.716 (vs persistence 0.713); M4 fleet r 0.472 vs M2 0.492. Conditions hurt at all three leads.
 
 ## E19 — Fleet SD tuna outlook, leads 1–7 (outlook_tuna.py) + sample 7-day page
 - Cells = trip type (Full day / Overnight / 1.5 / 2 / 2.5–3 day) × fishing day. HGB Poisson + ridge blend; good-share model.
