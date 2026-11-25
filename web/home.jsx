@@ -387,6 +387,250 @@
     );
   }
 
+  // ── Today's report (v2) ───────────────────────────────────────────────────
+  // Calm, data-first page: the date is the title, one sentence summarises the
+  // day, species totals are a quiet strip (zero species hidden), then a ranked
+  // boat list. Reuses the counts helpers above so "vs usual", the fleet trend
+  // and the expandable row details match Home exactly. No season leaderboard
+  // here (it lives on Home and Analytics) — just a link to it.
+  const TD2_SPECIES = { Yellowfin: '#C9A227', Bluefin: '#2F5D8A', Yellowtail: '#4F8A5B', Dorado: '#2F7F86' };
+
+  function fmtLongDay(iso) {
+    const d = new Date(iso + 'T12:00:00Z');
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  }
+
+  function speciesPhrase(totals) {
+    const ranked = TH_TROPHY.filter(sp => totals[sp] > 0).sort((a, b) => totals[b] - totals[a]);
+    if (!ranked.length || !totals.total) return '';
+    const top = ranked[0].toLowerCase();
+    if (totals[ranked[0]] / totals.total >= 0.9) return `, almost all ${top}`;
+    if (ranked.length === 1) return `, all ${top}`;
+    return `, mostly ${top} and ${ranked[1].toLowerCase()}`;
+  }
+
+  function TodayReport({ navigate, settings, regions }) {
+    const TODAY = getTodayISO();
+    const [openBoat, setOpenBoat] = useState(null);
+    const [landing, setLanding] = useState('all');
+
+    const allTrips = useMemo(() => regionTrips(regions), [regions, settings]);
+    const dates = useMemo(() => [...new Set(allTrips.map(t => t.date))].sort().reverse(), [allTrips]);
+    const [selectedDate, setSelectedDate] = useState(
+      () => (dates.includes(TODAY) ? TODAY : (dates[0] || TODAY))
+    );
+    const dateIdx = dates.indexOf(selectedDate);
+    const isToday = selectedDate === TODAY;
+
+    const ratingData = useMemo(() => SDA.fishingRating(selectedDate, regions), [selectedDate, regions, settings]);
+    const returned = isToday ? ratingData.boats.filter(b => !b.isPreliminary) : ratingData.boats;
+
+    const landings = useMemo(() => {
+      const eff = window.getEffectiveRegion ? window.getEffectiveRegion(regions) : 'san_diego';
+      return (window.getLandingsForRegion && window.getLandingsForRegion(eff)) || [];
+    }, [regions]);
+
+    // Ranked by fish per angler (trophy fish), highest first.
+    const visible = useMemo(() => returned
+      .filter(b => landing === 'all' || b.landing === landing)
+      .map(b => {
+        const total = TH_TROPHY.reduce((s, sp) => s + (b[sp] || 0), 0);
+        return { b, total, fa: b.anglers > 0 ? total / b.anglers : 0 };
+      })
+      .sort((x, y) => y.fa - x.fa), [returned, landing]);
+
+    const totals = useMemo(() => {
+      const out = { total: 0, Bluefin: 0, Yellowfin: 0, Yellowtail: 0, Dorado: 0 };
+      visible.forEach(({ b }) => TH_TROPHY.forEach(sp => { out[sp] += b[sp] || 0; out.total += b[sp] || 0; }));
+      return out;
+    }, [visible]);
+
+    const trend = useMemo(() => fleetTrend(allTrips, selectedDate), [allTrips, selectedDate]);
+    const rankMap = useMemo(() => {
+      const year = String(window.TT_DATES.getPacificYear());
+      const { rows } = SDA.boatLeaderboard(allTrips.filter(t => String(t.year) === year), 'all', 5);
+      const m = {};
+      rows.forEach((r, i) => { m[r.boat] = { rank: i + 1, total: rows.length, trips: r.tripCount }; });
+      return m;
+    }, [allTrips]);
+
+    const stillFishing = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [];
+    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook()) || null, [settings]);
+
+    const fc = window.SD && window.SD.FORECAST && window.SD.FORECAST.today;
+    // The forecast label can carry an emoji prefix (e.g. "⬆️ Excellent"); keep the words only.
+    const condLabel = fc && fc.conditions_label
+      ? (String(fc.conditions_label).replace(/[^A-Za-z\s-]/g, '').trim().toLowerCase() || null) : null;
+    const condSummary = fc && fc.summary ? fc.summary : null;
+
+    const lastScrape = window.SD && window.SD.META && window.SD.META.lastScrape;
+    const updated = lastScrape ? new Date(lastScrape).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles',
+    }) : null;
+
+    const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
+    const boatsN = visible.length;
+    const step = (i) => { setSelectedDate(dates[i]); setOpenBoat(null); };
+
+    return (
+      <div className="td2">
+        <p className="td2-eyebrow">{isToday ? "Today's report" : 'Daily report'} · {regionLabel}</p>
+        <div className="td2-head">
+          <h1 className="td2-title">{fmtLongDay(selectedDate)}</h1>
+          <div className="td2-step">
+            <button aria-label="Earlier day" disabled={dateIdx >= dates.length - 1} onClick={() => step(dateIdx + 1)}>‹</button>
+            <button aria-label="Later day" disabled={dateIdx <= 0} onClick={() => step(dateIdx - 1)}>›</button>
+          </div>
+          {updated && <span className="td2-asof">Updated {updated}</span>}
+        </div>
+
+        <p className="td2-lede">
+          {boatsN === 0
+            ? (isToday ? 'No boats have reported yet today. Counts usually arrive in the afternoon.' : 'No boats reported on this day.')
+            : (<React.Fragment>
+                <strong>{boatsN} boat{boatsN === 1 ? '' : 's'} brought in {fmt.n(totals.total)} fish</strong>{speciesPhrase(totals)}.
+                {landing === 'all' && trend.today != null && (
+                  <React.Fragment>
+                    {' '}The fleet averaged {fmt.tpa(trend.today)} fish per angler
+                    {trend.pct != null && (
+                      <React.Fragment>, <span className={trend.pct >= 0 ? 'td2-up' : 'td2-down'}>{Math.abs(trend.pct)}% {trend.pct >= 0 ? 'above' : 'below'}</span> the last 30 days</React.Fragment>
+                    )}.
+                  </React.Fragment>
+                )}
+              </React.Fragment>)}
+        </p>
+
+        <div className="td2-strip">
+          <div className="td2-stat"><b>{fmt.n(totals.total)}</b><span>total fish</span></div>
+          {TH_TROPHY.filter(sp => totals[sp] > 0).sort((a, b) => totals[b] - totals[a]).map(sp => (
+            <div key={sp} className="td2-stat">
+              <b>{fmt.n(totals[sp])}</b>
+              <span><i className="td2-dot" style={{ background: TD2_SPECIES[sp] }}/>{sp.toLowerCase()}</span>
+            </div>
+          ))}
+          {(condLabel || condSummary) && (
+            <div className="td2-cond">
+              {condLabel && <div>Conditions <b>{condLabel}</b></div>}
+              {condSummary && <div>{condSummary}</div>}
+            </div>
+          )}
+        </div>
+
+        <div className="td2-grid">
+          <div className="td2-main">
+            <div className="td2-bar">
+              <h2>Boats</h2>
+              <div className="td2-chips" role="group" aria-label="Filter by landing">
+                <button className={landing === 'all' ? 'on' : ''} aria-pressed={landing === 'all'}
+                        onClick={() => { setLanding('all'); setOpenBoat(null); }}>All</button>
+                {landings.map(l => (
+                  <button key={l} className={landing === l ? 'on' : ''} aria-pressed={landing === l}
+                          onClick={() => { setLanding(l); setOpenBoat(null); }}>{thShort(l)}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="td2-list">
+              <div className="td2-row td2-thead" aria-hidden="true">
+                <span/><span>Boat</span><span>Trip</span><span>Catch</span>
+                <span className="r">Anglers</span><span className="r">Fish/angler</span><span className="r">Vs usual</span><span/>
+              </div>
+              {boatsN === 0 && <div className="td2-empty">{isToday ? 'No reports yet today.' : 'No reports for this date.'}</div>}
+              {visible.map(({ b, fa }, i) => {
+                const pct = boatDelta(b, allTrips, selectedDate);
+                const key = `${b.boat}|${b.landing}`;
+                const open = openBoat === key;
+                const hist = open ? boatHistory(b, allTrips, selectedDate) : null;
+                const rank = rankMap[b.boat];
+                const dep = open ? nextDeparture(b.boat) : null;
+                return (
+                  <div key={key} className={`td2-item${open ? ' open' : ''}`}>
+                    <button className="td2-row" aria-expanded={open} onClick={() => setOpenBoat(open ? null : key)}>
+                      <span className="td2-rank">{i + 1}</span>
+                      <span className="td2-boat"><b>{b.boat}</b><i>{thShort(b.landing)}</i></span>
+                      <span className="td2-trip">{b.tripLength}</span>
+                      <span className="td2-catch">{thCatchLine(b).toLowerCase()}</span>
+                      <span className="td2-sub">{b.tripLength} · {thCatchLine(b).toLowerCase().replace(/ · /g, ', ')}</span>
+                      <span className="r td2-num td2-ang">{fmt.n(b.anglers)}</span>
+                      <span className="r td2-num td2-fa">{fa.toFixed(2)}</span>
+                      <span className="r td2-vs">
+                        {pct == null ? <span className="td2-muted">—</span>
+                          : <span className={pct >= 0 ? 'td2-up' : 'td2-down'}>{pct >= 0 ? '▲' : '▼'} {Math.abs(pct)}%</span>}
+                      </span>
+                      <span className="td2-chev" aria-hidden="true">{open ? '⌃' : '›'}</span>
+                    </button>
+                    {open && (
+                      <div className="th-expand">
+                        <div className="th-expand-hist">
+                          <div className="th-expand-histhead">
+                            <span className="th-lbl">Last 10 same-length trips · fish per angler</span>
+                            {hist.avg != null && <span className="th-usually">usually <b>{hist.avg.toFixed(2)}</b></span>}
+                          </div>
+                          <TrendBars bars={hist.bars} height={40}/>
+                          <div className="th-expand-axis"><span>{fmtDayLabel(hist.startDate)}</span><span>{isToday ? 'TODAY' : fmtDayLabel(selectedDate)}</span></div>
+                          <div className="th-expand-stats">
+                            {rank && <span>Season rank <b>#{rank.rank} of {rank.total}</b></span>}
+                            {rank && <span>Trips <b>{rank.trips}</b></span>}
+                          </div>
+                        </div>
+                        <div className="th-expand-dep">
+                          <span className="th-lbl">Next departure</span>
+                          {dep ? (
+                            <React.Fragment>
+                              <div className="th-dep-line">{dep.tripLength} · {fmtDep(dep.departureAt)}{dep.price ? ` · $${dep.price}` : ''}</div>
+                              {dep.spots != null && <div className="th-dep-spots">{dep.spots} spots left</div>}
+                            </React.Fragment>
+                          ) : (
+                            <div className="th-dep-line muted">No upcoming trips listed</div>
+                          )}
+                          <div className="th-expand-cta">
+                            <button className="th-btn primary" onClick={() => navigate('tripplanner')}>Book →</button>
+                            <button className="th-btn" onClick={() => navigate('boat', { boat: b.boat })}>Boat page</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="td2-note">Ranked by fish per angler. “Vs usual” compares each trip with the same boat’s same-length trips over the last 30 days. Tap a boat for its recent history and next departure.</p>
+          </div>
+
+          <aside className="td2-rail">
+            {stillFishing.length > 0 && (
+              <div className="td2-card">
+                <p className="td2-eyebrow">Still fishing</p>
+                {stillFishing.map((t, j) => {
+                  const parts = Object.entries(t.catch || {}).filter(([, n]) => n > 0).map(([sp, n]) => `${n} ${sp.toLowerCase()}`);
+                  return (
+                    <div key={j} className="td2-sf">
+                      <b>{t.boat}</b> <i>{thShort(t.landing)} · {t.tripLength}</i>
+                      <div>{parts.join(', ') || 'No count yet'}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {topTrip && (
+              <div className="td2-book">
+                <p className="td2-eyebrow">Book next</p>
+                <div className="td2-book-boat">{topTrip.boat} · {topTrip.tripLength}</div>
+                <div className="td2-book-meta">
+                  {topTrip.departureAt ? `Departs ${fmtDep(topTrip.departureAt)}` : ''}
+                  {topTrip.price ? ` · $${topTrip.price}` : ''}
+                  {topTrip.openSpots != null ? ` · ${topTrip.openSpots} spots left` : ''}
+                </div>
+                <button className="td2-book-btn" onClick={() => navigate('tripplanner')}>Book this trip →</button>
+              </div>
+            )}
+            <button className="td2-link" onClick={() => navigate('analytics', { subtab: 'overview' })}>See the season leaderboard →</button>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
   // ── Redesigned home ───────────────────────────────────────────────────────
   function HomeViewV2({ navigate, settings, regions }) {
     if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
@@ -438,5 +682,5 @@
   // Override the home view. (Remove HomeView from dashboard.jsx once verified.)
   // THCountsSection is also Today's report, so both pages share one date
   // control, one row design and the same "vs usual" comparison.
-  Object.assign(window, { HomeView: HomeViewV2, THBottomNav: BottomNav, THCountsSection: CountsSection });
+  Object.assign(window, { HomeView: HomeViewV2, THBottomNav: BottomNav, THCountsSection: CountsSection, THTodayReport: TodayReport });
 })();
