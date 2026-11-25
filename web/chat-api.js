@@ -183,7 +183,11 @@ function getTripCardData(tripId) {
   const t = ccTripIndex()[String(tripId)];
   if (!t) return null;
   const dep = ccPacific(t.departureAt);
-  const ret = t.landing === 'H&M Landing' ? null : ccPacific(t.returnAt); // H&M returnAt is computed, not real
+  // H&M returnAt used to be UTC and computed as dep + bucket days (wrong). Since
+  // fe45d6a5 every landing sends a Pacific offset and H&M's is real, so only
+  // distrust the old UTC form.
+  const hmLegacy = t.landing === 'H&M Landing' && /\+00:00$|Z$/.test(t.returnAt || '');
+  const ret = hmLegacy ? null : ccPacific(t.returnAt);
   const b = ccBookingInfo(t);
   let wr = null;
   try { wr = (SDA.boatWinRates() || {})[`${t.boat}|${t.tripLength}`] || null; } catch (e) {}
