@@ -45,7 +45,7 @@ jobs:
   paddies:
     runs-on: ubuntu-latest
     # A newly added feed walks ~150 days of listing pages once (~15 min).
-    timeout-minutes: 60
+    timeout-minutes: 75
 
     steps:
       - name: Check out repository
@@ -105,10 +105,21 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python -m scraper.paddies.boat_reports --limit 80
 
+      - name: Read the landings' own reports with Claude
+        id: landing_reports
+        # sandiegofishreports.com + socalfishreports.com report feeds (2 listing
+        # pages, then one fetch per new report, 2.5 s apart): size grade, bait,
+        # tackle, skipper notes, photo links, open spots -> landing_notes.
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m scraper.paddies.landing_reports --limit 80
+
       - name: Write /api/v1/*.json
         if: always() && steps.ingest.outcome != 'cancelled'
         run: |
           python -m scraper.paddies.write_json
+          python -m scraper.paddies.landing_reports --export-only
           python -m scraper.paddies.boat_reports --export-only
           # Spot layer for the Charts map: snapped / ~2 nm points, never exact numbers.
           python -m scraper.paddies.spots
@@ -126,7 +137,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/paddies.db data/paddies_ingest_state.json \
-                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json                   web/api/v1/boat_forum_reports.json web/api/v1/whats_working.json                   web/api/v1/forum_spots.geojson
+                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json                   web/api/v1/boat_forum_reports.json web/api/v1/whats_working.json                   web/api/v1/forum_spots.geojson web/api/v1/landing_notes.json
           if git diff --staged --quiet; then
             echo "No paddies changes to commit."
             exit 0
