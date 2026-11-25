@@ -1,46 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-prerendered="1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0ea5e9">
+<meta name="theme-color" content="#17332C">
 <base href="/">
-<title>Fisherman's Landing — Fleet, Fish Counts & Boat Stats | Tuna Tracker</title>
-<meta name="description" content="All 35 boats at Fisherman's Landing with win rates, catch history, and performance data. San Diego sportfishing from Fisherman's Landing.">
-<link rel="canonical" href="https://thetunatracker.com/sd/landing/fishermans-landing">
+<title>Fisherman's Landing Fish Counts — Fleet &amp; Boat Stats | Tunatracker</title>
+<meta name="description" content="Fisherman's Landing fish counts for the last 7 days, plus all 30 boats ranked by catch history. San Diego sportfishing data, updated daily.">
+<link rel="canonical" href="https://thetunatracker.com/sd/landing/fishermans-landing/">
 <meta property="og:type"        content="website">
-<meta property="og:site_name"   content="The Tuna Tracker">
-<meta property="og:title"       content="Fisherman's Landing — Fleet, Fish Counts &amp; Boat Stats | Tuna Tracker">
-<meta property="og:description" content="All 35 boats at Fisherman's Landing with win rates, catch history, and performance data. San Diego sportfishing from Fisherman's Landing.">
-<meta property="og:image"       content="https://thetunatracker.com/logo.png">
-<meta property="og:url"         content="https://thetunatracker.com/sd/landing/fishermans-landing">
+<meta property="og:site_name"   content="Tunatracker">
+<meta property="og:title"       content="Fisherman's Landing Fish Counts — Fleet &amp; Boat Stats | Tunatracker">
+<meta property="og:description" content="Fisherman's Landing fish counts for the last 7 days, plus all 30 boats ranked by catch history. San Diego sportfishing data, updated daily.">
+<meta property="og:image"       content="https://thetunatracker.com/og-image.png">
+<meta property="og:url"         content="https://thetunatracker.com/sd/landing/fishermans-landing/">
 <meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:title"       content="Fisherman's Landing — Fleet, Fish Counts &amp; Boat Stats | Tuna Tracker">
-<meta name="twitter:description" content="All 35 boats at Fisherman's Landing with win rates, catch history, and performance data. San Diego sportfishing from Fisherman's Landing.">
-<meta name="twitter:image"       content="https://thetunatracker.com/logo.png">
+<meta name="twitter:title"       content="Fisherman's Landing Fish Counts — Fleet &amp; Boat Stats | Tunatracker">
+<meta name="twitter:description" content="Fisherman's Landing fish counts for the last 7 days, plus all 30 boats ranked by catch history. San Diego sportfishing data, updated daily.">
+<meta name="twitter:image"       content="https://thetunatracker.com/og-image.png">
 <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Fisherman's Landing",
-  "description": "All 35 boats at Fisherman's Landing with win rates, catch history, and performance data. San Diego sportfishing from Fisherman's Landing.",
-  "url": "https://thetunatracker.com/sd/landing/fishermans-landing",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "San Diego",
-    "addressRegion": "CA",
-    "addressCountry": "US"
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tunatracker",
+      "item": "https://thetunatracker.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Boats",
+      "item": "https://thetunatracker.com/sd/boats"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Fisherman's Landing"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Fisherman's Landing Fish Counts \u2014 Fleet & Boat Stats | Tunatracker",
+  "description": "Fisherman's Landing fish counts for the last 7 days, plus all 30 boats ranked by catch history. San Diego sportfishing data, updated daily.",
+  "url": "https://thetunatracker.com/sd/landing/fishermans-landing/",
+  "about": {
+    "@type": "Place",
+    "name": "Fisherman's Landing",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "San Diego",
+      "addressRegion": "CA",
+      "addressCountry": "US"
+    }
   }
 }
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20261124-9">
-<link rel="stylesheet" href="design-system.css?v=20261124-7">
+<link rel="stylesheet" href="styles.css?v=20261125-11">
+<link rel="stylesheet" href="design-system.css?v=20261125-10">
 <script>window.VESSEL_WORKER_URL = '';</script>
 <script
   async
@@ -51,12 +80,34 @@
 </script>
 </head>
 <body>
-<div id="seo-static" aria-hidden="true">
+<div id="seo-static">
 <article>
-<nav aria-label="Breadcrumb"><ol><li><a href="/">Tuna Tracker</a></li><li><a href="/sd/boats">Boats</a></li><li>Fisherman's Landing</li></ol></nav>
+<nav aria-label="Breadcrumb"><ol><li><a href="/">Tunatracker</a></li><li><a href="/sd/boats">Boats</a></li><li>Fisherman's Landing</li></ol></nav>
 <h1>Fisherman's Landing</h1>
-<p>All 35 sportfishing boats at Fisherman's Landing in San Diego, CA,
-   ranked by trophy fish win rate.</p>
+<p>Fish counts and boat stats for Fisherman's Landing in San Diego, CA.
+   Boats with at least 5 trips are ranked by how often they land
+   trophy fish; boats with fewer trips are listed after them.</p>
+<section>
+<h2>Fisherman's Landing fish counts: last 7 days</h2>
+<table>
+  <caption>11 trips reported, trophy species landed</caption>
+  <thead><tr><th>Date</th><th>Boat</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
+  <tbody>
+<tr><td>Nov 25, 2026</td><td><a href="/sd/boat/Pacific%20Queen/">Pacific Queen</a></td><td>3 Day</td><td>21</td><td>129 yellowfin, 85 yellowtail</td></tr>
+<tr><td>Nov 24, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Full Day</td><td>45</td><td>231 yellowfin</td></tr>
+<tr><td>Nov 24, 2026</td><td><a href="/sd/boat/Constitution/">Constitution</a></td><td>5 Day</td><td>16</td><td>76 yellowfin, 38 yellowtail, 2 dorado</td></tr>
+<tr><td>Nov 23, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Full Day</td><td>44</td><td>65 yellowfin</td></tr>
+<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Half Day AM</td><td>48</td><td>64 yellowfin</td></tr>
+<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Half Day PM</td><td>54</td><td>no trophy fish</td></tr>
+<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Half Day PM</td><td>34</td><td>67 yellowfin</td></tr>
+<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Half Day AM</td><td>49</td><td>38 yellowfin, 1 yellowtail</td></tr>
+<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Tomahawk/">Tomahawk</a></td><td>Full Day</td><td>35</td><td>30 yellowfin</td></tr>
+<tr><td>Nov 20, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Half Day AM</td><td>14</td><td>36 yellowfin, 1 yellowtail</td></tr>
+<tr><td>Nov 19, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>Full Day</td><td>12</td><td>15 yellowfin, 5 yellowtail</td></tr>
+  </tbody>
+</table>
+</section>
+<h2>Fleet performance</h2>
 <table>
   <caption>Fleet Performance at Fisherman's Landing</caption>
   <thead>
@@ -68,41 +119,36 @@
     </tr>
   </thead>
   <tbody>
-<tr><td><a href="/sd/boat/Maximus">Maximus</a></td><td>100.0%</td><td>4.33</td><td>43</td></tr>
-<tr><td><a href="/sd/boat/Cobalt">Cobalt</a></td><td>100.0%</td><td>3.72</td><td>7</td></tr>
-<tr><td><a href="/sd/boat/Seasons%2023">Seasons 23</a></td><td>100.0%</td><td>3.5</td><td>2</td></tr>
-<tr><td><a href="/sd/boat/Hitman">Hitman</a></td><td>100.0%</td><td>2.5</td><td>1</td></tr>
-<tr><td><a href="/sd/boat/Prowler">Prowler</a></td><td>100.0%</td><td>2.2</td><td>257</td></tr>
-<tr><td><a href="/sd/boat/Royal%20Polaris">Royal Polaris</a></td><td>100.0%</td><td>2.15</td><td>7</td></tr>
-<tr><td><a href="/sd/boat/Pacific%20Quest">Pacific Quest</a></td><td>98.4%</td><td>2.67</td><td>62</td></tr>
-<tr><td><a href="/sd/boat/Western%20Star">Western Star</a></td><td>94.6%</td><td>3.31</td><td>37</td></tr>
-<tr><td><a href="/sd/boat/Condor">Condor</a></td><td>93.5%</td><td>2.42</td><td>657</td></tr>
-<tr><td><a href="/sd/boat/Commander">Commander</a></td><td>93.3%</td><td>2.03</td><td>45</td></tr>
-<tr><td><a href="/sd/boat/Intrigue">Intrigue</a></td><td>91.4%</td><td>3.47</td><td>58</td></tr>
-<tr><td><a href="/sd/boat/Liberty">Liberty</a></td><td>91.4%</td><td>1.66</td><td>1482</td></tr>
-<tr><td><a href="/sd/boat/Lucky%20B%20Sportfishing">Lucky B Sportfishing</a></td><td>91.0%</td><td>4.21</td><td>78</td></tr>
-<tr><td><a href="/sd/boat/Mustang">Mustang</a></td><td>90.7%</td><td>2.51</td><td>431</td></tr>
-<tr><td><a href="/sd/boat/Shogun">Shogun</a></td><td>90.5%</td><td>1.71</td><td>42</td></tr>
-<tr><td><a href="/sd/boat/Pacific%20Queen">Pacific Queen</a></td><td>90.4%</td><td>2.27</td><td>968</td></tr>
-<tr><td><a href="/sd/boat/Tomahawk">Tomahawk</a></td><td>89.0%</td><td>1.92</td><td>702</td></tr>
-<tr><td><a href="/sd/boat/Constitution">Constitution</a></td><td>88.7%</td><td>2.65</td><td>450</td></tr>
-<tr><td><a href="/sd/boat/Fortune">Fortune</a></td><td>87.8%</td><td>2.65</td><td>418</td></tr>
-<tr><td><a href="/sd/boat/Pegasus">Pegasus</a></td><td>87.2%</td><td>3.18</td><td>545</td></tr>
-<tr><td><a href="/sd/boat/Poseidon">Poseidon</a></td><td>86.7%</td><td>2.61</td><td>279</td></tr>
-<tr><td><a href="/sd/boat/Bight%2023%20%28SD%29">Bight 23 (SD)</a></td><td>85.7%</td><td>3.28</td><td>7</td></tr>
-<tr><td><a href="/sd/boat/Bight%2028%20%28SD%29">Bight 28 (SD)</a></td><td>85.7%</td><td>3.02</td><td>56</td></tr>
-<tr><td><a href="/sd/boat/Islander">Islander</a></td><td>85.5%</td><td>2.02</td><td>310</td></tr>
-<tr><td><a href="/sd/boat/Polaris%20Supreme">Polaris Supreme</a></td><td>84.4%</td><td>1.85</td><td>352</td></tr>
-<tr><td><a href="/sd/boat/Pacific%20Dawn">Pacific Dawn</a></td><td>83.8%</td><td>2.63</td><td>525</td></tr>
-<tr><td><a href="/sd/boat/Outrider">Outrider</a></td><td>83.5%</td><td>2.29</td><td>182</td></tr>
-<tr><td><a href="/sd/boat/Black%20Diamond">Black Diamond</a></td><td>80.0%</td><td>2.0</td><td>10</td></tr>
-<tr><td><a href="/sd/boat/Royal%20Star">Royal Star</a></td><td>80.0%</td><td>0.52</td><td>5</td></tr>
-<tr><td><a href="/sd/boat/Searcher">Searcher</a></td><td>78.6%</td><td>2.44</td><td>28</td></tr>
-<tr><td><a href="/sd/boat/New%20Lo-An">New Lo-An</a></td><td>77.1%</td><td>2.05</td><td>942</td></tr>
-<tr><td><a href="/sd/boat/Tradition">Tradition</a></td><td>55.7%</td><td>1.54</td><td>115</td></tr>
-<tr><td><a href="/sd/boat/Dolphin">Dolphin</a></td><td>55.6%</td><td>0.89</td><td>540</td></tr>
-<tr><td><a href="/sd/boat/Excel">Excel</a></td><td>50.0%</td><td>0.77</td><td>4</td></tr>
-<tr><td><a href="/sd/boat/Freeman%2034">Freeman 34</a></td><td>38.5%</td><td>1.57</td><td>13</td></tr>
+<tr><td><a href="/sd/boat/Maximus/">Maximus</a></td><td>100.0%</td><td>4.33</td><td>43</td></tr>
+<tr><td><a href="/sd/boat/Cobalt/">Cobalt</a></td><td>100.0%</td><td>3.72</td><td>7</td></tr>
+<tr><td><a href="/sd/boat/Royal%20Polaris/">Royal Polaris</a></td><td>100.0%</td><td>2.15</td><td>7</td></tr>
+<tr><td><a href="/sd/boat/Pacific%20Quest/">Pacific Quest</a></td><td>98.4%</td><td>2.67</td><td>62</td></tr>
+<tr><td><a href="/sd/boat/Western%20Star/">Western Star</a></td><td>94.6%</td><td>3.31</td><td>37</td></tr>
+<tr><td><a href="/sd/boat/Condor/">Condor</a></td><td>93.5%</td><td>2.42</td><td>657</td></tr>
+<tr><td><a href="/sd/boat/Intrigue/">Intrigue</a></td><td>91.4%</td><td>3.47</td><td>58</td></tr>
+<tr><td><a href="/sd/boat/Liberty/">Liberty</a></td><td>91.4%</td><td>1.66</td><td>1482</td></tr>
+<tr><td><a href="/sd/boat/Lucky%20B%20Sportfishing/">Lucky B Sportfishing</a></td><td>91.0%</td><td>4.21</td><td>78</td></tr>
+<tr><td><a href="/sd/boat/Mustang/">Mustang</a></td><td>90.7%</td><td>2.51</td><td>431</td></tr>
+<tr><td><a href="/sd/boat/Shogun/">Shogun</a></td><td>90.5%</td><td>1.71</td><td>42</td></tr>
+<tr><td><a href="/sd/boat/Pacific%20Queen/">Pacific Queen</a></td><td>90.4%</td><td>2.27</td><td>969</td></tr>
+<tr><td><a href="/sd/boat/Tomahawk/">Tomahawk</a></td><td>89.0%</td><td>1.92</td><td>702</td></tr>
+<tr><td><a href="/sd/boat/Constitution/">Constitution</a></td><td>88.7%</td><td>2.65</td><td>450</td></tr>
+<tr><td><a href="/sd/boat/Fortune/">Fortune</a></td><td>87.8%</td><td>2.65</td><td>418</td></tr>
+<tr><td><a href="/sd/boat/Pegasus/">Pegasus</a></td><td>87.2%</td><td>3.18</td><td>545</td></tr>
+<tr><td><a href="/sd/boat/Poseidon/">Poseidon</a></td><td>86.7%</td><td>2.61</td><td>279</td></tr>
+<tr><td><a href="/sd/boat/Bight%2023%20%28SD%29/">Bight 23 (SD)</a></td><td>85.7%</td><td>3.28</td><td>7</td></tr>
+<tr><td><a href="/sd/boat/Bight%2028%20%28SD%29/">Bight 28 (SD)</a></td><td>85.7%</td><td>3.02</td><td>56</td></tr>
+<tr><td><a href="/sd/boat/Islander/">Islander</a></td><td>85.5%</td><td>2.02</td><td>310</td></tr>
+<tr><td><a href="/sd/boat/Pacific%20Dawn/">Pacific Dawn</a></td><td>83.8%</td><td>2.63</td><td>525</td></tr>
+<tr><td><a href="/sd/boat/Outrider/">Outrider</a></td><td>83.5%</td><td>2.29</td><td>182</td></tr>
+<tr><td><a href="/sd/boat/Black%20Diamond/">Black Diamond</a></td><td>80.0%</td><td>2.0</td><td>10</td></tr>
+<tr><td><a href="/sd/boat/Royal%20Star/">Royal Star</a></td><td>80.0%</td><td>0.52</td><td>5</td></tr>
+<tr><td><a href="/sd/boat/Searcher/">Searcher</a></td><td>78.6%</td><td>2.44</td><td>28</td></tr>
+<tr><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td>55.6%</td><td>0.89</td><td>540</td></tr>
+<tr><td><a href="/sd/boat/Freeman%2034/">Freeman 34</a></td><td>38.5%</td><td>1.57</td><td>13</td></tr>
+<tr><td><a href="/sd/boat/Seasons%2023/">Seasons 23</a></td><td>100.0%</td><td>3.5</td><td>2</td></tr>
+<tr><td><a href="/sd/boat/Hitman/">Hitman</a></td><td>100.0%</td><td>2.5</td><td>1</td></tr>
+<tr><td><a href="/sd/boat/Excel/">Excel</a></td><td>50.0%</td><td>0.77</td><td>4</td></tr>
   </tbody>
 </table>
 </article>
@@ -116,39 +162,40 @@
 <script src="dates.js?v=20261124-1"></script>
 <script src="feature-flags.js?v=20261124-1"></script>
 <script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261124-1"></script>
-<script src="chat-api.js?v=20261124-2"></script>
-<script src="analytics.js?v=20261124-9"></script>
-<script src="analytics-events.js?v=20261124-1"></script>
+<script src="data.js?v=20261125-1"></script>
+<script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
+<script src="chat-api.js?v=20261125-7"></script>
+<script src="analytics.js?v=20261125-3"></script>
+<script src="analytics-events.js?v=20261125-8"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
 <script src="user-prefs.js?v=20261124-1"></script>
 <script src="metric-definitions.js?v=20261124-1"></script>
 
-<script src="dist/tweaks-panel.js?v=20261124-7"></script>
-<script src="dist/metric-label.js?v=20261124-7"></script>
-<script src="dist/ui.js?v=20261124-7"></script>
-<script src="dist/components.js?v=20261124-7"></script>
-<script src="dist/filterbar.js?v=20261124-7"></script>
-<script src="dist/dashboard.js?v=20261124-9"></script>
-<script src="dist/home.js?v=20261124-9"></script>
-<script src="dist/boats.js?v=20261124-7"></script>
-<script src="dist/drilldown.js?v=20261124-8"></script>
-<script src="dist/boat-reviews.js?v=20261124-7"></script>
+<script src="dist/tweaks-panel.js?v=20261125-3"></script>
+<script src="dist/metric-label.js?v=20261125-3"></script>
+<script src="dist/ui.js?v=20261125-10"></script>
+<script src="dist/components.js?v=20261125-3"></script>
+<script src="dist/filterbar.js?v=20261125-9"></script>
+<script src="dist/dashboard.js?v=20261125-11"></script>
+<script src="dist/home.js?v=20261125-11"></script>
+<script src="dist/boats.js?v=20261125-3"></script>
+<script src="dist/drilldown.js?v=20261125-9"></script>
+<script src="dist/boat-reviews.js?v=20261125-8"></script>
+<script src="dist/forum-reports.js?v=20261125-10"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261124-7"></script>
-<script src="dist/tripplanner.js?v=20261124-7"></script>
-<script src="dist/headtohead.js?v=20261124-7"></script>
-<script src="dist/seasonality.js?v=20261124-7"></script>
-<script src="dist/moon.js?v=20261124-7"></script>
-<script src="dist/settings.js?v=20261124-7"></script>
-<script src="dist/account.js?v=20261124-8"></script>
-<script src="dist/analytics.js?v=20261124-8"></script>
-<script src="dist/forecast.js?v=20261124-7"></script>
-<script src="dist/admin.js?v=20261124-7"></script>
-<script src="dist/chatbot.js?v=20261124-7"></script>
-<script src="dist/app.js?v=20261124-8"></script>
-<script src="seo.js?v=20261124-1"></script>
+<script src="dist/charts.js?v=20261125-8"></script>
+<script src="dist/tripplanner.js?v=20261125-9"></script>
+<script src="dist/headtohead.js?v=20261125-3"></script>
+<script src="dist/seasonality.js?v=20261125-3"></script>
+<script src="dist/moon.js?v=20261125-3"></script>
+<script src="dist/settings.js?v=20261125-3"></script>
+<script src="dist/account.js?v=20261125-3"></script>
+<script src="dist/analytics.js?v=20261125-3"></script>
+<script src="dist/forecast.js?v=20261125-3"></script>
+<script src="dist/chatbot.js?v=20261125-11"></script>
+<script src="dist/app.js?v=20261125-7"></script>
+<script src="seo.js?v=20261125-2"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

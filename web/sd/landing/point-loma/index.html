@@ -1,46 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-prerendered="1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0ea5e9">
+<meta name="theme-color" content="#17332C">
 <base href="/">
-<title>Point Loma Sportfishing — Fleet, Fish Counts & Boat Stats | Tuna Tracker</title>
-<meta name="description" content="All 26 boats at Point Loma Sportfishing with win rates, catch history, and performance data. San Diego sportfishing from Point Loma Sportfishing.">
-<link rel="canonical" href="https://thetunatracker.com/sd/landing/point-loma">
+<title>Point Loma Sportfishing Fish Counts — Fleet &amp; Boat Stats | Tunatracker</title>
+<meta name="description" content="Point Loma Sportfishing fish counts for the last 7 days, plus all 22 boats ranked by catch history. San Diego sportfishing data, updated daily.">
+<link rel="canonical" href="https://thetunatracker.com/sd/landing/point-loma/">
 <meta property="og:type"        content="website">
-<meta property="og:site_name"   content="The Tuna Tracker">
-<meta property="og:title"       content="Point Loma Sportfishing — Fleet, Fish Counts &amp; Boat Stats | Tuna Tracker">
-<meta property="og:description" content="All 26 boats at Point Loma Sportfishing with win rates, catch history, and performance data. San Diego sportfishing from Point Loma Sportfishing.">
-<meta property="og:image"       content="https://thetunatracker.com/logo.png">
-<meta property="og:url"         content="https://thetunatracker.com/sd/landing/point-loma">
+<meta property="og:site_name"   content="Tunatracker">
+<meta property="og:title"       content="Point Loma Sportfishing Fish Counts — Fleet &amp; Boat Stats | Tunatracker">
+<meta property="og:description" content="Point Loma Sportfishing fish counts for the last 7 days, plus all 22 boats ranked by catch history. San Diego sportfishing data, updated daily.">
+<meta property="og:image"       content="https://thetunatracker.com/og-image.png">
+<meta property="og:url"         content="https://thetunatracker.com/sd/landing/point-loma/">
 <meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:title"       content="Point Loma Sportfishing — Fleet, Fish Counts &amp; Boat Stats | Tuna Tracker">
-<meta name="twitter:description" content="All 26 boats at Point Loma Sportfishing with win rates, catch history, and performance data. San Diego sportfishing from Point Loma Sportfishing.">
-<meta name="twitter:image"       content="https://thetunatracker.com/logo.png">
+<meta name="twitter:title"       content="Point Loma Sportfishing Fish Counts — Fleet &amp; Boat Stats | Tunatracker">
+<meta name="twitter:description" content="Point Loma Sportfishing fish counts for the last 7 days, plus all 22 boats ranked by catch history. San Diego sportfishing data, updated daily.">
+<meta name="twitter:image"       content="https://thetunatracker.com/og-image.png">
 <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Point Loma Sportfishing",
-  "description": "All 26 boats at Point Loma Sportfishing with win rates, catch history, and performance data. San Diego sportfishing from Point Loma Sportfishing.",
-  "url": "https://thetunatracker.com/sd/landing/point-loma",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "San Diego",
-    "addressRegion": "CA",
-    "addressCountry": "US"
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tunatracker",
+      "item": "https://thetunatracker.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Boats",
+      "item": "https://thetunatracker.com/sd/boats"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Point Loma Sportfishing"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Point Loma Sportfishing Fish Counts \u2014 Fleet & Boat Stats | Tunatracker",
+  "description": "Point Loma Sportfishing fish counts for the last 7 days, plus all 22 boats ranked by catch history. San Diego sportfishing data, updated daily.",
+  "url": "https://thetunatracker.com/sd/landing/point-loma/",
+  "about": {
+    "@type": "Place",
+    "name": "Point Loma Sportfishing",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "San Diego",
+      "addressRegion": "CA",
+      "addressCountry": "US"
+    }
   }
 }
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20261124-9">
-<link rel="stylesheet" href="design-system.css?v=20261124-7">
+<link rel="stylesheet" href="styles.css?v=20261125-11">
+<link rel="stylesheet" href="design-system.css?v=20261125-10">
 <script>window.VESSEL_WORKER_URL = '';</script>
 <script
   async
@@ -51,12 +80,30 @@
 </script>
 </head>
 <body>
-<div id="seo-static" aria-hidden="true">
+<div id="seo-static">
 <article>
-<nav aria-label="Breadcrumb"><ol><li><a href="/">Tuna Tracker</a></li><li><a href="/sd/boats">Boats</a></li><li>Point Loma Sportfishing</li></ol></nav>
+<nav aria-label="Breadcrumb"><ol><li><a href="/">Tunatracker</a></li><li><a href="/sd/boats">Boats</a></li><li>Point Loma Sportfishing</li></ol></nav>
 <h1>Point Loma Sportfishing</h1>
-<p>All 26 sportfishing boats at Point Loma Sportfishing in San Diego, CA,
-   ranked by trophy fish win rate.</p>
+<p>Fish counts and boat stats for Point Loma Sportfishing in San Diego, CA.
+   Boats with at least 5 trips are ranked by how often they land
+   trophy fish; boats with fewer trips are listed after them.</p>
+<section>
+<h2>Point Loma Sportfishing fish counts: last 7 days</h2>
+<table>
+  <caption>7 trips reported, trophy species landed</caption>
+  <thead><tr><th>Date</th><th>Boat</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
+  <tbody>
+<tr><td>Nov 24, 2026</td><td><a href="/sd/boat/Point%20Loma/">Point Loma</a></td><td>Half Day AM</td><td>22</td><td>25 yellowfin</td></tr>
+<tr><td>Nov 24, 2026</td><td><a href="/sd/boat/Daily%20Double/">Daily Double</a></td><td>Half Day AM</td><td>40</td><td>4 yellowfin, 1 dorado</td></tr>
+<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Daily%20Double/">Daily Double</a></td><td>Half Day AM</td><td>22</td><td>95 yellowfin</td></tr>
+<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Got%20Bait/">Got Bait</a></td><td>Full Day</td><td>3</td><td>no trophy fish</td></tr>
+<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Mission%20Belle/">Mission Belle</a></td><td>Full Day</td><td>11</td><td>29 yellowfin</td></tr>
+<tr><td>Nov 18, 2026</td><td><a href="/sd/boat/Daily%20Double/">Daily Double</a></td><td>Half Day AM</td><td>11</td><td>1 yellowtail</td></tr>
+<tr><td>Nov 18, 2026</td><td><a href="/sd/boat/Got%20Bait/">Got Bait</a></td><td>Half Day Twilight</td><td>4</td><td>no trophy fish</td></tr>
+  </tbody>
+</table>
+</section>
+<h2>Fleet performance</h2>
 <table>
   <caption>Fleet Performance at Point Loma Sportfishing</caption>
   <thead>
@@ -68,32 +115,28 @@
     </tr>
   </thead>
   <tbody>
-<tr><td><a href="/sd/boat/Wildcard%2095">Wildcard 95</a></td><td>100.0%</td><td>0.43</td><td>3</td></tr>
-<tr><td><a href="/sd/boat/Hi-Count">Hi-Count</a></td><td>97.7%</td><td>4.29</td><td>44</td></tr>
-<tr><td><a href="/sd/boat/Freedom">Freedom</a></td><td>97.6%</td><td>1.21</td><td>84</td></tr>
-<tr><td><a href="/sd/boat/Sauerfish">Sauerfish</a></td><td>96.3%</td><td>3.38</td><td>190</td></tr>
-<tr><td><a href="/sd/boat/Chief">Chief</a></td><td>95.7%</td><td>1.92</td><td>211</td></tr>
-<tr><td><a href="/sd/boat/Dominator">Dominator</a></td><td>95.6%</td><td>2.23</td><td>183</td></tr>
-<tr><td><a href="/sd/boat/Vagabond">Vagabond</a></td><td>93.5%</td><td>2.14</td><td>46</td></tr>
-<tr><td><a href="/sd/boat/Success">Success</a></td><td>92.1%</td><td>3.52</td><td>63</td></tr>
-<tr><td><a href="/sd/boat/Mission%20Belle">Mission Belle</a></td><td>91.7%</td><td>1.8</td><td>1684</td></tr>
-<tr><td><a href="/sd/boat/Sea%20Adventure%2080">Sea Adventure 80</a></td><td>91.5%</td><td>2.33</td><td>436</td></tr>
-<tr><td><a href="/sd/boat/Grande">Grande</a></td><td>90.9%</td><td>1.57</td><td>1422</td></tr>
-<tr><td><a href="/sd/boat/El%20Capitan">El Capitan</a></td><td>89.9%</td><td>2.73</td><td>366</td></tr>
-<tr><td><a href="/sd/boat/Primetime">Primetime</a></td><td>88.9%</td><td>4.14</td><td>9</td></tr>
-<tr><td><a href="/sd/boat/T-Bird">T-Bird</a></td><td>88.6%</td><td>2.05</td><td>185</td></tr>
-<tr><td><a href="/sd/boat/Josie%20Lynn">Josie Lynn</a></td><td>82.4%</td><td>2.52</td><td>165</td></tr>
-<tr><td><a href="/sd/boat/Pacific%20Islander">Pacific Islander</a></td><td>82.0%</td><td>2.27</td><td>89</td></tr>
-<tr><td><a href="/sd/boat/Oceanside%2095">Oceanside 95</a></td><td>80.4%</td><td>1.76</td><td>102</td></tr>
-<tr><td><a href="/sd/boat/Independence">Independence</a></td><td>80.0%</td><td>1.16</td><td>5</td></tr>
-<tr><td><a href="/sd/boat/New%20Lo-An">New Lo-An</a></td><td>77.1%</td><td>2.05</td><td>942</td></tr>
-<tr><td><a href="/sd/boat/American%20Angler">American Angler</a></td><td>72.9%</td><td>1.71</td><td>48</td></tr>
-<tr><td><a href="/sd/boat/Eldorado">Eldorado</a></td><td>72.1%</td><td>1.73</td><td>179</td></tr>
-<tr><td><a href="/sd/boat/Point%20Loma">Point Loma</a></td><td>70.1%</td><td>1.69</td><td>668</td></tr>
-<tr><td><a href="/sd/boat/Intrepid">Intrepid</a></td><td>69.2%</td><td>1.36</td><td>13</td></tr>
-<tr><td><a href="/sd/boat/Got%20Bait">Got Bait</a></td><td>65.5%</td><td>2.74</td><td>29</td></tr>
-<tr><td><a href="/sd/boat/Game%20Changer">Game Changer</a></td><td>63.6%</td><td>3.27</td><td>66</td></tr>
-<tr><td><a href="/sd/boat/Daily%20Double">Daily Double</a></td><td>40.6%</td><td>0.62</td><td>249</td></tr>
+<tr><td><a href="/sd/boat/Hi-Count/">Hi-Count</a></td><td>97.7%</td><td>4.29</td><td>44</td></tr>
+<tr><td><a href="/sd/boat/Sauerfish/">Sauerfish</a></td><td>96.3%</td><td>3.38</td><td>190</td></tr>
+<tr><td><a href="/sd/boat/Chief/">Chief</a></td><td>95.7%</td><td>1.92</td><td>211</td></tr>
+<tr><td><a href="/sd/boat/Dominator/">Dominator</a></td><td>95.6%</td><td>2.23</td><td>183</td></tr>
+<tr><td><a href="/sd/boat/Vagabond/">Vagabond</a></td><td>93.5%</td><td>2.14</td><td>46</td></tr>
+<tr><td><a href="/sd/boat/Success/">Success</a></td><td>92.1%</td><td>3.52</td><td>63</td></tr>
+<tr><td><a href="/sd/boat/Mission%20Belle/">Mission Belle</a></td><td>91.7%</td><td>1.8</td><td>1684</td></tr>
+<tr><td><a href="/sd/boat/El%20Capitan/">El Capitan</a></td><td>89.9%</td><td>2.73</td><td>366</td></tr>
+<tr><td><a href="/sd/boat/Primetime/">Primetime</a></td><td>88.9%</td><td>4.14</td><td>9</td></tr>
+<tr><td><a href="/sd/boat/T-Bird/">T-Bird</a></td><td>88.6%</td><td>2.05</td><td>185</td></tr>
+<tr><td><a href="/sd/boat/Josie%20Lynn/">Josie Lynn</a></td><td>82.4%</td><td>2.52</td><td>165</td></tr>
+<tr><td><a href="/sd/boat/Pacific%20Islander/">Pacific Islander</a></td><td>82.0%</td><td>2.27</td><td>89</td></tr>
+<tr><td><a href="/sd/boat/Oceanside%2095/">Oceanside 95</a></td><td>80.4%</td><td>1.76</td><td>102</td></tr>
+<tr><td><a href="/sd/boat/Independence/">Independence</a></td><td>80.0%</td><td>1.16</td><td>5</td></tr>
+<tr><td><a href="/sd/boat/New%20Lo-An/">New Lo-An</a></td><td>77.1%</td><td>2.05</td><td>942</td></tr>
+<tr><td><a href="/sd/boat/American%20Angler/">American Angler</a></td><td>72.9%</td><td>1.71</td><td>48</td></tr>
+<tr><td><a href="/sd/boat/Point%20Loma/">Point Loma</a></td><td>70.1%</td><td>1.69</td><td>668</td></tr>
+<tr><td><a href="/sd/boat/Intrepid/">Intrepid</a></td><td>69.2%</td><td>1.36</td><td>13</td></tr>
+<tr><td><a href="/sd/boat/Got%20Bait/">Got Bait</a></td><td>65.5%</td><td>2.74</td><td>29</td></tr>
+<tr><td><a href="/sd/boat/Game%20Changer/">Game Changer</a></td><td>63.6%</td><td>3.27</td><td>66</td></tr>
+<tr><td><a href="/sd/boat/Daily%20Double/">Daily Double</a></td><td>40.6%</td><td>0.62</td><td>249</td></tr>
+<tr><td><a href="/sd/boat/Wildcard%2095/">Wildcard 95</a></td><td>100.0%</td><td>0.43</td><td>3</td></tr>
   </tbody>
 </table>
 </article>
@@ -107,39 +150,40 @@
 <script src="dates.js?v=20261124-1"></script>
 <script src="feature-flags.js?v=20261124-1"></script>
 <script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261124-1"></script>
-<script src="chat-api.js?v=20261124-2"></script>
-<script src="analytics.js?v=20261124-9"></script>
-<script src="analytics-events.js?v=20261124-1"></script>
+<script src="data.js?v=20261125-1"></script>
+<script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
+<script src="chat-api.js?v=20261125-7"></script>
+<script src="analytics.js?v=20261125-3"></script>
+<script src="analytics-events.js?v=20261125-8"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
 <script src="user-prefs.js?v=20261124-1"></script>
 <script src="metric-definitions.js?v=20261124-1"></script>
 
-<script src="dist/tweaks-panel.js?v=20261124-7"></script>
-<script src="dist/metric-label.js?v=20261124-7"></script>
-<script src="dist/ui.js?v=20261124-7"></script>
-<script src="dist/components.js?v=20261124-7"></script>
-<script src="dist/filterbar.js?v=20261124-7"></script>
-<script src="dist/dashboard.js?v=20261124-9"></script>
-<script src="dist/home.js?v=20261124-9"></script>
-<script src="dist/boats.js?v=20261124-7"></script>
-<script src="dist/drilldown.js?v=20261124-8"></script>
-<script src="dist/boat-reviews.js?v=20261124-7"></script>
+<script src="dist/tweaks-panel.js?v=20261125-3"></script>
+<script src="dist/metric-label.js?v=20261125-3"></script>
+<script src="dist/ui.js?v=20261125-10"></script>
+<script src="dist/components.js?v=20261125-3"></script>
+<script src="dist/filterbar.js?v=20261125-9"></script>
+<script src="dist/dashboard.js?v=20261125-11"></script>
+<script src="dist/home.js?v=20261125-11"></script>
+<script src="dist/boats.js?v=20261125-3"></script>
+<script src="dist/drilldown.js?v=20261125-9"></script>
+<script src="dist/boat-reviews.js?v=20261125-8"></script>
+<script src="dist/forum-reports.js?v=20261125-10"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261124-7"></script>
-<script src="dist/tripplanner.js?v=20261124-7"></script>
-<script src="dist/headtohead.js?v=20261124-7"></script>
-<script src="dist/seasonality.js?v=20261124-7"></script>
-<script src="dist/moon.js?v=20261124-7"></script>
-<script src="dist/settings.js?v=20261124-7"></script>
-<script src="dist/account.js?v=20261124-8"></script>
-<script src="dist/analytics.js?v=20261124-8"></script>
-<script src="dist/forecast.js?v=20261124-7"></script>
-<script src="dist/admin.js?v=20261124-7"></script>
-<script src="dist/chatbot.js?v=20261124-7"></script>
-<script src="dist/app.js?v=20261124-8"></script>
-<script src="seo.js?v=20261124-1"></script>
+<script src="dist/charts.js?v=20261125-8"></script>
+<script src="dist/tripplanner.js?v=20261125-9"></script>
+<script src="dist/headtohead.js?v=20261125-3"></script>
+<script src="dist/seasonality.js?v=20261125-3"></script>
+<script src="dist/moon.js?v=20261125-3"></script>
+<script src="dist/settings.js?v=20261125-3"></script>
+<script src="dist/account.js?v=20261125-3"></script>
+<script src="dist/analytics.js?v=20261125-3"></script>
+<script src="dist/forecast.js?v=20261125-3"></script>
+<script src="dist/chatbot.js?v=20261125-11"></script>
+<script src="dist/app.js?v=20261125-7"></script>
+<script src="seo.js?v=20261125-2"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
