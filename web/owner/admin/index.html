@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · Tunatracker</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="/styles.css">
+<!--
+  Owner admin. Cloudflare Access protects /owner*. The admin data is fetched
+  from /owner/api/admin (the Worker re-verifies the Access token); it is not in
+  the public data.js. admin.js is compiled from web/owner/admin.jsx
+  (npm run build:owner).
+-->
+</head>
+<body>
+<div id="root"><div class="adm-root" style="padding:40px 24px;font:14px/1.5 Inter,sans-serif" id="boot">Loading admin data…</div></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/dates.js"></script>
+<script>
+(function () {
+  function fail(msg, auth) {
+    var b = document.getElementById('boot');
+    b.textContent = '';
+    b.appendChild(document.createTextNode(msg + ' '));
+    var a = document.createElement('a');
+    a.href = auth ? location.pathname : '/owner/';
+    a.textContent = auth ? 'Reload to sign in again' : 'Back to Traffic';
+    a.style.color = '#38BDF8';
+    b.appendChild(a);
+  }
+  fetch('/owner/api/admin', { credentials: 'same-origin', cache: 'no-store', redirect: 'manual' })
+    .then(function (r) {
+      if (r.type === 'opaqueredirect' || r.status === 401 || r.status === 403) { var e = new Error('auth'); e.auth = true; throw e; }
+      if (r.status === 404) throw new Error('No admin data yet. It arrives with the next scrape run once ADMIN_INGEST_TOKEN is set (docs/analytics/SETUP.md).');
+      if (!r.ok) throw new Error('Admin data request failed (HTTP ' + r.status + ').');
+      return r.json();
+    })
+    .then(function (j) {
+      var d = j.data || {};
+      window.SD = { ADMIN: d.ADMIN || {}, META: d.META || {} };
+      var s = document.createElement('script');
+      s.src = 'admin.js';
+      s.onload = function () {
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(window.AdminView));
+      };
+      s.onerror = function () { fail('Couldn’t load admin.js.'); };
+      document.body.appendChild(s);
+    })
+    .catch(function (e) {
+      if (e.auth) fail('Your owner session has expired.', true);
+      else fail(e.message || String(e));
+    });
+})();
+</script>
+</body>
+</html>

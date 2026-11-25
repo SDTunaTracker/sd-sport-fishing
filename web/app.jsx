@@ -372,9 +372,10 @@ function App() {
     });
   }, [route, regions]);
 
-  // Admin is a fully standalone page — no header, no nav, no shared state used.
+  // Admin moved to /owner/admin/ behind Cloudflare Access (no client-side password,
+  // no admin data in data.js). Old #admin / /sd/admin links redirect there.
   // Must be after all hooks (React rules: no conditional hooks).
-  if (route.view === 'admin') return <AdminView />;
+  if (route.view === 'admin') { window.location.replace('/owner/admin/'); return null; }
 
   const navigate = (view, params = {}) => {
     const nextPath = pathFromRoute(view, params, regions);

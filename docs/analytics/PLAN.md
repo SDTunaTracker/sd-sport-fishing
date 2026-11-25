@@ -1,7 +1,28 @@
 # Owner traffic dashboard: audit and options
 
-Status: **proposal, waiting for the owner to choose an option.** No code, Cloudflare settings, accounts or tracking have changed yet.
+Status: **Option B chosen by the owner (2026-11-25) and built in this PR.** Owner setup steps are in [SETUP.md](SETUP.md). Nothing is deployed and no Cloudflare settings were changed.
 Branch: `claude/owner-dashboard-b97ab3`, based on `origin/main` @ `c45bbb23` (2026-11-25).
+
+## 0. What was built (Option B)
+
+| Piece | Files |
+|---|---|
+| Collector, stats API, Access JWT check, daily rollup cron | `cloudflare-worker/analytics.js`, `analytics-wrangler.toml`, `analytics-schema.sql` |
+| Browser beacon (wraps `TTTrack`, GPC/DNT opt-out, owner self-exclusion) | `web/analytics-events.js` |
+| Owner dashboard | `web/owner/index.html` |
+| Admin moved behind Access, data from the Worker | `web/owner/admin/index.html`, `web/owner/admin.jsx`, `web/app.jsx` (redirect), `web/_redirects` |
+| Admin data out of public `data.js` | `src/export.py` → `build/admin.json` (gitignored) → `.github/workflows/daily-scrape.yml` POSTs it to `/a/admin` |
+| Privacy page | `web/privacy/index.html` ("Our own visit statistics", `tt_seen`, GPC/DNT) |
+| Tests / local preview | `tests/analytics/` (`npm run test:analytics`), `scripts/analytics-dev-server.mjs` (`npm run dev:analytics`) |
+
+Changes from the proposal below, decided while building:
+- **Uniques for any range use one number:** "days since last visit" (`g`), sent on the first pageview of each day. A visitor counts in a range on the first visit whose gap reaches back before the range start. That gives exact uniques for any range, including rolling 7 and 30 days, from one stored date, with no week or month flags.
+- **Admin data isn't moved to another static file:** the repository is **public**, so any committed file is readable on GitHub. The scrape workflow pushes it to the Worker with a bearer token instead, and it's served only behind Access.
+- **Rollups are batched** (10 days per `db.batch`), because Workers Free allows 50 D1 queries per request and a batch counts as one.
+- **`okhttp` isn't treated as a bot:** Expo/React Native on Android sends it.
+- Browsers that have opened `/owner/` (`localStorage.tt_owner`) aren't counted.
+- The admin password is gone from the bundle, but **it stays in the public git history**. Treat it as burned, and change it anywhere it was reused.
+- Still open: `tracker.db`, which holds every review, including unapproved ones and their IP hashes, is committed to the public repo by the scrape workflow. That predates this work, and fixing it needs its own change.
 
 ---
 
@@ -111,12 +132,12 @@ A new Worker, `cloudflare-worker/analytics.js`, on **same-origin routes** on the
 | `cc` | `request.cf.country` | Country only, filled in by the Worker. |
 | `src` | `web` / `app` / `pwa` | The Expo app sends `app` (see §5). |
 | `boat`, `landing`, `trip_id` | event props | Public catalog data, not personal. |
-| `nd` / `nw` / `nm` | **client flags** | "First visit today / this ISO week / this month" (see below). |
+| `g` | **client value** | Days since the previous visit, sent on the first pageview of the day only (see below). |
 | `vh` | daily visitor hash | `sha256(daily_salt ‖ ip ‖ ua_family ‖ host)`, truncated to 8 bytes. The salt is random each UTC day, kept only in memory and KV, and **deleted after 48 h**, so a hash can't be linked across days or reversed. |
 
 **How unique visitors work without cookies:**
 - **Daily uniques** = distinct `vh` per day. This is Plausible's method.
-- **Weekly and monthly uniques** can't come from a daily-rotating hash, because one person on two days would count twice. So the page keeps **one value** in `localStorage`, `tt_seen = "2026-11-25"` (the last visit date, no ID), and sends `nw=1` / `nm=1` the first time it sees the visitor in a new week or month. WAU/MAU is the sum of those flags. If storage is blocked, the Worker falls back to `nd` and `vh`, which counts high, and the dashboard labels that.
+- **Weekly and monthly uniques** can't come from a daily-rotating hash, because one person on two days would count twice. So the page keeps **one value** in `localStorage`, `tt_seen = "2026-11-25"` (the last visit date, no ID). On the first pageview of each day it sends `g` = days since the previous visit (400 = never). Uniques for any range are the first-of-day visits whose gap reaches back before the range start. If storage is blocked, each page load counts as new, which overcounts, and the dashboard says so.
 - Nothing that identifies a person leaves the device or gets stored.
 
 **Do Not Track / GPC:** if `navigator.globalPrivacyControl` or `navigator.doNotTrack === "1"` is set, **send nothing**. I'd also suggest not loading GA for those visitors (see §4).

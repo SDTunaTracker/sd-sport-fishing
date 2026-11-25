@@ -52,6 +52,10 @@ self.addEventListener('fetch', function(e) {
   if (req.method !== 'GET') return;
   var url = req.url;
 
+  // Owner pages (behind Cloudflare Access) and the analytics collector: never cache.
+  var swPath = new URL(url).pathname;
+  if (swPath.indexOf('/owner/') === 0 || swPath.indexOf('/a/') === 0) return;
+
   // Immutable, version-pinned CDN libraries (Leaflet, React): cache-first.
   if (
     url.indexOf('/leaflet/1.9.4/') !== -1 ||
