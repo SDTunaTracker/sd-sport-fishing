@@ -1,0 +1,15 @@
+# research/forecast: keep code, logs, results; never commit DB copies, caches, venv
+.venv/
+__pycache__/
+data/**/*.pkl
+data/**/*.db
+data/tracker_snapshot.db
+data/ext/
+data/pre_hygiene/
+data/*.log
+shadow/work_*/
+shadow/replay_forecasts.csv
+shadow/REPLAY_REPORT.scored.csv
+data/**/*.db-shm
+data/**/*.db-wal
+data/*.db-*
