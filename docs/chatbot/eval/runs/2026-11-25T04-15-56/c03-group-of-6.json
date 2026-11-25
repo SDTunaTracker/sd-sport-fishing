@@ -1,0 +1,65 @@
+{
+  "case": {
+    "id": "c03-group-of-6",
+    "persona": "Group of 6 friends, overnight, mid-December",
+    "turns": [
+      "We have 6 guys looking for an overnight or 1.5 day around Dec 12-13. Which trips have room for all 6?"
+    ],
+    "expect": "Only trips with openSpots >= 6 departing Dec 11-13. Trips beyond the bot's 100-trip window are invisible -> check for false 'nothing found'."
+  },
+  "turns": [
+    {
+      "user": "We have 6 guys looking for an overnight or 1.5 day around Dec 12-13. Which trips have room for all 6?",
+      "text": "Got solid options for your crew of 6 on Dec 12-13 — here are the trips with 6+ open spots, sorted by boat performance.\n\nHere's what's showing **Win Rate** (% of head-to-head matchups won against peer boats on the same trip length) and **AvgTPA** (trophy fish per angler per day):\n\n<trip-card>\n{\"boat\": \"Old Glory\", \"landing\": \"H&M Landing\", \"tripLength\": \"1.5 Day\", \"departureDate\": \"2026-12-12\", \"departureTime\": \"2:00 AM\", \"returnDate\": \"2026-12-13\", \"price\": 490, \"openSpots\": 28, \"maxLoad\": 29, \"winRate\": 31, \"avgTPA\": 1.73, \"bookingUrl\": \"https://www.hmlanding.com/boat/old-glory\", \"boatPageUrl\": \"#boat/Old%20Glory\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"Ocean Odyssey\", \"landing\": \"H&M Landing\", \"tripLength\": \"2 Day\", \"departureDate\": \"2026-12-11\", \"departureTime\": \"6:00 PM\", \"returnDate\": \"2026-12-13\", \"price\": 725, \"openSpots\": 23, \"maxLoad\": 29, \"winRate\": 15, \"avgTPA\": 1.92, \"bookingUrl\": \"https://www.hmlanding.com/boat/ocean-odyssey\", \"boatPageUrl\": \"#boat/Ocean%20Odyssey\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"Wildcard 95\", \"landing\": \"Point Loma Sportfishing\", \"tripLength\": \"1.5 Day\", \"departureDate\": \"2026-12-11\", \"departureTime\": \"7:00 PM\", \"returnDate\": \"2026-12-13\", \"price\": 476, \"openSpots\": 27, \"maxLoad\": 32, \"winRate\": 0, \"avgTPA\": 0.79, \"bookingUrl\": \"https://pointloma.fishingreservations.net/sales/user.php?trip_id=1089181\", \"boatPageUrl\": \"#boat/Wildcard%2095\"}\n</trip-card>\n\n[Old Glory](#boat/Old%20Glory) is the clear top pick — highest win rate of the bunch and only 1 spot already taken, so you'll practically have the boat. [Ocean Odyssey](#boat/Ocean%20Odyssey) is a solid 2-day alternative if you want more time on the water.\n\n<followups>\n[\"Compare Old Glory vs Ocean Odyssey\", \"What about overnight trips Dec 12-13?\", \"Show me 1.5-day trips with the best win rates\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"Compare these boats\", \"action\": \"compare\", \"data\": [\"Old Glory\", \"Ocean Odyssey\"]},\n  {\"label\": \"View Old Glory\", \"action\": \"view-boat\", \"data\": \"Old Glory\"},\n  {\"label\": \"Show 1.5-day trips\", \"action\": \"view-trips\", \"data\": {\"tripLength\": \"1.5 Day\"}}\n]\n</actions>",
+      "ms": 13126,
+      "usage": {
+        "input_tokens": 19619,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1032,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": [
+        {
+          "boat": "Old Glory",
+          "date": "2026-12-12",
+          "tripLength": "1.5 Day",
+          "price": 490,
+          "url": "https://www.hmlanding.com/boat/old-glory",
+          "issues": [
+            "wrong local date (real 2026-12-11)",
+            "H&M link is boat page, not trip"
+          ]
+        },
+        {
+          "boat": "Ocean Odyssey",
+          "date": "2026-12-11",
+          "tripLength": "2 Day",
+          "price": 725,
+          "url": "https://www.hmlanding.com/boat/ocean-odyssey",
+          "issues": [
+            "H&M link is boat page, not trip"
+          ]
+        },
+        {
+          "boat": "Wildcard 95",
+          "date": "2026-12-11",
+          "tripLength": "1.5 Day",
+          "price": 476,
+          "url": "https://pointloma.fishingreservations.net/sales/user.php?trip_id=1089181",
+          "issues": []
+        }
+      ]
+    }
+  ]
+}

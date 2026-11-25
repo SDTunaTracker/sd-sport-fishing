@@ -1,0 +1,44 @@
+{
+  "case": {
+    "id": "c04-bluefin-3day",
+    "persona": "Experienced, wants bluefin, 3-day, January",
+    "turns": [
+      "Experienced angler here. I want a 3 day for bluefin in January. Which boat and which date?"
+    ],
+    "expect": "3 Day trips in January 2027 exist in schedule; bot only sees first 100 trips (~through Dec 19) so likely says none."
+  },
+  "turns": [
+    {
+      "user": "Experienced angler here. I want a 3 day for bluefin in January. Which boat and which date?",
+      "text": "Straight talk: no 3-day trips are on the schedule in January yet in my 120-day window — the only 3-days I'm seeing are mid-December (Intrepid 12/14 & 12/17, and Electra 12/10). January 3-days typically open up closer to the date, so check back in a few weeks or watch the [Trip Planner](#tripplanner).\n\nThat said, for an experienced angler targeting **January bluefin on a 3-day**, here's the honest historical read:\n\n- **[Pacific Queen](#boat/Pacific%20Queen)** (Fisherman's Landing) — 2.28 TPA/day across 72 trips. Consistent producer, strong crew on bluefin knife-jig and flat-fall programs. This is the one I'd watch for a January 3-day drop.\n- **[Pacific Voyager](#boat/Pacific%20Voyager)** (Seaforth) — 2.14 TPA/day over 80 trips. Big-fish reputation and a captain who'll grind for quality over quantity — ideal for an experienced stick.\n- **[Polaris Supreme](#boat/Polaris%20Supreme)** (Seaforth) — 2.07 TPA/day, 62 trips. More typically a 5+ day boat but occasionally runs 3-days; elite bluefin pedigree when she does.\n- **[Pegasus](#boat/Pegasus)** (Fisherman's Landing) — 2.37 TPA/day over 64 trips. Quietly one of the better bluefin numbers on the board.\n\n**My pick to watch:** Pacific Queen or Pacific Voyager — both have the right gear program and crew depth for January cows. January bluefin on a 3-day usually means fewer bites but bigger grade (100–250#+ class), so boat culture matters more than win rate.\n\nOne option worth considering: a mid-December **[Intrepid 3-Day (12/17)](https://pointloma.fishingreservations.net/sales/user.php?trip_id=1059495)** is still open with 18/26 spots — not January, but same water, same fish class.\n\n<trip-card>\n{\"boat\": \"Intrepid\", \"landing\": \"Point Loma Sportfishing\", \"tripLength\": \"3 Day\", \"departureDate\": \"2026-12-17\", \"departureTime\": \"11:00 AM\", \"returnDate\": \"2026-12-20\", \"price\": 1495, \"openSpots\": 18, \"maxLoad\": 26, \"bookingUrl\": \"https://pointloma.fishingreservations.net/sales/user.php?trip_id=1059495\", \"boatPageUrl\": \"#boat/Intrepid\"}\n</trip-card>\n\n<followups>\n[\"When do January trips usually get posted?\", \"Compare Pacific Queen vs Pacific Voyager for bluefin\", \"Show me 5-day options instead\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"Compare Pacific Queen vs Pacific Voyager\", \"action\": \"compare\", \"data\": [\"Pacific Queen\", \"Pacific Voyager\"]},\n  {\"label\": \"View Polaris Supreme\", \"action\": \"view-boat\", \"data\": \"Polaris Supreme\"},\n  {\"label\": \"Show all 3-day trips\", \"action\": \"view-trips\", \"data\": {\"tripLength\": \"3 Day\"}}\n]\n</actions>",
+      "ms": 18572,
+      "usage": {
+        "input_tokens": 19609,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1100,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": [
+        {
+          "boat": "Intrepid",
+          "date": "2026-12-17",
+          "tripLength": "3 Day",
+          "price": 1495,
+          "url": "https://pointloma.fishingreservations.net/sales/user.php?trip_id=1059495",
+          "issues": []
+        }
+      ]
+    }
+  ]
+}

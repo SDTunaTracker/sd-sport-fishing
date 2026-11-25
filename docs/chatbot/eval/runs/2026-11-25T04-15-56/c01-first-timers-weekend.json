@@ -1,0 +1,66 @@
+{
+  "case": {
+    "id": "c01-first-timers-weekend",
+    "persona": "2 people, first time, want yellowfin, this weekend, under $400 each",
+    "turns": [
+      "2 of us, first time out, we want yellowfin. This weekend, under $400 each. What should we book?"
+    ],
+    "expect": "Weekend = Sat Nov 28 – Sun Nov 29 PT. Only trips priced <= $400 with >= 2 open spots. Full Day / Overnight. Correct local departure times (H&M times are UTC in data). Mention that yellowfin targeting is inferred from recent catches."
+  },
+  "turns": [
+    {
+      "user": "2 of us, first time out, we want yellowfin. This weekend, under $400 each. What should we book?",
+      "text": "Welcome to the fleet! For first-timers chasing yellowfin on a budget, you'll want an overnight or short trip — long-range boats are overkill for your first go. Here are your best weekend options under $400:\n\n<trip-card>\n{\"boat\": \"Producer\", \"landing\": \"H&M Landing\", \"tripLength\": \"Overnight\", \"departureDate\": \"2026-11-28\", \"departureTime\": \"04:00 AM\", \"returnDate\": \"2026-11-29\", \"price\": 360, \"openSpots\": 14, \"maxLoad\": 29, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 7.3, \"winRate\": 21, \"avgTPA\": 1.9, \"bookingUrl\": \"https://www.hmlanding.com/boat/producer\", \"boatPageUrl\": \"#boat/Producer\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"San Diego\", \"landing\": \"Seaforth Sportfishing\", \"tripLength\": \"Full Day\", \"departureDate\": \"2026-11-29\", \"departureTime\": \"05:30 AM\", \"returnDate\": \"2026-11-29\", \"price\": 250, \"openSpots\": 19, \"maxLoad\": 36, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 7.0, \"winRate\": 30, \"avgTPA\": 1.48, \"bookingUrl\": \"https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153\", \"boatPageUrl\": \"#boat/San%20Diego\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"Producer\", \"landing\": \"H&M Landing\", \"tripLength\": \"Overnight\", \"departureDate\": \"2026-11-29\", \"departureTime\": \"04:00 AM\", \"returnDate\": \"2026-11-30\", \"price\": 360, \"openSpots\": 6, \"maxLoad\": 29, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 7.0, \"winRate\": 21, \"avgTPA\": 1.9, \"bookingUrl\": \"https://www.hmlanding.com/boat/producer\", \"boatPageUrl\": \"#boat/Producer\"}\n</trip-card>\n\n**My top pick: [Producer](#boat/Producer) on Saturday 11/28** — best forecast (7.3/10), strongest **AvgTPA (1.9 trophy fish per angler per day)**, and an overnight gets you offshore to where the yellowfin actually live. The **Win Rate of 21%** (how often Producer beats peer boats on the same day/trip length) is solid for the overnight class. The Sunday Producer trip is nearly booked (only 6 spots), so move quick if you want that one.\n\nIf you'd rather dip your toes in with a shorter day, [San Diego](#boat/San%20Diego) has the best Win Rate in the fleet at 30% — but Full Day trips rarely reach the yellowfin zone this time of year.\n\n<followups>\n[\"What should we bring on an overnight trip?\", \"Compare Producer vs San Diego\", \"Are there any 1.5-day options in budget?\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"Compare Producer vs San Diego\", \"action\": \"compare\", \"data\": [\"Producer\", \"San Diego\"]},\n  {\"label\": \"View Producer\", \"action\": \"view-boat\", \"data\": \"Producer\"},\n  {\"label\": \"Show all overnight trips\", \"action\": \"view-trips\", \"data\": {\"tripLength\": \"Overnight\"}}\n]\n</actions>",
+      "ms": 15820,
+      "usage": {
+        "input_tokens": 19612,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1206,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36827,
+      "cards": [
+        {
+          "boat": "Producer",
+          "date": "2026-11-28",
+          "tripLength": "Overnight",
+          "price": 360,
+          "url": "https://www.hmlanding.com/boat/producer",
+          "issues": [
+            "wrong local date (real 2026-11-27)",
+            "H&M link is boat page, not trip"
+          ]
+        },
+        {
+          "boat": "San Diego",
+          "date": "2026-11-29",
+          "tripLength": "Full Day",
+          "price": 250,
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153",
+          "issues": []
+        },
+        {
+          "boat": "Producer",
+          "date": "2026-11-29",
+          "tripLength": "Overnight",
+          "price": 360,
+          "url": "https://www.hmlanding.com/boat/producer",
+          "issues": [
+            "wrong local date (real 2026-11-28)",
+            "H&M link is boat page, not trip"
+          ]
+        }
+      ]
+    }
+  ]
+}

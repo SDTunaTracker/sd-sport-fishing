@@ -1,0 +1,71 @@
+{
+  "case": {
+    "id": "c06-hm-specific",
+    "persona": "Wants H&M Producer specifically, then book",
+    "turns": [
+      "When is the next Producer overnight with open spots?",
+      "Book the first one for me"
+    ],
+    "expect": "Producer overnight departs ~8 PM PT the evening before the UTC date in data. Booking: honest hand-off; link should reach the trip."
+  },
+  "turns": [
+    {
+      "user": "When is the next Producer overnight with open spots?",
+      "text": "The next **Producer** overnight with open spots departs tomorrow morning — and it's got the highest forecast score of the week.\n\n<trip-card>\n{\"boat\": \"Producer\", \"landing\": \"H&M Landing\", \"tripLength\": \"Overnight\", \"departureDate\": \"2026-11-28\", \"departureTime\": \"04:00\", \"returnDate\": \"2026-11-29\", \"price\": 360, \"openSpots\": 14, \"maxLoad\": 29, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 7.3, \"winRate\": 22, \"avgTPA\": 1.9, \"bookingUrl\": \"https://www.hmlanding.com/boat/producer\", \"boatPageUrl\": \"#boat/Producer\"}\n</trip-card>\n\nProducer's **1.9 AvgTPA** (Trophy fish Per Angler per Day — average trophy-class fish each angler landed) is the best of any overnight boat in the schedule, and the **7.3 Forecast Score** (1–10 prediction based on temp, wind, swell, and catch history) is the highest offshore number this week. If 4am is too early, the next one departs Nov 29 at the same time with 6 spots open.\n\n<followups>\n[\"Compare Producer vs Sea Adventure 80\", \"Show me all overnight trips this week\", \"What's Producer's recent form?\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"View Producer\", \"action\": \"view-boat\", \"data\": \"Producer\"},\n  {\"label\": \"Show overnight trips\", \"action\": \"view-trips\", \"data\": {\"tripLength\": \"Overnight\"}},\n  {\"label\": \"Compare overnight boats\", \"action\": \"compare\", \"data\": [\"Producer\", \"Sea Adventure 80\"]}\n]\n</actions>",
+      "ms": 8508,
+      "usage": {
+        "input_tokens": 19593,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 594,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": [
+        {
+          "boat": "Producer",
+          "date": "2026-11-28",
+          "tripLength": "Overnight",
+          "price": 360,
+          "url": "https://www.hmlanding.com/boat/producer",
+          "issues": [
+            "wrong local date (real 2026-11-27)",
+            "H&M link is boat page, not trip"
+          ]
+        }
+      ]
+    },
+    {
+      "user": "Book the first one for me",
+      "text": "I can't book trips directly — but I can get you there in one click.\n\n👉 **[Book Producer – Nov 28 Overnight](https://www.hmlanding.com/boat/producer)**\n\nThat link takes you straight to H&M Landing's reservation page for the Producer. 14 of 29 spots were open as of the last update, but overnight trips on hot boats fill fast — I'd lock it in soon.\n\nNeed anything else before you book? I can pull up what to bring, compare it to another option, or check the forecast details.\n\n<followups>\n[\"What should I bring on an overnight?\", \"Compare Producer to Sea Adventure 80\", \"What's the forecast looking like for Nov 28?\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"View Producer stats\", \"action\": \"view-boat\", \"data\": \"Producer\"},\n  {\"label\": \"See forecast details\", \"action\": \"view-page\", \"data\": \"forecast\"}\n]\n</actions>",
+      "ms": 5480,
+      "usage": {
+        "input_tokens": 20200,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 306,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": []
+    }
+  ]
+}
