@@ -751,6 +751,32 @@ def trip_class(length: str | None) -> str | None:
     return None
 
 
+HEADLINE_MAX = 90
+
+
+def _shorten(text: str, n: int) -> str:
+    text = re.sub(r"\s+", " ", text or "").strip()
+    return text if len(text) <= n else text[: n - 1].rsplit(" ", 1)[0].rstrip(",;:-") + "…"
+
+
+def make_headline(top_spots: list[str], items: list[dict]) -> str | None:
+    """One line for a collapsed card: top spots, then the newest report's lead tackle note.
+
+    Built from the same extracted fields the card shows (no extra Claude call),
+    e.g. "Colonet and the Ridge · 40 lb fluoro, #1 circle".
+    """
+    parts = []
+    if top_spots:
+        parts.append(" and ".join(top_spots[:2]))
+    lead = next((it for it in items if it.get("tackle") or it.get("bait")), None)
+    if lead:
+        tackle = ", ".join(lead.get("tackle") or [])
+        parts.append(tackle or lead["bait"])
+    if not parts:
+        return None
+    return _shorten(" · ".join(parts), HEADLINE_MAX)
+
+
 def _report_day(r) -> str:
     return r["trip_date"] or (r["published_at"] or "")[:10]
 
@@ -780,19 +806,22 @@ def build_whats_working(conn, now: datetime | None = None) -> dict:
                 k = re.sub(r"\s+", " ", sp.strip().lower())
                 spot_names.setdefault(k, sp.strip())
                 spot_counts[k] = spot_counts.get(k, 0) + 1
+        items = [{
+            "boat": r["boat"] if (r["match_confidence"] or 0) >= MATCH_CONFIDENCE_MIN else None,
+            "trip_length": r["trip_length"], "trip_date": r["trip_date"],
+            "title": r["title"], "url": r["url"],
+            "tackle": json.loads(r["tackle"] or "[]")[:4],
+            "bait": r["bait"], "conditions": r["conditions"],
+        } for r in recent[:WW_MAX_ITEMS]]
+        top_spots = [spot_names[k] for k, _ in
+                     sorted(spot_counts.items(), key=lambda x: (-x[1], x[0]))][:5]
         classes[key] = {
             "label": label,
+            "headline": make_headline(top_spots, items),
             "window_days": window,
             "report_count": len(recent),
-            "top_spots": [spot_names[k] for k, _ in
-                          sorted(spot_counts.items(), key=lambda x: (-x[1], x[0]))][:5],
-            "items": [{
-                "boat": r["boat"] if (r["match_confidence"] or 0) >= MATCH_CONFIDENCE_MIN else None,
-                "trip_length": r["trip_length"], "trip_date": r["trip_date"],
-                "title": r["title"], "url": r["url"],
-                "tackle": json.loads(r["tackle"] or "[]")[:4],
-                "bait": r["bait"], "conditions": r["conditions"],
-            } for r in recent[:WW_MAX_ITEMS]],
+            "top_spots": top_spots,
+            "items": items,
         }
     return {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
