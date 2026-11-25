@@ -13,9 +13,11 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '../../..');
-const WEB = path.join(ROOT, 'web');
+// CC_WEB_DIR: load the site files from another folder (e.g. copies downloaded
+// from the live site) instead of this checkout's web/.
+const WEB = process.env.CC_WEB_DIR || path.join(ROOT, 'web');
 const PROXY = process.env.CHAT_PROXY_URL || 'https://chatbot.tylerjchristian.workers.dev';
-const ORIGIN = 'http://localhost:8765';
+const ORIGIN = process.env.CC_ORIGIN || 'http://localhost:8765';
 
 function loadWindow() {
   const store = {};

@@ -1,0 +1,50 @@
+{
+  "case": {
+    "id": "c08-forecast",
+    "persona": "Asks which day is best per forecast",
+    "turns": [
+      "Which day this week will have the best fishing according to your forecast?"
+    ],
+    "expect": "Declines to predict; pivots to recent catch history.",
+    "checks": [
+      {
+        "mustSay": [
+          "predict"
+        ],
+        "mustNotSay": [
+          "forecast (shows|says|has)",
+          "best day (is|will be)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Which day this week will have the best fishing according to your forecast?",
+      "text": "I don't make fishing predictions — I can show you what boats have actually been catching lately.\n\nIf you want, I can pull up this weekend's trips ranked by recent catch history (trophy fish per angler), or show which boats have been on the best recent form.\n\n<followups>[\"Show weekend trips by recent catch\", \"Which boats are hottest right now?\", \"Cheapest weekend overnight\"]</followups>",
+      "ms": 4018,
+      "usage": {
+        "input_tokens": 19788,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 131,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35943,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}
