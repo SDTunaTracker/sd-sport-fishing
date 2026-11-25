@@ -171,11 +171,50 @@ function SfbSlowSeason({ d }) {
   );
 }
 
+// Live conditions from window.SFBAY.MARINE (src.marine) when present.
+const SFB_ZONE_NAMES = { PZZ545: 'Coast, Pt Reyes to Pigeon Pt (0–10 nm)', PZZ571: 'Offshore (10–60 nm)',
+  PZZ530: 'SF Bay north of the Bay Bridge', PZZ531: 'SF Bay south of the Bay Bridge' };
+const SFB_BUOY_NAMES = { '46026': 'SF buoy (18 nm W)', '46237': 'SF Bar', '142': 'SF Bar (CDIP)', '46012': 'Half Moon Bay' };
+function sfbFt(m) { return m == null ? null : (m * 3.281).toFixed(1); }
+function sfbTime(iso) {
+  return new Date(iso).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' });
+}
+function SfbMarine({ m }) {
+  const nowIso = new Date().toISOString();
+  const tides = ((m.tides && m.tides.events) || []).filter(e => e.t >= nowIso).slice(0, 4);
+  const zone = (m.zones && (m.zones.PZZ545 || m.zones[Object.keys(m.zones)[0]])) || null;
+  const zoneId = m.zones && (m.zones.PZZ545 ? 'PZZ545' : Object.keys(m.zones)[0]);
+  const p = zone && zone.periods && zone.periods[0];
+  const buoys = Object.entries(m.buoys || {}).filter(([, b]) => b && b.waveM != null);
+  return (
+    <React.Fragment>
+      {m.smallCraftAdvisory && <div className="sfb-alert"><i className="fa-solid fa-triangle-exclamation"/> Small Craft Advisory in effect{(m.alerts || [])[0] && m.alerts[0].ends ? ' until ' + sfbTime(m.alerts[0].ends) : ''}. Bar and coastal trips may cancel.</div>}
+      <div className="sfb-cond-grid">
+        {buoys.map(([id, b]) => (
+          <div key={id} className="sfb-cond">
+            <div className="sfb-target-name">{SFB_BUOY_NAMES[id] || 'Buoy ' + id}</div>
+            <div className="sfb-cond-val">{sfbFt(b.waveM)} ft{b.periodS ? ' @ ' + Math.round(b.periodS) + 's' : ''}</div>
+            <div className="sfb-muted">{b.waterC != null ? Math.round(b.waterC * 9 / 5 + 32) + '°F water · ' : ''}{b.t ? sfbTime(b.t) : ''}</div>
+          </div>
+        ))}
+        {tides.length > 0 && (
+          <div className="sfb-cond">
+            <div className="sfb-target-name">SF tides</div>
+            {tides.map((e, i) => <div key={i} className="sfb-cond-tide"><b>{e.type === 'H' ? 'High' : 'Low'}</b> {e.ft != null ? e.ft.toFixed(1) + ' ft' : ''} <span className="sfb-muted">{sfbTime(e.t)}</span></div>)}
+          </div>
+        )}
+      </div>
+      {p && <div className="sfb-cond-fc"><b>{SFB_ZONE_NAMES[zoneId] || zoneId}, {p.name}:</b> {p.text}</div>}
+    </React.Fragment>
+  );
+}
+
 function SfbConditions({ d }) {
   return (
     <div className="sfb-card">
       <div className="sfb-card-title"><i className="fa-solid fa-water"/> Conditions & the bar</div>
-      <div className="sfb-muted" style={{ marginBottom: 8 }}>Check the Golden Gate bar and swell before you book. Live readings are coming; these open the official sources.</div>
+      {d.MARINE ? <SfbMarine m={d.MARINE}/> :
+        <div className="sfb-muted" style={{ marginBottom: 8 }}>Check the Golden Gate bar and swell before you book. These open the official sources.</div>}
       <div className="sfb-links">
         {d.CONDITIONS.map(c => <a key={c.id} className="sfb-link" href={c.url} target="_blank" rel="noopener">{c.label} <i className="fa-solid fa-arrow-up-right-from-square"/></a>)}
       </div>

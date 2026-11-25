@@ -40,6 +40,22 @@ CONDITIONS = [
 ]
 
 
+def _marine(conn: sqlite3.Connection) -> dict | None:
+    """Live marine conditions (NWS zones, SF tides, buoys incl. the SF Bar)
+    from src.marine, built by the data-health session (branch
+    claude/ais-conditions). Optional: None until that module is on main and
+    has data, and the page falls back to links."""
+    try:
+        from . import marine
+    except ImportError:
+        return None
+    try:
+        m = marine.region_payload(conn, N.REGION_SF_BAY)
+    except Exception:
+        return None
+    return m if (m and (m.get("zones") or m.get("buoys") or (m.get("tides") or {}).get("events"))) else None
+
+
 def _r(v, n=3):
     return None if v is None else round(v, n)
 
@@ -106,6 +122,7 @@ def build_payload(conn: sqlite3.Connection, today: date | None = None) -> dict:
         ((today - timedelta(days=14)).isoformat(),)).fetchall()
 
     return {
+        "MARINE": _marine(conn),
         "META": {
             "region": N.REGION_SF_BAY,
             "label": "SF Bay Area",

@@ -75,3 +75,10 @@
   .sfb-card { padding: 12px; }
   .sfb-table td, .sfb-table th { padding: 8px 5px; }
 }
+
+.sfb-alert { background: #FEF3C7; border: 1px solid #FCD34D; color: #78350F; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 13.5px; }
+.sfb-cond-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.sfb-cond { border: 1px solid var(--line, #E2E8F0); border-radius: 10px; padding: 10px 12px; }
+.sfb-cond-val { font: 700 20px/1.2 var(--serif, Georgia, serif); color: var(--ink, #1B3A33); margin: 4px 0 2px; }
+.sfb-cond-tide { font-size: 13px; margin-top: 3px; }
+.sfb-cond-fc { font-size: 13.5px; line-height: 1.5; color: var(--ink, #1B3A33); margin-bottom: 10px; }
