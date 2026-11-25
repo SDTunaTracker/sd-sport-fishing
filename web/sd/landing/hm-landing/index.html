@@ -39,7 +39,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20260923-3">
+<link rel="stylesheet" href="styles.css?v=20261124-7">
+<link rel="stylesheet" href="design-system.css?v=20261124-5">
 <script>window.VESSEL_WORKER_URL = '';</script>
 <script
   async
@@ -79,7 +80,7 @@
 <tr><td><a href="/sd/boat/Invicta">Invicta</a></td><td>94.4%</td><td>2.76</td><td>54</td></tr>
 <tr><td><a href="/sd/boat/Ocean%20Odyssey">Ocean Odyssey</a></td><td>94.3%</td><td>2.97</td><td>563</td></tr>
 <tr><td><a href="/sd/boat/Producer">Producer</a></td><td>92.3%</td><td>2.05</td><td>1036</td></tr>
-<tr><td><a href="/sd/boat/San%20Diego">San Diego</a></td><td>91.9%</td><td>1.61</td><td>2680</td></tr>
+<tr><td><a href="/sd/boat/San%20Diego">San Diego</a></td><td>91.9%</td><td>1.62</td><td>2681</td></tr>
 <tr><td><a href="/sd/boat/Legend">Legend</a></td><td>91.7%</td><td>2.15</td><td>792</td></tr>
 <tr><td><a href="/sd/boat/Sea%20Adventure%2080">Sea Adventure 80</a></td><td>91.5%</td><td>2.33</td><td>437</td></tr>
 <tr><td><a href="/sd/boat/Old%20Glory">Old Glory</a></td><td>91.0%</td><td>2.16</td><td>1496</td></tr>
@@ -107,7 +108,7 @@
 <tr><td><a href="/sd/boat/Alicia">Alicia</a></td><td>64.6%</td><td>2.23</td><td>237</td></tr>
 <tr><td><a href="/sd/boat/Little%20G">Little G</a></td><td>61.7%</td><td>2.86</td><td>60</td></tr>
 <tr><td><a href="/sd/boat/Spirit%20of%20Adventure">Spirit of Adventure</a></td><td>58.9%</td><td>1.58</td><td>73</td></tr>
-<tr><td><a href="/sd/boat/Tradition">Tradition</a></td><td>56.6%</td><td>1.54</td><td>113</td></tr>
+<tr><td><a href="/sd/boat/Tradition">Tradition</a></td><td>56.1%</td><td>1.54</td><td>114</td></tr>
 <tr><td><a href="/sd/boat/Nautilus">Nautilus</a></td><td>52.2%</td><td>1.84</td><td>617</td></tr>
 <tr><td><a href="/sd/boat/Blue%20Horizon">Blue Horizon</a></td><td>51.1%</td><td>3.09</td><td>139</td></tr>
 <tr><td><a href="/sd/boat/Premier">Premier</a></td><td>46.3%</td><td>0.71</td><td>356</td></tr>
@@ -123,43 +124,42 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-js" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin="anonymous"></script>
 
-<script src="dates.js?v=20260923-1"></script>
-<script src="feature-flags.js?v=20260923-1"></script>
-<script src="regions.js?v=20260923-1"></script>
-<script src="data.js?v=20260923-1"></script>
-<script src="chat-api.js?v=20260923-1"></script>
-<script src="analytics.js?v=20260923-1"></script>
-<script src="analytics-events.js?v=20260923-1"></script>
-<script src="clerk-init.js?v=20260923-1"></script>
-<script src="use-auth.js?v=20260923-1"></script>
-<script src="user-prefs.js?v=20260923-1"></script>
-<script src="metric-definitions.js?v=20260923-1"></script>
+<script src="dates.js?v=20261124-1"></script>
+<script src="feature-flags.js?v=20261124-1"></script>
+<script src="regions.js?v=20261124-1"></script>
+<script src="data.js?v=20261124-1"></script>
+<script src="chat-api.js?v=20261124-2"></script>
+<script src="analytics.js?v=20261124-7"></script>
+<script src="analytics-events.js?v=20261124-1"></script>
+<script src="clerk-init.js?v=20261124-1"></script>
+<script src="use-auth.js?v=20261124-1"></script>
+<script src="user-prefs.js?v=20261124-1"></script>
+<script src="metric-definitions.js?v=20261124-1"></script>
 
-<script src="dist/tweaks-panel.js?v=20260923-1"></script>
-<script src="dist/metric-label.js?v=20260923-1"></script>
-<script src="dist/ui.js?v=20260923-1"></script>
-<script src="dist/components.js?v=20260923-1"></script>
-<script src="dist/filterbar.js?v=20260923-1"></script>
-<script src="dist/dashboard.js?v=20260923-2"></script>
-<script src="dist/home.js?v=20260923-1"></script>
-<script src="dist/boats.js?v=20260923-1"></script>
-<script src="dist/drilldown.js?v=20260923-1"></script>
-<script src="dist/reddit-widget.js?v=20260923-1"></script>
-<script src="dist/boat-reviews.js?v=20260923-1"></script>
+<script src="dist/tweaks-panel.js?v=20261124-5"></script>
+<script src="dist/metric-label.js?v=20261124-5"></script>
+<script src="dist/ui.js?v=20261124-5"></script>
+<script src="dist/components.js?v=20261124-5"></script>
+<script src="dist/filterbar.js?v=20261124-5"></script>
+<script src="dist/dashboard.js?v=20261124-7"></script>
+<script src="dist/home.js?v=20261124-7"></script>
+<script src="dist/boats.js?v=20261124-5"></script>
+<script src="dist/drilldown.js?v=20261124-6"></script>
+<script src="dist/boat-reviews.js?v=20261124-5"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20260923-7"></script>
-<script src="dist/tripplanner.js?v=20260923-1"></script>
-<script src="dist/headtohead.js?v=20260923-1"></script>
-<script src="dist/seasonality.js?v=20260923-1"></script>
-<script src="dist/moon.js?v=20260923-1"></script>
-<script src="dist/settings.js?v=20260923-1"></script>
-<script src="dist/account.js?v=20260923-1"></script>
-<script src="dist/analytics.js?v=20260923-1"></script>
-<script src="dist/forecast.js?v=20260923-1"></script>
-<script src="dist/admin.js?v=20260923-1"></script>
-<script src="dist/chatbot.js?v=20260923-1"></script>
-<script src="dist/app.js?v=20260923-1"></script>
-<script src="seo.js?v=20260923-1"></script>
+<script src="dist/charts.js?v=20261124-5"></script>
+<script src="dist/tripplanner.js?v=20261124-5"></script>
+<script src="dist/headtohead.js?v=20261124-5"></script>
+<script src="dist/seasonality.js?v=20261124-5"></script>
+<script src="dist/moon.js?v=20261124-5"></script>
+<script src="dist/settings.js?v=20261124-5"></script>
+<script src="dist/account.js?v=20261124-6"></script>
+<script src="dist/analytics.js?v=20261124-6"></script>
+<script src="dist/forecast.js?v=20261124-5"></script>
+<script src="dist/admin.js?v=20261124-5"></script>
+<script src="dist/chatbot.js?v=20261124-5"></script>
+<script src="dist/app.js?v=20261124-6"></script>
+<script src="seo.js?v=20261124-1"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
