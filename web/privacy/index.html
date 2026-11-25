@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — The Tuna Tracker</title>
+<meta name="description" content="What The Tuna Tracker collects, why, and the choices you have.">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+  /* Tokens mirror web/design-system.css (cream / pine / orange). */
+  :root {
+    --bg: #FBFAF6; --surface: #FFFFFF; --ink: #17332C; --ink-2: #2D4A42;
+    --muted: #5A6E66; --line: #EAE6DC; --band: #F4F1E9;
+    --pine: #17332C; --accent: #CF6A3C; --accent-ink: #B0542A;
+    --radius: 16px; --focus: 0 0 0 3px rgba(207,106,60,.22);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink-2);
+         font: 16px/1.65 Inter, system-ui, sans-serif; }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+  .top { background: var(--surface); border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: 760px; margin: 0 auto; padding: 0 16px; height: 56px;
+               display: flex; align-items: center; justify-content: space-between; }
+  .brand { font: 700 19px/1 Fraunces, Georgia, serif; color: var(--ink); text-decoration: none; }
+  .back { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px;
+          font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 72px; }
+  .eyebrow { font: 500 12px/1 'DM Mono', ui-monospace, monospace; letter-spacing: .12em;
+             text-transform: uppercase; color: var(--accent-ink); margin: 0 0 12px; }
+  h1 { font: 700 clamp(34px, 7vw, 48px)/1.05 Fraunces, Georgia, serif; color: var(--ink);
+       margin: 0 0 12px; letter-spacing: -.01em; }
+  .updated { font: 400 13px/1.4 'DM Mono', ui-monospace, monospace; color: var(--muted); margin: 0 0 28px; }
+  .lede { font-size: 18px; color: var(--ink-2); margin: 0 0 32px; }
+  .summary { background: var(--band); border: 1px solid var(--line); border-radius: var(--radius);
+             padding: 20px 24px; margin: 0 0 40px; }
+  .summary h2 { margin-top: 0; font-size: 20px; }
+  .summary ul { margin: 0; padding-left: 20px; }
+  h2 { font: 600 24px/1.2 Fraunces, Georgia, serif; color: var(--ink); margin: 44px 0 12px; }
+  h3 { font: 600 16px/1.3 Inter, sans-serif; color: var(--ink); margin: 24px 0 6px; }
+  p, li { margin: 0 0 12px; }
+  ul { padding-left: 22px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 16px; }
+  th { text-align: left; font: 500 11px/1.2 'DM Mono', monospace; letter-spacing: .1em;
+       text-transform: uppercase; color: var(--muted); padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { font-weight: 500; color: var(--ink); white-space: nowrap; }
+  @media (max-width: 560px) {
+    main { padding-top: 28px; }
+    table, thead, tbody, tr, td { display: block; }
+    thead { display: none; }
+    tr { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    td { border: 0; padding: 2px 0; }
+  }
+  footer { border-top: 1px solid var(--line); }
+  .foot-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; font-size: 14px; color: var(--muted);
+                display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+</style>
+<!-- Google tag (gtag.js) — same as the rest of the site, disclosed below. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6QDTY73V37"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-6QDTY73V37');</script>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="/sd/home">The Tuna Tracker</a>
+    <a class="back" href="/sd/home">← Back to the site</a>
+  </div>
+</header>
+
+<main>
+  <p class="eyebrow">Privacy</p>
+  <h1>Your privacy</h1>
+  <p class="updated">Last updated: November 24, 2026</p>
+
+  <p class="lede">The Tuna Tracker shows public fish counts from San Diego's sportfishing landings.
+  You can use almost all of it without an account. This page explains, in plain language,
+  what the site collects, where it goes, and what you can do about it.</p>
+
+  <section class="summary" aria-labelledby="short">
+    <h2 id="short">The short version</h2>
+    <ul>
+      <li>We use Google Analytics to see which pages and features people use.</li>
+      <li>If you sign in, your account is handled by Clerk, and your saved preferences are stored with it.</li>
+      <li>Boat reviews you post are public. We store a shortened, one-way hash of your IP address with each review to fight spam.</li>
+      <li>Messages you type into the trip-planning chat are sent to Anthropic's AI to write the reply.</li>
+      <li>Saved boats, map waypoints and display settings are stored in your browser.</li>
+    </ul>
+  </section>
+
+  <h2>When you browse</h2>
+  <p>The site uses <strong>Google Analytics</strong>, which sets cookies and records things like the pages you visit,
+  your general location and device type, and some actions on the site. Examples include which trip you click in the Trip Planner
+  (boat, dates, price) and which filters you apply. We use this to understand what's useful and what to improve.
+  Google processes this data under <a href="https://policies.google.com/privacy" rel="noopener">its own privacy policy</a>.</p>
+  <p>The site is hosted on <strong>Cloudflare</strong>. Like any web host, Cloudflare receives your IP address and basic request details when you load a page.</p>
+  <p>Some content loads from other services, which also see your IP address when your browser fetches from them:</p>
+  <table>
+    <thead><tr><th>Service</th><th>What it provides</th></tr></thead>
+    <tbody>
+      <tr><td>Google Fonts</td><td>Typefaces</td></tr>
+      <tr><td>unpkg, cdnjs</td><td>Open-source code libraries</td></tr>
+      <tr><td>Stadia Maps</td><td>Base map on the Charts page</td></tr>
+      <tr><td>NASA GIBS</td><td>Satellite ocean imagery on the Charts page</td></tr>
+    </tbody>
+  </table>
+
+  <h2>If you create an account</h2>
+  <p>Sign-in is provided by <strong>Clerk</strong>. Clerk stores the details you sign up with (such as your email address and name)
+  and handles passwords and sign-in. See <a href="https://clerk.com/legal/privacy" rel="noopener">Clerk's privacy policy</a>.</p>
+  <p>When you're signed in, preferences such as the boats you follow are saved to your Clerk account profile so they follow you across devices.</p>
+
+  <h2>Boat reviews</h2>
+  <p>When you post a review, we store what you submit: the boat and trip details, your ratings, the title and text,
+  whether you'd rebook, and the name you enter (or "Anonymous"). <strong>Reviews are shown publicly</strong> on boat pages.</p>
+  <ul>
+    <li><strong>Photos</strong> you attach are uploaded to <strong>Cloudinary</strong>, an image-hosting service, and shown with your review.</li>
+    <li><strong>Spam protection:</strong> to limit each visitor to 5 reviews per hour, we keep a counter tied to your IP address for about an hour.
+    We also store a shortened, one-way hash of your IP address with each review. A hash is a scrambled code that can't be turned back into the address,
+    but it lets us spot repeated abuse.</li>
+  </ul>
+
+  <h2>Trip-planning chat</h2>
+  <p>On the Trip Planner, the chat assistant sends your message, the earlier messages in that conversation, and a summary of the page you're on
+  through our relay server to <strong>Anthropic</strong>, which provides the AI model that writes the answer. Our relay passes the conversation along
+  and doesn't save it. Anthropic handles it under <a href="https://www.anthropic.com/legal/privacy" rel="noopener">its own policies</a>.
+  Please don't type personal details you don't want shared into the chat.</p>
+
+  <h2>Stored in your browser</h2>
+  <p>Some features remember things using your browser's local storage. This data stays on your device unless noted:</p>
+  <ul>
+    <li>Saved or followed boats. When you're signed in, followed boats are also synced to your account.</li>
+    <li>Map waypoints you add on the Charts page</li>
+    <li>Your region, map and display settings</li>
+    <li>Trips you've recently viewed, and a log of the trips you've clicked</li>
+    <li>A daily count of chat messages, used to apply the chat limit</li>
+  </ul>
+  <p>The site also installs a service worker that caches pages so they load quickly and work offline.</p>
+
+  <h2>Your location</h2>
+  <p>"Locate me" on the Charts page asks your browser for your location only when you tap it, and only if you allow it.
+  It's used in your browser to center the map. The site doesn't send your location to us.</p>
+
+  <h2>Your choices</h2>
+  <ul>
+    <li><strong>Clear what's stored on your device</strong> by clearing this site's data in your browser settings.</li>
+    <li><strong>Limit analytics</strong> with your browser's tracking protection, a content blocker, or
+    <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener">Google's opt-out add-on</a>.</li>
+    <li><strong>Ask us to delete</strong> your account or a review you posted by emailing us (below).</li>
+  </ul>
+
+  <h2>Changes and contact</h2>
+  <p>If we change how the site handles data, we'll update this page and the date at the top.</p>
+  <p>Questions or requests: <a href="mailto:thetunatracker@gmail.com?subject=Privacy">thetunatracker@gmail.com</a></p>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span>© 2026 The Tuna Tracker</span>
+    <a href="/sd/home">thetunatracker.com</a>
+  </div>
+</footer>
+</body>
+</html>

@@ -565,6 +565,11 @@ function AppFooter() {
         timeZone: 'America/Los_Angeles', timeZoneName: 'short',
       })
     : null;
+  // Same rounding as the homepage hero, so the two trip counts always agree.
+  const totalTrips = window.SD?.META?.tripCount || 0;
+  const tripDisplay = totalTrips
+    ? (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+ trips tracked since 2015.'
+    : 'Trips tracked since 2015.';
 
   return (
     <footer className="app-footer">
@@ -573,8 +578,8 @@ function AppFooter() {
           <div className="app-footer-logo">The Tuna Tracker</div>
           <p className="app-footer-blurb">
             San Diego's most complete sportfishing analytics — daily fish counts,
-            boat leaderboards, and trip stats from all four major landings.
-            38,600+ trips tracked since 2015.
+            boat leaderboards, and trip stats from every major San Diego landing.
+            {' '}{tripDisplay}
           </p>
           {updatedStr && (
             <div className="app-footer-updated">Data as of {updatedStr}</div>
@@ -598,6 +603,7 @@ function AppFooter() {
           <span className="app-footer-data-item">Fisherman's Landing</span>
           <span className="app-footer-data-item">Seaforth Sportfishing</span>
           <span className="app-footer-data-item">Point Loma Sportfishing</span>
+          <span className="app-footer-data-item">Oceanside Sea Center</span>
           <div className="app-footer-data-note">
             Reported daily from{' '}
             <a href="https://fishcounts.com" target="_blank" rel="noopener noreferrer"
@@ -613,9 +619,7 @@ function AppFooter() {
           <a href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
              className="app-footer-link">Contact</a>
           <span className="app-footer-sep">·</span>
-          <span className="app-footer-link muted">About</span>
-          <span className="app-footer-sep">·</span>
-          <span className="app-footer-link muted">Privacy</span>
+          <a href="/privacy/" className="app-footer-link">Privacy</a>
         </nav>
       </div>
     </footer>

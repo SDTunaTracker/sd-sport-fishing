@@ -164,7 +164,7 @@ const DEFAULT_FILTERS = {
   boat: 'all',
   tripLength: 'all',
   species: 'all',
-  minTrips: 1,
+  minTrips: 5,
   includeZero: true,
 };
 

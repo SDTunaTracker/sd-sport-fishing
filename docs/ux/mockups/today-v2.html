@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today mockup v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FBFAF6;--surface:#fff;--ink:#17332C;--ink-2:#2D4A42;--muted:#5A6E66;--faint:#8C978F;--line:#EAE6DC;--band:#F4F1E9;--pine:#17332C;--accent:#CF6A3C;--accent-ink:#B0542A;--good:#2E7D5B;--bad:#B8432F;
+--yf:#C9A227;--bf:#2F5D8A;--yt:#4F8A5B;--do:#2F7F86;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink-2);font:15px/1.5 Inter,sans-serif}
+.mono{font-family:'DM Mono',monospace}
+.nav{height:48px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:28px}
+.nav b{font:700 17px Fraunces,serif;color:var(--ink)}.nav span{font-size:14px;color:var(--muted)}.nav .on{color:var(--ink);font-weight:600;box-shadow:inset 0 -2px var(--accent)}
+.links{display:flex;gap:24px;align-items:center;align-self:stretch}.links span{display:flex;align-items:center;height:100%}.nav .signin{color:#fff;margin-left:auto;background:var(--pine);color:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600}
+.wrap{max-width:1184px;margin:0 auto;padding:36px 24px 64px}
+.eyebrow{font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 10px}
+.headrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font:700 40px/1.05 Fraunces,serif;color:var(--ink);margin:0;letter-spacing:-.01em}
+.step{display:inline-flex;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.step button{all:unset;width:40px;height:40px;display:grid;place-items:center;color:var(--muted);font-size:18px}
+.step button+button{border-left:1px solid var(--line)}
+.asof{font:400 12px 'DM Mono',monospace;color:var(--faint);margin-left:auto}
+.lede{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:760px;margin:14px 0 22px}
+.lede strong{color:var(--ink);font-weight:600}
+.up{color:var(--good);font-weight:600}
+.strip{display:flex;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:28px}
+.stat{padding:14px 28px 14px 0;margin-right:28px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat .n{font:500 24px/1 'DM Mono',monospace;color:var(--ink)}
+.stat .l{font-size:12.5px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.cond{margin-left:auto;align-self:center;font-size:13px;color:var(--muted);text-align:right;line-height:1.5}
+.cond b{color:var(--good);font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+.tbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
+.tbar h2{font:600 22px Fraunces,serif;color:var(--ink);margin:0}
+.chips{display:flex;gap:6px;overflow:auto}
+.chip{flex:none;height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;display:grid;place-items:center;font-size:13px;color:var(--ink-2);background:#fff}
+.chip.on{background:var(--pine);color:#fff;border-color:var(--pine)}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+th{font:500 10.5px 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);background:#fff}
+td{padding:14px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.r{text-align:right}.rank{font:500 13px 'DM Mono',monospace;color:var(--faint);width:28px}
+.boat{font-weight:600;color:var(--ink)}.land{font-size:12.5px;color:var(--muted)}
+.num{font-family:'DM Mono',monospace;color:var(--ink)}.big{font-weight:500;font-size:15px}
+.vs{font:500 12.5px 'DM Mono',monospace}.vs.u{color:var(--good)}.vs.d{color:var(--bad)}
+.chev{color:var(--faint);width:28px;text-align:right;font-size:16px}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px}
+.card{background:var(--pine);color:#fff;border-radius:16px;padding:22px}
+.card .eyebrow{color:#E9B79C}.card h3{font:700 22px/1.15 Fraunces,serif;margin:0 0 6px}
+.card p{margin:0 0 16px;font-size:13.5px;color:#C9D6D0}
+.btn{display:inline-flex;align-items:center;height:44px;padding:0 18px;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;font-size:14px}
+.side-link{display:block;margin-top:14px;font-size:13.5px;color:var(--accent-ink);font-weight:500}
+.mlist{display:none}
+@media (max-width:760px){
+ .links,.asof{display:none}.wrap{padding:24px 16px 48px}
+ h1{font-size:30px}.headrow{gap:12px}.lede{font-size:16px;margin:12px 0 18px}
+ .strip{flex-wrap:wrap;border-bottom:0}.stat{width:50%;margin:0;padding:12px 0;border-right:0;border-bottom:1px solid var(--line)}
+ .cond{margin:14px 0 0;text-align:left;width:100%}
+ .grid{grid-template-columns:minmax(0,1fr);gap:28px}
+ .tbar{flex-direction:column;align-items:flex-start}.chips{width:calc(100% + 16px);padding-right:16px}
+ table{display:none}.mlist{display:block;background:#fff;border:1px solid var(--line);border-radius:14px}
+ .mrow{display:grid;grid-template-columns:22px minmax(0,1fr) auto 16px;gap:10px;align-items:center;padding:14px;border-bottom:1px solid var(--line);min-height:64px}
+ .mrow:last-child{border-bottom:0}
+ .mrow .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+ .mrow .rt{text-align:right}.mrow .rt .num{font-size:16px;font-weight:500}
+}
+</style>
+</head>
+<body>
+<div class="nav"><b>The Tuna Tracker</b><div class="links"><span class="on">Today</span><span>Charts</span><span>Boats</span><span>Analytics</span><span>Trip Planner</span></div><span class="signin">Sign in</span></div>
+<div class="wrap">
+  <p class="eyebrow">Today's report · San Diego</p>
+  <div class="headrow">
+    <h1>Monday, Nov 23</h1>
+    <div class="step"><button aria-label="Previous day">‹</button><button aria-label="Next day">›</button></div>
+    <span class="asof">Updated Nov 24, 1:52 PM · all 5 landings in</span>
+  </div>
+  <p class="lede"><strong>5 boats brought in 430 fish</strong>, almost all yellowfin. The fleet averaged 2.74 fish per angler, <span class="up">45% above</span> the last 30 days.</p>
+
+  <div class="strip">
+    <div class="stat"><div class="n">430</div><div class="l">total fish</div></div>
+    <div class="stat"><div class="n">415</div><div class="l"><i class="dot" style="background:var(--yf)"></i>yellowfin</div></div>
+    <div class="stat"><div class="n">13</div><div class="l"><i class="dot" style="background:var(--do)"></i>dorado</div></div>
+    <div class="stat"><div class="n">2</div><div class="l"><i class="dot" style="background:var(--yt)"></i>yellowtail</div></div>
+    <div class="cond">Conditions <b>excellent</b><br>60-Mile Bank 71°F, 5.5° above avg · full moon</div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="tbar"><h2>Boats</h2>
+        <div class="chips"><span class="chip on">All</span><span class="chip">H&amp;M</span><span class="chip">Fisherman's</span><span class="chip">Seaforth</span><span class="chip">Point Loma</span><span class="chip">Oceanside</span></div>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Boat</th><th>Trip</th><th>Catch</th><th class="r">Anglers</th><th class="r">Fish/angler</th><th class="r">Vs usual</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="rank">1</td><td><div class="boat">San Diego</div><div class="land">Seaforth</div></td><td>Full day</td><td>160 yellowfin</td><td class="r num">35</td><td class="r num big">4.57</td><td class="r vs u">▲ 71%</td><td class="chev">›</td></tr>
+          <tr><td class="rank">2</td><td><div class="boat">Producer</div><div class="land">H&amp;M</div></td><td>Overnight</td><td>75 yellowfin · 13 dorado</td><td class="r num">21</td><td class="r num big">4.19</td><td class="r vs d">▼ 38%</td><td class="chev">›</td></tr>
+          <tr><td class="rank">3</td><td><div class="boat">Sea Watch</div><div class="land">Seaforth</div></td><td>Full day</td><td>115 yellowfin</td><td class="r num">36</td><td class="r num big">3.19</td><td class="r vs u">▲ 49%</td><td class="chev">›</td></tr>
+          <tr><td class="rank">4</td><td><div class="boat">Dolphin</div><div class="land">Fisherman's</div></td><td>Full day</td><td>65 yellowfin</td><td class="r num">44</td><td class="r num big">1.48</td><td class="r vs u">▲ 19%</td><td class="chev">›</td></tr>
+          <tr><td class="rank">5</td><td><div class="boat">Chubasco II</div><div class="land">Oceanside</div></td><td>Full day</td><td>2 yellowtail</td><td class="r num">8</td><td class="r num big">0.25</td><td class="r vs d">▼ 37%</td><td class="chev">›</td></tr>
+        </tbody>
+      </table>
+      <div class="mlist">
+        <div class="mrow"><span class="rank">1</span><div><div class="boat">San Diego <span class="land">· Seaforth</span></div><div class="sub">Full day · 160 yellowfin</div></div><div class="rt"><div class="num">4.57</div><div class="vs u">▲ 71%</div></div><span class="chev">›</span></div>
+        <div class="mrow"><span class="rank">2</span><div><div class="boat">Producer <span class="land">· H&amp;M</span></div><div class="sub">Overnight · 75 yellowfin, 13 dorado</div></div><div class="rt"><div class="num">4.19</div><div class="vs d">▼ 38%</div></div><span class="chev">›</span></div>
+        <div class="mrow"><span class="rank">3</span><div><div class="boat">Sea Watch <span class="land">· Seaforth</span></div><div class="sub">Full day · 115 yellowfin</div></div><div class="rt"><div class="num">3.19</div><div class="vs u">▲ 49%</div></div><span class="chev">›</span></div>
+        <div class="mrow"><span class="rank">4</span><div><div class="boat">Dolphin <span class="land">· Fisherman's</span></div><div class="sub">Full day · 65 yellowfin</div></div><div class="rt"><div class="num">1.48</div><div class="vs u">▲ 19%</div></div><span class="chev">›</span></div>
+        <div class="mrow"><span class="rank">5</span><div><div class="boat">Chubasco II <span class="land">· Oceanside</span></div><div class="sub">Full day · 2 yellowtail</div></div><div class="rt"><div class="num">0.25</div><div class="vs d">▼ 37%</div></div><span class="chev">›</span></div>
+      </div>
+      <p class="note">Ranked by fish per angler. "Vs usual" compares each trip with the same boat's same-length trips over the last 30 days.</p>
+    </div>
+    <aside>
+      <div class="card"><p class="eyebrow">Book next</p><h3>Producer · Overnight</h3><p>Departs Fri, Nov 27 · $360 · 14 spots left</p><span class="btn">Book this trip →</span></div>
+      <a class="side-link">See the season leaderboard →</a>
+    </aside>
+  </div>
+</div>
+</body>
+</html>

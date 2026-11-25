@@ -574,28 +574,27 @@ function ReturnVisitToast({ navigate }) {
 function TodayView({ navigate, settings, regions }) {
   const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
 
+  // Today v2 (web/home.jsx → TodayReport): the date is the title, a one-line
+  // summary, a quiet species strip, then the ranked boat list. It shares the
+  // "vs usual" logic and row details with Home's counts block. No season
+  // leaderboard here (Home rail + Analytics have it), just a link.
+  if (window.THTodayReport) {
+    return (
+      <React.Fragment>
+        <ReturnVisitToast navigate={navigate}/>
+        <window.THTodayReport navigate={navigate} settings={settings} regions={regions}/>
+      </React.Fragment>
+    );
+  }
   return (
     <React.Fragment>
       <ReturnVisitToast navigate={navigate}/>
       <div className="pagehead">
         <div>
           <h1>Today's Report <span className="region-subtitle-badge">{regionLabel}</span></h1>
-          <p className="pagehead-lede">
-            Every boat that reported in, ranked by tuna per angler per day.
-          </p>
         </div>
       </div>
-
-      {/* Same counts block as the home page (conditions band, one ‹ date ›
-          control, landing chips, two-line rows on phones, "vs usual" %).
-          It replaces the old forecast card + TodayCatch table, which showed
-          the date twice and used a different, louder rating language.
-          The season "Top Boats" card was removed from this page; the season
-          leaderboard lives on Home (rail) and Analytics, and the counts block
-          ends with a "Full season analytics →" link. */}
-      {window.THCountsSection
-        ? <window.THCountsSection navigate={navigate} settings={settings} regions={regions}/>
-        : <TodayCatch navigate={navigate} settings={settings} regions={regions}/>}
+      <TodayCatch navigate={navigate} settings={settings} regions={regions}/>
     </React.Fragment>
   );
 }
