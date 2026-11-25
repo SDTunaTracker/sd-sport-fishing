@@ -1163,7 +1163,7 @@ function TripPlanner({ navigate, regions }) {
         </div>
 
         <div className="tp-results">
-          {window.WhatsWorkingCard && <WhatsWorkingCard lengths={selLengths}/>}
+          {window.WhatsWorkingCard && <WhatsWorkingCard lengths={selLengths} regions={regions}/>}
           <div className="tp-results-head">
             <div className="tp-results-count">
               <strong>{fmt.n(displayed.length)}</strong> upcoming trip{displayed.length !== 1 ? 's' : ''}

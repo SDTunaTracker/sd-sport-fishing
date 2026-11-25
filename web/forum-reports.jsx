@@ -196,19 +196,29 @@ function _wwClassFor(lengths) {
   return hits.length === 1 ? hits[0] : null;
 }
 
-function WhatsWorkingCard({ lengths }) {
+// The site's selected region -> which block of whats_working.json to show.
+// One region selected: that region's reports (incl. ones tagged "both");
+// SD + OC/LA together (or no region info): every report.
+function _wwClassesFor(data, regions) {
+  const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : 'all_socal';
+  if (eff !== 'all_socal' && data.by_region && data.by_region[eff]) return data.by_region[eff];
+  return data.classes;
+}
+
+function WhatsWorkingCard({ lengths, regions }) {
   const [data, setData] = _frUseState(null);
   const [pick, setPick] = _frUseState(null);
   _frUseEffect(() => { let live = true; loadWhatsWorking().then(d => live && setData(d)); return () => { live = false; }; }, []);
   if (!data?.classes) return null;
+  const classes = _wwClassesFor(data, regions);
 
-  const withItems = Object.keys(data.classes).filter(k => data.classes[k].items?.length);
+  const withItems = Object.keys(classes).filter(k => classes[k].items?.length);
   if (!withItems.length) return null;
   const preferred = _wwClassFor(lengths);
   const key = (pick && withItems.includes(pick)) ? pick
     : (preferred && withItems.includes(preferred)) ? preferred
-    : withItems.reduce((a, b) => (data.classes[b].report_count > data.classes[a].report_count ? b : a));
-  const c = data.classes[key];
+    : withItems.reduce((a, b) => (classes[b].report_count > classes[a].report_count ? b : a));
+  const c = classes[key];
 
   return (
     <section className="ww-card" aria-labelledby="ww-title">
@@ -225,7 +235,7 @@ function WhatsWorkingCard({ lengths }) {
           {withItems.map(k => (
             <button key={k} role="tab" aria-selected={k === key}
               className={`ww-tab${k === key ? ' on' : ''}`} onClick={() => setPick(k)}>
-              {data.classes[k].label}
+              {classes[k].label}
             </button>
           ))}
         </div>
