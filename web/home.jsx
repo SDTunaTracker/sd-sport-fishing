@@ -647,7 +647,7 @@
   // ── Redesigned home ───────────────────────────────────────────────────────
   function HomeViewV2({ navigate, settings, regions }) {
     if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
-    const totalTrips = (window.SD && window.SD.META && window.SD.META.tripCount) || 0;
+    const totalTrips = (window.ttRegionData ? window.ttRegionData.totalTripCount() : ((window.SD && window.SD.META && window.SD.META.tripCount) || 0));
     const tripDisplay = (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+';
 
     return (

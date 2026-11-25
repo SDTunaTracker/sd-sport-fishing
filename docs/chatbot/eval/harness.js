@@ -27,8 +27,14 @@ function loadWindow() {
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'chat-api.js', 'analytics.js']) {
+  for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'region-data.js', 'chat-api.js', 'analytics.js']) {
     vm.runInContext(fs.readFileSync(path.join(WEB, f), 'utf8'), ctx, { filename: f });
+  }
+  // Non-base regions (OC/LA, ...) live in data-region-<id>.js; merge them all.
+  const regionFiles = (ctx.SD.META && ctx.SD.META.REGION_FILES) || {};
+  for (const [id, f] of Object.entries(regionFiles)) {
+    vm.runInContext(fs.readFileSync(path.join(WEB, f.file), 'utf8'), ctx, { filename: f.file });
+    ctx.ttRegionData.adopt(id);
   }
   ctx.DEFAULT_FILTERS = {
     year: String(ctx.TT_DATES.getPacificYear()), month: 'all', landing: 'all', boat: 'all',

@@ -218,6 +218,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
+          # Per-region data files (data-region-oc_la.js, ...) from src/export.py.
+          if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

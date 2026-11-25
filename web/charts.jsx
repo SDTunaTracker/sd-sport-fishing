@@ -1486,7 +1486,11 @@ function _fsTitle(s) { return String(s).replace(/_/g, ' ').replace(/\b\w/g, func
 
 function _fsSectionHtml(p) {
   var r7 = p.reports_7d || 0, r14 = p.reports_14d || 0;
-  var chips = Object.keys(p.species || {}).sort(function(a, b) { return p.species[b] - p.species[a]; })
+  // Tracked species first (by count), then other named species, "other" last.
+  function _rank(k) { k = String(k).toLowerCase(); return FS_SPECIES[k] ? 0 : (k === 'other' ? 2 : 1); }
+  var chips = Object.keys(p.species || {}).sort(function(a, b) {
+      return (_rank(a) - _rank(b)) || (p.species[b] - p.species[a]);
+    })
     .slice(0, 6).map(function(k) {
       var sp = FS_SPECIES[String(k).toLowerCase()];
       var label = sp ? sp[0] : _fsTitle(k);

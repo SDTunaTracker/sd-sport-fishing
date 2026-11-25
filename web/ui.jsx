@@ -587,7 +587,7 @@ function AppFooter({ regions } = {}) {
       })
     : null;
   // Same rounding as the homepage hero, so the two trip counts always agree.
-  const totalTrips = window.SD?.META?.tripCount || 0;
+  const totalTrips = (window.ttRegionData ? window.ttRegionData.totalTripCount() : ((window.SD && window.SD.META && window.SD.META.tripCount) || 0));
   const tripDisplay = totalTrips
     ? (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+ trips tracked since 2015.'
     : 'Trips tracked since 2015.';

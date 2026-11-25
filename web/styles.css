@@ -7088,3 +7088,13 @@ button.btn-save-boat[data-saved="true"],
   .ww-tabs { width: calc(100% + 16px); margin-right: -16px; padding-right: 16px;
     -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
 }
+
+/* Region data file loading (web/region-data.js, app.jsx RegionLoading) */
+.region-loading { max-width: 720px; margin: 48px auto; padding: 0 16px; text-align: center; }
+.region-loading-title { font: 600 20px/1.3 var(--serif); color: var(--ink); display: inline-flex; align-items: center; gap: 10px; }
+.region-loading-sub { margin: 6px 0 20px; color: var(--muted); font-size: 14px; }
+.region-loading .skel-block { text-align: left; }
+.region-loading .btn { margin-top: 4px; }
+.region-loading-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); display: inline-block; animation: region-spin .8s linear infinite; }
+@keyframes region-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .region-loading-spinner { animation: none; } }
