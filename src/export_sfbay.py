@@ -1,4 +1,4 @@
-"""SF Bay Area export: norcal_trips -> web/sfbay-data.js (window.SFBAY).
+"""SF Bay Area export: norcal_trips -> web/data-region-sfbay.js (window.SFBAY).
 
 Kept apart from data.js (window.SD) on purpose:
   * San Diego / OC-LA code never sees SF Bay trips, so the "All SoCal"
@@ -21,7 +21,7 @@ from pathlib import Path
 from . import norcal as N
 from .dates import pacific_today
 
-SFBAY_JS_REL = "sfbay-data.js"
+SFBAY_JS_REL = "data-region-sfbay.js"
 
 # Booking pages verified by hand. Only verified links ship; the UI says
 # "booking link coming soon" for the rest. Key = landing name as posted.

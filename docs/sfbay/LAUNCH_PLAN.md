@@ -47,7 +47,7 @@ Legend: ✅ done on this branch · 🟡 partly done / needs the owner · ⏳ not
 | Scraper | ✅ | `src/scrape_norcal.py` reads one page per day: `norcalfishreports.com/dock_totals/boats.php?date=`. Honest UA (`TunatrackerBot/1.0`), 3–5 s between requests, disk cache `.cache/norcal/` (gitignored), no retries on 4xx. |
 | Stop on block | ✅ | 401/403/429/451 or a challenge/notice page → `SourceBlocked`. The block is recorded in `norcal_fetch_log` and is **sticky**: the daily job won't fetch again until the owner reviews it and runs `DELETE FROM norcal_fetch_log WHERE error='blocked'`. An alert goes out (`sfbay:blocked`). |
 | Storage | ✅ | Its own table `norcal_trips`, so no SD/OC-LA query can see SF Bay rows. `UNIQUE(date, boat_slug, landing, trip_type_raw, anglers)`. Days older than 3 are insert-only; the last 3 days update counts in place. |
-| Daily hook | ✅ | `src/main.py` runs it at most every 6 h (yesterday + today = about 8 requests a day), then writes `web/sfbay-data.js`. It's non-fatal: an SF Bay error never breaks the SD run. The workflow commits `web/sfbay-data.js`. |
+| Daily hook | ✅ | `src/main.py` runs it at most every 6 h (yesterday + today = about 8 requests a day), then writes `web/data-region-sfbay.js`. It's non-fatal: an SF Bay error never breaks the SD run. The workflow commits `web/data-region-sfbay.js`. |
 | No-trip days | ✅ | On a day with no counts the source serves "Dock Totals - <last day with counts>", which is stored as `no_counts=1` (5 of the 10 sampled Nov days). |
 | Species map | ✅ | King/Chinook salmon (including the "Chinoook" typo), coho, rockfish (all sub-species), cabezon, greenling, lingcod, California/Pacific halibut, striped bass, white/green sturgeon, Dungeness/rock crab, albacore, bluefin, and others. "Released" counts are kept apart and never scored. Unknown names go to the shared `unknown_species` table. The sample's only unknowns (bonito, mackerel, sand sole) have been added. |
 | Trip types | ✅ | Full / 3/4 / 1/2 AM / PM / Twilight / 1/4 day / "7 Hour" / "Crab Combo" / "Bay" / "Salmon Trolling…". It never drops a row for an unparseable label, which counts as a full day. Half-days are kept and flagged. The limit rate isn't per day, so a half-day rockfish limit counts the same as a full-day one. |
@@ -63,7 +63,7 @@ Legend: ✅ done on this branch · 🟡 partly done / needs the owner · ⏳ not
 | Polite sample | ✅ | 20 live requests on 2026-11-25 (peak week Jul 12–18, Nov 15–24, 2019-07-20, 2023-07-15, 2024-02-10, 2025-12-06) into a scratch DB: 320 rows, 0 errors, no block. The 2019 page parses with the same code. |
 | Full run | 🟡 **needs the owner's OK** | About 2,885 pages at 3–5 s ≈ **3.2 h**. Plan: (1) run into a **side DB** so the hourly CI commits of `tracker.db` aren't blocked for 3 h: `backfill_sfbay.py --db sfbay_backfill.db --start 2019-01-01`; (2) merge in seconds right after a CI commit: `backfill_sfbay.py --db tracker.db --merge-from sfbay_backfill.db --i-have-owner-ok` (insert-only; existing rows win); (3) commit `tracker.db`. Stop at the first block and tell the owner. |
 | Derived tables | ✅ | Nothing derived is stored. Targets, limit rates, six-pack flags, the boat list and the slow-season flag are rebuilt on every export (`src/export_sfbay.py`), so a regs edit applies on the next run. |
-| Per-region data file | ✅ / 🤝 | The owner approved per-region files (loaded only when that region is selected) to keep `data.js` under Cloudflare's 25 MB limit. SF Bay already works this way (`web/sfbay-data.js`, lazy-loaded by `sfbLoad()` in `web/sfbay.jsx`). The OC/LA session is building the shared mechanism; once it lands, switch `sfbLoad()` to it (a one-function change). |
+| Per-region data file | ✅ / 🤝 | The owner approved per-region files (loaded only when that region is selected) to keep `data.js` under Cloudflare's 25 MB limit. SF Bay writes **`web/data-region-sfbay.js`**, so it gets PR #6's caching rules (`_headers` `/data-region-*` no-cache, and `sw.js` treats it as mutable) and the workflow commit. **It deliberately does not use #6's `split_by_region` / `ttRegionData.ensure`, which merge rows into `window.SD`.** SF Bay rows have a different shape (targets, limit rates, released counts, no trophy columns) and live in `norcal_trips`, so they can never reach SoCal aggregations such as "All SoCal", which applies no filter. The file name has no underscore (`sfbay`, not `sf_bay`), so it can't collide with #6's auto-generated `data-region-<trips.region>.js`. `ttRegionData` only loads files listed in `REGION_FILES`, so it ignores this one. |
 | Payload size | ✅ | About 160 bytes per trip, so the full history (~22k trips, est.) is ~3.5 MB raw (~0.4 MB gzipped). It's a **separate file** that loads only when someone opens SF Bay, so `data.js` (SD/OC-LA) doesn't grow. |
 
 ### 3. Product fit
@@ -75,7 +75,7 @@ Legend: ✅ done on this branch · 🟡 partly done / needs the owner · ⏳ not
 | Slow season | ✅ | Fewer than 10 open-party trips in 7 days → a "Slow season on the Bay" banner with what usually fishes that month (`SEASONS` in `src/norcal.py`). |
 | Species colors | ✅ | Per target (`SFB_TARGET_COLORS`). |
 | Regs config | 🟡 **verify** | `BAG_LIMITS` in `src/norcal.py`: RCG 10, lingcod 2, salmon 2, CA halibut 3 (north of Pt Sur), striper 2, sturgeon C&R, Dungeness 10 (CPFV), albacore 25, bluefin 2. **Check against the current CDFW regs before launch**, especially salmon (season set yearly) and albacore. |
-| 1440px + 375px | ✅ | Playwright pass, 7 SF Bay routes + 2 SD regression routes × 2 widths: **0 JS errors, 0 horizontal overflow**. Screens are in `screens/`. With the flag off, `/sfbay/today` falls back to `/sd/today` and `sfbay-data.js` is never requested. |
+| 1440px + 375px | ✅ | Playwright pass, 7 SF Bay routes + 2 SD regression routes × 2 widths: **0 JS errors, 0 horizontal overflow**. Screens are in `screens/`. With the flag off, `/sfbay/today` falls back to `/sd/today` and `data-region-sfbay.js` is never requested. |
 | SEO | ✅ / 🤝 | `web/seo.js` has SF Bay titles, descriptions and canonicals, plus **`noindex` while `SFBAY_PUBLIC` is off**. 🤝 SEO session: the `/sfbay/*` prerender, sitemap, and `_redirects` rewrites, **in the flip PR** (same rule as OC/LA). |
 | Co-Captain | 🤝 | Not mounted on SF Bay pages (ChatBot only shows on Trip Planner, and that page is hidden here). 🤝 Co-Captain session: a NorCal block (targets, limit rate, no schedules, regs caveat) once the region is public. `window.SFBAY` is the data source. |
 | BloodyDecks | 🤝 | NorCal forum coverage is for the BloodyDecks session (its outputs carry region tags; an `sf_bay` tag is needed). |
@@ -131,7 +131,7 @@ work around it.
 |---|---|
 | `src/norcal.py` | New: ports/regions, species map, bag limits, targets, limit rate, six-pack rule, seasons |
 | `src/scrape_norcal.py` | New: polite cached fetcher, parser, `norcal_trips` schema, idempotent insert, daily hook |
-| `src/export_sfbay.py` | New: `web/sfbay-data.js` (window.SFBAY), verified landing links, conditions sources |
+| `src/export_sfbay.py` | New: `web/data-region-sfbay.js` (window.SFBAY), verified landing links, conditions sources |
 | `src/sfbay_health.py` | New: the 4 alert rules above |
 | `src/main.py` | Calls the SF Bay scrape + export, and the health rules (non-fatal) |
 | `scripts/backfill_sfbay.py` | New: backfill / resume / offline / merge, with a production guard |
@@ -142,7 +142,7 @@ work around it.
 | `web/app.jsx`, `web/ui.jsx` (+ dist) | Routing, region choice, NorCal dropdown section, SF Bay nav/footer |
 | `web/seo.js` | SF Bay titles + soft-launch `noindex` |
 | `web/index.html` | Loads `sfbay.css` + `dist/sfbay.js`; version bumps |
-| `.github/workflows/daily-scrape.yml` | Commits `web/sfbay-data.js` |
+| `.github/workflows/daily-scrape.yml` | Commits `web/data-region-sfbay.js` |
 | `.gitignore` | `.cache/` |
 
 The full suite has 374 passing tests and 2 failures in `tests/test_text_parser.py`. The same 2 failures were reported on main by the OC/LA review; this branch doesn't touch that code.

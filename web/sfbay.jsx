@@ -1,6 +1,6 @@
 // SF Bay Area region (behind FEATURES.SHOW_SFBAY).
 //
-// Data: web/sfbay-data.js (window.SFBAY), written by src/export_sfbay.py and
+// Data: web/data-region-sfbay.js (window.SFBAY), written by src/export_sfbay.py and
 // lazy-loaded the first time the region is opened, so San Diego visitors
 // download nothing extra. SoCal components never render in this region.
 //
@@ -30,7 +30,7 @@ function sfbLoad() {
   if (window.__sfbayLoading) return window.__sfbayLoading;
   window.__sfbayLoading = new Promise(function (resolve, reject) {
     var s = document.createElement('script');
-    s.src = '/sfbay-data.js?v=' + (window.SFBAY_DATA_VERSION || Date.now().toString().slice(0, 7));
+    s.src = '/data-region-sfbay.js?v=' + (window.SFBAY_DATA_VERSION || Date.now().toString().slice(0, 7));
     s.onload = function () { window.SFBAY ? resolve(window.SFBAY) : reject(new Error('no data')); };
     s.onerror = function () { window.__sfbayLoading = null; reject(new Error('load failed')); };
     document.head.appendChild(s);

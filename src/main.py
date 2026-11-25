@@ -321,7 +321,7 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 if st:
                     summary_lines.append(f"  SF Bay scrape: {st}")
             p_sf, n_sf = export_sfbay.write_sfbay_js(conn, DATA_JS_PATH.parent)
-            summary_lines.append(f"  sfbay-data.js written ({n_sf} trips)")
+            summary_lines.append(f"  data-region-sfbay.js written ({n_sf} trips)")
         except Exception as e:
             summary_lines.append(f"  SF Bay ERROR (non-fatal): {type(e).__name__}: {e}")
 

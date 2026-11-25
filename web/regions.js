@@ -26,7 +26,7 @@
     { id: 'oc_la',     label: 'OC / LA',   short: 'OC / LA',   landings: OCLA_LANDINGS, comingSoon: false },
   ];
 
-  // SF Bay Area (NorCal): its own data file (sfbay-data.js) and pages
+  // SF Bay Area (NorCal): its own data file (data-region-sfbay.js) and pages
   // (sfbay.jsx). Never combined with the SoCal regions. Landings are filled in
   // from the data file when it loads. Only registered behind SHOW_SFBAY.
   var SHOW_SFBAY = !!(window.FEATURES && window.FEATURES.SHOW_SFBAY);
