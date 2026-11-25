@@ -1,6 +1,6 @@
 {
-  "build": "b3a6229",
-  "generated_at": "2026-11-25T09:19:22Z",
+  "build": "c45bbb2",
+  "generated_at": "2026-11-25T17:15:44Z",
   "window_days": 14,
   "feeds": [
     {
@@ -20,6 +20,18 @@
       "name": "BD Baja Mexico Fishing Reports",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/baja-mexico-fishing-reports-discussion/",
       "items_14d": 10
+    },
+    {
+      "id": "bd-socal-sportboats",
+      "name": "BD Southern California Sportboats",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-sportboats/",
+      "items_14d": 11
+    },
+    {
+      "id": "bd-long-range",
+      "name": "BD Long Range Fishing",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/san-diego-long-range-sportfishing-reports/",
+      "items_14d": 25
     }
   ],
   "summary_48h": {
