@@ -1,14 +1,14 @@
 {
   "boat_reports_last_error": null,
-  "boat_reports_last_run_utc": "2026-11-25T17:15:44Z",
-  "boat_reports_last_success_utc": "2026-11-25T17:15:44Z",
-  "boat_reports_pending": 174,
+  "boat_reports_last_run_utc": "2026-11-25T19:20:47Z",
+  "boat_reports_last_success_utc": "2026-11-25T19:20:47Z",
+  "boat_reports_pending": 422,
   "consecutive_failures": 0,
   "consecutive_zero_runs": 0,
   "extract_consecutive_failed_runs": 0,
   "extract_last_error": null,
-  "extract_last_run_utc": "2026-11-25T17:12:08Z",
-  "extract_last_success_utc": "2026-11-25T17:12:08Z",
+  "extract_last_run_utc": "2026-11-25T19:12:04Z",
+  "extract_last_success_utc": "2026-11-25T19:12:04Z",
   "feeds": {
     "bd-baja": {
       "consecutive_failures": 0,
@@ -20,9 +20,9 @@
     "bd-long-range": {
       "consecutive_failures": 0,
       "last_error": null,
-      "last_new_row_utc": "2026-11-25T17:00:47Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
-      "newest_post_published_at": "2026-11-25T16:33:27Z"
+      "last_new_row_utc": "2026-11-25T19:00:08Z",
+      "last_success_utc": "2026-11-25T19:00:08Z",
+      "newest_post_published_at": "2026-11-25T17:20:55Z"
     },
     "bd-socal-offshore": {
       "consecutive_failures": 0,
@@ -34,8 +34,8 @@
     "bd-socal-sportboats": {
       "consecutive_failures": 0,
       "last_error": null,
-      "last_new_row_utc": "2026-11-25T17:00:47Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
+      "last_new_row_utc": "2026-11-25T19:00:08Z",
+      "last_success_utc": "2026-11-25T19:00:08Z",
       "newest_post_published_at": "2026-11-25T16:48:14Z"
     },
     "bd-spearfishing": {
@@ -47,26 +47,42 @@
     }
   },
   "last_error": null,
-  "last_items_seen": 123,
+  "last_items_seen": 49,
   "last_new_row_utc": "2026-11-25T08:52:47Z",
-  "last_run_utc": "2026-11-25T17:00:47Z",
+  "last_run_utc": "2026-11-25T19:00:08Z",
   "last_success_utc": "2026-11-25T17:00:47Z",
   "newest_post_published_at": "2026-11-25T06:08:54Z",
-  "pending_extract": 202,
+  "pending_extract": 122,
   "spots_features": 1,
-  "spots_geocoded": 171,
-  "spots_last_run_utc": "2026-11-25T18:44:49Z",
-  "spots_rows": 342,
+  "spots_geocoded": 374,
+  "spots_last_run_utc": "2026-11-25T19:20:47Z",
+  "spots_rows": 726,
   "spots_unresolved_names": {
     "13 Fathom": 1,
     "13 Fathom Spot": 1,
+    "Alejos Rocks": 1,
+    "Colnett": 1,
+    "Colonet zone": 1,
+    "Del Mar": 1,
+    "Ensenada": 3,
+    "Green buoy": 1,
     "Juggs Bank": 1,
     "Lower Banks": 1,
+    "Osborne Bank": 2,
+    "Osbourne Bank": 1,
+    "Ranger Bank": 1,
+    "SBI": 1,
     "San Carlos": 1,
+    "San Pablo": 1,
     "San Pablo Bay": 1,
     "The Rocks": 1,
-    "the Ridge": 2,
-    "the rocks": 1
+    "bait receiver": 1,
+    "high ridge": 1,
+    "large paddy": 1,
+    "the Ridge": 3,
+    "the beach": 1,
+    "the rigs": 1,
+    "weather buoy near the corner": 1
   },
-  "total_rows": 569
+  "total_rows": 845
 }
