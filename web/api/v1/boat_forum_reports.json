@@ -1,0 +1,881 @@
+{
+ "generated_at": "2026-11-25T17:15:44Z",
+ "source": "BloodyDecks (bdoutdoors.com) forum trip reports",
+ "label": "From BloodyDecks trip reports",
+ "note": "Summaries of public forum posts, extracted automatically. Not verified reviews; follow the links for the original posts.",
+ "window_days": 365,
+ "min_match_confidence": 0.7,
+ "boats": {
+  "Excel": {
+   "landing": "Fisherman's Landing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Water Cooling down for 2027 16 day trips?",
+     "url": "https://www.bdoutdoors.com/forums/threads/water-cooling-down-for-2027-16-day-trips.872509/",
+     "published_at": "2026-11-23T12:24:33+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-14",
+     "trip_length": "10 Day",
+     "scores": {},
+     "would_rebook": true,
+     "quotes": {
+      "would_rebook": "I have a 16-day coming up on 1/04/27."
+     },
+     "catch_summary": "Lots of YFT 25–90 lb; wahoo trolling blind strikes; only 1 wahoo on bomb; tough yellowtail.",
+     "tackle": [
+      "trolling at cruise speed - wahoo",
+      "bomb - wahoo (only 1)"
+     ],
+     "spots": [
+      "The Rocks",
+      "Lower Banks"
+     ],
+     "landing_count": null,
+     "match_confidence": 0.95
+    }
+   ]
+  },
+  "Islander": {
+   "landing": "Fisherman's Landing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Quick Report - Islander 3 day 10/23/26",
+     "url": "https://www.bdoutdoors.com/forums/threads/quick-report-islander-3-day-10-23-26.872028/",
+     "published_at": "2026-11-23T03:00:48+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-10-23",
+     "trip_length": "3 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "crew": 1,
+      "galley": 2,
+      "bunks": 1,
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "this was easily my best trip",
+      "captain": "great captain & crew, great cooking",
+      "crew": "great captain & crew",
+      "galley": "Christian is a great chef",
+      "bunks": "great stateroom (but the door latch didn't work)",
+      "fish_finding": "the most wide-open mahi-mahi bite I've ever been a part of",
+      "would_rebook": "Can't wait to go back!"
+     },
+     "catch_summary": "YFT to 60 lb, dorado, wahoo; author 2 YFT + 2 dorado + 1 wahoo personally.",
+     "tackle": [
+      "40 lb FC, Mak10 - YFT",
+      "50 lb FC, LX Raptor, 2/0 circle - YFT",
+      "60 lb FC, HX Raptor - YFT",
+      "flyline 25-30 lb FC"
+     ],
+     "spots": [],
+     "landing_count": {
+      "date": "2026-10-26",
+      "landing": "Fisherman's Landing",
+      "trip_length": "3 Day",
+      "anglers": 25,
+      "catch": {
+       "Yellowfin": 51,
+       "Yellowtail": 1,
+       "Dorado": 41
+      }
+     },
+     "match_confidence": 1.0
+    }
+   ]
+  },
+  "New Lo-An": {
+   "landing": "Point Loma Sportfishing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 0,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "New Lo Ann 11-11 2 day  Pretty Great",
+     "url": "https://www.bdoutdoors.com/forums/threads/new-lo-ann-11-11-2-day-pretty-great.872398/",
+     "published_at": "2026-11-20T00:03:23+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-11-11",
+     "trip_length": "2 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 1,
+      "crew": 2
+     },
+     "would_rebook": null,
+     "quotes": {
+      "overall": "This really was not a big deal for me and I will come back on…",
+      "captain": "The skipper handled what could have been a nightmare quickly.",
+      "crew": "The crew's work ethic was beyound description."
+     },
+     "catch_summary": "Yellowfin 20–60+ lb (boat limit-ish), yellowtail, 1 wahoo, 1 marlin; author 7 yellowfin 20–45 lb.",
+     "tackle": [],
+     "spots": [
+      "St Martin Island"
+     ],
+     "landing_count": {
+      "date": "2026-11-13",
+      "landing": "Point Loma Sportfishing",
+      "trip_length": "2 Day",
+      "anglers": 25,
+      "catch": {
+       "Yellowfin": 141,
+       "Yellowtail": 6,
+       "Wahoo": 1,
+       "Striped Marlin": 1
+      }
+     },
+     "match_confidence": 0.95
+    }
+   ]
+  },
+  "New Seaforth": {
+   "landing": "Seaforth Sportfishing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "New Seaforth half day 11/11/26",
+     "url": "https://www.bdoutdoors.com/forums/threads/new-seaforth-half-day-11-11-26.872360/",
+     "published_at": "2026-11-13T20:23:37+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-11-11",
+     "trip_length": "1/2 Day",
+     "scores": {
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "fish_finding": "the effort the NSF put in to get on quality fish in a short trip",
+      "would_rebook": "jump on a 1/2 day trip!"
+     },
+     "catch_summary": "Yellowtail 15–18 lb, caught near bottom on yo-yo technique",
+     "tackle": [
+      "blue/white JRI-6 jig - yellowtail",
+      "yo-yo technique - yellowtail"
+     ],
+     "spots": [],
+     "landing_count": {
+      "date": "2026-11-11",
+      "landing": "Seaforth Sportfishing",
+      "trip_length": "Half Day AM",
+      "anglers": 54,
+      "catch": {
+       "Yellowtail": 25,
+       "Skipjack": 1,
+       "Whitefish": 14,
+       "Bonito": 7,
+       "Sand Bass": 7,
+       "Barracuda": 2,
+       "Rockfish": 1
+      }
+     },
+     "match_confidence": 0.95
+    }
+   ]
+  },
+  "Pacific Queen": {
+   "landing": "Fisherman's Landing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 0,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Nov 10 Premier Extended 1/2 Day - Redemption!",
+     "url": "https://www.bdoutdoors.com/forums/threads/nov-10-premier-extended-1-2-day-redemption.872304/",
+     "published_at": "2026-11-12T00:23:19+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": null,
+     "trip_length": "2 Day",
+     "scores": {},
+     "would_rebook": null,
+     "quotes": {},
+     "catch_summary": "Author caught a 25 lb yellowfin tuna on a 2-day trip.",
+     "tackle": [],
+     "spots": [],
+     "landing_count": null,
+     "match_confidence": 0.8
+    }
+   ]
+  },
+  "Premier": {
+   "landing": "H&M Landing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Nov 10 Premier Extended 1/2 Day - Redemption!",
+     "url": "https://www.bdoutdoors.com/forums/threads/nov-10-premier-extended-1-2-day-redemption.872304/",
+     "published_at": "2026-11-12T00:23:19+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-11-10",
+     "trip_length": "1/2 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "crew": 1,
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "Highly recommend this boat and the fall half day fishing that is pretty epic right…",
+      "captain": "skipper of the Premier who clearly knows his zones and what he is looking at…",
+      "crew": "the deckhand let me know quality yellows on the yo yo was the play"
+     },
+     "catch_summary": "12 yellowtail 20–25 lbs boat total; also halibut, bonito, lingcod, reds, sand bass, rockfish, one ~40 lb BSB released.",
+     "tackle": [
+      "40 lb setup, yo-yo / dropper loop",
+      "dropper loop, weights up to 1 lb"
+     ],
+     "spots": [
+      "Pt Loma"
+     ],
+     "landing_count": {
+      "date": "2026-11-10",
+      "landing": "H&M Landing",
+      "trip_length": "Half Day AM",
+      "anglers": 29,
+      "catch": {
+       "Yellowtail": 12,
+       "Rockfish": 57,
+       "Bonito": 29,
+       "Sand Bass": 14,
+       "Barracuda": 3,
+       "Halibut": 1,
+       "Lingcod": 1
+      }
+     },
+     "match_confidence": 0.95
+    }
+   ]
+  },
+  "Pursuit": {
+   "landing": "22nd Street Landing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Pursuit, 9th inning 2 outs down 2 runs.",
+     "url": "https://www.bdoutdoors.com/forums/threads/pursuit-9th-inning-2-outs-down-2-runs.870877/",
+     "published_at": "2026-11-14T05:59:36+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-11-08",
+     "trip_length": "Full Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "the game aint over til its over!!!",
+      "captain": "John is awesome!!!",
+      "would_rebook": "i took my jackpot free pass to head out"
+     },
+     "catch_summary": "17 YT (20–30+ lb) boated, ~15 lost; also bonito, bass, and one 25 lb YT earlier.",
+     "tackle": [
+      "fluorocarbon - YT"
+     ],
+     "spots": [
+      "Catalina",
+      "Avalon"
+     ],
+     "landing_count": {
+      "date": "2026-11-08",
+      "landing": "22nd Street Landing",
+      "trip_length": "Full Day",
+      "anglers": 30,
+      "catch": {
+       "Yellowtail": 16,
+       "Calico Bass": 57,
+       "Bonito": 51,
+       "Rockfish": 16,
+       "Barracuda": 2,
+       "Sheephead": 1
+      }
+     },
+     "match_confidence": 1.0
+    }
+   ]
+  },
+  "Searcher": {
+   "landing": "Fisherman's Landing",
+   "report_count": 3,
+   "aspects": {
+    "overall": {
+     "pos": 3,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 3,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 2,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 3,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 1
+    },
+    "fish_finding": {
+     "pos": 3,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 3,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Searcher 8 day: different take",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-different-take.872516/",
+     "published_at": "2026-11-25T01:22:10+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-09",
+     "trip_length": "8 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "crew": 2,
+      "galley": 2,
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "Great boat. Great crew. Great trip.",
+      "captain": "couldn't be happier with the decisions made by the skipper",
+      "crew": "The Searcher team is incredibly fishy, professional, hardworking, and just plain cool.",
+      "galley": "Jesse absolutely knocked it out of the park. Every meal was on point",
+      "would_rebook": "I'd gladly fish with them again."
+     },
+     "catch_summary": "Steady pick; 40–60 lb yellowfin on the Ridge, yellowtail on the way home, plus a Mako one evening.",
+     "tackle": [
+      "braid + 3 ft topshot"
+     ],
+     "spots": [
+      "the Ridge"
+     ],
+     "landing_count": null,
+     "match_confidence": 0.95
+    },
+    {
+     "title": "Searcher 8-Day Report #2",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-report-2.872499/",
+     "published_at": "2026-11-19T00:09:24+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-09",
+     "trip_length": "8 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "crew": 2,
+      "galley": 2,
+      "fish_finding": 1
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "my thanks and compliments go the Searcher Team",
+      "captain": "sundowner bites for quality Yellowfin Captain Shane put us on were really exciting",
+      "crew": "crew on this trip did a fantastic job",
+      "galley": "meals were of restaurant quality and the sushi bar to die for",
+      "would_rebook": "I've already booked my 2027 trip and am looking forward to another great time"
+     },
+     "catch_summary": "28 fish personal: 15 YFT (10-60 lb), 11 yellowtail, 1 whitefish, 1 sierra mackerel; boat: 7 wahoo, 2 50+ lb YFT, 1 mako, 90 yellowtail one day",
+     "tackle": [
+      "Tady 4/0 solid mint - yellowtail",
+      "Salas 6X Jr. solid mint - yellowtail",
+      "dropper loop - yellowtail",
+      "homemade bomb - wahoo",
+      "30 lb line, Torium 30 - 60 lb YFT"
+     ],
+     "spots": [
+      "the Ridge",
+      "13 Fathom Spot",
+      "Juggs Bank",
+      "San Pablo Bay",
+      "San Carlos"
+     ],
+     "landing_count": null,
+     "match_confidence": 0.95
+    },
+    {
+     "title": "8 day Searcher report Nov 9-17",
+     "url": "https://www.bdoutdoors.com/forums/threads/8-day-searcher-report-nov-9-17.872469/",
+     "published_at": "2026-11-18T23:44:48+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-09",
+     "trip_length": "8 Day",
+     "scores": {
+      "overall": 1,
+      "captain": 1,
+      "galley": 2,
+      "bunks": -1,
+      "fish_finding": 1
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "overall the trip was good",
+      "captain": "The captain decided to head north to try and find some yellowtail",
+      "galley": "The food was excellent.",
+      "bunks": "It's hard to sleep with your feet braced against the wall so you don't bounce…",
+      "fish_finding": "at about 3:30 pm. We anchored up, and it was wide open on yellowfins to…",
+      "would_rebook": "I'd still fish it without hesitation."
+     },
+     "catch_summary": "Wahoo to 40 lb (6+), yellowfin to 60 lb, yellowtail (several); tough overall bite.",
+     "tackle": [
+      "pink Marauder - wahoo",
+      "orange Marauder - wahoo",
+      "40-50 lb line, #1-1/0 hooks - yellowtail flyline",
+      "scrambled egg 6x JR jig - yellowtail yo-yo",
+      "mint/white jig - yellowtail yo-yo"
+     ],
+     "spots": [
+      "Cedros"
+     ],
+     "landing_count": null,
+     "match_confidence": 0.95
+    }
+   ]
+  },
+  "Shogun": {
+   "landing": "Fisherman's Landing",
+   "report_count": 2,
+   "aspects": {
+    "overall": {
+     "pos": 2,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Shogun Izorline - Sophie Huynh Charter - Nov 6 2026 to Nov 14 2026",
+     "url": "https://www.bdoutdoors.com/forums/threads/shogun-izorline-sophie-huynh-charter-nov-6-2026-to-nov-14-2026.872405/",
+     "published_at": "2026-11-15T04:50:57+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-06",
+     "trip_length": "8 Day",
+     "scores": {
+      "overall": 1
+     },
+     "would_rebook": null,
+     "quotes": {
+      "overall": "another enjoyable long-range adventure with plenty of fishing, good variety, and some memorable action"
+     },
+     "catch_summary": "Yellowfin tuna 15–60 lb, yellowtail, wahoo (several), dorado — mixed bag over 8 days.",
+     "tackle": [
+      "Marauders – yellowfin tuna",
+      "Colt Snipers dropped deep – YFT",
+      "dropper loop – yellowtail",
+      "yo-yo jig – yellowtail",
+      "strip of bonito – dorado"
+     ],
+     "spots": [],
+     "landing_count": null,
+     "match_confidence": 0.95
+    },
+    {
+     "title": "Shogun 10 Day 10/27 to 11/6",
+     "url": "https://www.bdoutdoors.com/forums/threads/shogun-10-day-10-27-to-11-6.872300/",
+     "published_at": "2026-11-13T01:56:42+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": null,
+     "trip_length": "10 Day",
+     "scores": {
+      "overall": 2,
+      "crew": 2,
+      "galley": 1
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "Amazing, I will ride the Shogun again as soon as possible.",
+      "crew": "got to watch a great crew in action",
+      "galley": "eating great food",
+      "would_rebook": "I will ride the Shogun again as soon as possible."
+     },
+     "catch_summary": "Wahoo (at least 2), yellowfin tuna (various sizes), yellowtail (good haul), 1 small marlin (released), 1 cabrilla.",
+     "tackle": [
+      "DTX trolling - wahoo",
+      "dropper loop - yellowfin/yellowtail",
+      "yoyo - yellowfin/yellowtail",
+      "Salas 6x Jr",
+      "Coltsniper-style jigs - yellowfin/yellowtail"
+     ],
+     "spots": [
+      "the rocks"
+     ],
+     "landing_count": null,
+     "match_confidence": 0.95
+    }
+   ]
+  },
+  "Vagabond": {
+   "landing": "Point Loma Sportfishing",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 1,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Vagabond SD Anglers 10-Day 11/9 to 11/19 (edited - photos now [maybe!] but no vids)",
+     "url": "https://www.bdoutdoors.com/forums/threads/vagabond-sd-anglers-10-day-11-9-to-11-19-edited-photos-now-maybe-but-no-vids.872601/",
+     "published_at": "2026-11-25T01:45:02+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-09",
+     "trip_length": "10 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "What a treat, fishing with only 14 other anglers on the trip.",
+      "captain": "Wise move. But that big one that got away still stung…",
+      "fish_finding": "Mike got us on a spot, somehow no other boats even in sight by now",
+      "would_rebook": "I don't think it was me, I was invited back."
+     },
+     "catch_summary": "Wahoo (dozens over multiple days, up to ~40 in one day), BFT 10-70+ lbs, yellowtail 30s-60s lbs, barracuda; multiple species across all 10 days.",
+     "tackle": [
+      "pink Rapala Mag 40 - wahoo troll",
+      "gold Hopkins Spoon, 55lb leader - wahoo",
+      "gold Raider jig - wahoo",
+      "small Marauder - wahoo",
+      "dropper loop sardine - yellowtail"
+     ],
+     "spots": [
+      "13 Fathom",
+      "Cedros",
+      "Potato Bank",
+      "Alijos Rocks",
+      "San Martin Island"
+     ],
+     "landing_count": null,
+     "match_confidence": 0.95
+    }
+   ]
+  }
+ }
+}

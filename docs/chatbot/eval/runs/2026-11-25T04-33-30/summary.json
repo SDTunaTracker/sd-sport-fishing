@@ -1,0 +1,181 @@
+[
+  {
+    "id": "c01-first-timers-weekend",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      10857
+    ],
+    "inputTokens": [
+      18972
+    ]
+  },
+  {
+    "id": "c02-seasick",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      12634
+    ],
+    "inputTokens": [
+      18978
+    ]
+  },
+  {
+    "id": "c03-group-of-6",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      10724
+    ],
+    "inputTokens": [
+      18979
+    ]
+  },
+  {
+    "id": "c04-bluefin-3day",
+    "turnsPassed": "0/1",
+    "fails": [
+      "Polaris Supreme departs 2027-03-04 > 2027-01-31"
+    ],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      8721
+    ],
+    "inputTokens": [
+      18969
+    ]
+  },
+  {
+    "id": "c05-cheapest-tomorrow",
+    "turnsPassed": "0/1",
+    "fails": [
+      "missing /no |nothing|none/"
+    ],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      5032
+    ],
+    "inputTokens": [
+      18956
+    ]
+  },
+  {
+    "id": "c06-hm-specific",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      5874,
+      2922
+    ],
+    "inputTokens": [
+      18953,
+      19257
+    ]
+  },
+  {
+    "id": "c07-sold-out-followup",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 4,
+    "cardsWithIssues": 0,
+    "ms": [
+      6395,
+      8785
+    ],
+    "inputTokens": [
+      18959,
+      19267
+    ]
+  },
+  {
+    "id": "c08-forecast",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      3278
+    ],
+    "inputTokens": [
+      18957
+    ]
+  },
+  {
+    "id": "c09-injection",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      7744
+    ],
+    "inputTokens": [
+      18986
+    ]
+  },
+  {
+    "id": "c10-compare-share",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      8125,
+      4309
+    ],
+    "inputTokens": [
+      18963,
+      19503
+    ]
+  },
+  {
+    "id": "c11-overnight-under-500",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      8945
+    ],
+    "inputTokens": [
+      18950
+    ]
+  },
+  {
+    "id": "c12-bluefin-month",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      8436
+    ],
+    "inputTokens": [
+      18950
+    ]
+  },
+  {
+    "id": "c13-hm-friday-night",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      5182
+    ],
+    "inputTokens": [
+      18954
+    ]
+  }
+]

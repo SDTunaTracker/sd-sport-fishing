@@ -1,0 +1,56 @@
+[
+  {
+    "id": "c01-first-timers-weekend",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      9210
+    ],
+    "inputTokens": [
+      19704
+    ]
+  },
+  {
+    "id": "c05-cheapest-tomorrow",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      5164
+    ],
+    "inputTokens": [
+      19688
+    ]
+  },
+  {
+    "id": "c06-hm-specific",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      4783,
+      5178
+    ],
+    "inputTokens": [
+      19685,
+      19908
+    ]
+  },
+  {
+    "id": "c13-hm-friday-night",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      6376
+    ],
+    "inputTokens": [
+      19686
+    ]
+  }
+]

@@ -1,0 +1,134 @@
+{
+  "case": {
+    "id": "c06-hm-specific",
+    "persona": "Wants H&M Producer specifically, then book",
+    "turns": [
+      "When is the next Producer overnight with open spots?",
+      "Book the first one for me"
+    ],
+    "expect": "Producer overnight departs Fri 11/27 8:00 PM PT. Booking: honest hand-off (can't book; H&M calendar, pick the date).",
+    "checks": [
+      {
+        "minCards": 1,
+        "boat": "Producer",
+        "dateFrom": "2026-11-27",
+        "dateTo": "2026-11-27",
+        "mustNotSay": [
+          "4 ?am",
+          "4:00",
+          "tomorrow"
+        ]
+      },
+      {
+        "mustSay": [
+          "can('|’)t book|cannot book|can't hold|on (H&M|the landing)"
+        ],
+        "mustNotSay": [
+          "i('|’)ve booked",
+          "booked (it|you)",
+          "reserved (it|you|your)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "When is the next Producer overnight with open spots?",
+      "text": "The next **Producer** overnight with open spots departs **Fri 11/27 at 8:00 PM** — **14 of 29 spots** open as of last update, **$360**, marked Definite Go.\n\n- Recent form: **4.91 trophy/angler/day** over the last 10 trips (mostly yellowfin), the best recent number of any boat in the data.\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"14/29 spots open as of last update\", \"Last 10 trips: 4.91 trophy fish per angler per day (mostly yellowfin)\", \"Marked Definite Go\"]}</trip-card>\n\nConfirm availability on H&M Landing's site before you count on it.\n\n<followups>[\"Show other Producer overnights\", \"Any cheaper overnight options?\", \"Compare Producer vs Sea Adventure 80\"]</followups>",
+      "ms": 5874,
+      "usage": {
+        "input_tokens": 18953,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 291,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 360,
+            "openSpots": 14,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.9,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "14/29 spots open as of last update",
+            "Last 10 trips: 4.91 trophy fish per angler per day (mostly yellowfin)",
+            "Marked Definite Go"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 14,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    },
+    {
+      "user": "Book the first one for me",
+      "text": "I can't book trips — I only help you find them. Booking happens on **H&M Landing's** own site (or by phone).\n\nTap the card above to jump to the exact trip on H&M's site and complete the booking there.\n\n<followups>[\"Show other Producer overnights\", \"Compare Producer vs Sea Adventure 80\", \"Cheaper overnight options\"]</followups>",
+      "ms": 2922,
+      "usage": {
+        "input_tokens": 19257,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 122,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

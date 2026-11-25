@@ -1,0 +1,76 @@
+{
+  "case": {
+    "id": "c10-compare-share",
+    "persona": "Compare two trips and share with group",
+    "turns": [
+      "Compare the San Diego full day and the Sea Watch full day this Sunday",
+      "Can you give me something I can text my buddies with both options?"
+    ],
+    "expect": "Sunday Nov 29: San Diego $250 19 spots 5:30 AM; Sea Watch $150 29 spots 7:00 AM. Shareable text with real links."
+  },
+  "turns": [
+    {
+      "user": "Compare the San Diego full day and the Sea Watch full day this Sunday",
+      "text": "Here's the head-to-head for Sunday, Nov 29 full-day trips:\n\n| Stat | San Diego | Sea Watch |\n|---|---|---|\n| **Win Rate** | 36% | 11% |\n| **Avg TPA/Day** | 1.48 | 0.96 |\n| **Price** | $250 | $150 |\n| **Departs** | 5:30 AM | 7:00 AM |\n| **Open Spots** | 19/36 | 29/35 |\n| **Forecast** | 7.0/10 | 7.0/10 |\n\n**Quick translation:**\n- **Win Rate** = % of head-to-head matchups won against peer boats on the same trip length/day. [San Diego](#boat/San%20Diego) wins 36 of every 100 → more than 3x [Sea Watch](#boat/Sea%20Watch)'s 11%.\n- **TPA/Day** = Trophy fish Per Angler per Day. San Diego puts 1.48 trophies in each angler's bag vs Sea Watch's 0.96 — roughly 50% more fish per rod.\n\n**Bottom line:** San Diego is the clear producer. You're paying $100 more, but the performance gap is massive and she leaves 90 minutes earlier for a longer fishing day. Sea Watch is the budget call if $150 is the ceiling.\n\n<trip-card>\n{\"boat\": \"San Diego\", \"landing\": \"Seaforth Sportfishing\", \"tripLength\": \"Full Day\", \"departureDate\": \"2026-11-29\", \"departureTime\": \"5:30 AM\", \"returnDate\": \"2026-11-29\", \"price\": 250, \"openSpots\": 19, \"maxLoad\": 36, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 7.0, \"winRate\": 36, \"avgTPA\": 1.48, \"bookingUrl\": \"https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153\", \"boatPageUrl\": \"#boat/San%20Diego\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"Sea Watch\", \"landing\": \"Seaforth Sportfishing\", \"tripLength\": \"Full Day\", \"departureDate\": \"2026-11-29\", \"departureTime\": \"7:00 AM\", \"returnDate\": \"2026-11-29\", \"price\": 150, \"openSpots\": 29, \"maxLoad\": 35, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 7.0, \"winRate\": 11, \"avgTPA\": 0.96, \"bookingUrl\": \"https://seaforth.fishingreservations.net/sales/user.php?trip_id=1090884\", \"boatPageUrl\": \"#boat/Sea%20Watch\"}\n</trip-card>\n\nGrab a San Diego spot — she's already half full while Sea Watch is wide open for a reason.\n\n<followups>\n[\"What about the Malihini twilight trip Sunday?\", \"Any overnight options that weekend?\", \"Show me the best full-day boats this season\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"View San Diego\", \"action\": \"view-boat\", \"data\": \"San Diego\"},\n  {\"label\": \"View Sea Watch\", \"action\": \"view-boat\", \"data\": \"Sea Watch\"},\n  {\"label\": \"Show all full-day trips\", \"action\": \"view-trips\", \"data\": {\"tripLength\": \"Full Day\"}}\n]\n</actions>",
+      "ms": 14891,
+      "usage": {
+        "input_tokens": 19603,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1163,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": [
+        {
+          "boat": "San Diego",
+          "date": "2026-11-29",
+          "tripLength": "Full Day",
+          "price": 250,
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153",
+          "issues": []
+        },
+        {
+          "boat": "Sea Watch",
+          "date": "2026-11-29",
+          "tripLength": "Full Day",
+          "price": 150,
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1090884",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "user": "Can you give me something I can text my buddies with both options?",
+      "text": "Here's a copy-paste ready text:\n\n---\n\nYo — Sunday fishing options outta Seaforth 🎣\n\n🅰️ **San Diego** (Full Day) — $250\n• Leaves 5:30 AM\n• 36% win rate, 1.48 fish/angler avg\n• 19 spots left\n\n🅱️ **Sea Watch** (Full Day) — $150\n• Leaves 7:00 AM\n• 11% win rate, 0.96 fish/angler avg\n• 29 spots left\n\nSan Diego catches ~50% more fish per rod but costs $100 more. Sea Watch = budget play. Forecast 7/10 either way. Who's in?\n\n---\n\n<followups>\n[\"Make it shorter\", \"Add a group text poll format\", \"What time should we get there?\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"Book San Diego\", \"action\": \"view-boat\", \"data\": \"San Diego\"},\n  {\"label\": \"Book Sea Watch\", \"action\": \"view-boat\", \"data\": \"Sea Watch\"}\n]\n</actions>",
+      "ms": 5191,
+      "usage": {
+        "input_tokens": 20789,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 349,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": []
+    }
+  ]
+}

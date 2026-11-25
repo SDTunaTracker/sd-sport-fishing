@@ -1,0 +1,241 @@
+{
+ "generated_at": "2026-11-25T17:15:44Z",
+ "label": "What's working, from BloodyDecks trip reports",
+ "note": "Automatic summaries of recent public forum posts; follow the links for details.",
+ "classes": {
+  "short": {
+   "label": "Half & 3/4 day",
+   "headline": "Pt Loma · Zacana Jig - bonito",
+   "window_days": 21,
+   "report_count": 3,
+   "top_spots": [
+    "Pt Loma"
+   ],
+   "items": [
+    {
+     "boat": null,
+     "trip_length": "1/2 Day",
+     "trip_date": "2026-11-21",
+     "title": "Dana Wharf PM 1/2 Day 11/21 - Take a kid fishing",
+     "url": "https://www.bdoutdoors.com/forums/threads/dana-wharf-pm-1-2-day-11-21-take-a-kid-fishing.872608/",
+     "tackle": [
+      "Zacana Jig - bonito",
+      "8 oz sinker, live anchovy - calico/bottom",
+      "fly-lining live anchovy - bonito"
+     ],
+     "bait": "anchovy, good size, lively",
+     "conditions": "2-5 mph wind, sunny, clean water, shearwaters a problem."
+    },
+    {
+     "boat": "New Seaforth",
+     "trip_length": "1/2 Day",
+     "trip_date": "2026-11-11",
+     "title": "New Seaforth half day 11/11/26",
+     "url": "https://www.bdoutdoors.com/forums/threads/new-seaforth-half-day-11-11-26.872360/",
+     "tackle": [
+      "blue/white JRI-6 jig - yellowtail",
+      "yo-yo technique - yellowtail"
+     ],
+     "bait": null,
+     "conditions": "Beautiful weather, calm seas, ~250 ft water depth."
+    },
+    {
+     "boat": "Premier",
+     "trip_length": "1/2 Day",
+     "trip_date": "2026-11-10",
+     "title": "Nov 10 Premier Extended 1/2 Day - Redemption!",
+     "url": "https://www.bdoutdoors.com/forums/threads/nov-10-premier-extended-1-2-day-redemption.872304/",
+     "tackle": [
+      "40 lb setup, yo-yo / dropper loop",
+      "dropper loop, weights up to 1 lb"
+     ],
+     "bait": null,
+     "conditions": "Fishing 300–350 ft off Pt Loma; afternoon required heavy weights."
+    }
+   ]
+  },
+  "full": {
+   "label": "Full day & overnight",
+   "headline": "Avalon and Catalina · fluorocarbon - YT",
+   "window_days": 45,
+   "report_count": 1,
+   "top_spots": [
+    "Avalon",
+    "Catalina"
+   ],
+   "items": [
+    {
+     "boat": "Pursuit",
+     "trip_length": "Full Day",
+     "trip_date": "2026-11-08",
+     "title": "Pursuit, 9th inning 2 outs down 2 runs.",
+     "url": "https://www.bdoutdoors.com/forums/threads/pursuit-9th-inning-2-outs-down-2-runs.870877/",
+     "tackle": [
+      "fluorocarbon - YT"
+     ],
+     "bait": null,
+     "conditions": null
+    }
+   ]
+  },
+  "multi": {
+   "label": "1.5 to 3.5 day",
+   "headline": "St Martin Island · 40 lb FC, Mak10 - YFT",
+   "window_days": 45,
+   "report_count": 2,
+   "top_spots": [
+    "St Martin Island"
+   ],
+   "items": [
+    {
+     "boat": "New Lo-An",
+     "trip_length": "2 Day",
+     "trip_date": "2026-11-11",
+     "title": "New Lo Ann 11-11 2 day  Pretty Great",
+     "url": "https://www.bdoutdoors.com/forums/threads/new-lo-ann-11-11-2-day-pretty-great.872398/",
+     "tackle": [],
+     "bait": null,
+     "conditions": "Hot, sunny November; generator overheated; bait dying briefly."
+    },
+    {
+     "boat": "Islander",
+     "trip_length": "3 Day",
+     "trip_date": "2026-10-23",
+     "title": "Quick Report - Islander 3 day 10/23/26",
+     "url": "https://www.bdoutdoors.com/forums/threads/quick-report-islander-3-day-10-23-26.872028/",
+     "tackle": [
+      "40 lb FC, Mak10 - YFT",
+      "50 lb FC, LX Raptor, 2/0 circle - YFT",
+      "60 lb FC, HX Raptor - YFT",
+      "flyline 25-30 lb FC"
+     ],
+     "bait": "live bait (livewells), lively",
+     "conditions": "windy, rain squalls, blue water, dawn bite active"
+    }
+   ]
+  },
+  "extended": {
+   "label": "4 to 7 day",
+   "headline": null,
+   "window_days": 45,
+   "report_count": 0,
+   "top_spots": [],
+   "items": []
+  },
+  "long_range": {
+   "label": "Long range (8+ days)",
+   "headline": "Cedros and the Ridge · trolling at cruise speed - wahoo",
+   "window_days": 21,
+   "report_count": 7,
+   "top_spots": [
+    "Cedros",
+    "the Ridge",
+    "The Rocks",
+    "13 Fathom",
+    "13 Fathom Spot"
+   ],
+   "items": [
+    {
+     "boat": "Excel",
+     "trip_length": "10 Day",
+     "trip_date": "2026-11-14",
+     "title": "Water Cooling down for 2027 16 day trips?",
+     "url": "https://www.bdoutdoors.com/forums/threads/water-cooling-down-for-2027-16-day-trips.872509/",
+     "tackle": [
+      "trolling at cruise speed - wahoo",
+      "bomb - wahoo (only 1)"
+     ],
+     "bait": null,
+     "conditions": "Water cooling; northern bank 85°F; bait not in best shape."
+    },
+    {
+     "boat": "Shogun",
+     "trip_length": "10 Day",
+     "trip_date": null,
+     "title": "Shogun 10 Day 10/27 to 11/6",
+     "url": "https://www.bdoutdoors.com/forums/threads/shogun-10-day-10-27-to-11-6.872300/",
+     "tackle": [
+      "DTX trolling - wahoo",
+      "dropper loop - yellowfin/yellowtail",
+      "yoyo - yellowfin/yellowtail",
+      "Salas 6x Jr"
+     ],
+     "bait": "live bait (dying late trip); lures primary producers",
+     "conditions": "extremely hot water, bad weather incoming, bait scarce late trip."
+    },
+    {
+     "boat": "Vagabond",
+     "trip_length": "10 Day",
+     "trip_date": "2026-11-09",
+     "title": "Vagabond SD Anglers 10-Day 11/9 to 11/19 (edited - photos now [maybe!] but no vids)",
+     "url": "https://www.bdoutdoors.com/forums/threads/vagabond-sd-anglers-10-day-11-9-to-11-19-edited-photos-now-maybe-but-no-vids.872601/",
+     "tackle": [
+      "pink Rapala Mag 40 - wahoo troll",
+      "gold Hopkins Spoon, 55lb leader - wahoo",
+      "gold Raider jig - wahoo",
+      "small Marauder - wahoo"
+     ],
+     "bait": "sardine, mostly decent, not quite as cured as hoped; scad mackerel up to 5 lbs live",
+     "conditions": "Warm south, temps dropped; 24-ft groundswell late; blustery near San Martin."
+    },
+    {
+     "boat": "Searcher",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-09",
+     "title": "Searcher 8 day: different take",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-different-take.872516/",
+     "tackle": [
+      "braid + 3 ft topshot"
+     ],
+     "bait": null,
+     "conditions": "Unusually warm water; wind event ~30 knots evening of Nov 16."
+    },
+    {
+     "boat": "Searcher",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-09",
+     "title": "Searcher 8-Day Report #2",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-report-2.872499/",
+     "tackle": [
+      "Tady 4/0 solid mint - yellowtail",
+      "Salas 6X Jr. solid mint - yellowtail",
+      "dropper loop - yellowtail",
+      "homemade bomb - wahoo"
+     ],
+     "bait": "sardine, good quantity, lasted full trip",
+     "conditions": "abundant wildlife; scarce bottom life; barracuda infestation at San Carlos"
+    },
+    {
+     "boat": "Searcher",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-09",
+     "title": "8 day Searcher report Nov 9-17",
+     "url": "https://www.bdoutdoors.com/forums/threads/8-day-searcher-report-nov-9-17.872469/",
+     "tackle": [
+      "pink Marauder - wahoo",
+      "orange Marauder - wahoo",
+      "40-50 lb line, #1-1/0 hooks - yellowtail flyline",
+      "scrambled egg 6x JR jig - yellowtail yo-yo"
+     ],
+     "bait": "sardine/anchovy 4-7 in, lively, good shape",
+     "conditions": "Good weather early; rough seas and long uphill run back."
+    },
+    {
+     "boat": "Shogun",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-06",
+     "title": "Shogun Izorline - Sophie Huynh Charter - Nov 6 2026 to Nov 14 2026",
+     "url": "https://www.bdoutdoors.com/forums/threads/shogun-izorline-sophie-huynh-charter-nov-6-2026-to-nov-14-2026.872405/",
+     "tackle": [
+      "Marauders – yellowfin tuna",
+      "Colt Snipers dropped deep – YFT",
+      "dropper loop – yellowtail",
+      "yo-yo jig – yellowtail"
+     ],
+     "bait": "live bait (bait-making noted); sardine/mackerel unspecified",
+     "conditions": "ripping current; slow troll stretches; wide-open bite Wednesday afternoon."
+    }
+   ]
+  }
+ }
+}

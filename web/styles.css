@@ -3293,6 +3293,53 @@ body.compact .dt td { padding: 7px 12px; }
 }
 .chat-trip-book-btn:hover { background: var(--tb-accent-d); }
 
+/* ── Co-Captain trip card (data-hydrated) ─────────────────────────────── */
+.chat-trip-card.cc-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #EAE6DC);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px 14px;
+  margin: 10px 0;
+  color: var(--ink, #17332C);
+  box-shadow: none;
+}
+.cc-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.cc-boat { font-family: var(--serif, 'Fraunces', Georgia, serif); font-size: 18px; font-weight: 600; line-height: 1.2; }
+.cc-sub { font-family: var(--mono, 'DM Mono', monospace); font-size: 11.5px; color: var(--muted, #5A6E66); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+.cc-when { font-family: var(--mono, 'DM Mono', monospace); font-size: 13px; margin-top: 8px; }
+.cc-facts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-top: 6px; }
+.cc-price { font-family: var(--serif, 'Fraunces', Georgia, serif); font-size: 20px; font-weight: 600; }
+.cc-price small { font-family: var(--mono, 'DM Mono', monospace); font-size: 11px; font-weight: 400; color: var(--muted, #5A6E66); margin-left: 2px; }
+.cc-spots { font-family: var(--mono, 'DM Mono', monospace); font-size: 12.5px; color: var(--good, #2E7D5B); }
+.cc-spots.low { color: var(--accent-ink, #B0542A); font-weight: 600; }
+.cc-tag { font-family: var(--mono, 'DM Mono', monospace); font-size: 11px; padding: 2px 6px; border-radius: 999px; background: var(--good-50, #E4F2EA); color: var(--good, #2E7D5B); }
+.cc-why { margin: 8px 0 0; padding-left: 18px; font-size: 13.5px; line-height: 1.45; }
+.cc-why li { margin: 2px 0; }
+.cc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.cc-btn {
+  min-height: 44px; padding: 0 14px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 600 14px/1 var(--sans, system-ui, sans-serif);
+  background: var(--surface, #fff); color: var(--ink, #17332C);
+  border: 1px solid var(--line-2, #DCD6C8); cursor: pointer; text-decoration: none;
+}
+.cc-btn.primary { background: var(--accent, #CF6A3C); border-color: var(--accent, #CF6A3C); color: #fff; flex: 1 1 auto; }
+.cc-btn.primary:hover { background: var(--accent-ink, #B0542A); }
+.cc-btn.ghost { border-color: transparent; color: var(--pine-2, #1F4A3F); }
+.cc-btn:focus-visible, .cc-icon-btn:focus-visible { outline: none; box-shadow: var(--focus, 0 0 0 3px rgba(207,106,60,.22)); }
+.cc-icon-btn {
+  min-width: 44px; min-height: 44px; border-radius: 999px; border: 1px solid transparent;
+  background: transparent; color: var(--accent, #CF6A3C); font-size: 20px; cursor: pointer;
+}
+.cc-icon-btn.on { background: var(--accent-50, #FCEFE7); }
+.cc-summary { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius-sm, 6px); background: var(--band, #F4F1E9); }
+.cc-summary-title { font-family: var(--serif, 'Fraunces', Georgia, serif); font-weight: 600; font-size: 15px; }
+.cc-summary ul { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; line-height: 1.45; }
+.cc-live { color: var(--good, #2E7D5B); font-weight: 600; }
+.cc-live.bad { color: var(--bad, #B8432F); }
+.cc-note { margin-top: 6px; font-size: 12.5px; color: var(--good, #2E7D5B); }
+.cc-asof { margin-top: 8px; font-family: var(--mono, 'DM Mono', monospace); font-size: 10.5px; color: var(--faint, #8C978F); }
+
 .chat-actions {
   display: flex;
   flex-wrap: wrap;

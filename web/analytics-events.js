@@ -135,6 +135,46 @@ window.TTTrack = {
     }
   },
 
+  // ── Co-Captain booking funnel ──────────────────────────────────────────────
+  // chat_recommend (cards shown) → chat_book_intent (opened summary)
+  //   → chat_book_click (left for the landing's site). Joined on msg_index + trip_id.
+  // No question text or personal data is sent.
+  _ccEvent: function(name, p) {
+    if (typeof gtag === 'undefined') return;
+    gtag('event', name, {
+      trip_id:      p.tripId || null,
+      boat:         p.boat || null,
+      landing:      p.landing || null,
+      trip_length:  p.tripLength || null,
+      price:        p.price != null ? p.price : null,
+      position:     p.position || null,
+      msg_index:    p.msgIndex != null ? p.msgIndex : null,
+      booking_kind: p.bookingKind || null,
+    });
+  },
+  chatRecommend: function(p) {
+    if (typeof gtag === 'undefined') return;
+    gtag('event', 'chat_recommend', {
+      msg_index: p.msgIndex,
+      trip_ids:  (p.tripIds || []).join(','),
+      landings:  (p.landings || []).join(','),
+      count:     (p.tripIds || []).length,
+    });
+  },
+  chatBookIntent: function(p) { this._ccEvent('chat_book_intent', p); },
+  chatBookClick: function(p) {
+    this._ccEvent('chat_book_click', p);
+    this._logClick(p, { tab: 'co_captain', position: p.position });
+  },
+  chatCallClick: function(p) { this._ccEvent('chat_call_click', p); },
+  chatLiveCheck: function(p) {
+    if (typeof gtag === 'undefined') return;
+    gtag('event', 'chat_live_check', { trip_id: p.tripId, landing: p.landing, live_open: p.liveOpen, snapshot_open: p.openSpots != null ? p.openSpots : null });
+  },
+  chatShare:     function(p) { this._ccEvent('chat_share', p); },
+  chatSave:      function(p) { this._ccEvent(p.saved ? 'chat_save' : 'chat_unsave', p); },
+  chatBoatClick: function(p) { this._ccEvent('chat_boat_click', p); },
+
   chatAction: function(actionType, data) {
     if (typeof gtag !== 'undefined') {
       gtag('event', 'chat_action', {

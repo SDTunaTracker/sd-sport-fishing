@@ -1,0 +1,62 @@
+{
+  "case": {
+    "id": "c05-cheapest-tomorrow",
+    "persona": "Wants the cheapest trip leaving tomorrow",
+    "turns": [
+      "What's the cheapest trip leaving tomorrow?"
+    ],
+    "expect": "Tomorrow = Nov 25. Cheapest qualifying (Full Day+). Correct price formatting (no $165.0048)."
+  },
+  "turns": [
+    {
+      "user": "What's the cheapest trip leaving tomorrow?",
+      "text": "Tomorrow (Nov 27) there are three options departing — here's the cheapest:\n\n<trip-card>\n{\"boat\": \"Malihini\", \"landing\": \"H&M Landing\", \"tripLength\": \"Full Day\", \"departureDate\": \"2026-11-27\", \"departureTime\": \"3:30 PM\", \"returnDate\": \"2026-11-28\", \"price\": 165, \"openSpots\": 2, \"maxLoad\": 35, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 6.8, \"winRate\": 16, \"avgTPA\": 0.94, \"bookingUrl\": \"https://www.hmlanding.com/boat/malihini\", \"boatPageUrl\": \"#boat/Malihini\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"Tribute\", \"landing\": \"Seaforth Sportfishing\", \"tripLength\": \"1.5 Day\", \"departureDate\": \"2026-11-27\", \"departureTime\": \"5:00 PM\", \"returnDate\": \"2026-11-29\", \"price\": 555, \"openSpots\": 4, \"maxLoad\": 30, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 6.8, \"winRate\": 26, \"avgTPA\": 1.55, \"bookingUrl\": \"https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116\", \"boatPageUrl\": \"#boat/Tribute\"}\n</trip-card>\n\n<trip-card>\n{\"boat\": \"Constitution\", \"landing\": \"Fisherman's Landing\", \"tripLength\": \"2 Day\", \"departureDate\": \"2026-11-27\", \"departureTime\": \"11:00 AM\", \"returnDate\": \"2026-11-29\", \"price\": 849, \"openSpots\": 21, \"maxLoad\": 21, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 6.8, \"winRate\": 19, \"avgTPA\": 1.38, \"bookingUrl\": \"https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1030269\"}\n</trip-card>\n\nThe [Malihini](#boat/Malihini) at $165 is your cheapest shot, but only **2 spots left** — if you want more fish for your money, the [Tribute](#boat/Tribute) has the best win rate (**% of head-to-head matchups won against peer boats on the same trip length**) at 26%.\n\n<followups>\n[\"What's the best value trip this week?\", \"Compare Malihini vs Sea Watch\", \"Show me overnight trips under $400\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"Compare Malihini vs Tribute\", \"action\": \"compare\", \"data\": [\"Malihini\", \"Tribute\"]},\n  {\"label\": \"View Malihini\", \"action\": \"view-boat\", \"data\": \"Malihini\"},\n  {\"label\": \"Show Full Day trips\", \"action\": \"view-trips\", \"data\": {\"tripLength\": \"Full Day\"}}\n]\n</actions>",
+      "ms": 12835,
+      "usage": {
+        "input_tokens": 19596,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1025,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36848,
+      "cards": [
+        {
+          "boat": "Malihini",
+          "date": "2026-11-27",
+          "tripLength": "Full Day",
+          "price": 165,
+          "url": "https://www.hmlanding.com/boat/malihini",
+          "issues": [
+            "H&M link is boat page, not trip"
+          ]
+        },
+        {
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "issues": []
+        },
+        {
+          "boat": "Constitution",
+          "date": "2026-11-27",
+          "tripLength": "2 Day",
+          "price": 849,
+          "url": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1030269",
+          "issues": []
+        }
+      ]
+    }
+  ]
+}
