@@ -70,6 +70,8 @@ $hourlyXml = @"
     <ExecutionTimeLimit>PT5M</ExecutionTimeLimit>
     <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
     <StartWhenAvailable>true</StartWhenAvailable>
+    <!-- Missed triggers fire seconds after wake, before Wi-Fi is up (Nov 2026 outage). -->
+    <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
     <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
     <Enabled>true</Enabled>
@@ -115,6 +117,8 @@ $fullXml = @"
     <ExecutionTimeLimit>PT30M</ExecutionTimeLimit>
     <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
     <StartWhenAvailable>true</StartWhenAvailable>
+    <!-- Missed triggers fire seconds after wake, before Wi-Fi is up (Nov 2026 outage). -->
+    <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
     <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
     <Enabled>true</Enabled>

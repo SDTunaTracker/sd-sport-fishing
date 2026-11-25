@@ -6,3 +6,8 @@
 
 /sst_grid.json
   Cache-Control: no-cache, must-revalidate
+
+/api/v1/app.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache, must-revalidate

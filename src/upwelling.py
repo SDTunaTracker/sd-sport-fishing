@@ -147,3 +147,24 @@ def fetch_daily_upwelling(target_date: date) -> dict | None:
         "upwelling_index":        avg,
         "upwelling_is_favorable": 1 if avg < _FAVORABLE_THRESHOLD else 0,
     }
+
+
+def fill_upwelling_gaps(conn, start: date | None = None, end: date | None = None) -> int:
+    """Insert every published upwelling day in [start, end] that has no row.
+
+    Default window: 21 days before the newest stored day through today, so a
+    run always picks up whatever NOAA has published since the last success
+    (the old hourly call only asked for today-44..today-30 and silently missed
+    anything outside it). Returns rows added.
+    """
+    if start is None:
+        row = conn.execute("SELECT MAX(date) FROM upwelling_obs").fetchone()
+        last = date.fromisoformat(row[0]) if row and row[0] else date.today() - timedelta(days=60)
+        start = last - timedelta(days=21)
+    end = end or date.today()
+    have = {r[0] for r in conn.execute(
+        "SELECT date FROM upwelling_obs WHERE date BETWEEN ? AND ?",
+        (start.isoformat(), end.isoformat()),
+    )}
+    new = [r for r in fetch_upwelling_range(start, end) if r["date"] not in have]
+    return insert_upwelling(conn, new)

@@ -1,16 +1,24 @@
-"""Deep historical backfill from sandiegofishreports.com.
+"""Recover fish counts from the fishreports network's per-date archives.
 
-That site exposes a per-date archive at:
+Two archive sites share one HTML layout and keep every day back to ~2010:
+
     https://www.sandiegofishreports.com/dock_totals/boats.php?date=YYYY-MM-DD
+        H&M, Fisherman's, Seaforth, Point Loma, Oceanside Sea Center
+    https://www.socalfishreports.com/dock_totals/boats.php?date=YYYY-MM-DD
+        the OC / LA / Ventura landings
 
-Each page lists every reporting boat for that day across every SD landing,
-grouped under landing-named panels. Their archive goes back to ~2010, so this
-gives us *years* of history beyond what any per-boat page exposes.
+Each row is ``<td><b>Boat</b> <a href="/landings/x.php">Landing</a></td>
+<td>N Anglers <br> Trip Type</td> <td>fish counts</td>``. These are the same
+dock totals the landing pages publish (same backend), so rows are tagged
+``source='fish_count_page'`` and keep the archive URL in ``source_url``.
 
-The runner walks dates backward from `start` until either:
-  * the hard floor is reached (default 2010-01-01), or
-  * `max_empty_streak` consecutive days return zero qualifying trips
-    (heuristic that we've gone past the useful data).
+Two entry points:
+
+* ``recover_range(conn, start, end)`` — gap filler. Inserts an archive row only
+  when no structured row exists for that (date, boat, landing), so it never
+  overwrites or duplicates what the live scrape already captured. Used by the
+  daily run as a rolling window and by ``scripts/recover_gaps.py``.
+* ``run_deep_backfill(...)`` — the original walk-backwards historical sweep.
 """
 from __future__ import annotations
 
@@ -18,6 +26,7 @@ import json
 import logging
 import re
 import time
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -27,13 +36,18 @@ from bs4 import BeautifulSoup
 from . import db
 from . import parse as P
 from .moon import moon_info
-from .scrape import UA
+from .scrape import SOURCES, UA
 
 log = logging.getLogger(__name__)
 
 SDFR_URL = "https://www.sandiegofishreports.com/dock_totals/boats.php"
+SOCAL_URL = "https://www.socalfishreports.com/dock_totals/boats.php"
+ARCHIVES: tuple[tuple[str, str], ...] = (
+    ("san_diego", SDFR_URL),
+    ("oc_la", SOCAL_URL),
+)
 
-# Only ingest rows for boats reporting under these four landings.
+# Kept for backwards compatibility with run_deep_backfill callers.
 APPROVED_LANDINGS: tuple[str, ...] = (
     "H&M Landing",
     "Fisherman's Landing",
@@ -44,100 +58,197 @@ APPROVED_LANDINGS: tuple[str, ...] = (
 _ANGLERS_RE = re.compile(r"(\d[\d,]*)\s*Anglers", re.I)
 
 
-def _landing_for_panel(h2_text: str) -> str | None:
-    """Return our canonical landing name if this panel's heading matches one
-    of the four approved landings."""
-    if not h2_text:
+def _norm(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
+
+
+@dataclass(frozen=True)
+class _Landing:
+    name: str
+    region: str
+
+
+def _landing_index() -> tuple[dict[str, _Landing], dict[str, _Landing]]:
+    """(by normalized name, by /landings/<slug>.php basename) for every source."""
+    by_name: dict[str, _Landing] = {}
+    by_slug: dict[str, _Landing] = {}
+    for s in SOURCES:
+        ln = _Landing(s.name, s.region)
+        by_name[_norm(s.name)] = ln
+        m = re.search(r"/landings/([^/?#]+)\.php", s.url)
+        if m:
+            by_slug[m.group(1).lower()] = ln
+    return by_name, by_slug
+
+
+_BY_NAME, _BY_SLUG = _landing_index()
+
+
+def _resolve_landing(link_text: str, href: str) -> _Landing | None:
+    m = re.search(r"/landings/([^/?#]+)\.php", href or "")
+    if m and m.group(1).lower() in _BY_SLUG:
+        return _BY_SLUG[m.group(1).lower()]
+    return _BY_NAME.get(_norm(link_text))
+
+
+def _build_trip(*, report_date: str, boat: str, landing: _Landing,
+                trip_type_raw: str, anglers: int, fish_text: str,
+                source_url: str, scraped_at: str) -> dict | None:
+    """Same dict shape src.scrape.parse_page produces (all TRIP_FIELDS)."""
+    length_bucket, length_days = P.parse_trip_length(trip_type_raw)
+    if length_bucket is None or length_days is None:
         return None
-    low = h2_text.lower()
-    for ln in APPROVED_LANDINGS:
-        if ln.lower() in low:
-            return ln
-    return None
+    tracked, other = P.parse_fish_counts(fish_text)
+    col_counts, other_fish, unknowns = P.extract_extended_species(other)
+    metrics = P.trophy_metrics(tracked, anglers, length_days)
+    m = moon_info(datetime.fromisoformat(report_date).replace(tzinfo=timezone.utc))
+    return {
+        "date": report_date,
+        "boat": boat,
+        "landing": landing.name,
+        "trip_type_raw": trip_type_raw,
+        "trip_length": length_bucket,
+        "trip_length_days": length_days,
+        "anglers": anglers,
+        "bluefin": tracked["Bluefin"],
+        "yellowfin": tracked["Yellowfin"],
+        "yellowtail": tracked["Yellowtail"],
+        "dorado": tracked["Dorado"],
+        "skipjack": tracked["Skipjack"],
+        "bigeye": tracked["Bigeye"],
+        "albacore": tracked["Albacore"],
+        "trophy_count": metrics.trophy_count,
+        "trophy_per_angler": metrics.trophy_per_angler,
+        "trophy_per_angler_per_day": metrics.trophy_per_angler_per_day,
+        "other_species_json": json.dumps(other),
+        "moon_phase": m.phase,
+        "moon_illum": m.illum,
+        "days_from_new": m.days_from_new,
+        "days_from_full": m.days_from_full,
+        "scraped_at": scraped_at,
+        "source_url": source_url,
+        **col_counts,
+        "other_fish": other_fish,
+        "is_half_day": 1 if length_days < P.MIN_TRIP_DAYS else 0,
+        "region": landing.region,
+        "full_catch": P.build_full_catch(tracked, other),
+        "_unknowns": unknowns,
+        "source": "fish_count_page",
+        "is_preliminary": 0,
+        "written_text": None,
+        "reported_at": None,
+    }
+
+
+def parse_archive_day(html: str, report_date: str, base_url: str = SDFR_URL,
+                      landings: set[str] | None = None) -> list[dict]:
+    """Parse one archive ``?date=`` page into trip dicts for db.insert_trips.
+
+    Only rows whose landing maps to a tracked SOURCES landing are kept
+    (optionally narrowed further by ``landings``). Half-day rows are kept with
+    is_half_day=1, matching the live scraper.
+    """
+    soup = BeautifulSoup(html, "lxml")
+    scraped_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    source_url = f"{base_url}?date={report_date}"
+    out: list[dict] = []
+    for tr in soup.find_all("tr"):
+        tds = tr.find_all("td")
+        if len(tds) < 3:
+            continue
+        boat_tag = tds[0].find("b")
+        link = tds[0].find("a", href=re.compile(r"/landings/"))
+        if not boat_tag or not link:
+            continue
+        boat = boat_tag.get_text(strip=True)
+        landing = _resolve_landing(link.get_text(strip=True), link.get("href", ""))
+        if not boat or landing is None:
+            continue
+        if landings is not None and landing.name not in landings:
+            continue
+        details = tds[1].get_text(" ", strip=True)
+        m = _ANGLERS_RE.search(details)
+        if not m:
+            continue
+        anglers = int(m.group(1).replace(",", ""))
+        if anglers <= 0:
+            continue
+        trip_type_raw = _ANGLERS_RE.sub("", details).strip()
+        if not trip_type_raw:
+            continue
+        t = _build_trip(
+            report_date=report_date, boat=boat, landing=landing,
+            trip_type_raw=trip_type_raw, anglers=anglers,
+            fish_text=tds[2].get_text(" ", strip=True),
+            source_url=source_url, scraped_at=scraped_at,
+        )
+        if t is not None:
+            out.append(t)
+    return out
 
 
 def parse_sdfr_day(html: str, report_date: str) -> list[dict]:
-    """Parse one SDFR `?date=...` page into trip dicts ready for db.insert_trips.
+    """Legacy name: SD archive page, four core landings only."""
+    return parse_archive_day(html, report_date, SDFR_URL, set(APPROVED_LANDINGS))
 
-    `report_date` is the ISO date this page represents (YYYY-MM-DD).
+
+def fetch_archive_day(session: requests.Session, base_url: str, d: date,
+                      timeout: float = 30.0, attempts: int = 3) -> str:
+    """GET one archive day with retry/backoff on network errors and 5xx."""
+    from .net import get_with_retry
+    r = get_with_retry(f"{base_url}?date={d.isoformat()}", session=session,
+                       headers={"User-Agent": UA}, timeout=timeout, attempts=attempts)
+    return r.text
+
+
+def recover_range(conn, start: date, end: date, *, throttle: float = 0.5,
+                  archives: tuple[tuple[str, str], ...] = ARCHIVES,
+                  session: requests.Session | None = None) -> dict:
+    """Fill missing trips for [start, end] from the date archives.
+
+    A row is inserted only when the DB has no structured row for the same
+    (date, lower(boat), landing) with either the same trip_length or the same
+    angler count. The angler match catches older rows stored as generic
+    "Half Day" where the parser now says "Half Day AM"/"PM". Narrative/text_fallback rows for that key are
+    replaced by insert_trips' structured-row purge.
+
+    Returns {"inserted": n, "by_day": {date: {landing: n}}, "errors": [...]}.
     """
-    soup = BeautifulSoup(html, "lxml")
-    out: list[dict] = []
-    scraped_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    moon_for_day = moon_info(
-        datetime.fromisoformat(report_date).replace(tzinfo=timezone.utc)
-    )
-
-    for panel in soup.find_all("div", class_=re.compile(r"\bpanel\b")):
-        h2 = panel.find("h2")
-        if not h2:
-            continue
-        landing = _landing_for_panel(h2.get_text(strip=True))
-        if not landing:
-            continue
-        table = panel.find("table")
-        if not table:
-            continue
-        for tr in table.find_all("tr"):
-            tds = tr.find_all("td")
-            if len(tds) != 3:
+    session = session or requests.Session()
+    report: dict = {"inserted": 0, "seen": 0, "by_day": {}, "errors": []}
+    d = start
+    while d <= end:
+        ds = d.isoformat()
+        have: set[tuple] = set()
+        for r in conn.execute(
+            "SELECT boat, landing, trip_length, anglers FROM trips"
+            " WHERE date=? AND source='fish_count_page'", (ds,),
+        ):
+            have.add(("tl", r[0].lower(), r[1], r[2]))
+            have.add(("ang", r[0].lower(), r[1], r[3]))
+        for region, base in archives:
+            try:
+                html = fetch_archive_day(session, base, d)
+            except Exception as e:  # noqa: BLE001 — report and keep going
+                report["errors"].append(f"{ds} {base}: {type(e).__name__}: {e}")
                 continue
-
-            boat_tag = tds[0].find("b")
-            if not boat_tag:
-                continue
-            boat = boat_tag.get_text(strip=True)
-            if not boat:
-                continue
-
-            details_text = tds[1].get_text(" ", strip=True)
-            m = _ANGLERS_RE.search(details_text)
-            if not m:
-                continue
-            anglers = int(m.group(1).replace(",", ""))
-            if anglers <= 0:
-                continue
-            trip_type_raw = _ANGLERS_RE.sub("", details_text).strip()
-            if not trip_type_raw:
-                continue
-
-            length_bucket, length_days = P.parse_trip_length(trip_type_raw)
-            if length_bucket is None or length_days is None:
-                continue
-            if length_days < P.MIN_TRIP_DAYS:
-                continue  # skip half-day / twilight
-
-            fish_text = tds[2].get_text(" ", strip=True)
-            tracked, other = P.parse_fish_counts(fish_text)
-            metrics = P.trophy_metrics(tracked, anglers, length_days)
-
-            out.append({
-                "date": report_date,
-                "boat": boat,
-                "landing": landing,
-                "trip_type_raw": trip_type_raw,
-                "trip_length": length_bucket,
-                "trip_length_days": length_days,
-                "anglers": anglers,
-                "bluefin": tracked["Bluefin"],
-                "yellowfin": tracked["Yellowfin"],
-                "yellowtail": tracked["Yellowtail"],
-                "dorado": tracked["Dorado"],
-                "skipjack": tracked["Skipjack"],
-                "bigeye": tracked["Bigeye"],
-                "albacore": tracked["Albacore"],
-                "trophy_count": metrics.trophy_count,
-                "trophy_per_angler": metrics.trophy_per_angler,
-                "trophy_per_angler_per_day": metrics.trophy_per_angler_per_day,
-                "other_species_json": json.dumps(other),
-                "moon_phase": moon_for_day.phase,
-                "moon_illum": moon_for_day.illum,
-                "days_from_new": moon_for_day.days_from_new,
-                "days_from_full": moon_for_day.days_from_full,
-                "scraped_at": scraped_at,
-                "source_url": f"{SDFR_URL}?date={report_date}",
-            })
-    return out
+            trips = parse_archive_day(html, ds, base)
+            report["seen"] += len(trips)
+            new = [t for t in trips
+                   if ("tl", t["boat"].lower(), t["landing"], t["trip_length"]) not in have
+                   and ("ang", t["boat"].lower(), t["landing"], t["anglers"]) not in have]
+            if new:
+                n = db.insert_trips(conn, new)
+                report["inserted"] += n
+                for t in new:
+                    have.add(("tl", t["boat"].lower(), t["landing"], t["trip_length"]))
+                    have.add(("ang", t["boat"].lower(), t["landing"], t["anglers"]))
+                    day = report["by_day"].setdefault(ds, {})
+                    day[t["landing"]] = day.get(t["landing"], 0) + 1
+            time.sleep(throttle)
+        conn.commit()  # per day, so a concurrent scheduled run is never locked out long
+        d += timedelta(days=1)
+    return report
 
 
 def run_deep_backfill(
@@ -149,9 +260,9 @@ def run_deep_backfill(
     max_empty_streak: int = 180,
     commit_every: int = 30,
 ) -> None:
-    """Walk dates backward from `start` (default today) toward `stop`.
-    Commits to the DB every `commit_every` days so a crash mid-run doesn't lose
-    everything already scraped."""
+    """Walk dates backward from `start` (default today) toward `stop` over the
+    SD archive, INSERT OR IGNORE for the four core landings. Commits every
+    `commit_every` days so a crash mid-run doesn't lose everything scraped."""
     if start is None:
         start = date.today()
     session = requests.Session()
@@ -170,25 +281,16 @@ def run_deep_backfill(
             if empty_streak >= max_empty_streak:
                 print(f"{max_empty_streak} consecutive empty days; assuming archive end. Halting.")
                 break
-
-            url = f"{SDFR_URL}?date={cur.isoformat()}"
             try:
-                r = session.get(url, headers={"User-Agent": UA}, timeout=20)
+                html = fetch_archive_day(session, SDFR_URL, cur, timeout=20)
             except Exception as e:
-                log.warning("fetch %s failed: %s", url, e)
-                cur -= timedelta(days=1)
-                time.sleep(throttle)
-                continue
-
-            if r.status_code != 200:
-                log.info("HTTP %s at %s", r.status_code, url)
+                log.warning("fetch %s failed: %s", cur, e)
                 cur -= timedelta(days=1)
                 empty_streak += 1
                 time.sleep(throttle)
                 continue
-
             try:
-                trips = parse_sdfr_day(r.text, cur.isoformat())
+                trips = parse_sdfr_day(html, cur.isoformat())
             except Exception:
                 log.exception("parse failed for %s", cur.isoformat())
                 trips = []

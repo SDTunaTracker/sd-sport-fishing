@@ -21,22 +21,68 @@ from .backtest import daily_accuracy_update, weekly_recalibrate
 from .sst import fetch_daily_sst, fetch_hourly_sst, insert_sst
 from .forecast import score_yesterday as forecast_score_yesterday
 from .weather import fetch_marine_forecast
+from . import completeness
+from .net import is_network_error, wait_for_network
 
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / "tracker.db"
 DATA_JS_PATH = ROOT / "web" / "data.js"
 
+# Retry schedule for landings that fail with a network error (seconds).
+# Hourly runs have a 5-minute Task Scheduler limit, so they wait less.
+SCRAPE_RETRY_DELAYS = (20, 60, 120)
+SCRAPE_RETRY_DELAYS_HOURLY = (15, 45)
+# Days re-checked against the fishreports date archives on every run.
+ROLLING_DAYS = 3
+
 
 def _setup_logging(verbose: bool) -> None:
+    fmt = "%(asctime)s %(levelname)-7s %(name)s: %(message)s"
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
-        format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
+        format=fmt,
         datefmt="%H:%M:%S",
     )
+    # Task Scheduler launches us hidden via run-hidden.vbs, so stderr (every
+    # log line and any traceback) was discarded and crashed runs left only
+    # "exit=1" in logs/full-*.log. Keep a per-day copy on disk.
+    try:
+        logs = ROOT / "logs"
+        logs.mkdir(exist_ok=True)
+        fh = logging.FileHandler(logs / f"python-{date.today():%Y%m%d}.log", encoding="utf-8")
+        fh.setFormatter(logging.Formatter(fmt, "%Y-%m-%d %H:%M:%S"))
+        fh.setLevel(logging.INFO)
+        logging.getLogger().addHandler(fh)
+    except OSError:
+        pass
+
+
+def _scrape_with_retry(sources, target_date, known_boats, sleep=None,
+                       delays=SCRAPE_RETRY_DELAYS):
+    """scrape_all, then re-try landings that failed with a network error.
+
+    Returns the same (src, trips, page_date, err) tuples as scrape_all.
+    """
+    import time
+    sleep = sleep or time.sleep
+    results = list(scrape_all(sources, target_date=target_date, known_boats=known_boats))
+    for delay in delays:
+        retry = [i for i, (_, _, _, err) in enumerate(results) if err and is_network_error(err)]
+        if not retry:
+            break
+        logging.getLogger(__name__).warning(
+            "%d landing(s) hit network errors; retrying in %ds", len(retry), delay)
+        sleep(delay)
+        for i in retry:
+            results[i] = scrape_all([results[i][0]], target_date=target_date,
+                                    known_boats=known_boats)[0]
+    return results
 
 
 def run(target_date: date | None, export_only: bool, hourly: bool = False) -> int:
     summary_lines: list[str] = []
+    core_failures: list[str] = []
+    today = date.today()
     repaired = db.repair_if_corrupt(DB_PATH)
     if repaired:
         summary_lines.append("  WARNING: DB was corrupt — repaired automatically")
@@ -47,8 +93,16 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             known_boats_all = [
                 r['boat'] for r in conn.execute('SELECT DISTINCT boat FROM trips')
             ]
-            for src, trips, page_date, err in scrape_all(
-                SOURCES, target_date=target_date, known_boats=known_boats_all,
+            # After a wake from sleep, DNS can take 10-60s to come back.
+            hosts = sorted({s.url.split("/")[2] for s in SOURCES})
+            waited = wait_for_network(hosts, timeout=90 if hourly else 180)
+            if waited:
+                summary_lines.append(f"  Network came up after {waited:.0f}s")
+            elif waited is None:
+                summary_lines.append("  WARNING: DNS still failing; scraping anyway")
+            for src, trips, page_date, err in _scrape_with_retry(
+                SOURCES, target_date, known_boats_all,
+                delays=SCRAPE_RETRY_DELAYS_HOURLY if hourly else SCRAPE_RETRY_DELAYS,
             ):
                 started = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 if err:
@@ -59,6 +113,8 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                         trips_seen=0, trips_kept=0, status="error", error=err,
                     )
                     summary_lines.append(f"  {src.name:30s} ERROR  {err}")
+                    if src.name in completeness.CORE_LANDINGS:
+                        core_failures.append(src.name)
                     continue
                 kept = db.insert_trips(conn, trips, upsert=True)
                 db.log_scrape(
@@ -78,12 +134,29 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             # to zero (Seaforth vanished from Trip Planner this way).
             all_scheduled: list[dict] = []
             refreshed: list[str] = []
-            for src, sched, err in scrape_all_schedules():
+            # Don't hammer the booking sites: skip a landing for BLOCK_COOLDOWN
+            # after it served a CAPTCHA / bot check to this machine, and on
+            # 15-minute runs refresh each landing at most every 2 hours.
+            from .schedule import SOURCES as SCHED_SOURCES
+            sched_sources = []
+            for s in SCHED_SOURCES:
+                blk = completeness.active_block(conn, s.name)
+                if blk:
+                    summary_lines.append(f"  {s.name:30s} SKIPPED  blocked at {blk} (cooling down)")
+                    continue
+                last = conn.execute("SELECT MAX(scraped_at) FROM scheduled_trips WHERE landing=?",
+                                    (s.name,)).fetchone()[0]
+                if hourly and last and datetime.fromisoformat(last) >                         datetime.now(timezone.utc) - timedelta(hours=2):
+                    continue
+                sched_sources.append(s)
+            for src, sched, err in (scrape_all_schedules(sched_sources) if sched_sources else []):
                 if err:
                     kept = conn.execute(
                         "SELECT COUNT(*) FROM scheduled_trips WHERE landing = ?", (src.name,)
                     ).fetchone()[0]
                     summary_lines.append(f"  {src.name:30s} ERROR  {err}  (kept {kept} previous rows)")
+                    if completeness.is_block_error(err):
+                        completeness.record_block(conn, src.name, err)
                     continue
                 summary_lines.append(f"  {src.name:30s} upcoming={len(sched)}")
                 refreshed.append(src.name)
@@ -95,6 +168,22 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 f" ({total_sched} total)"
             )
 
+            # Rolling re-check: fill any trips the live pages dropped (or that a
+            # missed/asleep run never saw) from the date archives. Insert-only.
+            try:
+                from .deep_backfill import recover_range
+                rr = recover_range(conn, today - timedelta(days=ROLLING_DAYS),
+                                   today - timedelta(days=1))
+                summary_lines.append(
+                    f"  Rolling archive check ({ROLLING_DAYS}d): +{rr['inserted']} trips"
+                    + (f", {len(rr['errors'])} fetch errors" if rr["errors"] else ""))
+            except Exception as e:
+                summary_lines.append(f"  Rolling archive check ERROR (non-fatal): {e}")
+
+            # reconcile_daily_counts opens its own connection; commit first or
+            # it waits on our open write transaction and fails "database is locked".
+            conn.commit()
+
             # Remove text_fallback rows that now have a real fish_count_page row.
             try:
                 rec = reconcile_daily_counts(str(DB_PATH))
@@ -104,10 +193,10 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  Reconcile ERROR (non-fatal): {e}")
 
-        # Segment stats — keep daily_segment_stats current after each scrape.
+        # Segment stats — re-aggregate a week so late/recovered trips are counted.
         try:
-            yesterday = (date.today() - timedelta(days=1)).isoformat()
-            n_seg = db.update_daily_segment_stats(conn, since_date=yesterday)
+            since = (date.today() - timedelta(days=7)).isoformat()
+            n_seg = db.update_daily_segment_stats(conn, since_date=since)
             summary_lines.append(f"  Segment stats updated: {n_seg} rows")
         except Exception as e:
             summary_lines.append(f"  Segment stats ERROR (non-fatal): {e}")
@@ -120,6 +209,14 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 summary_lines.append(f"  SST fetched: {n_sst} location-days stored")
             except Exception as e:
                 summary_lines.append(f"  SST fetch ERROR (non-fatal): {e}")
+            # The fetch above stores only the newest satellite day; fill any
+            # (date, location) holes from the last two weeks.
+            try:
+                from .sst import fill_sst_gaps
+                added = fill_sst_gaps(conn, today - timedelta(days=14))
+                summary_lines.append(f"  SST gap fill: +{sum(added.values())} location-days")
+            except Exception as e:
+                summary_lines.append(f"  SST gap fill ERROR (non-fatal): {e}")
         else:
             # Hourly: pull just the NDBC Nearshore buoy so the homepage temp
             # refreshes through the day. Offshore satellites only publish
@@ -131,18 +228,30 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  SST hourly fetch ERROR (non-fatal): {e}")
 
-            # Upwelling index (NOAA ERDDAP erdUI456hr, 33N117W, ~30-day lag in practice)
-            try:
-                from .upwelling import fetch_upwelling_range, insert_upwelling
-                upw_lag_end = date.today() - timedelta(days=30)
-                upw_start   = upw_lag_end - timedelta(days=14)
-                upw_records = fetch_upwelling_range(upw_start, upw_lag_end)
-                n_upw       = insert_upwelling(conn, upw_records)
-                summary_lines.append(f"  Upwelling fetched: {n_upw} days stored")
-            except Exception as e:
-                summary_lines.append(f"  Upwelling fetch ERROR (non-fatal): {e}")
+        # Conditions inputs — both modes, each self-limiting.
+        try:
+            from .upwelling import fill_upwelling_gaps
+            n_upw = fill_upwelling_gaps(conn)
+            summary_lines.append(f"  Upwelling gap fill: +{n_upw} days")
+        except Exception as e:
+            summary_lines.append(f"  Upwelling fetch ERROR (non-fatal): {e}")
+        try:
+            last_hc = conn.execute("SELECT MAX(date) FROM historical_conditions").fetchone()[0]
+            if not hourly or not last_hc or last_hc < (today - timedelta(days=1)).isoformat():
+                from .backtest import refresh_recent_conditions
+                hc = refresh_recent_conditions(conn, today - timedelta(days=21))
+                summary_lines.append(f"  historical_conditions refreshed: {hc['rows']} days")
+        except Exception as e:
+            summary_lines.append(f"  historical_conditions refresh ERROR (non-fatal): {e}")
+        conn.commit()  # chlorophyll below opens its own connection
 
-            # Chlorophyll-a — MODIS Aqua 8-day composite; failure is non-fatal.
+        # Chlorophyll-a — VIIRS NOAA-20 daily (~8-day lag). Full runs always;
+        # 15-minute runs only when the newest reading is over 10 days old.
+        try:
+            last_chl = conn.execute("SELECT MAX(obs_date) FROM chlorophyll_obs").fetchone()[0]
+        except Exception:
+            last_chl = None
+        if not hourly or not last_chl or last_chl < (today - timedelta(days=10)).isoformat():
             try:
                 from .chlorophyll import fetch_chlorophyll
                 n_chl = fetch_chlorophyll(DB_PATH, target_date or date.today())
@@ -150,6 +259,7 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  Chlorophyll fetch ERROR (non-fatal): {e}")
 
+        if hourly:
             # Daily accuracy check — score yesterday's forecast vs actual catch.
             try:
                 acc = daily_accuracy_update(conn)
@@ -172,6 +282,16 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                     )
             except Exception as e:
                 summary_lines.append(f"  Forecast scoring ERROR (non-fatal): {e}")
+
+        # Score any recent day the scheduled runs missed (the call above only
+        # ever scores yesterday).
+        try:
+            from .derived import fill_accuracy_gaps
+            filled = fill_accuracy_gaps(conn, today - timedelta(days=14))
+            if filled:
+                summary_lines.append(f"  Forecast accuracy back-scored: {', '.join(filled)}")
+        except Exception as e:
+            summary_lines.append(f"  Forecast accuracy gap fill ERROR (non-fatal): {e}")
 
         # Reddit fetch + Claude "community insights" steps removed 2026-11-24: the
         # site no longer shows Reddit content. src/reddit.py, src/reddit_insights.py
@@ -212,6 +332,38 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         except Exception as e:
             summary_lines.append(f"  Staleness check ERROR (non-fatal): {e}")
 
+        # Completeness check + alerts. The heartbeat is written first so this
+        # run counts as "the job ran".
+        mode = "hourly" if hourly else "full"
+        exit_code = 2 if core_failures else 0
+        if not export_only:
+            try:
+                completeness.write_run_status(
+                    conn, mode, exit_code,
+                    f"core landing(s) failed: {', '.join(core_failures)}" if core_failures else "")
+                probs = completeness.check(conn, run_status=completeness.load_run_status(conn),
+                                           app_json=completeness.APP_JSON)
+                # BloodyDecks paddies have their own DB/workflow; their health
+                # check reads published state. Only present once that branch merges.
+                try:
+                    from scraper.paddies import health as paddies_health
+                    probs += [completeness.Problem(**vars(p)) for p in paddies_health.check()]
+                except ImportError:
+                    pass
+                except Exception as e:
+                    summary_lines.append(f"  BloodyDecks health check ERROR (non-fatal): {e}")
+                completeness.write_report(probs)
+                from .alerts import process as process_alerts
+                acts = process_alerts(probs)
+                summary_lines.append(
+                    f"  Completeness: {len(probs)} problem(s)"
+                    + (f"; alerted new={acts['new']}" if acts["new"] else "")
+                    + (f"; recovered={acts['recovered']}" if acts["recovered"] else ""))
+                for p in probs:
+                    summary_lines.append(f"    [{p.severity}] {p.detail}")
+            except Exception as e:
+                summary_lines.append(f"  Completeness check ERROR (non-fatal): {e}")
+
     # Rolling backup — written after a successful export so we always have a
     # clean recovery point that's at most one run old.
     try:
@@ -247,6 +399,12 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
     print("Daily run summary:")
     for line in summary_lines:
         print(line)
+    if core_failures:
+        print(f"EXIT 2: core landing scrape failed after retries: {', '.join(core_failures)}")
+        # CI sets SD_SOFT_EXIT=1 so a failed landing doesn't skip the commit
+        # step for everything else that was scraped; alerts still fire.
+        import os
+        return 0 if os.environ.get("SD_SOFT_EXIT") == "1" else 2
     return 0
 
 
@@ -291,7 +449,17 @@ def main(argv: list[str] | None = None) -> int:
         backfill_upwelling(DB_PATH)
         return 0
 
-    return run(args.date, args.export_only, hourly=args.hourly)
+    try:
+        return run(args.date, args.export_only, hourly=args.hourly)
+    except Exception as e:
+        logging.getLogger(__name__).exception("run crashed")
+        try:
+            with db.connect(DB_PATH) as c:
+                completeness.write_run_status(c, "hourly" if args.hourly else "full", 1,
+                                              f"crashed: {type(e).__name__}: {e}")
+        except Exception:
+            pass
+        return 1
 
 
 if __name__ == "__main__":

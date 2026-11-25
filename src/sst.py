@@ -320,3 +320,34 @@ def backfill_sst(db_path: Path, days: int = 90) -> None:
             d_max = max(r["date"] for r in records)
             print(f"  {name}: {len(records)} days ({d_min} to {d_max})")
         print(f"\nSST backfill complete: {total} records stored.")
+
+
+def fill_sst_gaps(conn, start: date, end: date | None = None) -> dict[str, int]:
+    """Insert MUR SST for every (date, location) in [start, end] that has no row.
+
+    INSERT OR IGNORE, so live NDBC buoy readings for Nearshore are never
+    replaced. Used as the daily rolling window (the daily fetch stores only the
+    single newest MUR day, so any day the PC was asleep was never stored) and
+    by scripts/recover_gaps.py. Returns {location: rows_added}.
+    """
+    end = min(end or date.today(), date.today() - timedelta(days=1))
+    added: dict[str, int] = {}
+    for name, (lat, lon) in LOCATIONS.items():
+        have = {r[0] for r in conn.execute(
+            "SELECT date FROM ocean_temps WHERE location=? AND date BETWEEN ? AND ?",
+            (name, start.isoformat(), end.isoformat()),
+        )}
+        rows = [(d, c) for d, c in _fetch_mur(lat, lon, start, end, timeout=60.0)
+                if d.isoformat() not in have]
+        recs = []
+        for d, sst_c in rows:
+            sst_f = _c_to_f(sst_c)
+            recs.append((d.isoformat(), name, lat, lon, round(sst_c, 2), sst_f,
+                         _compute_anomaly(conn, name, d, sst_f)))
+        if recs:
+            conn.executemany(
+                "INSERT OR IGNORE INTO ocean_temps"
+                " (date, location, lat, lon, sst_celsius, sst_fahrenheit, anomaly)"
+                " VALUES (?,?,?,?,?,?,?)", recs)
+        added[name] = len(recs)
+    return added
