@@ -1,0 +1,46 @@
+{
+  "case": {
+    "id": "c05-cheapest-tomorrow",
+    "persona": "Wants the cheapest trip leaving tomorrow",
+    "turns": [
+      "What's the cheapest trip leaving tomorrow?"
+    ],
+    "expect": "Tomorrow = Nov 25. Cheapest qualifying (Full Day+). Correct price formatting (no $165.0048)."
+  },
+  "turns": [
+    {
+      "user": "What's the cheapest trip leaving tomorrow?",
+      "text": "Tomorrow (11/25) has no trips on the schedule yet — the next departures are 11/27. Here's the cheapest option leaving that day:\n\n<trip-card>\n{\"boat\": \"Malihini\", \"landing\": \"H&M Landing\", \"tripLength\": \"Full Day\", \"departureDate\": \"2026-11-27\", \"departureTime\": \"15:30\", \"returnDate\": \"2026-11-28\", \"price\": 165, \"openSpots\": 2, \"maxLoad\": 35, \"moonPhase\": \"Waning Gibbous\", \"moonEmoji\": \"🌖\", \"forecastScore\": 6.8, \"winRate\": 14, \"avgTPA\": 0.94, \"bookingUrl\": \"https://www.hmlanding.com/boat/malihini\", \"boatPageUrl\": \"#boat/Malihini\"}\n</trip-card>\n\nOnly 2 spots left on the [Malihini](#boat/Malihini) — if that fills, the next cheapest is the Tribute 1.5-day at $555 or the Constitution 2-day at $848.\n\n<followups>\n[\"Show me all trips on 11/27\", \"What's the best value trip this week?\", \"Any overnight trips under $400?\"]\n</followups>\n\n<actions>\n[\n  {\"label\": \"View Malihini\", \"action\": \"view-boat\", \"data\": \"Malihini\"},\n  {\"label\": \"Show 11/27 trips\", \"action\": \"view-trips\", \"data\": {\"departureDate\": \"2026-11-27\"}}\n]\n</actions>",
+      "ms": 7878,
+      "usage": {
+        "input_tokens": 19596,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 486,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 36827,
+      "cards": [
+        {
+          "boat": "Malihini",
+          "date": "2026-11-27",
+          "tripLength": "Full Day",
+          "price": 165,
+          "url": "https://www.hmlanding.com/boat/malihini",
+          "issues": [
+            "H&M link is boat page, not trip"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "case": {
+    "id": "c02-seasick",
+    "persona": "Seasick-prone, wants shortest offshore trip",
+    "turns": [
+      "I get seasick pretty easily. What's the shortest trip that still has a real shot at tuna in the next 2 weeks?"
+    ],
+    "expect": "Full Day / 3/4 Day trips within 2 weeks. No medical advice beyond basics.",
+    "checks": [
+      {
+        "minCards": 1,
+        "dateFrom": "2026-11-24",
+        "dateTo": "2026-12-08",
+        "lengths": [
+          "Full Day",
+          "3/4 Day",
+          "Overnight"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "I get seasick pretty easily. What's the shortest trip that still has a real shot at tuna in the next 2 weeks?",
+      "text": "Since you get seasick, I'd stick with shorter trips closer to shore. The Full Day on the **San Diego** out of Seaforth is your best bet — it's the shortest option actually landing yellowfin lately.\n\n- **San Diego** (Full Day, $200–$250): Last 10 trips averaged **2.78 yellowfin per angler** — strongest tuna numbers of any short trip in the data. Win Rate **36%** (best of any boat here). Win Rate = % of same-day, same-length matchups where the boat had the best catch per angler.\n- **Malihini** (3/4 Day, $165): Shorter day on the water, averaging **1.66 yellowfin per angler** last 10 trips. Cheapest option and a Definite Go on Fri 11/27.\n- If you can handle one night but want to stay close-ish, the **Producer** Overnight ($360) has been landing **3.81 yellowfin per angler** last 10 trips — but it's a longer ride, so only if your stomach cooperates.\n\n<trip-card>{\"tripId\": \"1083153\", \"why\": [\"Shortest trip with real yellowfin numbers: 2.78 per angler last 10 trips\", \"Best Win Rate in the data at 36%\", \"19 of 36 spots open as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-6bdbce-11270730\", \"why\": [\"Shortest trip length (3/4 Day) — easiest on the stomach\", \"Last 10 trips: 1.66 yellowfin per angler\", \"Definite Go status, $165 as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"Last 10 trips: 3.81 yellowfin per angler — top tuna numbers in the short-trip range\", \"Definite Go, 14 of 29 spots open as of last update\"]}</trip-card>\n\nConfirm price and availability on the landing's site, and ask the crew or a pharmacist about seasickness remedies before you go.\n\n<followups>[\"Compare the San Diego vs Malihini\", \"What times do these return?\", \"Any cheaper Full Day options?\"]</followups>",
+      "ms": 12634,
+      "usage": {
+        "input_tokens": 18978,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 723,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [
+        {
+          "tripId": "1083153",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1083153",
+            "sourceId": "1083153",
+            "boat": "San Diego",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "Full Day",
+            "departLocal": "2026-11-29T05:30:00-08:00",
+            "departLabel": "Sun 11/29 5:30 AM",
+            "departDate": "2026-11-29",
+            "returnLocal": "2026-11-29T17:00:00-08:00",
+            "returnLabel": "Sun 11/29 5:00 PM",
+            "price": 250,
+            "openSpots": 19,
+            "capacity": 36,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 36,
+            "avgTPA": 1.48,
+            "boatPageUrl": "#boat/San%20Diego"
+          },
+          "why": [
+            "Shortest trip with real yellowfin numbers: 2.78 per angler last 10 trips",
+            "Best Win Rate in the data at 36%",
+            "19 of 36 spots open as of last update"
+          ],
+          "boat": "San Diego",
+          "date": "2026-11-29",
+          "tripLength": "Full Day",
+          "price": 250,
+          "openSpots": 19,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-6bdbce-11270730",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-6bdbce-11270730",
+            "sourceId": "5fbd7008dcda566dd16bdbce@2026-11-27T15:30:00+00:00",
+            "boat": "Malihini",
+            "landing": "H&M Landing",
+            "tripLength": "3/4 Day",
+            "departLocal": "2026-11-27T07:30:00-08:00",
+            "departLabel": "Fri 11/27 7:30 AM",
+            "departDate": "2026-11-27",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 165,
+            "openSpots": 2,
+            "capacity": 35,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/5fbd7008dcda566dd16bdbce/2026-11-27/730?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 16,
+            "avgTPA": 0.94,
+            "boatPageUrl": "#boat/Malihini"
+          },
+          "why": [
+            "Shortest trip length (3/4 Day) — easiest on the stomach",
+            "Last 10 trips: 1.66 yellowfin per angler",
+            "Definite Go status, $165 as of last update"
+          ],
+          "boat": "Malihini",
+          "date": "2026-11-27",
+          "tripLength": "3/4 Day",
+          "price": 165,
+          "openSpots": 2,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/5fbd7008dcda566dd16bdbce/2026-11-27/730?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 360,
+            "openSpots": 14,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.9,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Last 10 trips: 3.81 yellowfin per angler — top tuna numbers in the short-trip range",
+            "Definite Go, 14 of 29 spots open as of last update"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 14,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

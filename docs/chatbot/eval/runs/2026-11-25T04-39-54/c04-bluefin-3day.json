@@ -1,0 +1,188 @@
+{
+  "case": {
+    "id": "c04-bluefin-3day",
+    "persona": "Experienced, wants bluefin, 3-day, January",
+    "turns": [
+      "Experienced angler here. I want a 3 day for bluefin in January. Which boat and which date?"
+    ],
+    "expect": "Electra 3 Day on 1/8 exists. Honest that recent bluefin counts are low if so. No invented crew/captain traits.",
+    "checks": [
+      {
+        "minCards": 1,
+        "lengths": [
+          "3 Day"
+        ],
+        "dateFrom": "2027-01-01",
+        "dateTo": "2027-01-31",
+        "mustNotSay": [
+          "no 3-day trips (on the schedule )?in january",
+          "captain who",
+          "crew (is|are) (known|great)",
+          "\\d{3}\\s*(-|–)\\s*\\d{3}\\s*#"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Experienced angler here. I want a 3 day for bluefin in January. Which boat and which date?",
+      "text": "Short answer: **there are no 3 Day trips in January 2027** in my data — the January 3-day slot I can see is on the Electra out of H&M, but it departs **Fri Jan 8** and recent form shows **0 bluefin per angler** on that boat.\n\nIf you're flexible, your real bluefin-leaning 3-days land in early March on the Polaris Supreme (Seaforth) — season **WR 62%, TPA 1.55** on that length, and recent form shows some bluefin (0.01/angler across the last 10 trips of mixed lengths, with yellowfin and yellowtail doing most of the work). Note: no boat in my data is currently averaging meaningful bluefin numbers — winter bluefin is spotty and I don't make predictions, only show actual catches.\n\n- Closest January option (not bluefin-proven):\n\n<trip-card>{\"tripId\": \"hm-03dc22-01081000\", \"why\": [\"Only 3 Day departing in January in my data\", \"Recent form: 0 bluefin/angler on Electra (mostly yellowfin + dorado)\", \"25/25 open as of last update\"]}</trip-card>\n\n- Best true 3 Day bluefin-capable boats (March):\n\n<trip-card>{\"tripId\": \"1073130\", \"why\": [\"Polaris Supreme 3 Day WR 62%, TPA 1.55 — top same-length win rate in my data\", \"Season: 2.07 TPA/day over 62 trips\", \"24/24 open as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1073132\", \"why\": [\"Same boat, mid-March departure\", \"WR 62% / TPA 1.55 on 3 Day length\", \"22/24 open as of last update — confirm on Seaforth's site\"]}</trip-card>\n\nWant me to pull longer January trips (5+ day) that historically produce bluefin instead?\n\n<followups>[\"Show January 5+ day bluefin trips\", \"Any 2 Day options in January?\", \"Compare Polaris Supreme March dates\"]</followups>",
+      "ms": 13066,
+      "usage": {
+        "input_tokens": 19701,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 674,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35723,
+      "cards": [
+        {
+          "tripId": "hm-03dc22-01081000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-03dc22-01081000",
+            "sourceId": "6ae4d7d7305b927a3d03dc22@2027-01-08T18:00:00+00:00",
+            "boat": "Electra",
+            "landing": "H&M Landing",
+            "tripLength": "3 Day",
+            "departLocal": "2027-01-08T10:00:00-08:00",
+            "departLabel": "Fri 1/8 10:00 AM",
+            "departDate": "2027-01-08",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 1055,
+            "openSpots": 25,
+            "capacity": 25,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/6ae4d7d7305b927a3d03dc22/2027-01-08/1000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": null,
+            "avgTPA": null,
+            "boatPageUrl": "#boat/Electra"
+          },
+          "why": [
+            "Only 3 Day departing in January in my data",
+            "Recent form: 0 bluefin/angler on Electra (mostly yellowfin + dorado)",
+            "25/25 open as of last update"
+          ],
+          "boat": "Electra",
+          "date": "2027-01-08",
+          "tripLength": "3 Day",
+          "price": 1055,
+          "openSpots": 25,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/6ae4d7d7305b927a3d03dc22/2027-01-08/1000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1073130",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1073130",
+            "sourceId": "1073130",
+            "boat": "Polaris Supreme",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "3 Day",
+            "departLocal": "2027-03-04T10:00:00-08:00",
+            "departLabel": "Thu 3/4 10:00 AM",
+            "departDate": "2027-03-04",
+            "returnLocal": "2027-03-07T05:00:00-08:00",
+            "returnLabel": "Sun 3/7 5:00 AM",
+            "price": 1250,
+            "openSpots": 24,
+            "capacity": 24,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1073130",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 62,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Polaris%20Supreme"
+          },
+          "why": [
+            "Polaris Supreme 3 Day WR 62%, TPA 1.55 — top same-length win rate in my data",
+            "Season: 2.07 TPA/day over 62 trips",
+            "24/24 open as of last update"
+          ],
+          "boat": "Polaris Supreme",
+          "date": "2027-03-04",
+          "tripLength": "3 Day",
+          "price": 1250,
+          "openSpots": 24,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1073130",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1073132",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1073132",
+            "sourceId": "1073132",
+            "boat": "Polaris Supreme",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "3 Day",
+            "departLocal": "2027-03-16T10:00:00-07:00",
+            "departLabel": "Tue 3/16 10:00 AM",
+            "departDate": "2027-03-16",
+            "returnLocal": "2027-03-19T05:00:00-07:00",
+            "returnLabel": "Fri 3/19 5:00 AM",
+            "price": 1300,
+            "openSpots": 22,
+            "capacity": 24,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1073132",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 62,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Polaris%20Supreme"
+          },
+          "why": [
+            "Same boat, mid-March departure",
+            "WR 62% / TPA 1.55 on 3 Day length",
+            "22/24 open as of last update — confirm on Seaforth's site"
+          ],
+          "boat": "Polaris Supreme",
+          "date": "2027-03-16",
+          "tripLength": "3 Day",
+          "price": 1300,
+          "openSpots": 22,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1073132",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": false,
+        "fails": [
+          "Polaris Supreme departs 2027-03-04 > 2027-01-31",
+          "Polaris Supreme departs 2027-03-16 > 2027-01-31"
+        ]
+      }
+    }
+  ]
+}

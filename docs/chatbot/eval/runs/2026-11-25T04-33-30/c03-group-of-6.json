@@ -1,0 +1,181 @@
+{
+  "case": {
+    "id": "c03-group-of-6",
+    "persona": "Group of 6 friends, overnight, mid-December",
+    "turns": [
+      "We have 6 guys looking for an overnight or 1.5 day around Dec 12-13. Which trips have room for all 6?"
+    ],
+    "expect": "Only trips with openSpots >= 6 departing Dec 11-13; H&M evening departures on the correct local date.",
+    "checks": [
+      {
+        "minCards": 1,
+        "minSpots": 6,
+        "dateFrom": "2026-12-11",
+        "dateTo": "2026-12-13",
+        "lengths": [
+          "Overnight",
+          "1.5 Day"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "We have 6 guys looking for an overnight or 1.5 day around Dec 12-13. Which trips have room for all 6?",
+      "text": "For 6 guys on Dec 12–13, here are the overnight/1.5 day trips with room for all of you (Win Rate = % of same-day, same-length matchups the boat topped on catch per angler; TPA/day = trophy fish per angler per day):\n\n- Sea Adventure 80 overnight out Fri 12/11 — solid recent form and plenty of room.\n- Producer isn't running an overnight 12/11–13, but there's a Sat 12/12 Sea Adventure 80 overnight with full availability too.\n- Old Glory 1.5 day out Fri 12/11 — highest WR of the group at 31%.\n\n<trip-card>{\"tripId\": \"hm-8b4580-12111900\", \"why\": [\"28/32 recent trophy/angler/day (Yellowfin heavy) per RECENT FORM\", \"32/32 spots open as of last update — room for all 6\", \"$340, cheapest option in your window\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4580-12121900\", \"why\": [\"Same boat, Saturday departure if you'd rather leave 12/12\", \"32/32 spots open as of last update\", \"$340\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b45a4-12111800\", \"why\": [\"Old Glory WR 31% on 1.5 days — highest in this window\", \"TPA 1.73 season rate for this boat+length\", \"28/29 open as of last update\"]}</trip-card>\n\nConfirm prices and availability on the landing's site before you commit.\n\n<followups>[\"Any cheaper 1.5 day options?\",\"Compare Old Glory vs Sea Adventure 80\",\"What about Tribute or Producer that weekend?\"]</followups>",
+      "ms": 10724,
+      "usage": {
+        "input_tokens": 18979,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 572,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [
+        {
+          "tripId": "hm-8b4580-12111900",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4580-12111900",
+            "sourceId": "559175c7cf8b9c18468b4580@2026-12-12T03:00:00+00:00",
+            "boat": "Sea Adventure 80",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-12-11T19:00:00-08:00",
+            "departLabel": "Fri 12/11 7:00 PM",
+            "departDate": "2026-12-11",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 340,
+            "openSpots": 32,
+            "capacity": 32,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-11/1900?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 16,
+            "avgTPA": 1.68,
+            "boatPageUrl": "#boat/Sea%20Adventure%2080"
+          },
+          "why": [
+            "28/32 recent trophy/angler/day (Yellowfin heavy) per RECENT FORM",
+            "32/32 spots open as of last update — room for all 6",
+            "$340, cheapest option in your window"
+          ],
+          "boat": "Sea Adventure 80",
+          "date": "2026-12-11",
+          "tripLength": "Overnight",
+          "price": 340,
+          "openSpots": 32,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-11/1900?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4580-12121900",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4580-12121900",
+            "sourceId": "559175c7cf8b9c18468b4580@2026-12-13T03:00:00+00:00",
+            "boat": "Sea Adventure 80",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-12-12T19:00:00-08:00",
+            "departLabel": "Sat 12/12 7:00 PM",
+            "departDate": "2026-12-12",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 340,
+            "openSpots": 32,
+            "capacity": 32,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-12/1900?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 16,
+            "avgTPA": 1.68,
+            "boatPageUrl": "#boat/Sea%20Adventure%2080"
+          },
+          "why": [
+            "Same boat, Saturday departure if you'd rather leave 12/12",
+            "32/32 spots open as of last update",
+            "$340"
+          ],
+          "boat": "Sea Adventure 80",
+          "date": "2026-12-12",
+          "tripLength": "Overnight",
+          "price": 340,
+          "openSpots": 32,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-12/1900?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b45a4-12111800",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b45a4-12111800",
+            "sourceId": "53f677dead2171442d8b45a4@2026-12-12T02:00:00+00:00",
+            "boat": "Old Glory",
+            "landing": "H&M Landing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-12-11T18:00:00-08:00",
+            "departLabel": "Fri 12/11 6:00 PM",
+            "departDate": "2026-12-11",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 490,
+            "openSpots": 28,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/53f677dead2171442d8b45a4/2026-12-11/1800?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 31,
+            "avgTPA": 1.73,
+            "boatPageUrl": "#boat/Old%20Glory"
+          },
+          "why": [
+            "Old Glory WR 31% on 1.5 days — highest in this window",
+            "TPA 1.73 season rate for this boat+length",
+            "28/29 open as of last update"
+          ],
+          "boat": "Old Glory",
+          "date": "2026-12-11",
+          "tripLength": "1.5 Day",
+          "price": 490,
+          "openSpots": 28,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/53f677dead2171442d8b45a4/2026-12-11/1800?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}
