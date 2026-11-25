@@ -22,7 +22,7 @@ into OC/LA pages. **The remaining blocker is the metric.** Every headline number
 | D2 | **Which landings count as "OC / LA"** | Today: 11 landings, including Channel Islands (Oxnard) and Ventura Harbor, which are in Ventura County. Oceanside is grouped with San Diego. | Keep all 11, but name the region for what it covers (D3). Keep Oceanside in San Diego. |
 | D3 | **Region name and URL** | `OC / LA` + `/ocla/` (current); "LA & Orange County"; "OC, LA & Ventura" | Keep the `/ocla/` URL (it's in code, sitemap plans and user localStorage). Display it as **"OC / LA"** in the header, and say "Orange County, LA & Ventura" in page titles and descriptions. This branch already uses "Orange County & LA" in SEO titles, so tell me if you want Ventura added. |
 | D5 | **Hooks Landing (Oxnard)** | It's in the socalfishreports archive but not scraped (data-gaps session finding). Black Pearl, Santa Barbara and Morro Bay are also there but further north. | Add Hooks Landing to OC/LA, since it's next to Channel Islands Sportfishing. Leave the others out. |
-| D6 | **OC/LA history vs `data.js` size** | `data.js` is ~21.5 MB of Cloudflare's 25 MB file limit. One year of OC/LA history adds ~10k rows and would push it over; full history (~100k rows) would also push `tracker.db` past GitHub's 100 MB limit. | Put OC/LA trips in a **separate file loaded only when OC/LA is selected** (SD visitors don't pay for it), then backfill. Until then OC/LA launches with Jun–Nov 2026 complete plus the patchy older history. |
+| D6 | **OC/LA history vs `data.js` size** | ✅ **Decided: separate file.** | Implemented on this branch: `data.js` is San Diego-only (20.5 → 15.3 MiB on the live DB). OC/LA is in `web/data-region-oc_la.js` (5.1 MiB), loaded the first time a visitor picks OC/LA, with a loading state and retry. Generic for SF Bay. OC/LA history backfill is unblocked. |
 | D4 | **Nav placement and launch style** | (a) flip `OCLA_PUBLIC` so the header region switcher shows for everyone; (b) soft launch: share `/?preview_ocla=true` for a week first | **(b) then (a).** The soft-launch URL already works today with no deploy. See the launch plan. |
 
 ### D1 data: OC/LA vs San Diego, full-day+ trips, 2026
@@ -125,6 +125,7 @@ Before/after screenshots are in `docs/ocla/screens/` (home, Trip Planner at 1440
 | G3 | **Region-specific BloodyDecks** (owner must-have, below) | "Revive BloodyDecks data collection" (data) + this session (UI) | 🟡 data tagged on `claude/bd-spots` (not merged); UI below |
 | G4 | `/ocla/...` rewrites in `web/_redirects` + flag flip | this session, launch PR | ❌ launch PR |
 | G5 | Prerendered `/ocla/` pages + sitemap (S26) | SEO session | ❌ |
+| G7 | Per-region data file live: the first scrape after merge writes `data-region-oc_la.js`, and `daily-scrape.yml` commits it. Check the file exists on thetunatracker.com and `/ocla/today?preview_ocla=true` loads it | this session, after merge | ❌ after merge |
 | G6 | Live Co-Captain check: eval case `c14-ocla-newport` + 3 manual questions | this session / Co-Captain | ❌ needs the production proxy |
 
 ### G3: region-specific BloodyDecks (owner must-have)
@@ -162,6 +163,7 @@ Nothing in the data pipeline depends on the flag.
 |---|---|
 | `web/regions.js` | `OCLA_LANDING_SITES`: verified booking pages for 10 OC/LA landings; `OCLA_LANDING_COORDS`: approximate harbor positions for the map |
 | `web/charts.jsx`, `web/app.jsx` | Region-filtered BloodyDecks "Forum" overlay; Catches overlay follows the region |
+| `src/export.py`, `web/region-data.js`, `web/app.jsx`, `web/_headers`, `web/sw.js`, `.github/workflows/daily-scrape.yml`, `tests/test_region_files.py` | D6 per-region data files: `split_by_region()`, an on-demand loader with a loading/retry state, the same caching as `data.js`, the scrape commit step, and size/split tests |
 | `web/tripplanner.jsx`, `web/styles.css` | Region-filter schedules; OC/LA empty state with landing links; a "book directly" strip for OC/LA landings with no schedule feed (works once the data-gaps session adds 5 OC/LA schedules); pass `regions` to the BloodyDecks card |
 | `web/home.jsx`, `web/analytics.js` | Region-aware hero kicker, hide SD forecast/conditions for OC/LA, region-filtered "Book next" and "Still fishing" |
 | `web/drilldown.jsx` | OC/LA boat pages: "Book with {landing}" links to the landing site |
