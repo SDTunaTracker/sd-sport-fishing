@@ -19,11 +19,13 @@ Outputs:
     feature per spot for the last 14 days (7-day counts too).
   * --research-csv — the dated series for forecast R&D (not for production).
 
-Privacy: anglers often don't want exact numbers shared. Nothing exact leaves
-the DB. A public point is the named spot's gazetteer centre (snapped when a
-posted position falls inside a known spot) or the position rounded to a
-~1.8 nm grid. No quotes, coordinates or usernames are published; each spot
-links to its threads.
+Positions: the owner decided (2026-11-25) that coordinates posted publicly on
+the forum are fair to show as posted. Every point carries a precision radius
+so the map and forecast know how far to trust it:
+  * coordinates printed in the post   -> exact, ~0.1 nm
+  * "N miles <dir> of X" estimates    -> computed point, max(1 nm, N/4)
+  * a named bank / island / area      -> its centre, the spot's radius
+No quotes or usernames are published; every point links to its thread.
 """
 from __future__ import annotations
 
@@ -52,9 +54,12 @@ STATE_PATH = ROOT / "data" / "paddies_ingest_state.json"
 
 WINDOW_DAYS = 14
 SHORT_WINDOW_DAYS = 7
-GRID_DEG = 0.03            # ~1.8 nm of latitude: the coarsest public point
-GRID_PRECISION_NM = 2.0
-SNAP_SLACK_NM = 1.0        # a posted position this close to a spot's radius snaps to it
+COORD_PRECISION_NM = 0.1   # coordinates printed in a post
+OFFSET_MIN_PRECISION_NM = 1.0
+OFFSET_PRECISION_FRACTION = 0.25   # "12 miles SW of X" is good to about 3 nm
+SNAP_SLACK_NM = 1.0        # a posted position this close to a spot's radius is named after it
+# Fixed species vocabulary for the public layer (matches the site's species colours).
+PUBLIC_SPECIES = ("yellowfin", "bluefin", "yellowtail", "dorado", "skipjack", "bigeye", "albacore")
 MAX_SOURCES_PER_SPOT = 5
 
 OUTCOME_TO_QUALITY = {"wide_open": "wide_open", "steady": "good",
@@ -81,9 +86,9 @@ CREATE TABLE IF NOT EXISTS forum_spot_reports (
     place_name       TEXT,
     geocode          TEXT NOT NULL,     -- gazetteer | places | coords | offset | unresolved
     geocode_confidence REAL,
-    lat_exact        REAL,              -- research only, never published
+    lat_exact        REAL,              -- posted or computed position (NULL for a named spot)
     lon_exact        REAL,
-    lat_pub          REAL,              -- snapped / rounded public point
+    lat_pub          REAL,              -- published point (exact when posted, else spot centre / estimate)
     lon_pub          REAL,
     precision_nm     REAL,
     species          TEXT,              -- JSON [species]
@@ -168,14 +173,8 @@ class Gazetteer:
         return best, bd
 
 
-def public_point(lat: float, lon: float, gaz: Gazetteer, min_precision: float = GRID_PRECISION_NM
-                 ) -> tuple[float, float, float, dict | None]:
-    """Coarsen an exact position: snap to a known spot, else round to the grid."""
-    p = gaz.snap(lat, lon)
-    if p:
-        return p["lat"], p["lon"], max(p["radius_nm"], min_precision), p
-    g = GRID_DEG
-    return (round(round(lat / g) * g, 3), round(round(lon / g) * g, 3), min_precision, None)
+def offset_precision(distance_nm: float | None) -> float:
+    return max(OFFSET_MIN_PRECISION_NM, (distance_nm or 0) * OFFSET_PRECISION_FRACTION)
 
 
 # ------------------------------------------------------------------ build
@@ -204,10 +203,11 @@ def _place_fields(place: dict | None, how: str) -> dict:
 
 
 def _exact_fields(lat: float, lon: float, gaz: Gazetteer, how: str, conf: float,
-                  min_precision: float = GRID_PRECISION_NM) -> dict:
-    plat, plon, prec, snapped = public_point(lat, lon, gaz, min_precision)
-    out = {"lat_exact": lat, "lon_exact": lon, "lat_pub": plat, "lon_pub": plon, "precision_nm": prec,
-           "geocode": how, "geocode_confidence": conf}
+                  precision_nm: float = COORD_PRECISION_NM) -> dict:
+    """A posted (or computed) position is published as-is; the spot it falls in only names it."""
+    snapped = gaz.snap(lat, lon)
+    out = {"lat_exact": lat, "lon_exact": lon, "lat_pub": lat, "lon_pub": lon,
+           "precision_nm": round(precision_nm, 2), "geocode": how, "geocode_confidence": conf}
     if snapped:
         out.update(place_id=snapped["id"], place_name=snapped["name"])
     return out
@@ -243,8 +243,8 @@ def _from_mentions(conn, gaz: Gazetteer) -> list[dict]:
         if r["lat"] is not None and r["lon"] is not None and r["precision"] != "bank":
             how = "offset" if (r["precision"] == "offset" or kind == "offset") else "coords"
             base.update(_exact_fields(r["lat"], r["lon"], gaz, how, conf,
-                                      GRID_PRECISION_NM if how == "coords"
-                                      else max(GRID_PRECISION_NM, (p.get("distance_nm") or 0) * 0.25)))
+                                      COORD_PRECISION_NM if how == "coords"
+                                      else offset_precision(p.get("distance_nm"))))
         elif r["bank"] and gaz.get(r["bank"]):
             base.update(_place_fields(gaz.get(r["bank"]), "gazetteer"))
             base["geocode_confidence"] = min(conf, base["geocode_confidence"])
@@ -271,7 +271,7 @@ def _from_locations(conn, gaz: Gazetteer) -> tuple[list[dict], set[str]]:
             ref = gaz.lookup(r["from_place"] or r["name"])
             lat, lon = coords_mod.apply_offset(ref["lat"], ref["lon"], r["bearing_deg"], r["distance_nm"])
             base.update(_exact_fields(lat, lon, gaz, "offset", min(0.7, ref["confidence"]),
-                                      max(GRID_PRECISION_NM, r["distance_nm"] * 0.25)))
+                                      offset_precision(r["distance_nm"])))
         else:
             place = gaz.lookup(r["name"])
             base.update(_place_fields(place, place["source"] if place else "unresolved"))
@@ -327,9 +327,20 @@ def rebuild(conn: sqlite3.Connection, gaz: Gazetteer | None = None) -> dict:
 # ------------------------------------------------------------------ publish
 
 def _cell_key(r) -> str:
-    if r["place_id"]:
-        return r["place_id"]
-    return f"grid:{r['lat_pub']:.3f},{r['lon_pub']:.3f}"
+    """Named-spot mentions group by spot; each posted/estimated position is its own point."""
+    if r["lat_exact"] is not None:
+        return f"pt:{r['lat_pub']:.4f},{r['lon_pub']:.4f}"
+    return r["place_id"]
+
+
+POSITION_KIND = {"coords": "posted", "offset": "estimate"}
+
+
+def public_species(names) -> Counter:
+    c = Counter()
+    for n in names:
+        c[n if n in PUBLIC_SPECIES else "other"] += 1
+    return c
 
 
 def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
@@ -350,6 +361,7 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
     features = []
     for key, rs in groups.items():
         first = rs[0]
+        position = POSITION_KIND.get(first["geocode"], "spot")
         if first["place_id"]:
             name = first["place_name"]
         else:
@@ -362,7 +374,7 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
         kinds = Counter()
         temps = []
         for r in rs:
-            species.update(json.loads(r["species"] or "[]"))
+            species.update(public_species(json.loads(r["species"] or "[]")))
             if r["quality"]:
                 quality[r["quality"]] += 1
             kinds[r["kind"] or "area"] += 1
@@ -381,7 +393,8 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
             "geometry": {"type": "Point", "coordinates": [first["lon_pub"], first["lat_pub"]]},
             "properties": {
                 "id": key, "name": name,
-                "precision_nm": max(r["precision_nm"] or GRID_PRECISION_NM for r in rs),
+                "position": position,      # posted | estimate | spot
+                "precision_nm": max(r["precision_nm"] or COORD_PRECISION_NM for r in rs),
                 "reports_7d": len(srcs_7), "reports_14d": len(srcs_14),
                 "last_report": first["report_date"],
                 "species": dict(species.most_common()),
@@ -398,8 +411,9 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
         "label": "Recent forum reports by spot",
         "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
         "window_days": window_days, "short_window_days": SHORT_WINDOW_DAYS,
-        "note": ("Points are spot centres or positions rounded to about 2 nm; exact numbers posted "
-                 "in threads are never published. Follow the links for the original posts."),
+        "note": ("position 'posted' = coordinates printed in the thread; 'estimate' = worked out "
+                 "from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far "
+                 "to trust each point. Follow the links for the original posts."),
         "attribution": "Spot list courtesy SWYC Anglers",
         "features": features,
     }

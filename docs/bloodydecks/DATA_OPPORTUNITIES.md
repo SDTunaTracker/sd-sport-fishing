@@ -15,7 +15,7 @@ Health alerts cover the new feeds: `bd:feed-errors:<feed>`, `bd:no-new-posts:<fe
 | # | Built as | Where |
 |---|---|---|
 | 4 | **Spot locations.** Trip reports now record every place the trip fished, saw fish/paddies/kelp, or where "the fleet" was (`forum_locations`, append-only, quote-checked; coordinates and "N miles <dir> of X" offsets are parsed in code from the quote, never taken from the model). `spots.py` merges these with the paddy-forum mentions into `forum_spot_reports`: date, knowable-at time, species, catch quality, source link, geocode method and confidence, precision radius. | `scraper/paddies/spots.py`; `data/forum_places.json` (Baja / long-range places the SWYC list lacks); `web/api/v1/forum_spots.geojson`; `python -m scraper.paddies.spots --research-csv out.csv` for forecast R&D |
-| 5 | **Privacy policy for positions** (needs the owner's OK): nothing exact is published. A posted position snaps to the named spot it falls in, otherwise it is rounded to a ~0.03° grid (about 2 nm). Quotes that print coordinates are dropped. The same rule now applies to the existing `reports.json` pins, which used to carry the exact numbers and the raw text. | `spots.public_point`, `write_json.scrub_quote` |
+| 5 | **Positions as posted** (owner's decision, 2026-11-25: "if they posted it online then its fair game"). Coordinates printed in a thread are published as written, with `precision_nm` 0.1. "N miles off X" estimates get max(1 nm, N/4), and named spots get the spot's radius. Every point has `position` (posted / estimate / spot), a date and a thread link. `reports.json` pins gain `precision_nm`. | `spots._exact_fields`, `spots.offset_precision` |
 | 6 | **Back-catalogue for boat reviews**: the trip-report extractor now accepts threads up to 365 days old (was 120, which silently skipped any listing backfill), runs 80 posts per run (was 40), and the workflow takes `backfill_feeds` so a one-off year walk touches only Sportboats + Long Range. | `boat_reports.MAX_POST_AGE_DAYS`; `paddies.yml` |
 
 ## TL;DR
@@ -172,15 +172,15 @@ Sent to the "Fish forecast R&D: model and backtest" session as hypotheses only:
 
 | Source | Location signals | How it is placed |
 |---|---|---|
-| SoCal Offshore / Baja / Spearfishing (`report_mentions`) | SWYC bank ids, GPS numbers, "3–4 miles off IB", paddies, bite outcome, water temp | Bank centre, or the parsed position (research) → snapped / rounded (public) |
+| SoCal Offshore / Baja / Spearfishing (`report_mentions`) | SWYC bank ids, GPS numbers, "3–4 miles off IB", paddies, bite outcome, water temp | Bank centre, or the parsed / computed position as posted |
 | Sportboats / Long Range (`forum_locations`) | Named banks, islands, kelp, paddies, "the fleet was at …", coordinates, offsets, species, quality, temp | Gazetteer + `forum_places.json` lookup; offsets from the named place |
 | Older trip reports (`forum_boat_reports.spots`) | Names only | Gazetteer lookup |
 
-On the current DB: 342 place mentions, 171 geocoded. The rest are paddy-forum bite/conditions rows with no place, plus names we deliberately leave unresolved because they are ambiguous ("the Ridge", "the Rocks", "Lower Banks", "13 Fathom") or not yet in `forum_places.json` ("San Carlos", "San Pablo Bay", "Juggs Bank"). `spots_unresolved_names` in the state file lists them, so the gazetteer can be extended with a source and confidence for each.
+On the current DB: 342 place mentions, 171 placed. The rest are paddy-forum bite/conditions rows with no place, plus names we deliberately leave unresolved because they are ambiguous ("the Ridge", "the Rocks", "Lower Banks", "13 Fathom") or not yet in `forum_places.json` ("San Carlos", "San Pablo Bay", "Juggs Bank"). `spots_unresolved_names` in the state file lists them, so the gazetteer can be extended with a source and confidence for each.
 
-**Public layer** (`forum_spots.geojson`): one point per spot for the last 14 days, with 7-day and 14-day report counts, species and catch-quality tallies, water temperature range, kinds (bite, paddy, kelp, fleet…), precision radius and up to 5 thread links. No quotes, usernames or exact numbers.
+**Public layer** (`forum_spots.geojson`): one point per named spot, plus one per posted or estimated position, for the last 14 days. Each has 7-day and 14-day report counts, species (fixed site vocabulary plus "other"), catch-quality tallies, water temperature range, kinds (bite, paddy, kelp, fleet…), `position`, `precision_nm` and up to 5 thread links. No quotes or usernames.
 
-**Research series** (`--research-csv`): every row with report date, trip date, published and fetched (knowable-at) times, the exact research point, the public point, precision, species and quality. It stays out of git and the web root. Forecast R&D: hypotheses only; nothing here is a tested predictor.
+**Research series** (`--research-csv`): every row with report date, trip date, published and fetched (knowable-at) times, the point, precision, species and quality. Forecast R&D: hypotheses only; nothing here is a tested predictor.
 
 ## 3c. Next proposals (ranked)
 

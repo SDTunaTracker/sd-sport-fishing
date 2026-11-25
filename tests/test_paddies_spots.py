@@ -134,15 +134,15 @@ def test_gazetteer_resolves_swyc_banks_baja_places_and_forum_spellings(gaz):
     assert gaz.lookup(None) is None
 
 
-def test_public_point_snaps_to_a_spot_or_rounds_to_about_two_miles(gaz):
+def test_posted_positions_are_kept_exact_and_named_after_the_spot_they_fall_in(gaz):
     bank = gaz.get("9-mile-bank")
-    lat, lon, prec, snapped = spots.public_point(bank["lat"] + 0.004, bank["lon"] - 0.003, gaz)
-    assert snapped and (lat, lon) == (bank["lat"], bank["lon"]) and prec >= 2
-    # open ocean far from any spot -> grid
-    lat, lon, prec, snapped = spots.public_point(31.12345, -119.98765, gaz)
-    assert snapped is None and prec == spots.GRID_PRECISION_NM
-    assert coords.haversine_nm(lat, lon, 31.12345, -119.98765) <= 1.5
-    assert (lat, lon) != (31.12345, -119.98765)
+    f = spots._exact_fields(bank["lat"] + 0.004, bank["lon"] - 0.003, gaz, "coords", 0.9)
+    assert (f["lat_pub"], f["lon_pub"]) == (bank["lat"] + 0.004, bank["lon"] - 0.003)
+    assert f["precision_nm"] == spots.COORD_PRECISION_NM and f["place_id"] == "9-mile-bank"
+    f = spots._exact_fields(31.12345, -119.98765, gaz, "offset", 0.7, spots.offset_precision(12))
+    assert (f["lat_pub"], f["lon_pub"]) == (31.12345, -119.98765) and f["precision_nm"] == 3.0
+    assert "place_id" not in f
+    assert spots.offset_precision(2) == spots.OFFSET_MIN_PRECISION_NM
 
 
 # ------------------------------------------------------------------ build + publish
@@ -188,7 +188,7 @@ def _seed(db):
     return conn
 
 
-def test_rebuild_geocodes_every_source_and_keeps_exact_points_private(db, gaz):
+def test_rebuild_geocodes_every_source_with_a_precision_radius(db, gaz):
     conn = _seed(db)
     stats = spots.rebuild(conn, gaz)
     assert stats["rows"] == 6 and stats["unresolved_names"] == {"the Ridge": 1}
@@ -197,7 +197,8 @@ def test_rebuild_geocodes_every_source_and_keeps_exact_points_private(db, gaz):
         "SELECT * FROM forum_spot_reports WHERE source_id != 'old'")}
     gps = rows[("paddy_mention", "coords")]
     assert (gps["lat_exact"], gps["lon_exact"]) == (32.12345, -118.65432)
-    assert (gps["lat_pub"], gps["lon_pub"]) != (32.12345, -118.65432)
+    assert (gps["lat_pub"], gps["lon_pub"]) == (32.12345, -118.65432)
+    assert gps["precision_nm"] == spots.COORD_PRECISION_NM
     assert gps["fetched_at"] == "2026-11-18T21:00:00Z" and gps["url"] == "https://example.test/a/"
     kelp = rows[("trip_location", "kelp")]
     assert kelp["geocode"] == "offset" and kelp["quality"] == "good"
@@ -206,7 +207,7 @@ def test_rebuild_geocodes_every_source_and_keeps_exact_points_private(db, gaz):
     assert bite["place_id"] == "9-mile-bank" and bite["quality"] == "wide_open"
 
 
-def test_geojson_has_recent_spots_only_and_no_exact_numbers_or_quotes(db, gaz):
+def test_geojson_has_recent_spots_posted_points_and_no_quotes(db, gaz):
     conn = _seed(db)
     spots.rebuild(conn, gaz)
     gj = spots.build_geojson(conn, gaz, now=NOW)
@@ -217,8 +218,15 @@ def test_geojson_has_recent_spots_only_and_no_exact_numbers_or_quotes(db, gaz):
     assert nine["species"] == {"yellowfin": 1} and nine["quality"] == {"wide_open": 1}
     assert nine["sources"][0]["url"] == "https://example.test/a/"
     assert names["San Martin Island"]["properties"]["reports_7d"] == 0
+    assert names["9 Mile Bank"]["properties"]["position"] == "spot"
+    posted = [f for f in gj["features"] if f["properties"]["position"] == "posted"]
+    assert len(posted) == 1 and posted[0]["geometry"]["coordinates"] == [-118.65432, 32.12345]
+    assert posted[0]["properties"]["precision_nm"] == spots.COORD_PRECISION_NM
+    est = [f for f in gj["features"] if f["properties"]["position"] == "estimate"]
+    assert est and est[0]["properties"]["precision_nm"] == 3.0
+    for f in gj["features"]:
+        assert set(f["properties"]["species"]) <= set(spots.PUBLIC_SPECIES) | {"other"}
     text = json.dumps(gj)
-    assert "32.12345" not in text and "118.65432" not in text
     assert "quote" not in text and "someone" not in text
     assert gj["label"] == "Recent forum reports by spot" and gj["window_days"] == 14
 
