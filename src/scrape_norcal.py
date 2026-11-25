@@ -317,6 +317,61 @@ def scrape_days(conn: sqlite3.Connection, days: list[date], fetcher: Fetcher | N
     return stats
 
 
+# --- Backfill seed ------------------------------------------------------------
+# The 2019+ backfill runs once, off to the side (scripts/backfill_sfbay.py), and
+# is shipped as a gzipped JSON-lines file. The daily job loads it insert-only on
+# its next run, so tracker.db (committed hourly by CI) is never hand-merged.
+
+SEED_PATH = Path(__file__).resolve().parents[1] / "data" / "sfbay_backfill.jsonl.gz"
+
+
+def export_seed(conn: sqlite3.Connection, path: Path) -> tuple[int, int]:
+    import gzip
+    path.parent.mkdir(parents=True, exist_ok=True)
+    n_t = n_f = 0
+    with gzip.open(path, "wt", encoding="utf-8") as f:
+        for row in conn.execute(f"SELECT {','.join(_FIELDS)} FROM norcal_trips ORDER BY date, id"):
+            f.write(json.dumps({"t": dict(zip(_FIELDS, row))}, separators=(",", ":")) + "\n")
+            n_t += 1
+        for row in conn.execute("SELECT date, fetched_at, status, rows, no_counts, error FROM norcal_fetch_log"
+                                " WHERE status = 200 ORDER BY date"):
+            f.write(json.dumps({"f": row}, separators=(",", ":")) + "\n")
+            n_f += 1
+    return n_t, n_f
+
+
+def load_seed(conn: sqlite3.Connection, path: Path = SEED_PATH) -> int | None:
+    """Insert-only load of the backfill seed, once per seed file content.
+    Returns rows inserted, or None if there is no seed / it was already loaded."""
+    import gzip
+    import hashlib
+    if not path.exists():
+        return None
+    ensure_schema(conn)
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    marker = f"seed:{digest}"
+    if conn.execute("SELECT 1 FROM norcal_fetch_log WHERE date = ?", (marker,)).fetchone():
+        return None
+    cols = ",".join(_FIELDS)
+    sql_t = f"INSERT OR IGNORE INTO norcal_trips ({cols}) VALUES ({','.join('?' * len(_FIELDS))})"
+    sql_f = ("INSERT OR IGNORE INTO norcal_fetch_log (date, fetched_at, status, rows, no_counts, error)"
+             " VALUES (?,?,?,?,?,?)")
+    n = 0
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        for line in f:
+            rec = json.loads(line)
+            if "t" in rec:
+                n += conn.execute(sql_t, tuple(rec["t"][k] for k in _FIELDS)).rowcount
+            else:
+                conn.execute(sql_f, tuple(rec["f"]))
+    # Marker row: status NULL / error 'seed', so the health rules ignore it.
+    conn.execute("INSERT INTO norcal_fetch_log (date, fetched_at, status, rows, no_counts, error)"
+                 " VALUES (?,?,NULL,?,0,'seed')",
+                 (marker, datetime.now(timezone.utc).isoformat(timespec="seconds"), n))
+    conn.commit()
+    return n
+
+
 def run_daily(conn: sqlite3.Connection, min_hours_between: float = 6.0) -> dict | None:
     """Daily/hourly hook: refresh today and yesterday at most every
     `min_hours_between` hours (about 8 requests a day)."""

@@ -205,3 +205,18 @@ def test_health_flags_layout_change_and_stale_fetch():
     conn.execute("UPDATE norcal_fetch_log SET fetched_at = ?", ((now - timedelta(hours=40)).isoformat(),))
     keys = {p.key for p in H.check(conn, today=date(2026, 7, 20), now=now)}
     assert {"sfbay:parse", "sfbay:fetch"} <= keys
+
+
+def test_seed_roundtrip_loads_once(tmp_path):
+    src = _db()
+    trips, _ = S.parse_day(PAGE, DAY)
+    S.insert_trips(src, trips, today=DAY + timedelta(days=30))
+    S.log_fetch(src, DAY, 200, len(trips), False)
+    seed = tmp_path / "seed.jsonl.gz"
+    assert S.export_seed(src, seed) == (5, 1)
+    dst = _db()
+    S.insert_trips(dst, trips[:1], today=DAY + timedelta(days=30))   # existing row wins
+    assert S.load_seed(dst, seed) == 4
+    assert S.load_seed(dst, seed) is None                            # marker: once per seed
+    assert dst.execute("SELECT COUNT(*) FROM norcal_trips").fetchone()[0] == 5
+    assert S.load_seed(dst, tmp_path / "missing.gz") is None

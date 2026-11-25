@@ -317,6 +317,9 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         try:
             from . import scrape_norcal, export_sfbay
             if not export_only:
+                seeded = scrape_norcal.load_seed(conn)   # one-time 2019+ backfill seed
+                if seeded is not None:
+                    summary_lines.append(f"  SF Bay backfill seed loaded: {seeded} rows")
                 st = scrape_norcal.run_daily(conn)
                 if st:
                     summary_lines.append(f"  SF Bay scrape: {st}")

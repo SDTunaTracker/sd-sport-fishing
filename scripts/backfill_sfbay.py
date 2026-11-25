@@ -48,6 +48,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--merge-from", type=Path, default=None,
                    help="copy norcal_trips/norcal_fetch_log rows from this DB into --db "
                         "(insert-only) and exit; no network")
+    p.add_argument("--export-seed", type=Path, default=None,
+                   help="write --db's SF Bay rows to a gzipped JSON-lines seed (data/sfbay_backfill.jsonl.gz) "
+                        "that the daily job loads insert-only; no network")
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -58,6 +61,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.merge_from:
         return merge(args.merge_from, args.db)
+    if args.export_seed:
+        conn = sqlite3.connect(args.db)
+        n_t, n_f = S.export_seed(conn, args.export_seed)
+        conn.close()
+        log.info("seed written: %s (%d trips, %d fetch-log days)", args.export_seed, n_t, n_f)
+        return 0
 
     days = args.dates or []
     if not days:
@@ -77,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         days = [d for d in days if d.isoformat() not in done]
     fetcher = S.Fetcher(offline=args.offline)
     totals = {"days": 0, "rows": 0, "inserted": 0, "no_count_days": 0, "cached": 0, "errors": 0}
+    consecutive_errors = 0
     try:
         for d in days:
             if fetcher.requests_made >= args.max_requests:
@@ -85,6 +95,14 @@ def main(argv: list[str] | None = None) -> int:
             st = S.scrape_days(conn, [d], fetcher=fetcher)
             for k in totals:
                 totals[k] += st.get(k, 0)
+            # Repeated dropped connections can be a soft block: stop, don't push on.
+            consecutive_errors = consecutive_errors + 1 if st.get("errors") else 0
+            if consecutive_errors >= 5:
+                log.error("5 network errors in a row at %s: possible soft block. Stopping; "
+                          "tell the owner before resuming (--skip-logged).", d)
+                conn.commit()
+                conn.close()
+                return 4
             if totals["days"] % 50 == 0 and st["days"]:
                 log.info("progress %s: %s (requests=%d)", d, totals, fetcher.requests_made)
     except S.SourceBlocked as e:
