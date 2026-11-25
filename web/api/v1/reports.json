@@ -1,6 +1,6 @@
 {
-  "build": "b5f8955e",
-  "generated_at": "2026-11-24T22:06:39Z",
+  "build": "b3a6229",
+  "generated_at": "2026-11-25T09:19:22Z",
   "window_days": 14,
   "feeds": [
     {
@@ -19,7 +19,7 @@
       "id": "bd-baja",
       "name": "BD Baja Mexico Fishing Reports",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/baja-mexico-fishing-reports-discussion/",
-      "items_14d": 9
+      "items_14d": 10
     }
   ],
   "summary_48h": {

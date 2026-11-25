@@ -57,11 +57,16 @@ function bookingUrl(s) {
   return base;
 }
 
+// Schedule times are ISO with a Pacific offset; always show San Diego time,
+// whatever the viewer's own timezone.
 function fmtDepDate(d) {
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
 }
 function fmtTime(d) {
-  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' });
+}
+function fmtWeekday(d) {
+  return d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' });
 }
 function shortLanding(name) {
   return (name || '').replace(' Sportfishing', '').replace(' Landing', '');
@@ -308,7 +313,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const TimeRow = ({ label, dt, isReturn }) => (
     <div className={`tp-card-time-row${isReturn ? ' tp-card-time-row-ret' : ''}`}>
       <span className="tp-card-time-label">{label}</span>
-      <span className="tp-card-depart-date">{DAYS[dt.getDay()]} {fmtDepDate(dt)}</span>
+      <span className="tp-card-depart-date">{fmtWeekday(dt)} {fmtDepDate(dt)}</span>
       <span className="tp-card-depart-sep"> · </span>
       <span className="tp-card-depart-time">{fmtTime(dt)}</span>
     </div>
@@ -928,7 +933,7 @@ function TripPlanner({ navigate, regions }) {
     (window.SD.SCHEDULE || []).forEach(t => {
       const dep = new Date(t.departureAt);
       if (dep >= now) {
-        s.add(`${dep.getFullYear()}-${String(dep.getMonth() + 1).padStart(2, '0')}`);
+        s.add(window.TT_DATES.getPacificDate(dep).slice(0, 7));
       }
     });
     return s;
@@ -989,11 +994,13 @@ function TripPlanner({ navigate, regions }) {
 
       // Month filter
       if (selMonth) {
-        if (dep.getFullYear() !== selMonth.year || dep.getMonth() !== selMonth.month) return false;
+        if (window.TT_DATES.getPacificYear(dep) !== selMonth.year ||
+            window.TT_DATES.getPacificMonth(dep) - 1 !== selMonth.month) return false;
       }
       // Refine date range within selected month
-      if (refineStart && dep < new Date(refineStart + 'T00:00:00')) return false;
-      if (refineEnd   && dep > new Date(refineEnd   + 'T23:59:59')) return false;
+      const depDay = window.TT_DATES.getPacificDate(dep);
+      if (refineStart && depDay < refineStart) return false;
+      if (refineEnd   && depDay > refineEnd)   return false;
 
       if (!_matches(s.landing,    selLandings)) return false;
       if (!_matches(s.tripLength, selLengths))  return false;

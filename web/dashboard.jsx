@@ -753,7 +753,7 @@ function HomeView({ navigate, settings, regions }) {
 
   function fmtDep(isoStr) {
     if (!isoStr) return '';
-    return new Date(isoStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return new Date(isoStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
   }
 
   return (

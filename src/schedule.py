@@ -23,6 +23,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import parse as P
+from .dates import PACIFIC, pacific_today, to_pacific_iso
 
 log = logging.getLogger(__name__)
 
@@ -277,8 +278,8 @@ def parse_fishingreservations(html: str, landing: str, source_url: str) -> list[
             "trip_type_raw": trip_type_raw,
             "trip_length": length_bucket,
             "trip_length_days": length_days,
-            "departure_at": depart_at.isoformat(),
-            "return_at": return_at.isoformat() if return_at else None,
+            "departure_at": to_pacific_iso(depart_at),
+            "return_at": to_pacific_iso(return_at),
             "price": price,
             "capacity": _parse_int_or_none(load_txt),
             "open_spots": open_spots,
@@ -322,12 +323,27 @@ def _split_experience_name(name: str) -> tuple[str | None, str | None]:
     return boat, trip_type
 
 
+def _xola_return(dep: datetime, exp: dict, length_days: float | None) -> datetime | None:
+    """Return time = departure + the experience's own duration (minutes).
+
+    trip_length_days is a fishing-day bucket (Full Day = 0.75), not elapsed
+    time, so dep + length_days put a 7:30 AM Full Day back at 1:30 AM.
+    Xola's `duration` is the real length (Full Day 570-720 min, 1.5 Day
+    ~2100). Without a usable duration we leave return_at empty rather than guess.
+    """
+    for key in ("duration", "eventDuration"):
+        mins = exp.get(key)
+        if isinstance(mins, (int, float)) and mins >= 60:
+            return dep + timedelta(minutes=mins)
+    return None
+
+
 def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
     data = _strip_jsonp(text)
     trips = data.get("trips") or []
     exps = data.get("experiences") or {}
     scraped_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    today = date.today()
+    today = pacific_today()
     out: list[dict] = []
 
     for t in trips:
@@ -349,9 +365,11 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
         except Exception:
             log.warning("bad datetime in xolacache: %r", dt_str)
             continue
-        if dep.date() < today:
+        if dep.tzinfo is None:
+            dep = dep.replace(tzinfo=PACIFIC)
+        if dep.astimezone(PACIFIC).date() < today:
             continue  # past trip; H&M's endpoint returns 12 months of history+future
-        return_at = (dep + timedelta(days=length_days)).isoformat() if length_days else None
+        return_at = to_pacific_iso(_xola_return(dep, exp, length_days))
         raw_note  = t.get("note") or ""
         price     = float(t["price"]) if t.get("price") is not None else None
         whats_inc = _parse_whats_included(raw_note)
@@ -364,7 +382,7 @@ def parse_xola_jsonp(text: str, landing: str, source_url: str) -> list[dict]:
             "trip_type_raw": trip_type_raw,
             "trip_length": length_bucket,
             "trip_length_days": length_days,
-            "departure_at": dep.isoformat(),
+            "departure_at": to_pacific_iso(dep),
             "return_at": return_at,
             "price": price,
             "capacity": cap,

@@ -407,6 +407,7 @@ def connect(db_path: Path):
     try:
         conn.executescript(SCHEMA)
         _migrate(conn)
+        normalize_schedule_times(conn)
         yield conn
         conn.commit()
     except Exception:
@@ -581,6 +582,26 @@ SCHEDULED_FIELDS = (
 )
 
 
+def normalize_schedule_times(conn: sqlite3.Connection) -> int:
+    """Rewrite scheduled_trips.departure_at / return_at that lack a Pacific
+    offset (naive local or UTC, from before 2026-11-25) to ISO 8601 with an
+    explicit America/Los_Angeles offset. Idempotent; returns rows changed."""
+    from .dates import to_pacific_iso
+    changed = 0
+    for rid, dep, ret in conn.execute(
+        "SELECT id, departure_at, return_at FROM scheduled_trips"
+    ).fetchall():
+        try:
+            nd, nr = to_pacific_iso(dep), to_pacific_iso(ret)
+        except ValueError:
+            continue
+        if (nd, nr) != (dep, ret):
+            conn.execute("UPDATE scheduled_trips SET departure_at=?, return_at=? WHERE id=?",
+                         (nd, nr, rid))
+            changed += 1
+    return changed
+
+
 def replace_scheduled_trips(
     conn: sqlite3.Connection,
     trips: Iterable[dict],
@@ -604,7 +625,12 @@ def replace_scheduled_trips(
             )
     placeholders = ",".join("?" * len(SCHEDULED_FIELDS))
     sql = f"INSERT INTO scheduled_trips ({','.join(SCHEDULED_FIELDS)}) VALUES ({placeholders})"
-    rows = [tuple(t.get(k) for k in SCHEDULED_FIELDS) for t in trips]
+    from .dates import to_pacific_iso
+    rows = []
+    for t in trips:
+        t = {**t, "departure_at": to_pacific_iso(t.get("departure_at")),
+             "return_at": to_pacific_iso(t.get("return_at"))}
+        rows.append(tuple(t.get(k) for k in SCHEDULED_FIELDS))
     cur = conn.executemany(sql, rows)
     return cur.rowcount
 
