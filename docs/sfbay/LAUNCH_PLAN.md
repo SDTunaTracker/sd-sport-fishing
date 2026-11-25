@@ -142,7 +142,7 @@ work around it.
 | `web/app.jsx`, `web/ui.jsx` (+ dist) | Routing, region choice, NorCal dropdown section, SF Bay nav/footer |
 | `web/seo.js` | SF Bay titles + soft-launch `noindex` |
 | `web/index.html` | Loads `sfbay.css` + `dist/sfbay.js`; version bumps |
-| `.github/workflows/daily-scrape.yml` | Commits `web/data-region-sfbay.js` |
+| `.github/workflows/daily-scrape.yml` | Commits `web/data-region-sfbay.js`. **Merge note:** PR #6 adds `git add web/data-region-*.js`, which also covers this file. If #6 merges first, keep #6's line and drop the separate `web/data-region-sfbay.js` from the `git add` list. |
 | `.gitignore` | `.cache/` |
 
 The full suite has 374 passing tests and 2 failures in `tests/test_text_parser.py`. The same 2 failures were reported on main by the OC/LA review; this branch doesn't touch that code.
