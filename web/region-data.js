@@ -46,10 +46,17 @@
         stillFishing: (SD.TODAY.stillFishing || []).concat(r.TODAY.stillFishing),
       });
     }
-    // Region-only payloads (e.g. OC/LA CONDITIONS: points, landingPoint, daily).
+    // Region-only payloads: CONDITIONS (OC/LA SST + wind points) and MARINE
+    // (NWS zones, alerts, smallCraftAdvisory, tides, buoys). The base region's
+    // marine data is SD.MARINE in data.js.
     if (r.CONDITIONS) {
       SD.CONDITIONS_BY_REGION = SD.CONDITIONS_BY_REGION || {};
       SD.CONDITIONS_BY_REGION[id] = r.CONDITIONS;
+    }
+    if (r.MARINE) {
+      SD.MARINE_BY_REGION = SD.MARINE_BY_REGION || {};
+      if (SD.MARINE && !(base() in SD.MARINE_BY_REGION)) SD.MARINE_BY_REGION[base()] = SD.MARINE;
+      SD.MARINE_BY_REGION[id] = r.MARINE;
     }
     SD.META.regionTripCounts = SD.META.regionTripCounts || {};
     SD.META.regionTripCounts[id] = (r.META && r.META.tripCount) || 0;

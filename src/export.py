@@ -871,6 +871,19 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         except Exception as e:
             import logging
             logging.getLogger(__name__).warning("OC/LA conditions payload failed: %s", e)
+    # Marine forecast / alerts / tides / buoys per region (src/marine.py on the
+    # claude/ais-conditions branch); data.js carries San Diego's as SD.MARINE.
+    try:
+        from . import marine as _marine
+    except ImportError:
+        _marine = None
+    if _marine is not None and hasattr(_marine, "region_payload"):
+        for reg in sorted(set(db_landing_region.values()) - {BASE_REGION}):
+            try:
+                region_extras.setdefault(reg, {})["MARINE"] = _marine.region_payload(conn, reg)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning("marine payload for %s failed: %s", reg, e)
     base, region_js, region_files = split_by_region(all_rows, trips, half_day_trips, schedule,
                                                     db_landing_region, region_extras)
     all_rows, trips = base["ALL_ROWS"], base["TRIPS"]
