@@ -197,12 +197,13 @@ function _wwClassFor(lengths) {
 }
 
 // The site's selected region -> which block of whats_working.json to show.
-// One region selected: that region's reports (incl. ones tagged "both");
-// SD + OC/LA together (or no region info): every report.
+// One region selected: that region's reports (incl. ones tagged "both"), and
+// nothing at all if the file has no block for it (older cached JSON) - never
+// another region's tips. SD + OC/LA together (or no region info): every report.
 function _wwClassesFor(data, regions) {
   const eff = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : 'all_socal';
-  if (eff !== 'all_socal' && data.by_region && data.by_region[eff]) return data.by_region[eff];
-  return data.classes;
+  if (eff === 'all_socal') return data.classes;
+  return (data.by_region && data.by_region[eff]) || {};
 }
 
 function WhatsWorkingCard({ lengths, regions }) {
