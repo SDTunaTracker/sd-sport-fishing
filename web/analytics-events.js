@@ -223,3 +223,170 @@ window.TTTrack = {
     }
   }, 30000);
 })();
+
+// ─── First-party visit statistics (Tunatracker's own, no cookies) ───────────
+// Sends small batched beacons to /a/e (cloudflare-worker/analytics.js), which
+// feeds the owner dashboard at /owner/. Runs alongside GA4 during the overlap.
+//   - Nothing is sent when Global Privacy Control or Do Not Track is on.
+//   - No cookies and no ids. One date is stored (localStorage "tt_seen") so a
+//     returning visitor isn't counted as new; we send only "days since your last
+//     visit" on the first page of each day.
+//   - Paths drop query strings, and referrers are reduced to the site name.
+//   - Only sends on thetunatracker.com (not localhost or previews), unless
+//     window.TT_ANALYTICS_ENDPOINT is set for local testing.
+// It wraps existing TTTrack helpers, so call sites don't change, and helpers
+// added later in this file (e.g. Co-Captain's chatBookClick) are picked up too.
+(function () {
+  var TT = window.TTTrack;
+  if (!TT) return;
+  var host = location.hostname;
+  var endpoint = window.TT_ANALYTICS_ENDPOINT ||
+    ((host === 'thetunatracker.com' || host === 'www.thetunatracker.com') ? '/a/e' : null);
+  function optedOut() {
+    try {
+      // The owner's own browsers (marked when they open /owner/) aren't counted.
+      if (localStorage.getItem('tt_owner') === '1') return true;
+    } catch (e) {}
+    try {
+      return navigator.globalPrivacyControl === true ||
+        navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1';
+    } catch (e) { return false; }
+  }
+  var enabled = !!endpoint && !optedOut();
+  TT.firstParty = { enabled: enabled };
+  TT._send = function () {};
+  if (!enabled) return;
+
+  var src = 'web';
+  try {
+    if ((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone) src = 'pwa';
+  } catch (e) {}
+  var queue = [], timer = null, entrySent = false, gapFallbackSent = false, lastPath = null;
+
+  function localDay(d) {
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // Days since this browser's previous visit, on the first pageview of a day; otherwise null.
+  function visitGap() {
+    try {
+      var today = localDay(), last = localStorage.getItem('tt_seen');
+      if (last === today) return null;
+      localStorage.setItem('tt_seen', today);
+      if (!last) return 400;
+      var g = Math.round((Date.parse(today) - Date.parse(last)) / 864e5);
+      return g >= 1 && g <= 400 ? g : 400;
+    } catch (e) {
+      // Storage blocked: count once per page load (the dashboard notes this overcounts).
+      if (gapFallbackSent) return null;
+      gapFallbackSent = true;
+      return 400;
+    }
+  }
+  function referrer() {
+    var utm = null;
+    try { utm = new URLSearchParams(location.search).get('utm_source'); } catch (e) {}
+    if (utm) return 'utm:' + utm.slice(0, 40);
+    try {
+      if (!document.referrer) return '';
+      var h = new URL(document.referrer).hostname;
+      return h === host ? '' : h;
+    } catch (e) { return ''; }
+  }
+  function flush() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (!queue.length) return;
+    var body = JSON.stringify({ src: src, w: (window.screen && screen.width) || window.innerWidth || 0, ev: queue.splice(0, 25) });
+    try {
+      var sent = navigator.sendBeacon && navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }));
+      if (!sent && window.fetch) {
+        fetch(endpoint, { method: 'POST', body: body, keepalive: true, headers: { 'Content-Type': 'application/json' } })
+          .catch(function () {});
+      }
+    } catch (e) {}
+    if (queue.length) flush();
+  }
+  function send(t, props) {
+    var e = { t: t, p: location.pathname };
+    if (props) for (var k in props) if (props[k] != null && props[k] !== '') e[k] = props[k];
+    // One booking hand-off can fire two helpers (chatBookClick + chatLinkClick 'Book'); merge them.
+    var prev = queue[queue.length - 1];
+    if (prev && prev.t === t && t === 'chat_book_click' && Date.now() - prev._at < 1500) {
+      for (var j in e) if (prev[j] == null) prev[j] = e[j];
+      return;
+    }
+    Object.defineProperty(e, '_at', { value: Date.now(), enumerable: false });
+    queue.push(e);
+    if (queue.length >= 20) flush();
+    else if (!timer) timer = setTimeout(flush, t === 'pageview' ? 3000 : 1500);
+  }
+  TT._send = send;
+
+  function pageview() {
+    var p = location.pathname;
+    if (p === lastPath) return;
+    lastPath = p;
+    var props = { g: visitGap() };
+    if (!entrySent) { entrySent = true; props.e = 1; props.r = referrer(); }
+    send('pageview', props);
+  }
+
+  // SPA navigation: app.jsx uses history.pushState + popstate. replaceState is
+  // used for the region prefix and hash upgrades, so it isn't a new pageview.
+  var push = history.pushState;
+  history.pushState = function () {
+    var r = push.apply(this, arguments);
+    setTimeout(pageview, 0);
+    return r;
+  };
+  window.addEventListener('popstate', function () { setTimeout(pageview, 0); });
+  // First pageview after the app has routed (it may rewrite #hash URLs to paths).
+  if (document.readyState === 'complete') setTimeout(pageview, 0);
+  else window.addEventListener('load', function () { setTimeout(pageview, 0); });
+
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+  window.addEventListener('pagehide', flush);
+
+  // Helper → first-party event. Only public catalog data (boat, landing, trip id).
+  var lastBoat = { name: null, at: 0 };
+  var MAP = {
+    boatView: function (boat, landing) {
+      // Boat cards fire this on click and the boat page fires it again on mount.
+      if (boat === lastBoat.name && Date.now() - lastBoat.at < 5000) return null;
+      lastBoat = { name: boat, at: Date.now() };
+      return ['boat_view', { boat: boat, landing: landing }];
+    },
+    tripClick: function (trip) {
+      trip = trip || {};
+      return ['book_click', { boat: trip.boat, landing: trip.landing, trip: trip.sourceId || trip.tripId || null, k: 'planner' }];
+    },
+    chatOpen: function () { return ['chat_open']; },
+    chatMessage: function () { return ['chat_message']; },
+    chatLinkClick: function (text, url, isExternal) {
+      return isExternal ? ['chat_book_click', { k: 'chat_link' }] : null;
+    },
+    chatRecommend: function () { return ['chat_recommend']; },
+    chatBookIntent: function (p) { p = p || {}; return ['chat_book_intent', { boat: p.boat, landing: p.landing, trip: p.tripId }]; },
+    chatBookClick: function (p) { p = p || {}; return ['chat_book_click', { boat: p.boat, landing: p.landing, trip: p.tripId, k: 'chat_card' }]; },
+  };
+  Object.keys(MAP).forEach(function (name) {
+    var orig = TT[name];
+    if (typeof orig !== 'function') return;
+    TT[name] = function () {
+      try { var ev = MAP[name].apply(null, arguments); if (ev) send(ev[0], ev[1]); } catch (e) {}
+      return orig.apply(this, arguments);
+    };
+  });
+
+  // Sign-ups: Clerk reports the new user; we send only that a sign-up happened.
+  window.addEventListener('clerk-auth-change', function (e) {
+    try {
+      var u = e.detail && e.detail.user;
+      var created = u && u.createdAt ? new Date(u.createdAt).getTime() : 0;
+      if (!created || Date.now() - created > 10 * 60e3) return;
+      if (sessionStorage.getItem('tt_signup_sent')) return;
+      sessionStorage.setItem('tt_signup_sent', '1');
+      send('signup');
+    } catch (err) {}
+  });
+})();

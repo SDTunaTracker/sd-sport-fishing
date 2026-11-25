@@ -21,3 +21,10 @@
   Content-Type: application/json
   Access-Control-Allow-Origin: *
   Cache-Control: no-cache, must-revalidate
+
+# Owner pages: Cloudflare Access protects /owner*. Never cache or index them.
+/owner/*
+  Cache-Control: private, no-store
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: same-origin
+  X-Frame-Options: DENY

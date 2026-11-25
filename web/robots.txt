@@ -1,4 +1,6 @@
 User-agent: *
+Disallow: /owner/
+Disallow: /a/
 Allow: /
 Disallow: /admin
 Sitemap: https://thetunatracker.com/sitemap.xml
