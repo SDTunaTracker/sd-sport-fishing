@@ -707,6 +707,8 @@ def build_app_payload(conn: sqlite3.Connection, full: dict, today: date | None =
         "SCHEDULE": schedule,
         "TRIPS": trips,
         "HALF_DAY_TRIPS": half,
+        # Additive (no schemaVersion bump): San Diego marine conditions as-is.
+        "MARINE": full.get("MARINE") or {},
         "MONTHLY": _monthly_rollup(conn),
         "BOAT_PROFILES": full["BOAT_PROFILES"],
     }

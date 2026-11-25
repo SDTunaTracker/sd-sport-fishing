@@ -112,6 +112,45 @@ def parse_marine_text(text: str) -> tuple[float | None, float | None, float | No
     return wmin, wmax, smin, smax
 
 
+_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def period_window(name: str | None, updated: str | None) -> tuple[str | None, str | None]:
+    """Approximate (start, end) for an NWS zone-forecast period from its name.
+
+    Zone forecasts carry only names ("Today", "This Afternoon", "Tonight",
+    "Thu", "Thu Night"). Days run 06:00-18:00 and nights 18:00-06:00 Pacific,
+    the NWS convention; "This Afternoon" starts at 12:00. Returns ISO strings
+    with the Pacific offset, or (None, None) if the name isn't recognised.
+    """
+    from .dates import PACIFIC
+    if not name or not updated:
+        return None, None
+    try:
+        base = datetime.fromisoformat(updated).astimezone(PACIFIC)
+    except ValueError:
+        return None, None
+    day = base.replace(hour=0, minute=0, second=0, microsecond=0)
+    n = name.strip().lower()
+    def at(d, h):
+        return d.replace(hour=h) if h < 24 else (d + timedelta(days=1)).replace(hour=h - 24)
+    if n in ("today", "this morning"):
+        s, e = at(day, 6), at(day, 18)
+    elif n == "this afternoon":
+        s, e = at(day, 12), at(day, 18)
+    elif n in ("tonight", "this evening", "overnight"):
+        s, e = at(day, 18), at(day, 30)
+    else:
+        night = n.endswith(" night")
+        key = n.replace(" night", "")[:3].title()
+        if key not in _DAYS:
+            return None, None
+        ahead = (_DAYS.index(key) - day.weekday()) % 7 or 7
+        d = day + timedelta(days=ahead)
+        s, e = (at(d, 18), at(d, 30)) if night else (at(d, 6), at(d, 18))
+    return s.isoformat(), e.isoformat()
+
+
 def fetch_forecasts(conn: sqlite3.Connection, zones: list[str]) -> int:
     n = 0
     fetched = _iso(_now())
@@ -122,8 +161,11 @@ def fetch_forecasts(conn: sqlite3.Connection, zones: list[str]) -> int:
         rows = []
         for p in props.get("periods", []):
             text = p.get("detailedForecast") or ""
-            rows.append((z, updated, p.get("number"), p.get("name"), p.get("startTime"),
-                         p.get("endTime"), text, *parse_marine_text(text), fetched))
+            start, end = p.get("startTime"), p.get("endTime")
+            if not (start and end):
+                start, end = period_window(p.get("name"), updated)
+            rows.append((z, updated, p.get("number"), p.get("name"), start, end,
+                         text, *parse_marine_text(text), fetched))
         before = conn.total_changes
         conn.executemany("INSERT OR IGNORE INTO marine_forecasts VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rows)
         n += conn.total_changes - before
@@ -282,7 +324,8 @@ def region_payload(conn: sqlite3.Connection, region: str, now: datetime | None =
             upd = conn.execute("SELECT MAX(updated_at) FROM marine_forecasts WHERE zone=?", (z,)).fetchone()[0]
             if not upd:
                 continue
-            periods = [{"name": r[0], "start": r[1], "end": r[2], "text": r[3],
+            periods = [{"name": r[0], "start": r[1] or period_window(r[0], upd)[0],
+                        "end": r[2] or period_window(r[0], upd)[1], "text": r[3],
                         "windKt": [r[4], r[5]], "seasFt": [r[6], r[7]]}
                        for r in conn.execute(
                            "SELECT name, start_time, end_time, detail, wind_kt_min, wind_kt_max,"

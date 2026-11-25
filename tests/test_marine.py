@@ -50,3 +50,13 @@ def test_region_payload_and_small_craft_badge(tmp_path):
 def test_payload_without_tables_is_empty(tmp_path):
     conn = sqlite3.connect(tmp_path / "e.db")
     assert M.region_payload(conn, "sf_bay")["zones"] == {}
+
+
+def test_period_window_names():
+    upd = "2026-11-25T12:09:00-08:00"          # a Wednesday
+    assert M.period_window("Today", upd) == ("2026-11-25T06:00:00-08:00", "2026-11-25T18:00:00-08:00")
+    assert M.period_window("Tonight", upd) == ("2026-11-25T18:00:00-08:00", "2026-11-26T06:00:00-08:00")
+    assert M.period_window("Thu", upd) == ("2026-11-26T06:00:00-08:00", "2026-11-26T18:00:00-08:00")
+    assert M.period_window("Thu Night", upd) == ("2026-11-26T18:00:00-08:00", "2026-11-27T06:00:00-08:00")
+    assert M.period_window("Wed", upd)[0].startswith("2026-12-02")   # next week's Wednesday
+    assert M.period_window("Rest of week", upd) == (None, None)
