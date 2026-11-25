@@ -37,6 +37,8 @@ SITE_NAME = "Tunatracker"
 # Pages backed by fewer trips than this are still generated (the app links to
 # them) but are marked noindex and left out of the sitemap as thin content.
 MIN_TRIPS_INDEX = 5
+SPECIES_RECENT_DAYS = 14
+TODAY_DAYS = 3        # report dates shown on /sd/today (counts post through the day)
 
 SD_LANDINGS: dict[str, str] = {
     "H&M Landing":            "hm-landing",
@@ -45,6 +47,9 @@ SD_LANDINGS: dict[str, str] = {
     "Point Loma Sportfishing":"point-loma",
     "Oceanside Sea Center":   "oceanside",
 }
+# SQL filter for San Diego landings. Only boats whose trips are at these landings
+# get a generated page, so every boat link on a generated page stays inside it.
+_SD_IN = "landing IN (" + ",".join("'" + l.replace("'", "''") + "'" for l in SD_LANDINGS) + ")"
 
 TROPHY_SPECIES: list[tuple[str, str, str]] = [
     # (db_column, display_name, url_slug)
@@ -128,7 +133,7 @@ def _boat_stats(conn: sqlite3.Connection, boat: str) -> dict | None:
     rows = conn.execute("""
         SELECT trophy_count, trophy_per_angler_per_day,
                bluefin, yellowfin, yellowtail, dorado, date, anglers,
-               landing, trip_length
+               landing, trip_length, full_catch
         FROM trips WHERE boat = ? AND trophy_count IS NOT NULL
         ORDER BY date DESC, id DESC
     """, (boat,)).fetchall()
@@ -197,20 +202,32 @@ def _dedupe_repeats(rows: list[dict]) -> list[dict]:
     return kept
 
 
-def _landing_boats(conn: sqlite3.Connection, landing: str) -> list[dict]:
-    """Return boat stats for a landing: ranked boats first, then small samples."""
-    boats = conn.execute(
-        "SELECT DISTINCT boat FROM trips WHERE landing=? ORDER BY boat",
-        (landing,)
-    ).fetchall()
-    result = []
-    for row in boats:
-        s = _boat_stats(conn, row["boat"])
-        # A boat belongs to the landing it fished from most recently.
-        if s and s["landing"] == landing:
-            result.append({"boat": row["boat"], **s})
+def _landing_boats(all_stats: dict[str, dict], landing: str) -> list[dict]:
+    """Return boat stats for a landing: ranked boats first, then small samples.
+
+    A boat belongs to the landing it fished from most recently.
+    """
+    result = [{"boat": b, **s} for b, s in sorted(all_stats.items()) if s["landing"] == landing]
     result.sort(key=lambda x: (x["total"] < MIN_TRIPS_INDEX, -x["win_rate"], -x["avg_tpad"]))
     return result
+
+
+def _recent_sd_trips(conn: sqlite3.Connection, days: int, where: str = "1=1") -> tuple[str | None, list[dict]]:
+    """SD trips in the `days` days up to the latest SD trip date, newest first.
+
+    Returns (latest_date, rows). Repeated multi-day counts are collapsed.
+    """
+    last = conn.execute(f"SELECT MAX(date) FROM trips WHERE {_SD_IN}").fetchone()[0]
+    if not last:
+        return None, []
+    start = (date.fromisoformat(last[:10]) - timedelta(days=days - 1)).isoformat()
+    rows = conn.execute(f"""
+        SELECT date, boat, landing, trip_length, anglers, bluefin, yellowfin, yellowtail,
+               dorado, trophy_count, full_catch
+        FROM trips WHERE {_SD_IN} AND date>=? AND trophy_count IS NOT NULL AND ({where})
+        ORDER BY date DESC, trophy_count DESC, boat
+    """, (start,))
+    return last[:10], _dedupe_repeats([dict(r) for r in rows])
 
 
 def _landing_recent(conn: sqlite3.Connection, landing: str, days: int = 7) -> list[dict]:
@@ -221,7 +238,7 @@ def _landing_recent(conn: sqlite3.Connection, landing: str, days: int = 7) -> li
     start = (date.fromisoformat(last) - timedelta(days=days - 1)).isoformat()
     return _dedupe_repeats([dict(r) for r in conn.execute("""
         SELECT date, boat, trip_length, anglers, bluefin, yellowfin, yellowtail, dorado,
-               trophy_count
+               trophy_count, full_catch
         FROM trips WHERE landing=? AND date>=? AND trophy_count IS NOT NULL
         ORDER BY date DESC, trophy_count DESC
     """, (landing, start))])
@@ -234,7 +251,7 @@ def _species_stats(conn: sqlite3.Connection, col: str) -> dict:
                ROUND(AVG(CASE WHEN trophy_per_angler_per_day>0
                                THEN trophy_per_angler_per_day END), 2) as avg_tpad
         FROM trips
-        WHERE {col}>0 AND trophy_per_angler_per_day IS NOT NULL
+        WHERE {col}>0 AND trophy_per_angler_per_day IS NOT NULL AND {_SD_IN}
         GROUP BY boat, landing
         HAVING trips>=5
         ORDER BY avg_tpad DESC
@@ -246,19 +263,23 @@ def _species_stats(conn: sqlite3.Connection, col: str) -> dict:
                ROUND(AVG(trophy_per_angler_per_day), 2) as avg_tpad,
                COUNT(*) as trips
         FROM trips
-        WHERE {col}>0 AND date>=? AND trophy_per_angler_per_day>0
+        WHERE {col}>0 AND date>=? AND trophy_per_angler_per_day>0 AND {_SD_IN}
         GROUP BY month
         ORDER BY month
     """, (cutoff,)).fetchall()
     total_trips = conn.execute(
-        f"SELECT COUNT(*) FROM trips WHERE {col}>0"
+        f"SELECT COUNT(*) FROM trips WHERE {col}>0 AND {_SD_IN}"
     ).fetchone()[0]
-    last_date = conn.execute(f"SELECT MAX(date) FROM trips WHERE {col}>0").fetchone()[0]
+    last_date = conn.execute(f"SELECT MAX(date) FROM trips WHERE {col}>0 AND {_SD_IN}").fetchone()[0]
+    _, recent = _recent_sd_trips(conn, SPECIES_RECENT_DAYS, f"{col}>0")
+    recent.sort(key=lambda r: (r["date"], r[col] or 0), reverse=True)
     return {
         "top_boats": [dict(r) for r in top],
         "monthly":   [dict(r) for r in monthly],
         "total_trips": total_trips,
         "last_date": last_date,
+        "recent": recent,
+        "recent_fish": sum(r[col] or 0 for r in recent),
     }
 
 
@@ -367,6 +388,13 @@ def _fmt_date(iso: str) -> str:
 
 
 def _catch_str(r: dict) -> str:
+    """Every species landed (full_catch JSON), else the four trophy columns."""
+    try:
+        full = json.loads(r.get("full_catch") or "{}")
+    except (TypeError, ValueError):
+        full = {}
+    if isinstance(full, dict) and full:
+        return ", ".join(f"{n} {sp.lower()}" for sp, n in full.items() if n)
     parts = [f"{r[k]} {k}" for k in ("bluefin", "yellowfin", "yellowtail", "dorado") if r.get(k)]
     return ", ".join(parts) if parts else "no trophy fish"
 
@@ -375,7 +403,7 @@ def _catch_str(r: dict) -> str:
 
 def _boat_page_html(boat: str, landing: str, stats: dict,
                     profile: dict | None, review: dict | None,
-                    shared: dict) -> str:
+                    shared: dict, siblings: list[str] | None = None) -> str:
     landing_slug = SD_LANDINGS.get(landing, "")
     canonical    = page_url("boat", boat)
     last         = _fmt_date(stats["last_date"])
@@ -435,7 +463,7 @@ def _boat_page_html(boat: str, landing: str, stats: dict,
     recent_section = f"""<section>
 <h2>Latest {_esc(boat)} fish counts</h2>
 <table>
-  <caption>Last {len(stats['recent'])} reported trips (trophy species landed)</caption>
+  <caption>Last {len(stats['recent'])} reported trips (fish landed; released fish not counted)</caption>
   <thead><tr><th>Date</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
   <tbody>
 {recent_rows}  </tbody>
@@ -462,6 +490,13 @@ def _boat_page_html(boat: str, landing: str, stats: dict,
         f'<p><a href="/sd/landing/{landing_slug}/">More boats at {_esc(landing)} →</a></p>'
         if landing_slug else ""
     )
+    siblings_section = ""
+    if siblings:
+        siblings_section = (
+            f"<section><h2>Other boats at {_esc(landing)}</h2><ul>" + "".join(
+                f'<li><a href="{page_url("boat", b)}">{_esc(b)}</a></li>' for b in siblings
+            ) + "</ul></section>"
+        )
 
     seo_content = f"""<article>
 {_breadcrumb(crumbs)}
@@ -484,6 +519,7 @@ def _boat_page_html(boat: str, landing: str, stats: dict,
 {species_section}
 {lengths_section}
 {months_section}
+{siblings_section}
 {landing_link}
 </article>"""
 
@@ -527,7 +563,7 @@ def _landing_page_html(landing: str, slug: str, boats: list[dict],
     recent_section = f"""<section>
 <h2>{_esc(landing)} fish counts: last 7 days</h2>
 <table>
-  <caption>{len(recent)} trips reported, trophy species landed</caption>
+  <caption>{len(recent)} trips reported, fish landed</caption>
   <thead><tr><th>Date</th><th>Boat</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
   <tbody>
 {recent_rows}  </tbody>
@@ -649,11 +685,37 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
 </table>
 </section>"""
 
+    recent = stats.get("recent") or []
+    recent_section = ""
+    if recent:
+        shown = recent[:25]
+        rows = "".join(
+            f"<tr><td>{_fmt_date(r['date'])}</td>"
+            f"<td><a href=\"{page_url('boat', r['boat'])}\">{_esc(r['boat'])}</a></td>"
+            f"<td>{_esc(r['landing'])}</td><td>{_esc(r['trip_length'] or '')}</td>"
+            f"<td>{r['anglers'] or ''}</td><td>{r[col]}</td></tr>\n"
+            for r in shown
+        )
+        recent_section = f"""<section>
+<h2>{_esc(name)} caught in San Diego: last {SPECIES_RECENT_DAYS} days</h2>
+<p>{stats['recent_fish']:,} {_esc(name.lower())} landed on {len(recent)} trips.</p>
+<table>
+  <caption>{len(shown)} most recent trips with {_esc(name.lower())}</caption>
+  <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th>Trip</th><th>Anglers</th><th>{_esc(name)}</th></tr></thead>
+  <tbody>
+{rows}  </tbody>
+</table>
+</section>"""
+    else:
+        recent_section = (f"<p>No {_esc(name.lower())} reported by San Diego boats in the last "
+                          f"{SPECIES_RECENT_DAYS} days.</p>")
+
     seo_content = f"""<article>
 {_breadcrumb(crumbs)}
 <h1>San Diego {_esc(name)} Fishing</h1>
 <p>Analysis of {_esc(name)} catches across all San Diego sportfishing landings.
    Based on {stats['total_trips']:,} recorded trips with {_esc(name.lower())} in the catch.</p>
+{recent_section}
 {top_table}
 {monthly_table}
 </article>"""
@@ -664,7 +726,132 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
     return head + _body_wrap(seo_content, shared)
 
 
+# ── /sd/today and /sd/boats ───────────────────────────────────────────────────
+# Written as web/sd/today.html and web/sd/boats.html. CF Pages serves x.html at
+# /x, so the canonical stays slash-less, matching the app and web/seo.js. The
+# title and description mirror CONFIG.today / CONFIG.boats in web/seo.js.
+
+_LANDING_ORDER = list(SD_LANDINGS)
+
+
+def _landing_link(landing: str) -> str:
+    slug = SD_LANDINGS.get(landing)
+    return f'<a href="/sd/landing/{slug}/">{_esc(landing)}</a>' if slug else _esc(landing)
+
+
+def _landing_rank(landing: str) -> int:
+    return _LANDING_ORDER.index(landing) if landing in _LANDING_ORDER else 99
+
+
+def _today_page_html(latest: str, trips: list[dict], shared: dict) -> str:
+    canonical = "/sd/today"
+    title = f"Today's San Diego Fish Counts — Live Sportfishing Report | {SITE_NAME}"
+    desc = ("Today's fish counts from H&M, Fisherman's, Seaforth, Point Loma, and Oceanside "
+            "landings, checked hourly: bluefin, yellowfin, yellowtail and dorado by boat.")
+    crumbs = [(SITE_NAME, "/"), ("Fish Counts", "")]
+    json_ld = [_breadcrumb_ld(crumbs), {
+        "@context": "https://schema.org", "@type": "WebPage", "name": title,
+        "description": desc, "url": f"{SITE_URL}{canonical}", "dateModified": latest,
+    }]
+
+    totals = {k: sum(r[k] or 0 for r in trips) for k in ("bluefin", "yellowfin", "yellowtail", "dorado")}
+    total_str = ", ".join(f"{v:,} {k}" for k, v in totals.items() if v) or "no trophy fish"
+
+    by_date: dict[str, list[dict]] = {}
+    for r in trips:
+        by_date.setdefault(r["date"][:10], []).append(r)
+    day_sections = []
+    for d in sorted(by_date, reverse=True):
+        day = by_date[d]
+        parts = [f"<section>\n<h2>San Diego fish counts for {_fmt_date(d)}</h2>"]
+        for landing in sorted({r["landing"] for r in day}, key=_landing_rank):
+            rows = "".join(
+                f"<tr><td><a href=\"{page_url('boat', r['boat'])}\">{_esc(r['boat'])}</a></td>"
+                f"<td>{_esc(r['trip_length'] or '')}</td><td>{r['anglers'] or ''}</td>"
+                f"<td>{_esc(_catch_str(r))}</td></tr>\n"
+                for r in day if r["landing"] == landing
+            )
+            parts.append(f"""<h3>{_landing_link(landing)}</h3>
+<table>
+  <thead><tr><th>Boat</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
+  <tbody>
+{rows}  </tbody>
+</table>""")
+        parts.append("</section>")
+        day_sections.append("\n".join(parts))
+    days_html = "\n".join(day_sections) or "<p>No trips reported in the last few days.</p>"
+
+    landing_links = " · ".join(
+        f'<a href="/sd/landing/{slug}/">{_esc(l)}</a>' for l, slug in SD_LANDINGS.items())
+    species_links = " · ".join(
+        f'<a href="/sd/species/{slug}/">{_esc(n)}</a>' for _, n, slug in TROPHY_SPECIES)
+
+    seo_content = f"""<article>
+{_breadcrumb(crumbs)}
+<h1>San Diego Fish Counts</h1>
+<p>The latest fish counts from San Diego sportfishing boats, updated hourly from each
+   landing's posted counts. Most recent report: {_fmt_date(latest)}.
+   Over the last {TODAY_DAYS} days, {len(trips)} trips landed {_esc(total_str)}.
+   The catch column lists every species landed; released fish are not counted.</p>
+{days_html}
+<section><h2>Fish counts by landing</h2><p>{landing_links}</p></section>
+<section><h2>Fish counts by species</h2><p>{species_links}</p></section>
+<p><a href="/sd/boats">All San Diego sportfishing boats →</a></p>
+</article>"""
+    head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared)
+    return head + _body_wrap(seo_content, shared)
+
+
+def _boats_page_html(all_stats: dict[str, dict], shared: dict) -> str:
+    canonical = "/sd/boats"
+    title = f"San Diego Sportfishing Boats Directory | {SITE_NAME}"
+    desc = ("Browse every San Diego sportfishing boat with photos, reviews, win rates, and "
+            "catch records across H&M, Fisherman's, Seaforth, Point Loma, and Oceanside.")
+    crumbs = [(SITE_NAME, "/"), ("Boats", "")]
+    json_ld = [_breadcrumb_ld(crumbs), {
+        "@context": "https://schema.org", "@type": "CollectionPage", "name": title,
+        "description": desc, "url": f"{SITE_URL}{canonical}",
+    }]
+    sections = []
+    for landing in _LANDING_ORDER:
+        boats = sorted((b, s) for b, s in all_stats.items() if s["landing"] == landing)
+        if not boats:
+            continue
+        rows = "".join(
+            f"<tr><td><a href=\"{page_url('boat', b)}\">{_esc(b)}</a></td>"
+            f"<td>{_fmt_date(s['last_date'])}</td><td>{s['total']}</td>"
+            f"<td>{s['win_rate']}%</td><td>{s['avg_tpad']}</td></tr>\n"
+            for b, s in boats
+        )
+        sections.append(f"""<section>
+<h2>{_landing_link(landing)} boats</h2>
+<table>
+  <thead><tr><th>Boat</th><th>Last trip</th><th>Trips</th><th>Win Rate</th><th>Avg Fish/Angler/Day</th></tr></thead>
+  <tbody>
+{rows}  </tbody>
+</table>
+</section>""")
+    sections_html = "\n".join(sections)
+    seo_content = f"""<article>
+{_breadcrumb(crumbs)}
+<h1>San Diego Sportfishing Boats</h1>
+<p>{len(all_stats)} sportfishing boats from San Diego's landings, grouped by the landing
+   each boat fished from most recently. Win rate is the share of trips that landed at
+   least one trophy fish (bluefin, yellowfin, yellowtail or dorado).</p>
+{sections_html}
+<p><a href="/sd/today">Latest San Diego fish counts →</a></p>
+</article>"""
+    head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared)
+    return head + _body_wrap(seo_content, shared)
+
+
 # ── Entry point ───────────────────────────────────────────────────────────────
+
+def _write(web_dir, rel: str, html: str) -> None:
+    out = Path(web_dir) / rel
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+
 
 def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[dict]:
     """Generate all static pages. Called from export.py.
@@ -699,21 +886,28 @@ def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[di
     pages: list[dict] = []
 
     # ── Boat pages ────────────────────────────────────────────────────────────
-    sd_boats = conn.execute("""
-        SELECT DISTINCT boat FROM trips
-        WHERE landing IN ('H&M Landing', 'Fisherman''s Landing',
-                          'Seaforth Sportfishing', 'Point Loma Sportfishing',
-                          'Oceanside Sea Center')
-        ORDER BY boat
-    """).fetchall()
+    sd_boats = conn.execute(f"SELECT DISTINCT boat FROM trips WHERE {_SD_IN} ORDER BY boat").fetchall()
+    all_stats: dict[str, dict] = {}
     for row in sd_boats:
-        boat = row["boat"]
         try:
-            stats = _boat_stats(conn, boat)
-            if not stats:
-                continue
+            st = _boat_stats(conn, row["boat"])
+        except Exception as e:
+            log.warning("Boat stats failed for %r: %s", row["boat"], e)
+            continue
+        if st:
+            all_stats[row["boat"]] = st
+    # Boats now fishing outside San Diego (e.g. Pride, now at 22nd Street) keep
+    # their page for the SD history, but aren't listed in the SD fleet views.
+    sd_stats = {b: s for b, s in all_stats.items() if s["landing"] in SD_LANDINGS}
+
+    by_recency = sorted(sd_stats.items(), key=lambda kv: kv[1]["last_date"], reverse=True)
+    for boat, stats in all_stats.items():
+        try:
+            siblings = [b for b, s in by_recency
+                        if s["landing"] == stats["landing"] and b != boat
+                        and s["total"] >= MIN_TRIPS_INDEX][:12]
             html = _boat_page_html(boat, stats["landing"], stats, profiles.get(boat),
-                                   reviews.get(boat), shared)
+                                   reviews.get(boat), shared, siblings)
             out = Path(web_dir) / "sd" / "boat" / _safe_dir(boat) / "index.html"
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(html, encoding="utf-8")
@@ -726,7 +920,7 @@ def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[di
     # ── Landing pages ─────────────────────────────────────────────────────────
     for landing, slug in SD_LANDINGS.items():
         try:
-            boats = _landing_boats(conn, landing)
+            boats = _landing_boats(all_stats, landing)
             if not boats:
                 continue
             recent = _landing_recent(conn, landing)
@@ -753,6 +947,19 @@ def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[di
                           "index": True})
         except Exception as e:
             log.warning("Species page failed for %r: %s", name, e)
+
+    # ── /sd/today and /sd/boats ───────────────────────────────────────────────
+    try:
+        latest, recent = _recent_sd_trips(conn, TODAY_DAYS)
+        if latest:
+            _write(web_dir, "sd/today.html", _today_page_html(latest, recent, shared))
+            pages.append({"url": "/sd/today", "lastmod": latest, "index": True})
+        if sd_stats:
+            _write(web_dir, "sd/boats.html", _boats_page_html(sd_stats, shared))
+            pages.append({"url": "/sd/boats", "index": True,
+                          "lastmod": max(s["last_date"] for s in sd_stats.values())})
+    except Exception as e:
+        log.warning("Today/boats page failed: %s", e)
 
     log.info("generate_pages: %d boats, %d landings, %d species", n_boats, n_landings, n_species)
     return pages

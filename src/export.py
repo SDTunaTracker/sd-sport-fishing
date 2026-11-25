@@ -848,9 +848,12 @@ def _write_sitemap(data_js_path: Path, pages: list[dict], latest: str) -> None:
     from .generate_pages import SITE_URL
     # SPA routes, served as index.html by the 200 rewrites in web/_redirects.
     # /sd/forecast removed 2026-09-06 (soft-retire); web/_redirects 301s it to /sd/charts.
+    # /sd/today and /sd/boats are prerendered (web/sd/today.html, boats.html) and
+    # come in through `pages` with their own lastmod; listed here as a fallback.
+    generated = {p["url"] for p in pages}
     entries = [(path, latest) for path in (
         "/", "/sd/today", "/sd/boats", "/sd/analytics/overview", "/sd/tripplanner",
-    )]
+    ) if path not in generated]
     entries += [(p["url"], p["lastmod"] or latest) for p in pages if p.get("index")]
 
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',

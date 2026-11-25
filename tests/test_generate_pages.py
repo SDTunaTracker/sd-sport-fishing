@@ -19,7 +19,8 @@ def _db(tmp_path: Path) -> sqlite3.Connection:
     conn.execute("""CREATE TABLE trips (
         id INTEGER PRIMARY KEY, date TEXT, boat TEXT, landing TEXT, trip_length TEXT,
         anglers INTEGER, bluefin INTEGER, yellowfin INTEGER, yellowtail INTEGER,
-        dorado INTEGER, trophy_count INTEGER, trophy_per_angler_per_day REAL)""")
+        dorado INTEGER, trophy_count INTEGER, trophy_per_angler_per_day REAL,
+        full_catch TEXT)""")
     rows = []
     # "Big Boat": 6 trips, moved from Seaforth to H&M; last two rows repeat a 2-day count.
     for i, (d, landing) in enumerate([
@@ -30,6 +31,9 @@ def _db(tmp_path: Path) -> sqlite3.Connection:
         rows.append((d, "Big Boat (SD)", landing, "2 Day", 20, 0, 30, 5, 0, 35, 0.9))
     # "Tiny": 1 trip only -> noindex, kept out of the sitemap.
     rows.append(("2026-08-01", "Tiny", "H&M Landing", "Full Day", 10, 0, 0, 0, 0, 0, 0.0))
+    # "Far Boat": OC/LA landing -> no page, and no links to it from SD pages.
+    for d in ("2026-07-20", "2026-07-25", "2026-07-30", "2026-07-31", "2026-08-01"):
+        rows.append((d, "Far Boat", "Newport Landing", "Full Day", 20, 0, 40, 0, 0, 40, 2.0))
     conn.executemany("""INSERT INTO trips (date, boat, landing, trip_length, anglers, bluefin,
         yellowfin, yellowtail, dorado, trophy_count, trophy_per_angler_per_day)
         VALUES (?,?,?,?,?,?,?,?,?,?,?)""", rows)
@@ -74,6 +78,50 @@ def test_pages_and_sitemap(tmp_path):
     assert "Tiny" not in sm
     assert "<loc>https://thetunatracker.com/sd/landing/hm-landing/</loc>" in sm
     assert "<changefreq>" not in sm
+    assert sm.count("<loc>https://thetunatracker.com/sd/today</loc>") == 1
+    assert "<loc>https://thetunatracker.com/sd/boats</loc>\n    <lastmod>2026-08-02" in sm
+
+
+def test_today_boats_species_and_siblings(tmp_path):
+    web = tmp_path / "web"
+    web.mkdir()
+    (web / "index.html").write_text(INDEX_HTML, encoding="utf-8")
+    conn = _db(tmp_path)
+    conn.execute("""INSERT INTO trips (date, boat, landing, trip_length, anglers, bluefin,
+        yellowfin, yellowtail, dorado, trophy_count, trophy_per_angler_per_day)
+        VALUES ('2026-08-02','Second Boat','H&M Landing','Full Day',10,0,1,0,0,1,0.1)""")
+    conn.execute("""UPDATE trips SET full_catch='{"Rockfish": 2, "Yellowfin": 1}'
+        WHERE boat='Second Boat'""")
+    for d in ("2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05"):
+        conn.execute("""INSERT INTO trips (date, boat, landing, trip_length, anglers, bluefin,
+            yellowfin, yellowtail, dorado, trophy_count, trophy_per_angler_per_day)
+            VALUES (?,'Second Boat','H&M Landing','Full Day',10,0,0,0,0,0,0)""", (d,))
+    pages = generate_all_pages(conn, web, web / "index.html")
+    urls = {p["url"] for p in pages}
+    assert {"/sd/today", "/sd/boats"} <= urls
+    assert not (web / "sd" / "boat" / "Far Boat").exists()
+
+    today = (web / "sd" / "today.html").read_text(encoding="utf-8")
+    assert '<link rel="canonical" href="https://thetunatracker.com/sd/today">' in today
+    assert "San Diego fish counts for Aug 2, 2026" in today
+    # Big Boat's Aug 1 row repeats its Aug 2 count -> listed once; Tiny's Aug 1 trip stays
+    assert today.count(">Big Boat (SD)</a></td>") == 1
+    assert "San Diego fish counts for Aug 1, 2026" in today and ">Tiny</a></td>" in today
+    assert "Far Boat" not in today
+    assert ">Second Boat</a></td><td>Full Day</td><td>10</td><td>2 rockfish, 1 yellowfin</td>" in today
+    assert '<a href="/sd/landing/hm-landing/">H&amp;M Landing</a></h3>' in today
+
+    boats = (web / "sd" / "boats.html").read_text(encoding="utf-8")
+    assert '<a href="/sd/boat/Big%20Boat%20%28SD%29/">' in boats
+    assert ">Tiny</a>" in boats and "Far Boat" not in boats
+
+    species = (web / "sd" / "species" / "yellowfin-tuna" / "index.html").read_text(encoding="utf-8")
+    assert "Far Boat" not in species
+    assert "last 14 days" in species
+
+    big = (web / "sd" / "boat" / "Big Boat (SD)" / "index.html").read_text(encoding="utf-8")
+    assert "Other boats at H&amp;M Landing" in big and ">Second Boat</a>" in big
+    assert ">Tiny</a>" not in big          # < 5 trips: not a sibling link
 
 
 def test_dedupe_keeps_distinct_and_zero_trips():
