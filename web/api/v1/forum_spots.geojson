@@ -1,0 +1,47 @@
+{
+ "type": "FeatureCollection",
+ "generated_at": "2026-11-25T18:05:49Z",
+ "label": "Recent forum reports by spot",
+ "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
+ "window_days": 14,
+ "short_window_days": 7,
+ "note": "position 'posted' = coordinates printed in the thread; 'estimate' = worked out from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far to trust each point. Follow the links for the original posts.",
+ "attribution": "Spot list courtesy SWYC Anglers",
+ "regions_note": "properties.region: san_diego | oc_la | both, from where the point is.",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -116.11,
+     30.48
+    ]
+   },
+   "properties": {
+    "id": "san-martin-island",
+    "name": "San Martin Island",
+    "position": "spot",
+    "region": "san_diego",
+    "precision_nm": 4.0,
+    "reports_7d": 0,
+    "reports_14d": 1,
+    "last_report": "2026-11-11",
+    "species": {},
+    "quality": {},
+    "kinds": {
+     "area": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/new-lo-ann-11-11-2-day-pretty-great.872398/",
+      "title": "New Lo Ann 11-11 2 day  Pretty Great",
+      "date": "2026-11-11",
+      "feed": "bd-socal-sportboats"
+     }
+    ]
+   }
+  }
+ ]
+}

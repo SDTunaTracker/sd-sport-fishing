@@ -1,13 +1,15 @@
 {
- "generated_at": "2026-11-25T17:15:44Z",
+ "generated_at": "2026-11-25T18:05:51Z",
  "source": "BloodyDecks (bdoutdoors.com) forum trip reports",
  "label": "From BloodyDecks trip reports",
  "note": "Summaries of public forum posts, extracted automatically. Not verified reviews; follow the links for the original posts.",
  "window_days": 365,
  "min_match_confidence": 0.7,
+ "regions_note": "region: san_diego | oc_la | both | null, from the boat's landing and the spots fished (an SD boat at Catalina is 'both'). Boat-level region = landing.",
  "boats": {
   "Excel": {
    "landing": "Fisherman's Landing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -67,6 +69,7 @@
       "The Rocks",
       "Lower Banks"
      ],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     }
@@ -74,6 +77,7 @@
   },
   "Islander": {
    "landing": "Fisherman's Landing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -145,6 +149,7 @@
       "flyline 25-30 lb FC"
      ],
      "spots": [],
+     "region": "san_diego",
      "landing_count": {
       "date": "2026-10-26",
       "landing": "Fisherman's Landing",
@@ -162,6 +167,7 @@
   },
   "New Lo-An": {
    "landing": "Point Loma Sportfishing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -223,6 +229,7 @@
      "spots": [
       "St Martin Island"
      ],
+     "region": "san_diego",
      "landing_count": {
       "date": "2026-11-13",
       "landing": "Point Loma Sportfishing",
@@ -241,6 +248,7 @@
   },
   "New Seaforth": {
    "landing": "Seaforth Sportfishing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -300,6 +308,7 @@
       "yo-yo technique - yellowtail"
      ],
      "spots": [],
+     "region": "san_diego",
      "landing_count": {
       "date": "2026-11-11",
       "landing": "Seaforth Sportfishing",
@@ -321,6 +330,7 @@
   },
   "Pacific Queen": {
    "landing": "Fisherman's Landing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -372,6 +382,7 @@
      "catch_summary": "Author caught a 25 lb yellowfin tuna on a 2-day trip.",
      "tackle": [],
      "spots": [],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.8
     }
@@ -379,6 +390,7 @@
   },
   "Premier": {
    "landing": "H&M Landing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -444,6 +456,7 @@
      "spots": [
       "Pt Loma"
      ],
+     "region": "san_diego",
      "landing_count": {
       "date": "2026-11-10",
       "landing": "H&M Landing",
@@ -465,6 +478,7 @@
   },
   "Pursuit": {
    "landing": "22nd Street Landing",
+   "region": "oc_la",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -528,6 +542,7 @@
       "Catalina",
       "Avalon"
      ],
+     "region": "oc_la",
      "landing_count": {
       "date": "2026-11-08",
       "landing": "22nd Street Landing",
@@ -548,6 +563,7 @@
   },
   "Searcher": {
    "landing": "Fisherman's Landing",
+   "region": "san_diego",
    "report_count": 3,
    "aspects": {
     "overall": {
@@ -615,6 +631,7 @@
      "spots": [
       "the Ridge"
      ],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     },
@@ -655,6 +672,7 @@
       "San Pablo Bay",
       "San Carlos"
      ],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     },
@@ -692,6 +710,7 @@
      "spots": [
       "Cedros"
      ],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     }
@@ -699,6 +718,7 @@
   },
   "Shogun": {
    "landing": "Fisherman's Landing",
+   "region": "san_diego",
    "report_count": 2,
    "aspects": {
     "overall": {
@@ -760,6 +780,7 @@
       "strip of bonito – dorado"
      ],
      "spots": [],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     },
@@ -793,6 +814,7 @@
      "spots": [
       "the rocks"
      ],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     }
@@ -800,6 +822,7 @@
   },
   "Vagabond": {
    "landing": "Point Loma Sportfishing",
+   "region": "san_diego",
    "report_count": 1,
    "aspects": {
     "overall": {
@@ -872,6 +895,7 @@
       "Alijos Rocks",
       "San Martin Island"
      ],
+     "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
     }
