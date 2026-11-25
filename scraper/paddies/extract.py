@@ -45,10 +45,20 @@ ROOT = Path(__file__).resolve().parents[2]
 DB_PATH = Path(os.environ.get("PADDIES_DB") or (ROOT / "data" / "paddies.db"))
 GAZETTEER_PATH = ROOT / "data" / "banks.geojson"
 
+from .feeds import feed_ids as _feed_ids
+
+# Boat-report feeds (Sportboats, Long Range) are read by boat_reports.py,
+# not here; their posts would only produce noise paddy/bite mentions.
+PADDY_FEED_IDS = _feed_ids("paddies")
+
 MODEL = "claude-sonnet-4-6"  # matches src/reddit_insights.py
 MAX_TOKENS = 3000            # wider v2 schema can yield more mentions per post
 REQUEST_SLEEP = 0.5          # polite gap between successful calls (seconds)
 RETRY_BACKOFF = 2.0          # single retry after this many seconds
+# Stop the run after this many posts fail in a row: it is the client or the
+# key that is broken, not the posts, and retrying hundreds of posts just burns
+# the job's time budget before the commit step.
+MAX_CONSECUTIVE_FAILURES = 5
 DB_TIMEOUT_SECONDS = 30
 DB_BUSY_TIMEOUT_MS = 30000
 
@@ -802,8 +812,10 @@ def run(limit: int | None = None, dry_run: bool = False, only_id: str | None = N
 
         q = (f"SELECT id, url, title, author, published_at, raw_text, "
              f"{trunc_col}, {feed_col} "
-             "FROM paddy_sources WHERE extracted = 0 ORDER BY published_at ASC")
-        params = ()
+             "FROM paddy_sources WHERE extracted = 0 "
+             f"AND {feed_col.split(' AS ')[0]} IN ({','.join('?' * len(PADDY_FEED_IDS))}) "
+             "ORDER BY published_at ASC")
+        params = tuple(PADDY_FEED_IDS)
         if only_id:
             q = (f"SELECT id, url, title, author, published_at, raw_text, "
                  f"{trunc_col}, {feed_col} "
@@ -815,9 +827,22 @@ def run(limit: int | None = None, dry_run: bool = False, only_id: str | None = N
 
         stats = {"posts": 0, "posts_extracted": 0, "posts_failed": 0,
                  "mentions_written": 0, "unresolved": 0}
+        global _last_error
+        streak = 0
+        if rows and not os.environ.get("ANTHROPIC_API_KEY"):
+            _last_error = "ANTHROPIC_API_KEY is not set"
+            print(f"[paddies:extract] {_last_error}; skipping {len(rows)} posts", file=sys.stderr)
+            stats["posts"] = stats["posts_failed"] = len(rows)
+            return stats
         for row in rows:
+            if streak >= MAX_CONSECUTIVE_FAILURES:
+                print(f"[paddies:extract] {streak} failures in a row ({_last_error}); "
+                      f"stopping, {len(rows) - stats['posts']} posts left for the next run",
+                      file=sys.stderr)
+                break
             stats["posts"] += 1
             result = extract_one(conn, row, gaz, dry_run=dry_run)
+            streak = 0 if result["ok"] else streak + 1
             if result["ok"]:
                 stats["posts_extracted"] += 1
                 stats["mentions_written"] += result["mentions"]

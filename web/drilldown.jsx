@@ -251,7 +251,10 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
       </div>
 
       {detailTab === 'reviews' && (
-        <ReviewsSection boat={boat} landing={meta.landing} openSignal={reviewOpenSignal}/>
+        <>
+          <ReviewsSection boat={boat} landing={meta.landing} openSignal={reviewOpenSignal}/>
+          {window.ForumReportsSection && <ForumReportsSection boat={boat}/>}
+        </>
       )}
 
       {detailTab === 'overview' && <Panel title="Trip History" meta={`All ${sortedTrips.length} past trips for ${boat} · newest first`} padding={false}>
