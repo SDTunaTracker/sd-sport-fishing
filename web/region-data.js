@@ -46,6 +46,11 @@
         stillFishing: (SD.TODAY.stillFishing || []).concat(r.TODAY.stillFishing),
       });
     }
+    // Region-only payloads (e.g. OC/LA CONDITIONS: points, landingPoint, daily).
+    if (r.CONDITIONS) {
+      SD.CONDITIONS_BY_REGION = SD.CONDITIONS_BY_REGION || {};
+      SD.CONDITIONS_BY_REGION[id] = r.CONDITIONS;
+    }
     SD.META.regionTripCounts = SD.META.regionTripCounts || {};
     SD.META.regionTripCounts[id] = (r.META && r.META.tripCount) || 0;
     delete window.SD_REGIONS[id];

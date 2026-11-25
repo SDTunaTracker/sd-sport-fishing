@@ -779,6 +779,7 @@ def _region_js(region: str, payload: dict) -> str:
 
 def split_by_region(all_rows: list[dict], trips: list[dict], half_day_trips: list[dict],
                     schedule: list[dict], landing_region: dict[str, str] | None = None,
+                    extras: dict[str, dict] | None = None,
                     ) -> tuple[dict, dict[str, str], dict[str, dict]]:
     """Split the per-region arrays.
 
@@ -786,6 +787,7 @@ def split_by_region(all_rows: list[dict], trips: list[dict], half_day_trips: lis
       base         — BASE_REGION's ALL_ROWS / TRIPS / HALF_DAY_TRIPS / SCHEDULE (for data.js)
       region_js    — {region: file text} for every other region
       region_files — {region: {file, v (content hash), tripCount}} for SD.META.REGION_FILES
+    extras: {region: {KEY: value}} added to that region's file as-is (e.g. CONDITIONS).
     """
     import hashlib
     # Schedule rows carry no region: map them through their landing. Callers
@@ -811,6 +813,7 @@ def split_by_region(all_rows: list[dict], trips: list[dict], half_day_trips: lis
             "SCHEDULE": sched_by.get(reg, []),
             "TODAY": _today_summary(all_by.get(reg, [])),
             "META": {"tripCount": len(reg_trips)},
+            **((extras or {}).get(reg) or {}),
         })
         region_js[reg] = text
         region_files[reg] = {"file": REGION_FILE.format(region=reg),
@@ -858,8 +861,18 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     # data-region-<id>.js (see BASE_REGION above).
     db_landing_region = {r[0]: r[1] or BASE_REGION for r in conn.execute(
         "SELECT landing, MAX(region) FROM trips GROUP BY landing")}
+    # Region-only payloads that must not bloat data.js. OC/LA conditions come
+    # from _ocla_conditions_payload (data-gaps branch); skipped until it exists.
+    region_extras: dict[str, dict] = {}
+    _ocla_cond = globals().get("_ocla_conditions_payload")
+    if _ocla_cond:
+        try:
+            region_extras["oc_la"] = {"CONDITIONS": _ocla_cond(conn)}
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning("OC/LA conditions payload failed: %s", e)
     base, region_js, region_files = split_by_region(all_rows, trips, half_day_trips, schedule,
-                                                    db_landing_region)
+                                                    db_landing_region, region_extras)
     all_rows, trips = base["ALL_ROWS"], base["TRIPS"]
     half_day_trips, schedule = base["HALF_DAY_TRIPS"], base["SCHEDULE"]
     boats = _boats_from_trips(trips)

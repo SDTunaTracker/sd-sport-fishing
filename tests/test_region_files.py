@@ -64,6 +64,13 @@ def test_region_file_defines_its_data_and_hash_is_content_based():
     assert files2["oc_la"]["v"] == files["oc_la"]["v"]
 
 
+def test_region_extras_go_only_to_that_region_file():
+    cond = {"points": {"Catalina Channel": {"lat": 33.55, "lng": -118.35}}, "landingPoint": {}, "daily": []}
+    _, region_js, _ = E.split_by_region(*_sample(), LANDING_REGION, {"oc_la": {"CONDITIONS": cond}})
+    assert '"CONDITIONS":{"points":{"Catalina Channel"' in region_js["oc_la"]
+    assert "CONDITIONS" not in region_js["sf_bay"]
+
+
 def test_size_guard_raises(tmp_path, monkeypatch):
     f = tmp_path / "data-region-oc_la.js"
     f.write_bytes(b"x" * 2048)
