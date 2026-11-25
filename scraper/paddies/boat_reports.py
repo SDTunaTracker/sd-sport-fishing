@@ -48,6 +48,7 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+from . import coords as coords_mod
 from . import extract as paddy_extract
 from .feeds import feed_ids, get_feed
 
@@ -65,7 +66,7 @@ MAX_TOKENS = 2500
 MAX_BODY_CHARS = 14000          # long-range reports run to 17k; the tail is mostly sign-off
 DEFAULT_RUN_LIMIT = 40          # Claude calls per run; the backlog drains over a few runs
 MAX_ATTEMPTS = 3                # per post, then we stop retrying it
-MAX_POST_AGE_DAYS = 120         # thread *start* older than this when fetched = bumped old thread
+MAX_POST_AGE_DAYS = 365         # thread *start* older than this when fetched = too old to publish (matches EXPORT_WINDOW_DAYS)
 REQUEST_SLEEP = 0.5
 EXPORT_WINDOW_DAYS = 365
 QUOTE_MAX_WORDS = 15
@@ -145,6 +146,35 @@ CREATE TABLE IF NOT EXISTS forum_signals (
     extracted_at   TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_fsig_date ON forum_signals(trip_date);
+
+-- Research-only location signals: every place a trip report says the boat
+-- fished or saw fish/paddies/kelp/the fleet. Append-only like forum_signals.
+-- lat/lon are only set when the quote itself holds coordinates (parsed in
+-- code, never taken from the model); they are NEVER published as-is
+-- (spots.py snaps/rounds before anything leaves the DB).
+CREATE TABLE IF NOT EXISTS forum_locations (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_id      TEXT NOT NULL,
+    feed_id        TEXT NOT NULL,
+    boat           TEXT,
+    trip_date      TEXT,
+    trip_length    TEXT,
+    published_at   TEXT,
+    fetched_at     TEXT,                 -- knowable-at time
+    name           TEXT,                 -- place as written ("the Ridge", "9 Mile")
+    kind           TEXT NOT NULL,        -- see LOCATION_KINDS
+    distance_nm    REAL,                 -- "12 miles off <from_place>"
+    bearing_deg    REAL,
+    from_place     TEXT,
+    lat            REAL,                 -- only from coordinates written in the quote
+    lon            REAL,
+    species        TEXT,                 -- JSON [species]
+    quality        TEXT,                 -- see LOCATION_QUALITY
+    water_temp_f   REAL,
+    quote          TEXT NOT NULL,        -- verbatim, verified against the post
+    extracted_at   TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_floc_date ON forum_locations(trip_date);
 """
 
 # Columns added after the first release of the tables (ALTER on old DBs).
@@ -160,6 +190,12 @@ WATER_COLORS = ["blue", "green", "off_color", "dirty"]
 BITE_WINDOWS = ["grey_light", "morning", "midday", "afternoon", "twilight", "night"]
 SIGNAL_FIELDS = ("bird_pressure", "bait_type", "bait_size_in", "bait_quality",
                  "water_temp_f", "water_color", "bite_windows")
+
+LOCATION_KINDS = ["bank", "island", "kelp", "paddy", "fleet", "coords", "offset", "area"]
+LOCATION_QUALITY = ["wide_open", "good", "fair", "slow", "none"]
+LOCATION_SPECIES = ["bluefin", "yellowfin", "yellowtail", "dorado", "wahoo", "albacore",
+                    "skipjack", "bigeye", "bonito", "barracuda", "calico", "rockfish", "other"]
+MAX_LOCATIONS = 6
 
 TRIP_LENGTHS = ["1/2 Day", "3/4 Day", "Full Day", "Overnight", "1.5 Day", "2 Day",
                 "2.5 Day", "3 Day", "3.5 Day", "4 Day", "5 Day", "6 Day", "7 Day",
@@ -230,6 +266,38 @@ REPORT_TOOL = {
                         "conditions": {"type": ["string", "null"],
                                        "description": "12 words or fewer, your own words: water temp/"
                                                       "colour, weather, swell, birds."},
+                        "locations": {
+                            "type": "array",
+                            "maxItems": MAX_LOCATIONS,
+                            "description": "Every place this trip fished or saw fish, paddies, kelp "
+                                           "or the fleet, in order. Only what the post states.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": ["string", "null"],
+                                             "description": "Place as written: bank, island, kelp bed, "
+                                                            "high spot, area. Null for bare coordinates."},
+                                    "kind": {"type": "string", "enum": LOCATION_KINDS,
+                                             "description": "fleet = 'the fleet was at ...'; coords = the "
+                                                            "quote holds lat/lon or GPS/LORAN numbers; "
+                                                            "offset = 'N miles <dir> of <place>'"},
+                                    "distance_nm": {"type": ["number", "null"]},
+                                    "bearing": {"type": ["string", "null"],
+                                                "description": "Compass direction FROM from_place, e.g. 'SW'"},
+                                    "from_place": {"type": ["string", "null"]},
+                                    "species": {"type": "array",
+                                                "items": {"type": "string", "enum": LOCATION_SPECIES}},
+                                    "quality": {"type": ["string", "null"], "enum": LOCATION_QUALITY + [None],
+                                                "description": "How the fishing was THERE; null if not said"},
+                                    "water_temp_f": {"type": ["number", "null"]},
+                                    "quote": {"type": "string",
+                                              "description": "Verbatim, <=25 words, copied exactly; must "
+                                                             "contain the place name or numbers"},
+                                },
+                                "required": ["name", "kind", "distance_nm", "bearing", "from_place",
+                                             "species", "quality", "water_temp_f", "quote"],
+                            },
+                        },
                         "signals": {
                             "type": "object",
                             "description": "Structured conditions. Null unless the post states it; "
@@ -259,7 +327,7 @@ REPORT_TOOL = {
                     },
                     "required": ["boat_raw", "boat", "trip_date", "trip_length", *ASPECTS,
                                  "would_rebook", "quotes", "catch_summary", "tackle", "spots",
-                                 "bait", "conditions", "signals"],
+                                 "bait", "conditions", "locations", "signals"],
                 },
             },
         },
@@ -288,6 +356,10 @@ exactly from the post text. If you cannot quote it, use null.
 Sarcasm and jokes are common; read them in context. Several boats can appear in one post: \
 give each boat the author fished on during the trip(s) this post reports its own entry. A boat \
 merely mentioned (another boat nearby, a comparison with a past trip) is not an entry.
+
+locations: one item per place the post says this trip fished, found fish, paddies or kelp, or \
+where "the fleet" was. Copy coordinates only if the post itself prints them; never guess \
+coordinates or distances.
 
 For "boat", use the exact spelling from KNOWN BOATS when it is clearly the same boat \
 (e.g. "PQ" = "Pacific Queen", "Lo Ann" = "New Lo-An"), otherwise null.
@@ -545,6 +617,64 @@ def validate_entry(e: dict, body: str, published: str | None,
         x = e.get(k)
         out[k] = x.strip()[:140] if isinstance(x, str) and x.strip() else None
     out["signals"] = validate_signals(e.get("signals") or {}, body)
+    out["locations"] = validate_locations(e.get("locations") or [], body)
+    return out
+
+
+LOC_QUOTE_MAX_WORDS = 25
+
+
+def _norm_loose(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", (s or "").lower()).strip()
+
+
+def validate_locations(items: list, body: str) -> list[dict]:
+    """Keep a location only when its quote is in the post and names the place
+    (or holds the coordinates). Coordinates and offsets are re-derived from
+    the quote in code; the model's numbers are not trusted on their own."""
+    out = []
+    seen = set()
+    for it in items[:MAX_LOCATIONS]:
+        if not isinstance(it, dict):
+            continue
+        q = (it.get("quote") or "").strip()
+        if not q or len(q.split()) > LOC_QUOTE_MAX_WORDS or not paddy_extract.quote_matches_source(q, body):
+            continue
+        kind = it.get("kind") if it.get("kind") in LOCATION_KINDS else "area"
+        name = (it.get("name") or "").strip()[:60] or None
+        nq = _norm_loose(q)
+        if name and _norm_loose(name) not in nq:
+            # the model normalised the spelling; keep it only if some word survives
+            words = [w for w in _norm_loose(name).split() if len(w) > 2 and w not in ("the", "bank", "island")]
+            if not any(w in nq.split() for w in words):
+                name = None
+        parsed = coords_mod.parse_coords(q)
+        lat = lon = None
+        if parsed and coords_mod.in_wide_box(parsed["lat"], parsed["lon"]):
+            lat, lon = parsed["lat"], parsed["lon"]
+            kind = "coords"
+        if not name and lat is None:
+            continue
+        dist = coords_mod.distance_from_words(q)
+        bearing = coords_mod.bearing_from_words(q) if dist is not None else None
+        from_place = (it.get("from_place") or "").strip()[:60] or None
+        if dist is not None and from_place and _norm_loose(from_place) not in nq:
+            from_place = None
+        if dist is not None and from_place and not name:
+            name = from_place
+        species = sorted({x for x in (it.get("species") or []) if x in LOCATION_SPECIES})
+        quality = it.get("quality") if it.get("quality") in LOCATION_QUALITY else None
+        wt = it.get("water_temp_f")
+        wt = float(wt) if isinstance(wt, (int, float)) and not isinstance(wt, bool) and 50 <= wt <= 90 \
+            and re.search(r"\d", q) else None
+        key = (_norm_loose(name or ""), lat, lon, kind)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"name": name, "kind": kind, "distance_nm": dist if dist and dist <= 300 else None,
+                    "bearing_deg": bearing, "from_place": from_place if dist else None,
+                    "lat": lat, "lon": lon, "species": species, "quality": quality,
+                    "water_temp_f": wt, "quote": q})
     return out
 
 
@@ -643,6 +773,8 @@ def process_row(conn, row, known, *, dry_run=False) -> dict:
     # if this post already has signal rows, keep them as they are.
     signals_frozen = conn.execute("SELECT 1 FROM forum_signals WHERE source_id = ?",
                                   (row["id"],)).fetchone() is not None
+    locations_frozen = conn.execute("SELECT 1 FROM forum_locations WHERE source_id = ?",
+                                    (row["id"],)).fetchone() is not None
     now = _now_iso()
     for v in entries:
         conn.execute(
@@ -674,6 +806,17 @@ def process_row(conn, row, known, *, dry_run=False) -> dict:
                  json.dumps(sig.get("unverified") or []), row["fetched_at"],
                  json.dumps(v["trip_match"]) if v["trip_match"] else None,
                  v["match_confidence"], now))
+        if not locations_frozen:
+            for loc in v.get("locations") or []:
+                conn.execute(
+                    "INSERT INTO forum_locations (source_id, feed_id, boat, trip_date, trip_length, "
+                    "published_at, fetched_at, name, kind, distance_nm, bearing_deg, from_place, "
+                    "lat, lon, species, quality, water_temp_f, quote, extracted_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (row["id"], row["feed_id"], v["boat"], v["trip_date"], v["trip_length"],
+                     row["published_at"], row["fetched_at"], loc["name"], loc["kind"],
+                     loc["distance_nm"], loc["bearing_deg"], loc["from_place"], loc["lat"], loc["lon"],
+                     json.dumps(loc["species"]), loc["quality"], loc["water_temp_f"], loc["quote"], now))
     _record_run(conn, row["id"], "ok" if entries else "not_report")
     conn.commit()
     return {"ok": True, "entries": len(entries)}

@@ -16,6 +16,8 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone, date, timedelta
 from pathlib import Path
 
+from . import coords as coords_mod
+from . import spots as spots_mod
 from .feeds import enabled_feeds
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +33,23 @@ RECENT_PER_BANK = 5
 RECENT_PER_BANK_REPORTS = 8   # v2 spec: last 8 per bank in reports.json
 TOP_BANKS_48H = 3
 SUMMARY_HOURS = 48
+
+
+_GAZ = None
+
+
+def _spot_gaz():
+    global _GAZ
+    if _GAZ is None:
+        _GAZ = spots_mod.Gazetteer()
+    return _GAZ
+
+
+def scrub_quote(q: str | None) -> str | None:
+    """Drop a quote that prints coordinates: anglers' numbers stay in the thread."""
+    if q and coords_mod.parse_coords(q):
+        return None
+    return q
 
 
 def short_sha() -> str:
@@ -143,7 +162,7 @@ def build_paddies_json(conn: sqlite3.Connection, features: list[dict],
                 "paddy_count": e["paddy_count"],
                 "holding":     e["holding"],
                 "species":     e["species"],
-                "quote":       e["quote"],
+                "quote":       scrub_quote(e["quote"]),
                 "url":         e["url"],
             })
         banks_out[bank_id] = {
@@ -193,7 +212,7 @@ def _recent_entry(row: dict) -> dict:
         "outcome":      p.get("outcome") if is_bite else None,
         "water_temp_f": p.get("water_temp_f"),
         "water_color":  p.get("water_color") if is_cond else None,
-        "quote":        row["quote"],
+        "quote":        scrub_quote(row["quote"]),
         "url":          row["url"],
         "feed_id":      row["feed_id"],
     }
@@ -315,18 +334,20 @@ def build_reports_json(conn: sqlite3.Connection, features: list[dict],
                 sib_banks.add(s["bank"])
         pin_bank = list(sib_banks)[0] if len(sib_banks) == 1 else None
 
+        # Privacy: never publish a posted position as-is (snap / ~2 nm grid).
+        plat, plon, prec_nm, _snapped = spots_mod.public_point(r["lat"], r["lon"], _spot_gaz())
         pins.append({
-            "lat":        r["lat"],
-            "lon":        r["lon"],
+            "lat":        plat,
+            "lon":        plon,
             "precision":  r["precision"],
+            "precision_nm": prec_nm,
             "resolution": resolution,
             "trip_date":  r["effective_date"],
             "bank":       pin_bank,
             "species":    sorted(sib_species),
-            "quote":      r["quote"],
+            "quote":      scrub_quote(r["quote"]),
             "url":        r["url"],
             "feed_id":    r["feed_id"],
-            "raw":        pl.get("raw"),
         })
 
     # summary_48h

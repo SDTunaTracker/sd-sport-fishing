@@ -365,8 +365,18 @@ def test_reports_pins_include_resolution(reports_db):
     # gps pin picks up species/bank from its sibling bite in the same source
     gps_pin = next(pin for pin in p["pins"] if pin["resolution"] == "gps")
     assert gps_pin["species"] == ["yellowtail"]
-    assert gps_pin["raw"] == "32.4083 -117.3017"
     assert gps_pin["precision"] == "gps"
+    # Privacy: the posted numbers never leave the DB.
+    assert "raw" not in gps_pin
+    assert (gps_pin["lat"], gps_pin["lon"]) != (32.4083, -117.3017)
+    assert gps_pin["precision_nm"] >= 2.0
+    assert abs(gps_pin["lat"] - 32.4083) < 0.2 and abs(gps_pin["lon"] + 117.3017) < 0.2
+
+
+def test_scrub_quote_drops_coordinates():
+    assert wj.scrub_quote("we were at 32 24.50 N 117 18.10 W all day") is None
+    assert wj.scrub_quote("wide open on the 9 Mile Bank") == "wide open on the 9 Mile Bank"
+    assert wj.scrub_quote(None) is None
 
 
 def test_reports_summary_48h(reports_db):

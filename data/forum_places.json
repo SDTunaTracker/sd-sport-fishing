@@ -1,0 +1,38 @@
+{
+  "_about": "Places named in BloodyDecks trip reports that the SWYC spot list (banks.geojson) does not cover: Baja islands, long-range grounds and coastal towns. Island/point centres from public charts; radius_nm is how far a report there may really be. aliases_to_bank maps common forum spellings onto existing banks.geojson ids. Used by scraper/paddies/spots.py.",
+  "places": [
+    {"id": "todos-santos-islands", "name": "Todos Santos Islands", "lat": 31.80, "lon": -116.80, "radius_nm": 4, "confidence": 0.8, "aliases": ["todos santos"]},
+    {"id": "colonet", "name": "Colonet", "lat": 30.96, "lon": -116.33, "radius_nm": 10, "confidence": 0.7, "aliases": ["cabo colonet", "punta colonet"]},
+    {"id": "san-martin-island", "name": "San Martin Island", "lat": 30.48, "lon": -116.11, "radius_nm": 4, "confidence": 0.85, "aliases": ["st martin island", "st martin", "san martin", "isla san martin"]},
+    {"id": "san-quintin", "name": "San Quintin", "lat": 30.40, "lon": -116.00, "radius_nm": 12, "confidence": 0.7, "aliases": ["san quintin bay"]},
+    {"id": "guadalupe-island", "name": "Guadalupe Island", "lat": 29.03, "lon": -118.28, "radius_nm": 15, "confidence": 0.85, "aliases": ["guadalupe", "lupe", "isla guadalupe"]},
+    {"id": "cedros-island", "name": "Cedros Island", "lat": 28.18, "lon": -115.22, "radius_nm": 15, "confidence": 0.8, "aliases": ["cedros", "isla cedros"]},
+    {"id": "san-benito-islands", "name": "San Benito Islands", "lat": 28.31, "lon": -115.58, "radius_nm": 5, "confidence": 0.8, "aliases": ["benitos", "san benitos", "the benitos"]},
+    {"id": "alijos-rocks", "name": "Alijos Rocks", "lat": 24.95, "lon": -115.75, "radius_nm": 4, "confidence": 0.85, "aliases": ["alijos", "rocas alijos"]},
+    {"id": "magdalena-bay", "name": "Magdalena Bay", "lat": 24.60, "lon": -112.10, "radius_nm": 25, "confidence": 0.6, "aliases": ["mag bay"]},
+    {"id": "cabo-san-lucas", "name": "Cabo San Lucas", "lat": 22.88, "lon": -109.91, "radius_nm": 10, "confidence": 0.8, "aliases": ["cabo"]},
+    {"id": "socorro-island", "name": "Socorro Island", "lat": 18.78, "lon": -110.97, "radius_nm": 12, "confidence": 0.8, "aliases": ["socorro"]},
+    {"id": "san-benedicto-island", "name": "San Benedicto Island", "lat": 19.30, "lon": -110.81, "radius_nm": 5, "confidence": 0.8, "aliases": ["san benedicto"]},
+    {"id": "clarion-island", "name": "Clarion Island", "lat": 18.36, "lon": -114.72, "radius_nm": 6, "confidence": 0.8, "aliases": ["clarion"]},
+    {"id": "roca-partida", "name": "Roca Partida", "lat": 18.99, "lon": -112.07, "radius_nm": 3, "confidence": 0.8, "aliases": ["partida"]},
+    {"id": "santa-barbara-island", "name": "Santa Barbara Island", "lat": 33.48, "lon": -119.03, "radius_nm": 4, "confidence": 0.8, "aliases": []},
+    {"id": "san-nicolas-island", "name": "San Nicolas Island", "lat": 33.25, "lon": -119.50, "radius_nm": 6, "confidence": 0.8, "aliases": ["san nic"]},
+    {"id": "dana-point", "name": "Dana Point", "lat": 33.45, "lon": -117.71, "radius_nm": 4, "confidence": 0.7, "aliases": []},
+    {"id": "oceanside", "name": "Oceanside", "lat": 33.20, "lon": -117.40, "radius_nm": 4, "confidence": 0.7, "aliases": []},
+    {"id": "newport-beach", "name": "Newport Beach", "lat": 33.59, "lon": -117.90, "radius_nm": 4, "confidence": 0.7, "aliases": ["newport"]}
+  ],
+  "aliases_to_bank": {
+    "pt loma": "point-loma-kelp",
+    "point loma": "point-loma-kelp",
+    "loma kelp": "point-loma-kelp",
+    "la jolla": "point-la-jolla",
+    "la jolla kelp": "point-la-jolla",
+    "the islands": "coronado-islands",
+    "coronado island": "coronado-islands",
+    "catalina island": "catalina",
+    "avalon": "catalina",
+    "clemente": "san-clemente-island",
+    "the 9": "9-mile-bank",
+    "the nine": "9-mile-bank"
+  }
+}

@@ -37,6 +37,15 @@ def on_land(lat: float, lon: float) -> bool:
     return lon > -117.05 and lat > 32.5
 
 
+# Wider box for long-range trip reports (Revillagigedos to Pt Conception).
+WIDE_LAT_MIN, WIDE_LAT_MAX = 15.0, 35.0
+WIDE_LON_MIN, WIDE_LON_MAX = -125.0, -105.0
+
+
+def in_wide_box(lat: float, lon: float) -> bool:
+    return WIDE_LAT_MIN <= lat <= WIDE_LAT_MAX and WIDE_LON_MIN <= lon <= WIDE_LON_MAX
+
+
 def valid_offshore(lat: float, lon: float) -> bool:
     return in_sanity_box(lat, lon) and not on_land(lat, lon)
 

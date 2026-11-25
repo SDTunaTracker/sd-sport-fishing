@@ -28,3 +28,8 @@
   X-Robots-Tag: noindex, nofollow
   Referrer-Policy: same-origin
   X-Frame-Options: DENY
+
+/api/v1/forum_spots.geojson
+  Content-Type: application/geo+json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache, must-revalidate

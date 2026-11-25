@@ -10,6 +10,14 @@
 
 Health alerts cover the new feeds: `bd:feed-errors:<feed>`, `bd:no-new-posts:<feed>` and `bd:boat-reports`.
 
+*Second round, 2026-11-25 (branch `claude/bd-spots`, not yet merged):*
+
+| # | Built as | Where |
+|---|---|---|
+| 4 | **Spot locations.** Trip reports now record every place the trip fished, saw fish/paddies/kelp, or where "the fleet" was (`forum_locations`, append-only, quote-checked; coordinates and "N miles <dir> of X" offsets are parsed in code from the quote, never taken from the model). `spots.py` merges these with the paddy-forum mentions into `forum_spot_reports`: date, knowable-at time, species, catch quality, source link, geocode method and confidence, precision radius. | `scraper/paddies/spots.py`; `data/forum_places.json` (Baja / long-range places the SWYC list lacks); `web/api/v1/forum_spots.geojson`; `python -m scraper.paddies.spots --research-csv out.csv` for forecast R&D |
+| 5 | **Privacy policy for positions** (needs the owner's OK): nothing exact is published. A posted position snaps to the named spot it falls in, otherwise it is rounded to a ~0.03° grid (about 2 nm). Quotes that print coordinates are dropped. The same rule now applies to the existing `reports.json` pins, which used to carry the exact numbers and the raw text. | `spots.public_point`, `write_json.scrub_quote` |
+| 6 | **Back-catalogue for boat reviews**: the trip-report extractor now accepts threads up to 365 days old (was 120, which silently skipped any listing backfill), runs 80 posts per run (was 40), and the workflow takes `backfill_feeds` so a one-off year walk touches only Sportboats + Long Range. | `boat_reports.MAX_POST_AGE_DAYS`; `paddies.yml` |
+
 ## TL;DR
 
 The best find is the **Southern California Sportboats** forum
@@ -157,6 +165,29 @@ Sent to the "Fish forecast R&D: model and backtest" session as hypotheses only:
 - **Bite timing** (grey light vs. twilight vs. "last stop") as a distribution per species.
 - **Water temperature / El Niño mentions** from Baja and Spearfishing posts. These are weak, and satellite SST is better.
 - **Size grade** ("dorado were all 1 lb", "YFT 20–40 with 60+") to complement count-only landing data.
+
+## 3b. Spot coordinates
+
+**What a report gives us, by source**
+
+| Source | Location signals | How it is placed |
+|---|---|---|
+| SoCal Offshore / Baja / Spearfishing (`report_mentions`) | SWYC bank ids, GPS numbers, "3–4 miles off IB", paddies, bite outcome, water temp | Bank centre, or the parsed position (research) → snapped / rounded (public) |
+| Sportboats / Long Range (`forum_locations`) | Named banks, islands, kelp, paddies, "the fleet was at …", coordinates, offsets, species, quality, temp | Gazetteer + `forum_places.json` lookup; offsets from the named place |
+| Older trip reports (`forum_boat_reports.spots`) | Names only | Gazetteer lookup |
+
+On the current DB: 342 place mentions, 171 geocoded. The rest are paddy-forum bite/conditions rows with no place, plus names we deliberately leave unresolved because they are ambiguous ("the Ridge", "the Rocks", "Lower Banks", "13 Fathom") or not yet in `forum_places.json` ("San Carlos", "San Pablo Bay", "Juggs Bank"). `spots_unresolved_names` in the state file lists them, so the gazetteer can be extended with a source and confidence for each.
+
+**Public layer** (`forum_spots.geojson`): one point per spot for the last 14 days, with 7-day and 14-day report counts, species and catch-quality tallies, water temperature range, kinds (bite, paddy, kelp, fleet…), precision radius and up to 5 thread links. No quotes, usernames or exact numbers.
+
+**Research series** (`--research-csv`): every row with report date, trip date, published and fetched (knowable-at) times, the exact research point, the public point, precision, species and quality. It stays out of git and the web root. Forecast R&D: hypotheses only; nothing here is a tested predictor.
+
+## 3c. Next proposals (ranked)
+
+1. **Open-load / "needs N more" trips** (Sportboats + Trip Planning forums). Titles alone carry most of it ("Help get the X 1.5 day off the dock 12/5"). A small "Trips looking for anglers" list on the trip planner, each linking to the thread, auto-expiring after the departure date. Low effort, high value for users, time-sensitive, so it needs the 3-hourly run.
+2. **Show the forum panel from 1 report** on boats with a landing-count match. Today it needs 2 reports, so only 2 of 120 active boats show it. One matched report is still a useful, honest signal with the "not a verified review" label. UX call for the design sessions.
+3. **Tackle and bait by month and species** from `forum_boat_reports.tackle`/`bait` (already extracted): a "what people used last October for YFT" view. Low effort once a season of rows exists.
+4. **Long-range season narrative** (per-trip one-liners for 8–16 day trips). Medium effort, niche audience.
 
 ## 4. Risks
 
