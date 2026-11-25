@@ -15,3 +15,5 @@ Set-Location $rf
 & $py -u shadow\snap_schedule.py *>&1 | Out-File -Append -Encoding utf8 $log
 # Parallel r5 candidate shadow (separate log; the frozen r4 above is untouched)
 & $py -u shadow_r5.py issue *>&1 | Where-Object { $_ -notmatch "Warning|^\s+d\[|^\s+t\[" } | Out-File -Append -Encoding utf8 $log
+# Data freshness guard (tracker.db may move to R2; the laptop copy could go stale)
+& $py -u shadow\check_fresh.py *>&1 | Out-File -Append -Encoding utf8 $log

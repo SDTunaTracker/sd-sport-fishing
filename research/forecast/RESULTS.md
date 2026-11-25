@@ -129,3 +129,15 @@ Held-out 2023–26, shrinkage chosen on 2019–22:
 
 Each component passed a paired block bootstrap or held-out selection (LOG E10, E14).
 Remaining caveat: 2026 is still under-forecast by 3–7 points, so the hot year isn't fully captured.
+
+## 7-day SD tuna outlook (2026-11-25, LOG E16–E19)
+- **Target:** tuna (bluefin + yellowfin + bigeye + albacore) per angler per fishing day. A good trip is ≥ 1.
+- **Accuracy, held out 2023–26:** the fleet forecast ranks days at r = 0.61 one day ahead and 0.50 seven days ahead.
+  "Same as last 5 days" scores 0.60 and 0.49, and the seasonal normal scores 0.40. Chance-of-good-trip errors are
+  11–21% lower than using the normal.
+- **What drives it:** the recent fleet catch, season and trip type. Wind, swell, SST, pressure, moon, tides and fronts add
+  nothing once the recent catch is known, and adding them makes the model slightly worse (E16, E18). Wind and seas
+  forecasts are very accurate for spotting rough or cancelled days, so they are shown as a separate comfort layer.
+- **Sample page:** https://claude.ai/artifact/PCFZ9pgdB2vFcRsL4uzvgF (private; research only).
+- **Production verdict:** NOT yet. It is honest and modestly better than the naive baseline, but it needs a live shadow
+  run on the outlook (not just the per-trip r4/r5) before anyone decides to ship it.

@@ -488,3 +488,82 @@ Paired 14-day-block bootstrap:
   - level_adj: San Diego +0.05…+0.11 logit (hot fleet); OC/LA −0.05…−0.17.
   - Correlation with r4's p_above is 0.98–0.99. Mean p_above is +2 to +5 points at most leads.
 - Go/no-go: at the ~6-week review, compare r5 vs r4 on the same matched trips (paired).
+
+## E16 — Daily factor report card for SD tuna (factor_study.py → data/factor_report_card.csv)
+- Unit: SD trip type × FISHING day cells (≥ 10 angler-days), 2017–26, n ≈ 8,370. Currents only 2017–18 (n = 1,389).
+- Factors are the ACTUAL fishing-day conditions, so this is the best case for a perfect weather forecast.
+- Partial = rank correlation after removing trip type, tuna climatology, season harmonics, the fleet tuna rate as of
+  the day before (h5/h15), and boat mix.
+- CIs from a 14-day block bootstrap (400 resamples); Benjamini–Hochberg q over 62 factors.
+
+| factor | raw r | in-season raw | partial r [95% CI] | top vs bottom fifth (adjusted) | BH q |
+|---|---|---|---|---|---|
+| Offshore SST | +0.41 | +0.29 | +0.025 [−0.03, +0.08] | ×0.99 | 0.89 |
+| Satellite warm-water extent (66–68 °F) | +0.36…+0.39 | +0.24 | +0.01 | ×0.98 | 0.9 |
+| Distance to 66 °F water | −0.32 | −0.10 | −0.03 | ×1.02 | 0.83 |
+| Satellite front strength | +0.13…+0.16 | ~0 | −0.08 [−0.14, −0.03] | ×0.89 | 0.07 |
+| Pressure | −0.22 | −0.11 | −0.05 [−0.09, −0.01] | ×0.96 | 0.20 |
+| Wind speed / 3-day change | −0.08 | −0.07 | −0.04 [−0.09, −0.00] | ×0.96 | 0.20 |
+| Swell height / period | ~0 | ~0 | +0.01 | ×1.00–1.04 | 0.9 |
+| Swell change 3 d | +0.05 | +0.03 | +0.04 [+0.01, +0.07] | ×1.06 | 0.20 |
+| Tide range / AM movement | −0.07 | −0.09 | −0.04 [−0.09, +0.01] | ×0.95 | 0.4–0.6 |
+| Moon (illumination, days from full/new) | ±0.02 | ±0.01 | ±0.01 | ×0.99–1.01 | 0.9 |
+| Upwelling (day / 30 d) | ~0 | −0.11…−0.20 | ~0 | ×1.00 | 0.95 |
+| Current speed (2017–18 only) | +0.04 | +0.12 | +0.05 [−0.08, +0.18] | ×1.12 | 0.89 |
+
+- ⇒ Raw correlations (the "lore": warm water ↔ tuna) are real, but they are SEASON plus RECENT CATCH: once the fleet's
+  last few days are known, no daily factor keeps more than ~±5–10% effect, and none survives the FDR correction.
+- Weak hints worth carrying as features (directionally consistent, small): windy days ~4% fewer tuna/angler;
+  strong satellite fronts ~10% fewer (counter-lore, q = 0.07, likely season-shape residue); moon nothing.
+- Caveats: only one SST source and one point for wind/swell. Currents are too short to judge.
+  Tuna/angler counts only trips that ran, so rough days that cancel are not in the data (the sea layer covers that).
+
+## E17 — tracker.db moving to private R2 (branch claude/r2-private-data @ bca19f28; owner's decision)
+- After cutover, `git pull` no longer refreshes tracker.db. The shadow reads the laptop copy
+  (C:/Users/Jenelle/Projects/sd-sport-fishing/tracker.db), which only stays fresh if something updates it.
+- Research must not run `scripts\db.ps1 pull` (it overwrites the main checkout's DB), so the user/owner owns the refresh.
+- Added shadow/check_fresh.py to run_shadow.ps1: it writes a STALE-DATA WARNING to run.log when the newest SD trip is > 2 days old.
+  At the reviews, exclude stale issue days.
+
+## E18 — Round 7: SD tuna-per-angler-day target, per-trip (run_tuna.py; walk-forward monthly, 2019–26)
+| lead | model | per-trip AUC(good) | Brier(good) | fleet r |
+|---|---|---|---|---|
+| 1 | persistence (fleet tlb h5) | 0.762 | 0.170 | 0.612 |
+| 1 | climatology | 0.672 | — | 0.390 |
+| 1 | M2 +tuna momentum | **0.781** | **0.164** | 0.607 |
+| 1 | M3 +pct momentum | 0.781 | 0.164 | 0.604 |
+| 1 | M4 +conditions (wind/swell/SST/pressure/MUR) | 0.769 | 0.169 | 0.565 |
+| 3 | persistence | 0.739 | 0.178 | 0.572 |
+| 3 | M3 | **0.754** | **0.174** | 0.537 |
+| 3 | M4 +conditions | 0.741 | 0.178 | 0.521 |
+| 7 | persistence | 0.713 | 0.186 | 0.508 |
+| 7 | M2 | **0.729** | **0.181** | 0.49 |
+- ⇒ Per trip, the boat + fleet momentum model beats persistence by about +0.015–0.02 AUC at every lead. At fleet level it
+  does NOT beat persistence: the per-trip model's gain is boat-level information.
+- ⇒ Adding the daily conditions block HURTS at every lead (fleet r −0.04 at L1). This matches the E16 factor report card:
+  the conditions carry no residual signal and only add variance. The conditions stay OUT of the tuna model; wind and seas are
+  shown as a separate comfort/cancellation layer.
+- L7 M3/M4 were still running when this was logged (data/round7.log, data/round7_tuna.csv).
+
+## E19 — Fleet SD tuna outlook, leads 1–7 (outlook_tuna.py) + sample 7-day page
+- Cells = trip type (Full day / Overnight / 1.5 / 2 / 2.5–3 day) × fishing day. HGB Poisson + ridge blend; good-share model.
+  Monthly walk-forward 2019–26; held-out 2023–26 shown below (settings chosen without looking at 2023–26).
+
+| lead | r model | r persistence | r climatology | MAE model / persist | good-trip Brier vs clim |
+|---|---|---|---|---|---|
+| 1 | 0.612 | 0.596 | 0.395 | 0.461 / 0.464 | 0.079 vs 0.100 (−21%) |
+| 3 | 0.569 | 0.552 | 0.395 | 0.485 / 0.485 | 0.084 vs 0.100 (−16%) |
+| 5 | 0.538 | 0.517 | 0.395 | 0.498 / 0.498 | 0.087 vs 0.100 (−13%) |
+| 7 | 0.503 | 0.488 | 0.395 | 0.512 / 0.513 | 0.089 vs 0.100 (−11%) |
+- ⇒ A small but consistent rank edge over persistence (+0.015–0.02 r at every lead), with MAE tied. The edge comes from
+  mean-reverting streaks toward climatology as lead grows. The good-trip probabilities clearly beat climatology.
+  This is an honest, modest product: it says how good the bite is likely to be on each day, and that becomes less certain each day out.
+  It cannot tell Saturday from Sunday apart from the weather and crowd effects.
+- Residual quantiles per lead and trip type (data/outlook_tuna_resid.json) drive the 80% "likely range" on the page.
+- Sample page (issued 2026-11-25, fishing days Nov 26 – Dec 2): make_sample_page.py + sample_page_template.html →
+  sample_7day_forecast.html, published privately at https://claude.ai/artifact/PCFZ9pgdB2vFcRsL4uzvgF.
+  Full day 3.1 → 2.0 tuna/angler (normal 1.3); Overnight 3.3 → 2.4; 1.5/2-day ~0.6–0.9 (thin data).
+  Seas: calm Nov 27–30; Dec 1 choppy (19 kn); Dec 2 rough (18 kn, 11 ft).
+- Sea rating rules (from the E12 sea layer): Rough if wind ≥ 20 kn or seas ≥ 11 ft; Choppy if ≥ 18 kn or ≥ 10 ft;
+  Calm if < 12 kn and < 6 ft; else Fair. Choppy days drop the bite rating one notch (fewer boats, harder fishing).
+  This rule is a judgment call and has NOT been validated against catch.
