@@ -572,7 +572,12 @@ function SectionHeader({ eyebrow, title, linkLabel, onLink }) {
   );
 }
 
-function AppFooter() {
+function AppFooter({ regions } = {}) {
+  // Region-aware footer: OC/LA visitors get OC/LA links and data sources.
+  const footRegions = regions || ['san_diego'];
+  const pfx = '/' + (window.regionsToHashPrefix ? window.regionsToHashPrefix(footRegions) : 'sd');
+  const footLandings = (window.getLandingsForRegion && window.getEffectiveRegion
+    && window.getLandingsForRegion(window.getEffectiveRegion(footRegions))) || null;
   const lastScrape = window.SD?.META?.lastScrape;
   const updatedStr = lastScrape
     ? new Date(lastScrape).toLocaleString('en-US', {
@@ -593,8 +598,11 @@ function AppFooter() {
         <div className="app-footer-brand">
           <div className="app-footer-logo"><BrandMark size={26}/>{BRAND_NAME}</div>
           <p className="app-footer-blurb">
-            San Diego's most complete sportfishing analytics — daily fish counts,
-            boat leaderboards, and trip stats from every major San Diego landing.
+            {regions && window.getEffectiveRegion && window.getEffectiveRegion(regions) !== 'san_diego'
+              ? <React.Fragment>Southern California sportfishing analytics — daily fish counts,
+                  boat leaderboards, and trip stats from San Diego, Orange County and LA-area landings.</React.Fragment>
+              : <React.Fragment>San Diego's most complete sportfishing analytics — daily fish counts,
+                  boat leaderboards, and trip stats from every major San Diego landing.</React.Fragment>}
             {' '}{tripDisplay}
           </p>
           {updatedStr && (
@@ -604,22 +612,20 @@ function AppFooter() {
 
         <div className="app-footer-col">
           <div className="app-footer-col-head">Navigate</div>
-          <a href="/sd/home"               className="app-footer-nav-link">Home</a>
-          <a href="/sd/today"              className="app-footer-nav-link">Today's Report</a>
+          <a href={pfx + "/home"}               className="app-footer-nav-link">Home</a>
+          <a href={pfx + "/today"}              className="app-footer-nav-link">Today's Report</a>
           {/* Forecast link removed 2026-09-06 (soft-retire); /sd/forecast 301s to /sd/charts via web/_redirects. */}
-          <a href="/sd/charts"             className="app-footer-nav-link">Charts</a>
-          <a href="/sd/boats"              className="app-footer-nav-link">Boats</a>
-          <a href="/sd/analytics/overview" className="app-footer-nav-link">Analytics</a>
-          <a href="/sd/tripplanner"        className="app-footer-nav-link">Trip Planner</a>
+          <a href={pfx + "/charts"}             className="app-footer-nav-link">Charts</a>
+          <a href={pfx + "/boats"}              className="app-footer-nav-link">Boats</a>
+          <a href={pfx + "/analytics/overview"} className="app-footer-nav-link">Analytics</a>
+          <a href={pfx + "/tripplanner"}        className="app-footer-nav-link">Trip Planner</a>
         </div>
 
         <div className="app-footer-col">
           <div className="app-footer-col-head">Data Sources</div>
-          <span className="app-footer-data-item">H&amp;M Landing</span>
-          <span className="app-footer-data-item">Fisherman's Landing</span>
-          <span className="app-footer-data-item">Seaforth Sportfishing</span>
-          <span className="app-footer-data-item">Point Loma Sportfishing</span>
-          <span className="app-footer-data-item">Oceanside Sea Center</span>
+          {(footLandings || (window.REGIONS || []).flatMap(r => r.landings)).map(l => (
+            <span key={l} className="app-footer-data-item">{l}</span>
+          ))}
           <div className="app-footer-data-note">
             Reported daily from{' '}
             <a href="https://fishcounts.com" target="_blank" rel="noopener noreferrer"

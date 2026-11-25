@@ -21,6 +21,22 @@
     "Dana Wharf Sportfishing",
   ];
 
+  // OC/LA landings' own booking pages (verified 2026-11-25). We have no
+  // schedule feed for these landings yet, so Trip Planner links out instead.
+  // LA Waterfront is omitted: its site could not be confirmed.
+  window.OCLA_LANDING_SITES = {
+    "22nd Street Landing":          "https://22ndstreet.fishingreservations.net/sales/",
+    "Long Beach Sportfishing":      "https://longbeach.fishingreservations.net/sales/",
+    "Marina Del Rey Sportfishing":  "https://mdrsf.com/",
+    "Redondo Beach Sportfishing":   "https://redondo.fishingreservations.com/sales/",
+    "Pierpoint Landing":            "https://pierpoint.fishingreservations.com/sales/",
+    "Channel Islands Sportfishing": "https://ciscos.fishingreservations.net/sales/",
+    "Ventura Harbor Sportfishing":  "https://ventura.fishingreservations.com/sales/",
+    "Newport Landing":              "https://newportlanding.com/reserve-your-trip.html",
+    "Davey's Locker":               "https://daveyslocker.com/deep-sea-fishing-trip-tickets/",
+    "Dana Wharf Sportfishing":      "https://danawharf.com/fishing-trips/",
+  };
+
   window.REGIONS = [
     { id: 'san_diego', label: 'San Diego', short: 'San Diego', landings: SD_LANDINGS,   comingSoon: false },
     { id: 'oc_la',     label: 'OC / LA',   short: 'OC / LA',   landings: OCLA_LANDINGS, comingSoon: false },

@@ -46,6 +46,45 @@
     },
   };
 
+  // OC/LA region (/ocla/...) overrides. Keys missing here fall back to CONFIG.
+  var OCLA_CONFIG = {
+    home: {
+      title: SITE_NAME + ' — Orange County & LA Fish Counts & Boat Leaderboards',
+      desc:  'Daily fish counts from Newport, Davey\'s Locker, Dana Wharf, 22nd Street, Long Beach, Redondo, Marina Del Rey, Pierpoint, Channel Islands and Ventura sportfishing boats, ranked fairly.'
+    },
+    today: {
+      title: 'Today\'s Orange County & LA Fish Counts — Sportfishing Report' + SFX,
+      desc:  'Today\'s fish counts from Orange County, Los Angeles and Ventura County landings, by boat: yellowtail, tuna, calico bass, rockfish and more.'
+    },
+    boats: {
+      title: 'Orange County & LA Sportfishing Boats' + SFX,
+      desc:  'Every Orange County, Los Angeles and Ventura County sportfishing boat with catch records, win rates and recent trips.'
+    },
+    analytics: {
+      title: 'Orange County & LA Sportfishing Analytics' + SFX,
+      desc:  'Win rates, fish per angler, seasonality and head-to-head comparisons for Orange County, LA and Ventura County sportfishing boats.'
+    },
+    'analytics-finder': {
+      title: 'Find the Best Orange County & LA Sportfishing Boat' + SFX,
+      desc:  'Pick your target species, trip length and month — see which Orange County and LA boats historically catch the most fish for those trips.'
+    },
+    tripplanner: {
+      title: 'Orange County & LA Sportfishing Trips' + SFX,
+      desc:  'Find Orange County, LA and Ventura County sportfishing landings and book directly with them.'
+    },
+  };
+
+  // City for a landing (boat/landing JSON-LD). Default San Diego.
+  var LANDING_CITY = {
+    'Oceanside Sea Center': 'Oceanside',
+    '22nd Street Landing': 'San Pedro', 'LA Waterfront Sportfishing': 'San Pedro',
+    'Long Beach Sportfishing': 'Long Beach', 'Marina Del Rey Sportfishing': 'Marina del Rey',
+    'Redondo Beach Sportfishing': 'Redondo Beach', 'Pierpoint Landing': 'Long Beach',
+    'Channel Islands Sportfishing': 'Oxnard', 'Ventura Harbor Sportfishing': 'Ventura',
+    'Newport Landing': 'Newport Beach', "Davey's Locker": 'Newport Beach',
+    'Dana Wharf Sportfishing': 'Dana Point',
+  };
+
   // Same objects are baked into web/index.html (ids jld-org / jld-site).
   var ORG_LD = {
     '@context': 'https://schema.org', '@type': 'Organization',
@@ -114,6 +153,7 @@
     if (view === 'boat' && params.boat) {
       var boatMeta = (window.SD && window.SD.BOATS && window.SD.BOATS.find(function(b) { return b.name === params.boat; })) || null;
       var landingName = (boatMeta && boatMeta.landing) || params.landing || 'San Diego Sportfishing';
+      var city = LANDING_CITY[landingName] || 'San Diego';
       cfg = {
         title: params.boat + ' Fish Report & Counts — ' + landingName + SFX,
         desc:  'View ' + params.boat + '\'s recent fish counts, win rate, and upcoming trip schedule at ' + landingName + '.',
@@ -121,11 +161,11 @@
       var jldBoat = {
         '@context': 'https://schema.org', '@type': 'LocalBusiness',
         name: params.boat,
-        description: 'Sportfishing charter boat operating out of ' + landingName + ', San Diego.',
+        description: 'Sportfishing charter boat operating out of ' + landingName + ', ' + city + '.',
         url: pageUrl,
         address: {
           '@type': 'PostalAddress',
-          addressLocality: 'San Diego', addressRegion: 'CA', addressCountry: 'US',
+          addressLocality: city, addressRegion: 'CA', addressCountry: 'US',
         },
         parentOrganization: { '@type': 'Organization', name: landingName },
       };
@@ -139,9 +179,18 @@
         };
       }
       setJsonLd('jld-entity', jldBoat);
+    } else if (view === 'landing' && params.landing) {
+      var lcity = LANDING_CITY[params.landing] || 'San Diego';
+      cfg = {
+        title: params.landing + ' Fish Counts — Fleet & Boat Stats' + SFX,  // matches src/generate_pages.py
+        desc:  'Daily fish counts, boat rankings and catch history for every boat at ' + params.landing + ' in ' + lcity + ', CA.',
+      };
+      clearJsonLd('jld-entity');
     } else {
       var cfgKey = (view === 'analytics' && params.subtab) ? 'analytics-' + params.subtab : view;
-      cfg = CONFIG[cfgKey] || CONFIG[view] || CONFIG.today;
+      var isOcla = /^\/ocla(\/|$)/.test(path);
+      cfg = (isOcla && (OCLA_CONFIG[cfgKey] || OCLA_CONFIG[view]))
+        || CONFIG[cfgKey] || CONFIG[view] || CONFIG.today;
       clearJsonLd('jld-entity');
     }
 

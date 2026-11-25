@@ -715,8 +715,10 @@
   // Returns the best upcoming trip to book based on current-year boat rankings.
   // Scans window.SD.SCHEDULE for trips departing within 14 days with open spots,
   // scores by season rank percentile, and returns the top pick with display stats.
-  function computeTopTripToBook() {
-    const schedule = window.SD?.SCHEDULE || [];
+  // landings: optional region landing list; null/undefined = all landings.
+  function computeTopTripToBook(landings) {
+    const schedule = (window.SD?.SCHEDULE || [])
+      .filter(t => !landings || landings.includes(t.landing));
     if (!schedule.length) return null;
 
     const now = Date.now();

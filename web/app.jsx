@@ -452,7 +452,7 @@ function App() {
                  hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
-      <AppFooter/>
+      <AppFooter regions={regions}/>
 
       {route.view === 'tripplanner' && <ChatBot pageContext={pageContext}/>}
 

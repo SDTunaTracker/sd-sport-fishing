@@ -912,6 +912,16 @@ function TripPlanner({ navigate, regions }) {
   ), [wrTimeWindow, wrMatchupWindow, wrMinMatchups]);
   const tpRates  = useMemo(() => SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates() : {}, []);
 
+  // Region scoping: only show trips from the selected region's landings.
+  // null = all regions (SD + OC/LA). OC/LA has no schedule feed yet.
+  const regionLandings = useMemo(() => {
+    if (!regions || !window.getEffectiveRegion || !window.getLandingsForRegion) return null;
+    return window.getLandingsForRegion(window.getEffectiveRegion(regions));
+  }, [regions]);
+  const isOclaOnly = !!(regions && window.getEffectiveRegion && window.getEffectiveRegion(regions) === 'oc_la');
+  const regionHasSchedule = useMemo(() => (window.SD.SCHEDULE || [])
+    .some(s => !regionLandings || regionLandings.includes(s.landing)), [regionLandings]);
+
   // Capacity percentile thresholds derived from actual upcoming-trip data
   const capThresholds = useMemo(() => {
     const now = new Date();
@@ -991,6 +1001,7 @@ function TripPlanner({ navigate, regions }) {
     return (window.SD.SCHEDULE || []).filter(s => {
       const dep = new Date(s.departureAt);
       if (dep < now) return false;
+      if (regionLandings && !regionLandings.includes(s.landing)) return false;
 
       // Month filter
       if (selMonth) {
@@ -1026,7 +1037,7 @@ function TripPlanner({ navigate, regions }) {
       }
       return true;
     });
-  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, capThresholds, winRates]);
+  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, capThresholds, winRates, regionLandings]);
 
   const displayed = useMemo(() => {
     const enriched = filtered.map(s => {
@@ -1163,7 +1174,8 @@ function TripPlanner({ navigate, regions }) {
         </div>
 
         <div className="tp-results">
-          {window.WhatsWorkingCard && <WhatsWorkingCard lengths={selLengths}/>}
+          {/* BloodyDecks summaries are San Diego fleet reports — hide for OC/LA-only. */}
+          {window.WhatsWorkingCard && !isOclaOnly && <WhatsWorkingCard lengths={selLengths}/>}
           <div className="tp-results-head">
             <div className="tp-results-count">
               <strong>{fmt.n(displayed.length)}</strong> upcoming trip{displayed.length !== 1 ? 's' : ''}
@@ -1214,7 +1226,21 @@ function TripPlanner({ navigate, regions }) {
             </div>
           )}
 
-          {displayed.length === 0 ? (
+          {!regionHasSchedule ? (
+            <div className="tp-empty tp-empty-region">
+              <i className="fa-solid fa-calendar-xmark" style={{fontSize:24, opacity:0.3}}></i>
+              <div><strong>Trip schedules for OC / LA landings aren't on Tunatracker yet.</strong></div>
+              <div>Book directly with the landing. Recent catches for every OC / LA boat are on the <a onClick={() => navigate('today')}>daily report</a> and <a onClick={() => navigate('boats')}>boat pages</a>.</div>
+              <ul className="tp-landing-links">
+                {(regionLandings || []).map(l => {
+                  const url = window.OCLA_LANDING_SITES && window.OCLA_LANDING_SITES[l];
+                  return url ? (
+                    <li key={l}><a href={url} target="_blank" rel="noopener">{l} <i className="fa-solid fa-arrow-up-right-from-square"></i></a></li>
+                  ) : null;
+                })}
+              </ul>
+            </div>
+          ) : displayed.length === 0 ? (
             <div className="tp-empty">
               <i className="fa-solid fa-fish" style={{fontSize:24, opacity:0.3}}></i>
               <div>No trips match your filters.</div>

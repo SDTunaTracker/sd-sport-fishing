@@ -947,7 +947,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
       {/* By Landing */}
       <Panel title="By Landing"
-             meta="Approved San Diego landings"
+             meta={`${(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'} landings`}
              >
         {landings.map((l) => {
           const max = Math.max(...landings.map(x => x.tpa));

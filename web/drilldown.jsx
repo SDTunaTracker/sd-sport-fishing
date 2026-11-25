@@ -140,9 +140,16 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
                   onClick={() => { setDetailTab('reviews'); setReviewOpenSignal(s => s + 1); }}>
             <i className="fa-regular fa-pen-to-square"></i> Write a review
           </button>
-          <button className="btn primary" onClick={() => navigate('tripplanner')}>
-            Book a trip <i className="fa-solid fa-arrow-right"></i>
-          </button>
+          {/* OC/LA landings have no schedule feed: link to the landing's own booking page. */}
+          {window.OCLA_LANDING_SITES && window.OCLA_LANDING_SITES[meta.landing] ? (
+            <a className="btn primary" href={window.OCLA_LANDING_SITES[meta.landing]} target="_blank" rel="noopener">
+              Book with {meta.landing} <i className="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          ) : (
+            <button className="btn primary" onClick={() => navigate('tripplanner')}>
+              Book a trip <i className="fa-solid fa-arrow-right"></i>
+            </button>
+          )}
         </div>
       </div>
 

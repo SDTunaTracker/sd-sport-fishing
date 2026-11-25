@@ -136,8 +136,19 @@
   }
 
   // ── Conditions + fleet trend band ─────────────────────────────────────────
-  function ConditionsBand({ trend }) {
-    const fc = window.SD && window.SD.FORECAST && window.SD.FORECAST.today;
+  // San Diego-only inputs: the forecast/conditions model is SD-offshore R&D
+  // (60-Mile Bank, Cortez…) and the schedule feed covers SD landings only.
+  // For an OC/LA-only view we hide them rather than show San Diego numbers.
+  function isOclaOnly(regions) {
+    return !!(regions && window.getEffectiveRegion && window.getEffectiveRegion(regions) === 'oc_la');
+  }
+  function regionLandingList(regions) {
+    if (!regions || !window.getEffectiveRegion || !window.getLandingsForRegion) return null;
+    return window.getLandingsForRegion(window.getEffectiveRegion(regions));
+  }
+
+  function ConditionsBand({ trend, regions }) {
+    const fc = isOclaOnly(regions) ? null : (window.SD && window.SD.FORECAST && window.SD.FORECAST.today);
     const sstRaw = fc && (fc.sst_nearshore != null ? fc.sst_nearshore : fc.sst_offshore);
     const sstF = sstRaw != null ? Math.round(sstRaw) : null;
     const windKt = fc && fc.wind_speed != null ? Math.round(fc.wind_speed) : null;
@@ -149,7 +160,7 @@
 
     return (
       <div className="th-condband">
-        <div className="th-cond-left">
+        {fc && <div className="th-cond-left">
           <div className="th-cond-toprow">
             {label && <span className="th-rating-chip">{label}</span>}
             {summary && <span className="th-cond-summary">{summary}</span>}
@@ -159,7 +170,7 @@
             <span><b>{windKt != null ? `${windKt} kt ${windDir}` : '—'}</b> wind</span>
             <span><b>{moonPct != null ? `${moonPct}%` : '—'}</b> moon{moonName ? ` · ${moonName.toLowerCase()}` : ''}</span>
           </div>
-        </div>
+        </div>}
         <div className="th-cond-trend">
           <div className="th-trend-head">
             <span className="th-lbl">Fleet catch rate · last 30 days</span>
@@ -228,12 +239,13 @@
       return rows.filter(r => r.tripCount >= 5).slice(0, 4);
     }, [regions, settings]);
 
-    const stillFishing = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [];
-    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook()) || null, [settings]);
+    const stillFishing = (isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [])
+      .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
+    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
 
     return (
       <React.Fragment>
-        <ConditionsBand trend={trend}/>
+        <ConditionsBand trend={trend} regions={regions}/>
 
         <div className="th-wrap">
           {/* Title row: date stepper + landing chips */}
@@ -454,10 +466,11 @@
       return m;
     }, [allTrips]);
 
-    const stillFishing = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [];
-    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook()) || null, [settings]);
+    const stillFishing = (isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [])
+      .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
+    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
 
-    const fc = window.SD && window.SD.FORECAST && window.SD.FORECAST.today;
+    const fc = isOclaOnly(regions) ? null : (window.SD && window.SD.FORECAST && window.SD.FORECAST.today);
     // The forecast label can carry an emoji prefix (e.g. "⬆️ Excellent"); keep the words only.
     const condLabel = fc && fc.conditions_label
       ? (String(fc.conditions_label).replace(/[^A-Za-z\s-]/g, '').trim().toLowerCase() || null) : null;
@@ -642,7 +655,7 @@
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
         <section className="ch-hero">
           <div className="ch-hero-in">
-            <div className="ch-kick">San Diego sportboat counts, ranked fairly</div>
+            <div className="ch-kick">{isOclaOnly(regions) ? 'Orange County & LA' : (regions && regions.length > 1 ? 'Southern California' : 'San Diego')} sportboat counts, ranked fairly</div>
             <h1 className="ch-h1">Stop guessing.<br/>Start catching.</h1>
             <p className="ch-by">
               See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.{' '}
