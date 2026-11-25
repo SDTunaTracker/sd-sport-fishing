@@ -108,7 +108,7 @@
   }
 
   function fmtDep(iso) {
-    return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
   }
 
   function DeltaCell({ pct }) {

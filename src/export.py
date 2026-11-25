@@ -16,6 +16,7 @@ from .analytics import (
     build_forecast,
 )
 from .conditions import snapshot as conditions_snapshot
+from .dates import pacific_today
 from .forecast import build_forecast_payload, calculate_consensus
 from .sixpack_boats import SIXPACK_BOATS
 from .sst import LOCATIONS as SST_LOCATIONS
@@ -670,7 +671,7 @@ def _monthly_rollup(conn: sqlite3.Connection) -> list[dict]:
 def build_app_payload(conn: sqlite3.Connection, full: dict, today: date | None = None,
                       now: datetime | None = None) -> dict:
     """Derive the app.json payload from the full window.SD payload."""
-    today = today or date.today()
+    today = today or pacific_today()
     now = now or datetime.now(timezone.utc)
     recent_cutoff = (today - timedelta(days=7)).isoformat()
     scraped_at = {

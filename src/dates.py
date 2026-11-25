@@ -26,6 +26,23 @@ def pacific_now() -> datetime:
     return datetime.now(PACIFIC)
 
 
+def to_pacific_iso(value: datetime | str | None) -> str | None:
+    """ISO 8601 in America/Los_Angeles with an explicit, DST-aware offset,
+    e.g. "2026-11-27T20:00:00-08:00".
+
+    Naive values are taken as Pacific wall-clock time (what the
+    fishingreservations.net pages print); aware values are converted.
+    Strings are parsed first; a trailing "Z" means UTC.
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=PACIFIC)
+    return value.astimezone(PACIFIC).isoformat(timespec="seconds")
+
+
 def to_pacific_date(ts: datetime) -> date:
     """Convert any timezone-aware datetime to its Pacific calendar date."""
     if ts.tzinfo is None:
