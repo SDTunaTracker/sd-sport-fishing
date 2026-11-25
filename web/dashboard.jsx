@@ -762,7 +762,7 @@ function HomeView({ navigate, settings, regions }) {
       {/* ── HERO ──────────────────────────────────────────────────────── */}
       <section className="ch-hero">
         <div className="ch-hero-in">
-          <div className="ch-kick">★ San Diego's #1 Sportfishing Analytics</div>
+          <div className="ch-kick">San Diego sportboat counts, ranked fairly</div>
           <h1 className="ch-h1">Stop guessing.<br/>Start catching.</h1>
           <p className="ch-by">
             See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.{' '}
@@ -942,7 +942,7 @@ function HomeView({ navigate, settings, regions }) {
       {/* ── EDITORIAL FOOTER ─────────────────────────────────────────── */}
       <footer className="ch-foot">
         <div className="ch-foot-in">
-          <b>The Tuna Tracker</b>
+          <b>Tunatracker</b>
           <span>· San Diego sportfishing analytics · H&amp;M · Fisherman's · Seaforth · Point Loma</span>
         </div>
       </footer>
