@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T19:20:47Z",
+ "generated_at": "2026-11-25T19:37:05Z",
  "source": "BloodyDecks (bdoutdoors.com) forum trip reports",
  "label": "From BloodyDecks trip reports",
  "note": "Summaries of public forum posts, extracted automatically. Not verified reviews; follow the links for the original posts.",
@@ -101,7 +101,7 @@
   "Dolphin": {
    "landing": "Fisherman's Landing",
    "region": "san_diego",
-   "report_count": 3,
+   "report_count": 4,
    "aspects": {
     "overall": {
      "pos": 1,
@@ -114,7 +114,7 @@
      "neg": 0
     },
     "crew": {
-     "pos": 0,
+     "pos": 1,
      "mixed": 0,
      "neg": 0
     },
@@ -237,6 +237,43 @@
        "Dorado": 4,
        "Skipjack": 76,
        "Bullet Tuna": 48
+      }
+     },
+     "match_confidence": 1.0
+    },
+    {
+     "title": "Dolphin 9/12+13",
+     "url": "https://www.bdoutdoors.com/forums/threads/dolphin-9-12-13.870384/",
+     "published_at": "2026-09-14T04:52:03+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-09-12",
+     "trip_length": "3/4 Day",
+     "scores": {
+      "crew": 2
+     },
+     "would_rebook": null,
+     "quotes": {
+      "crew": "Crew did an amazing job helping clear the way so I could do what I…"
+     },
+     "catch_summary": "60+ bass (mostly sand bass, few calicos), 20+ legal; a couple WSB, 1 quality yellowtail boat-wide on 9/12. 9/13 AM: 10+ sand bass, 2 yellows (25 lb & slightly bigger), 30+ tiny bonito. 9/13 PM: 1 yell",
+     "tackle": [
+      "1-2 oz plastics - bass/yellowtail",
+      "flyline - yellowtail",
+      "colt sniper - bonito"
+     ],
+     "spots": [],
+     "region": "san_diego",
+     "landing_count": {
+      "date": "2026-09-12",
+      "landing": "Fisherman's Landing",
+      "trip_length": "Half Day AM",
+      "anglers": 55,
+      "catch": {
+       "Yellowtail": 1,
+       "Bonito": 239,
+       "Sand Bass": 105,
+       "Rockfish": 19,
+       "Calico Bass": 12
       }
      },
      "match_confidence": 1.0
@@ -617,7 +654,7 @@
   "Intrepid": {
    "landing": "Point Loma Sportfishing",
    "region": "san_diego",
-   "report_count": 1,
+   "report_count": 2,
    "aspects": {
     "overall": {
      "pos": 1,
@@ -625,12 +662,12 @@
      "neg": 0
     },
     "captain": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 0,
      "neg": 0
     },
     "crew": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 0,
      "neg": 0
     },
@@ -645,13 +682,13 @@
      "neg": 0
     },
     "fish_finding": {
-     "pos": 0,
+     "pos": 1,
      "mixed": 0,
      "neg": 0
     }
    },
    "rebook": {
-    "yes": 1,
+    "yes": 2,
     "no": 0
    },
    "reports": [
@@ -688,6 +725,36 @@
       "Alejos Rocks",
       "Colonet"
      ],
+     "region": "san_diego",
+     "landing_count": null,
+     "match_confidence": 0.95
+    },
+    {
+     "title": "Intrepid 8 day Sept 4-12",
+     "url": "https://www.bdoutdoors.com/forums/threads/intrepid-8-day-sept-4-12.870347/",
+     "published_at": "2026-09-13T04:56:06+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-09-04",
+     "trip_length": "8 Day",
+     "scores": {
+      "captain": 2,
+      "crew": 2,
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "captain": "Due to smart choices of Ethan who was running this trip we had some of…",
+      "crew": "The crew did a great job as always and very few fish were lost that…",
+      "fish_finding": "the bluefin really picked up in the last couple of days and he wanted to…",
+      "would_rebook": "this is the 6th year going on this trip"
+     },
+     "catch_summary": "Multiple bluefin tuna, mostly 30 lb range, some 60–100 lb; author landed several including a ~90 lb fish",
+     "tackle": [
+      "30 lb fluoro, flylined sardine - bluefin",
+      "40 lb fluoro, flylined sardine - bluefin",
+      "tungsten jig, dropped - bluefin"
+     ],
+     "spots": [],
      "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
@@ -949,6 +1016,82 @@
      "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95
+    }
+   ]
+  },
+  "Mission Belle": {
+   "landing": "Point Loma Sportfishing",
+   "region": "san_diego",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 0,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "Mission Belle 9/9 update",
+     "url": "https://www.bdoutdoors.com/forums/threads/mission-belle-9-9-update.870290/",
+     "published_at": "2026-09-11T16:46:20+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-09-09",
+     "trip_length": null,
+     "scores": {
+      "crew": 1
+     },
+     "would_rebook": null,
+     "quotes": {
+      "crew": "Crew was professional and boat mates were very chill a great day"
+     },
+     "catch_summary": "Yellowfin tuna 5–15 lb, pick bite; a few on poppers and Colt Snipers.",
+     "tackle": [
+      "15 lb test, size 6/4 J hook - YFT",
+      "popper - YFT",
+      "60g or less Colt Sniper - YFT"
+     ],
+     "spots": [],
+     "region": "san_diego",
+     "landing_count": {
+      "date": "2026-09-09",
+      "landing": "Point Loma Sportfishing",
+      "trip_length": "Full Day",
+      "anglers": 26,
+      "catch": {
+       "Yellowfin": 33
+      }
+     },
+     "match_confidence": 1.0
     }
    ]
   },
@@ -2945,6 +3088,94 @@
        "Yellowfin": 22,
        "Skipjack": 30,
        "Bonito": 10
+      }
+     },
+     "match_confidence": 1.0
+    }
+   ]
+  },
+  "Triton": {
+   "landing": "LA Waterfront Sportfishing",
+   "region": "oc_la",
+   "report_count": 1,
+   "aspects": {
+    "overall": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "captain": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "crew": {
+     "pos": 1,
+     "mixed": 0,
+     "neg": 0
+    },
+    "galley": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    },
+    "bunks": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 1
+    },
+    "fish_finding": {
+     "pos": 0,
+     "mixed": 0,
+     "neg": 0
+    }
+   },
+   "rebook": {
+    "yes": 0,
+    "no": 0
+   },
+   "reports": [
+    {
+     "title": "9/15 Cat Yellas plus an El Nino Surprise !",
+     "url": "https://www.bdoutdoors.com/forums/threads/9-15-cat-yellas-plus-an-el-nino-surprise.870486/",
+     "published_at": "2026-09-16T06:55:24+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-09-15",
+     "trip_length": "Full Day",
+     "scores": {
+      "overall": 1,
+      "captain": 1,
+      "crew": 1,
+      "bunks": -1
+     },
+     "would_rebook": null,
+     "quotes": {
+      "overall": "Everyone got along well for what it was and the crew worked hard doing a…",
+      "captain": "Shane said we would be heading to backside if Cat for yellows",
+      "crew": "the crew worked hard doing a good job",
+      "bunks": "the bunkroom can be warm and stuffy on this boat as it only has 1…"
+     },
+     "catch_summary": "14 yellowtail 12-30 lbs, 1 bull dorado, calico bass, bonito; 24 anglers",
+     "tackle": [
+      "30-40 lb flyline outfit, 2/0 hook",
+      "flyline sardine - yellowtail",
+      "small slider - yellowtail",
+      "squid + 4 oz sliding sinker, bottom - yellowtail"
+     ],
+     "spots": [
+      "Catalina"
+     ],
+     "region": "oc_la",
+     "landing_count": {
+      "date": "2026-09-15",
+      "landing": "LA Waterfront Sportfishing",
+      "trip_length": "Full Day",
+      "anglers": 22,
+      "catch": {
+       "Yellowtail": 14,
+       "Dorado": 1,
+       "Bonito": 41,
+       "Calico Bass": 12
       }
      },
      "match_confidence": 1.0

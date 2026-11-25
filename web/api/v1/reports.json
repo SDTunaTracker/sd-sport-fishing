@@ -1,13 +1,13 @@
 {
-  "build": "d7251be",
-  "generated_at": "2026-11-25T19:20:47Z",
+  "build": "2deaa3e",
+  "generated_at": "2026-11-25T19:37:05Z",
   "window_days": 14,
   "feeds": [
     {
       "id": "bd-socal-offshore",
       "name": "BD Southern California Offshore",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-offshore-fishing-reports/",
-      "items_14d": 34
+      "items_14d": 35
     },
     {
       "id": "bd-spearfishing",
@@ -37,7 +37,7 @@
       "id": "bd-california",
       "name": "BD California Sport Fishing Reports",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/california-sport-fishing-reports/",
-      "items_14d": 0
+      "items_14d": 5
     }
   ],
   "summary_48h": {
