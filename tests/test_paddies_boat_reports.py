@@ -376,3 +376,10 @@ def test_headline_is_short_and_falls_back_to_bait():
     assert len(h) <= br.HEADLINE_MAX and h.endswith("…")
     assert br.make_headline([], [{"tackle": [], "bait": "green sardine"}]) == "green sardine"
     assert br.make_headline([], []) is None
+
+
+def test_export_dedupes_repeated_quotes():
+    q = {"captain": "The capt and crew were friendly", "crew": "The capt and crew were friendly",
+         "overall": "Overall, a wonderful trip."}
+    assert br._dedupe_quotes(q) == {"overall": "Overall, a wonderful trip.",
+                                    "captain": "The capt and crew were friendly"}

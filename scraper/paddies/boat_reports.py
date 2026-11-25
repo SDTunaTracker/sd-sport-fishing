@@ -201,15 +201,20 @@ REPORT_TOOL = {
                         "tackle": {"type": "array", "items": {"type": "string"},
                                    "description": "Only tackle that actually produced fish on this "
                                                   "trip (not complaints or what failed): line test, "
-                                                  "hooks, jigs and colours, technique. Max 5, each "
-                                                  "8 words or fewer, e.g. 'pink Marauder trolled - wahoo'."},
+                                                  "hooks, jigs and colours, technique. Max 5. Each a "
+                                                  "short noun phrase of 6 words or fewer, not a "
+                                                  "sentence, e.g. 'pink Marauder - wahoo', "
+                                                  "'40 lb fluoro, #1 circle', 'braid + 3 ft topshot'."},
                         "spots": {"type": "array", "items": {"type": "string"},
                                   "description": "Named fishing areas only: banks, islands, kelp beds, "
                                                  "high spots (e.g. Colonet, the Ridge, 9 Mile Bank). "
                                                  "Not directions, depths or descriptions. Max 5."},
                         "bait": {"type": ["string", "null"],
-                                 "description": "12 words or fewer, your own words: bait type, size, "
-                                                "quality (e.g. 'green sardine 4-6 in, lively')."},
+                                 "description": "Starts with the bait type (sardine, anchovy, "
+                                                "mackerel, squid...), then size/quality, 10 words or "
+                                                "fewer, e.g. 'green sardine 4-6 in, lively'. Null if the "
+                                                "post does not name the bait; bait condition alone "
+                                                "goes in conditions."},
                         "conditions": {"type": ["string", "null"],
                                        "description": "12 words or fewer, your own words: water temp/"
                                                       "colour, weather, swell, birds."},
@@ -682,6 +687,17 @@ def _bucket(v):
     return None if v is None else ("pos" if v > 0 else "neg" if v < 0 else "mixed")
 
 
+def _dedupe_quotes(quotes: dict) -> dict:
+    """Same sentence backing several aspects -> keep it once, under the first aspect."""
+    seen, out = set(), {}
+    for k in (*ASPECTS, "would_rebook"):
+        q = quotes.get(k)
+        if q and paddy_extract._normalize_for_quote_match(q).lower() not in seen:
+            seen.add(paddy_extract._normalize_for_quote_match(q).lower())
+            out[k] = q
+    return out
+
+
 def build_export(conn, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     cutoff = (now - timedelta(days=EXPORT_WINDOW_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -712,7 +728,7 @@ def build_export(conn, now: datetime | None = None) -> dict:
             "trip_date": r["trip_date"], "trip_length": r["trip_length"],
             "scores": {a: r[a] for a in ASPECTS if r[a] is not None},
             "would_rebook": None if r["would_rebook"] is None else bool(r["would_rebook"]),
-            "quotes": json.loads(r["quotes"] or "{}"),
+            "quotes": _dedupe_quotes(json.loads(r["quotes"] or "{}")),
             "catch_summary": r["catch_summary"],
             "tackle": json.loads(r["tackle"] or "[]"),
             "spots": json.loads(r["spots"] or "[]"),
