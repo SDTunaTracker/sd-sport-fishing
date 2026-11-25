@@ -64,6 +64,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Pull private data from R2
+        id: r2
+        # paddies.db is written here; tracker.db is read-only (boat-name matching) and never pushed from this job.
+        # Until the R2 secrets exist this is a no-op and the repo copy is used.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          if python scripts/r2db.py configured; then
+            echo "on=true" >> $GITHUB_OUTPUT
+            python scripts/r2db.py pull data/paddies.db tracker.db
+          else
+            echo "on=false" >> $GITHUB_OUTPUT
+            echo "R2 not configured: using the files committed in the repo."
+            for f in data/paddies.db tracker.db; do
+              # After the cutover the DBs are no longer in git: never run (and
+              # create a fresh empty DB) without them.
+              [ -f "$f" ] || { echo "::error title=R2::$f is not in the repo and R2 is not configured"; exit 1; }
+            done
+          fi
+
       - name: Ingest BD forum posts
         id: ingest
         env:
@@ -120,12 +143,24 @@ jobs:
         # (what the data-health alerter runs) is `python -m scraper.paddies.health`.
         run: python -m scraper.paddies.health --local
 
+      - name: Push private data to R2
+        if: always() && steps.r2.outputs.on == 'true'
+        # Conditional put on the ETag from the pull: if anything else wrote the
+        # file meanwhile this fails (exit 3) instead of overwriting it.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python scripts/r2db.py push data/paddies.db
+
       - name: Commit and push paddies data
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/paddies.db data/paddies_ingest_state.json \
+          if [ "${{ steps.r2.outputs.on }}" != "true" ]; then git add data/paddies.db; fi
+          git add data/paddies_ingest_state.json \
                   web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json                   web/api/v1/boat_forum_reports.json web/api/v1/whats_working.json                   web/api/v1/forum_spots.geojson
           if git diff --staged --quiet; then
             echo "No paddies changes to commit."
