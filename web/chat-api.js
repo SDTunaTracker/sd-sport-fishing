@@ -339,9 +339,10 @@ function ccEnsoLine() {
   if (!l || typeof l.oni !== 'number') return '';
   const oni = (l.oni >= 0 ? '+' : '') + l.oni.toFixed(2);
   const phase = l.strength ? `${l.strength} ${l.phase}` : l.phase;
+  const asOfCpc = d.updated ? String(d.updated).slice(0, 10) : 'date unknown';
   return `
-OCEAN SEASON CONTEXT (NOAA Climate Prediction Center, background only):
-ENSO alert: ${d.alert || 'n/a'}. Latest ONI (${l.season} ${l.year}): ${oni} °C (${phase} range).${d.synopsis ? ' CPC: ' + d.synopsis : ''}
+OCEAN SEASON CONTEXT (NOAA Climate Prediction Center's published ENSO status, retrieved ${asOfCpc}; this is NOAA's statement, not a Tunatracker outlook. When you mention it, attribute it to NOAA CPC and give that date):
+NOAA CPC ENSO alert: ${d.alert || 'n/a'}. Latest ONI (${l.season} ${l.year}): ${oni} °C (${phase} range).${d.synopsis ? ' CPC: ' + d.synopsis : ''}
 Mention this only if the user asks about El Niño, water temperature or why the season is unusual. It is not a catch prediction: hard rule 2 still applies, and you must never say El Niño means a trip will fish well.
 `;
 }
