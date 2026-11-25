@@ -269,6 +269,7 @@ def test_signals_need_a_matching_quote_and_valid_range():
     assert sig["bait_type"] is None            # quote not in the post
     assert sig["water_temp_f"] is None         # out of range
     assert "bait_type" not in sig["evidence"]
+    assert sig["unverified"] == ["bait_type", "water_temp_f"]
 
 
 def _run_with(db, monkeypatch, answers):
@@ -383,3 +384,23 @@ def test_export_dedupes_repeated_quotes():
          "overall": "Overall, a wonderful trip."}
     assert br._dedupe_quotes(q) == {"overall": "Overall, a wonderful trip.",
                                     "captain": "The capt and crew were friendly"}
+
+
+def test_signal_rows_are_append_only_and_carry_the_join(db, tracker, monkeypatch):
+    add_source(db, "g1" * 20, "bd-socal-sportboats", body=SIG_BODY)
+    first = {"is_trip_report": True, "boats": [model_entry(signals=model_signals())]}
+    _run_with(db, monkeypatch, {"g1" * 20: first})
+    conn = br.open_db(db)
+    row = conn.execute("SELECT * FROM forum_signals").fetchone()
+    assert json.loads(row["trip_match"])["anglers"] == 24 and row["match_confidence"] == 0.95
+    assert row["fetched_at"] == "2026-11-11T00:00:00Z"
+    # A forced re-extraction with different signals must not rewrite the row.
+    conn.execute("DELETE FROM boat_report_runs")
+    conn.commit()
+    conn.close()
+    second = {"is_trip_report": True, "boats": [model_entry(signals=model_signals(bird_pressure=1))]}
+    _run_with(db, monkeypatch, {"g1" * 20: second})
+    conn = br.open_db(db)
+    rows = conn.execute("SELECT bird_pressure FROM forum_signals").fetchall()
+    conn.close()
+    assert [r[0] for r in rows] == [3]

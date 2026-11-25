@@ -114,6 +114,12 @@ CREATE INDEX IF NOT EXISTS idx_fbr_source ON forum_boat_reports(source_id);
 -- Research-only signals for the forecast R&D work (never shown on the site
 -- as predictions). One row per (post, boat); every non-null value was backed
 -- by a verbatim quote, kept in `evidence`.
+--   NULL      = the post does not mention it
+--   0 / []    = the post says it explicitly (e.g. "no birds", bird_pressure 0)
+--   unverified lists fields the model gave but whose quote was not found in
+--   the post (so NULL there means "claimed but unverified", not "silent").
+-- Rows are append-only: a post is extracted once and its signal rows are
+-- never rewritten, so fetched_at is what was knowable when.
 CREATE TABLE IF NOT EXISTS forum_signals (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     source_id      TEXT NOT NULL,
@@ -132,6 +138,10 @@ CREATE TABLE IF NOT EXISTS forum_signals (
     bite_windows   TEXT,                 -- JSON [grey_light|morning|midday|afternoon|twilight|night]
     size_grade     TEXT,                 -- our words, e.g. "YFT 20-40 lb, few 60+"
     evidence       TEXT NOT NULL,        -- JSON {field: quote}
+    unverified     TEXT,                 -- JSON [field] (see above)
+    fetched_at     TEXT,                 -- when we first stored the post (knowable-at time)
+    trip_match     TEXT,                 -- JSON landing count for the trip, as forum_boat_reports
+    match_confidence REAL,
     extracted_at   TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_fsig_date ON forum_signals(trip_date);
@@ -139,7 +149,9 @@ CREATE INDEX IF NOT EXISTS idx_fsig_date ON forum_signals(trip_date);
 
 # Columns added after the first release of the tables (ALTER on old DBs).
 _LATE_COLUMNS = {"forum_boat_reports": {"bait": "TEXT", "conditions": "TEXT",
-                                        "match_confidence": "REAL"}}
+                                        "match_confidence": "REAL"},
+                 "forum_signals": {"unverified": "TEXT", "fetched_at": "TEXT",
+                                   "trip_match": "TEXT", "match_confidence": "REAL"}}
 
 MATCH_CONFIDENCE_MIN = 0.7      # below this a boat entry is stored but not published
 
@@ -226,7 +238,9 @@ REPORT_TOOL = {
                             "properties": {
                                 "bird_pressure": {"type": ["integer", "null"], "minimum": 0, "maximum": 3,
                                                   "description": "Birds (shearwaters etc.) taking baits: "
-                                                                 "0 none mentioned as a problem .. 3 severe"},
+                                                                 "0 = post says birds were NOT a problem, "
+                                                                 "1 mild .. 3 severe; null if birds are "
+                                                                 "not mentioned"},
                                 "bait_type": {"type": ["string", "null"], "enum": BAIT_TYPES + [None]},
                                 "bait_size_in": {"type": ["number", "null"]},
                                 "bait_quality": {"type": ["integer", "null"], "minimum": -2, "maximum": 2},
@@ -558,11 +572,23 @@ def validate_signals(sig: dict, body: str) -> dict:
         "water_temp_f":  lambda x: num(x, 50, 90),
         "water_color":   lambda x: x in WATER_COLORS,
     }
+    unverified = []
     for k, ok in checks.items():
         v = sig.get(k)
-        out[k] = v if (v is not None and ok(v) and quoted(k)) else None
+        if v is not None and ok(v) and quoted(k):
+            out[k] = v
+        else:
+            out[k] = None
+            if v is not None:
+                unverified.append(k)
     bw = [w for w in (sig.get("bite_windows") or []) if w in BITE_WINDOWS]
-    out["bite_windows"] = sorted(set(bw), key=BITE_WINDOWS.index) if bw and quoted("bite_windows") else []
+    if bw and quoted("bite_windows"):
+        out["bite_windows"] = sorted(set(bw), key=BITE_WINDOWS.index)
+    else:
+        out["bite_windows"] = []
+        if bw:
+            unverified.append("bite_windows")
+    out["unverified"] = unverified
     sg = sig.get("size_grade")
     out["size_grade"] = sg.strip()[:120] if isinstance(sg, str) and sg.strip() else None
     out["evidence"] = evidence
@@ -613,7 +639,10 @@ def process_row(conn, row, known, *, dry_run=False) -> dict:
                           "entries": entries}, indent=1, ensure_ascii=False))
         return {"ok": True, "entries": len(entries)}
     conn.execute("DELETE FROM forum_boat_reports WHERE source_id = ?", (row["id"],))
-    conn.execute("DELETE FROM forum_signals WHERE source_id = ?", (row["id"],))
+    # forum_signals is append-only (research needs what was knowable when):
+    # if this post already has signal rows, keep them as they are.
+    signals_frozen = conn.execute("SELECT 1 FROM forum_signals WHERE source_id = ?",
+                                  (row["id"],)).fetchone() is not None
     now = _now_iso()
     for v in entries:
         conn.execute(
@@ -630,17 +659,21 @@ def process_row(conn, row, known, *, dry_run=False) -> dict:
              json.dumps(v["trip_match"]) if v["trip_match"] else None,
              v["match_confidence"], now))
         sig = v["signals"]
-        if has_signals(sig) or sig.get("size_grade"):
+        if not signals_frozen and (has_signals(sig) or sig.get("size_grade") or sig.get("unverified")):
             conn.execute(
                 "INSERT INTO forum_signals (source_id, feed_id, boat, trip_date, trip_length, "
                 "published_at, spots, bird_pressure, bait_type, bait_size_in, bait_quality, "
-                "water_temp_f, water_color, bite_windows, size_grade, evidence, extracted_at) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "water_temp_f, water_color, bite_windows, size_grade, evidence, unverified, "
+                "fetched_at, trip_match, match_confidence, extracted_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (row["id"], row["feed_id"], v["boat"], v["trip_date"], v["trip_length"],
                  row["published_at"], json.dumps(v["spots"], ensure_ascii=False),
                  sig["bird_pressure"], sig["bait_type"], sig["bait_size_in"], sig["bait_quality"],
                  sig["water_temp_f"], sig["water_color"], json.dumps(sig["bite_windows"]),
-                 sig["size_grade"], json.dumps(sig["evidence"], ensure_ascii=False), now))
+                 sig["size_grade"], json.dumps(sig["evidence"], ensure_ascii=False),
+                 json.dumps(sig.get("unverified") or []), row["fetched_at"],
+                 json.dumps(v["trip_match"]) if v["trip_match"] else None,
+                 v["match_confidence"], now))
     _record_run(conn, row["id"], "ok" if entries else "not_report")
     conn.commit()
     return {"ok": True, "entries": len(entries)}
