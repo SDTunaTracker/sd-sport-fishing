@@ -184,6 +184,27 @@ def check(conn: sqlite3.Connection, today: date | None = None,
     except sqlite3.OperationalError:
         pass
 
+    # 5b2. Trip-day marine conditions (src.marine).
+    try:
+        logs = dict(conn.execute("SELECT kind, fetched_at FROM marine_fetch_log").fetchall())
+    except sqlite3.OperationalError:
+        logs = None
+    if logs is not None:
+        for kind, limit in MARINE_MAX_AGE.items():
+            at = logs.get(kind)
+            if at is None or now - datetime.fromisoformat(at) > limit:
+                probs.append(Problem(f"marine:{kind}", "marine", "warning",
+                                     f"marine {kind} last fetched {at or 'never'} (limit {limit})"))
+        far = conn.execute("SELECT MIN(mx) FROM (SELECT MAX(ts) AS mx FROM tide_predictions"
+                           " GROUP BY station)").fetchone()[0]
+        if far is None or datetime.fromisoformat(far) < now + timedelta(days=3):
+            probs.append(Problem("marine:tides:horizon", "marine", "warning",
+                                 f"tide predictions run out at {far or 'never'}"))
+
+    # 5c. Private AIS track archive (src.ais_archive). Lives only on the
+    # machine that runs the listener; CI never has it, so it isn't checked there.
+    probs += check_ais_archive(now)
+
     # 6. Scheduled jobs actually ran (heartbeat written by main.py).
     if run_status is not None:
         for mode, max_h in (("full", 30), ("hourly", 3)):
@@ -208,6 +229,42 @@ def check(conn: sqlite3.Connection, today: date | None = None,
         if last is None or now - last > APP_JSON_MAX_AGE:
             probs.append(Problem("export:app.json", "app.json", "warning",
                                  f"api/v1/app.json last generated {gen or 'never'}"))
+    return probs
+
+
+MARINE_MAX_AGE = {"alerts": timedelta(hours=2), "forecasts": timedelta(hours=9),
+                  "buoys": timedelta(hours=4), "tides": timedelta(hours=48)}
+AIS_LISTENER_MAX_SILENCE = timedelta(hours=2)   # heartbeat every few seconds while running
+AIS_POSITIONS_MAX_AGE = timedelta(hours=36)     # some tracked boat broadcasts most days
+
+
+def check_ais_archive(now: datetime, path: Path | None = None,
+                      in_ci: bool | None = None) -> list[Problem]:
+    import os
+    if in_ci is None:
+        in_ci = bool(os.environ.get("GITHUB_ACTIONS") or os.environ.get("CI"))
+    if in_ci:
+        return []
+    if path is None:
+        from .ais_archive import ARCHIVE_DB as path
+    if not Path(path).exists():
+        return [Problem("ais:archive:missing", "ais_positions", "critical",
+                        f"AIS archive not found at {path}; live positions are not being kept")]
+    probs: list[Problem] = []
+    c = sqlite3.connect(f"file:{Path(path).as_posix()}?mode=ro", uri=True)
+    try:
+        hb = c.execute("SELECT MAX(COALESCE(ended_at, started_at)) FROM archive_runs").fetchone()[0]
+        last = c.execute("SELECT MAX(ts) FROM ais_positions").fetchone()[0]
+    except sqlite3.OperationalError:
+        hb = last = None
+    finally:
+        c.close()
+    if hb is None or now - datetime.fromisoformat(hb) > AIS_LISTENER_MAX_SILENCE:
+        probs.append(Problem("ais:archive:down", "ais_positions", "critical",
+                             f"AIS listener not running (last heartbeat {hb or 'never'})"))
+    if last is None or now - datetime.fromisoformat(last) > AIS_POSITIONS_MAX_AGE:
+        probs.append(Problem("ais:archive:stale", "ais_positions", "warning",
+                             f"no tracked-boat AIS position stored since {last or 'ever'}"))
     return probs
 
 

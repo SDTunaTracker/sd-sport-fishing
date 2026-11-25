@@ -27,3 +27,7 @@ data/.mmsi-search-cache.json
 tracker.db.*
 tracker_*.db
 tracker_dump.sql
+
+# Private AIS track archive (src/ais_archive.py); never publish
+data/ais_archive.db
+data/ais_archive.db-*

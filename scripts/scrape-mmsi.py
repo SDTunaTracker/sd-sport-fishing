@@ -503,4 +503,10 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    # RETIRED 2026-11-25: VesselFinder's terms (section 9) forbid automated
+    # extraction. Its one-time job (filling data/vessel_mmsi.json) is done;
+    # add new boats to that file by hand. Kept only for history.
+    print("scripts/scrape-mmsi.py is retired: VesselFinder ToS section 9 forbids automated "
+          "extraction. Edit data/vessel_mmsi.json by hand instead.", file=sys.stderr)
+    sys.exit(2)
     main()
