@@ -1,0 +1,51 @@
+{
+  "case": {
+    "id": "c05-cheapest-tomorrow",
+    "persona": "Wants the cheapest trip leaving tomorrow",
+    "turns": [
+      "What's the cheapest trip leaving tomorrow?"
+    ],
+    "expect": "Tomorrow = Wed 11/25: nothing scheduled. Say so; offer the soonest real alternatives.",
+    "checks": [
+      {
+        "mustSay": [
+          "no trips|nothing|none|don('|’)t have any|aren('|’)t any"
+        ],
+        "mustNotSay": [
+          "tomorrow \\(?(fri|nov(ember)? 27|11/27)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "What's the cheapest trip leaving tomorrow?",
+      "text": "Tomorrow is Wed 11/25, and I don't see any trips departing that day in the data. The next departures are Fri 11/27 — want me to show the cheapest from that day?\n\n<followups>[\"Cheapest trip Friday 11/27\", \"Cheapest this weekend\", \"Show all Friday options\"]</followups>",
+      "ms": 2544,
+      "usage": {
+        "input_tokens": 19688,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 108,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35723,
+      "cards": [],
+      "verdict": {
+        "pass": false,
+        "fails": [
+          "missing /no trips|nothing|none|don('|’)t have any|aren('|’)t any/"
+        ]
+      }
+    }
+  ]
+}

@@ -5,11 +5,9 @@
 const { useState, useEffect, useRef, Fragment } = React;
 
 const STATUS_MESSAGES = [
-  "Analyzing forecast data...",
   "Checking upcoming trips...",
-  "Reviewing boat performance...",
-  "Looking at recent reports...",
-  "Calculating recommendations...",
+  "Reading recent fish counts...",
+  "Matching trips to what you asked...",
 ];
 
 function formatDate(dateStr) {
@@ -103,8 +101,17 @@ function parseMessageWithCards(text) {
       parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
     }
     try {
-      const tripData = JSON.parse(match[1].trim());
-      parts.push({ type: 'trip', data: tripData });
+      const ref = JSON.parse(match[1].trim());
+      // Grounding: the model only references a trip by id. Everything shown is
+      // filled from window.SD.SCHEDULE; an unknown id (or a card the model wrote
+      // out by hand) is dropped rather than rendered.
+      const trip = ref && ref.tripId && window.getTripCardData ? window.getTripCardData(ref.tripId) : null;
+      if (trip) {
+        const why = Array.isArray(ref.why) ? ref.why.filter(w => typeof w === 'string').slice(0, 3) : [];
+        parts.push({ type: 'trip', data: { ...trip, why } });
+      } else {
+        console.warn('[Co-Captain] dropped trip-card with unknown tripId:', ref && ref.tripId);
+      }
     } catch(e) {
       // Malformed JSON — log for debugging but don't render raw tag text.
       console.warn('[Co-Captain] trip-card JSON parse failed:', e.message, match[1].slice(0, 80));
@@ -122,75 +129,175 @@ function parseMessageWithCards(text) {
   return parts;
 }
 
-function ChatTripCard({ trip }) {
+const LANDING_SHORT = {
+  'H&M Landing': 'H&M Landing', "Fisherman's Landing": "Fisherman's Landing",
+  'Point Loma Sportfishing': 'Point Loma', 'Seaforth Sportfishing': 'Seaforth',
+};
+
+function asOfLabel(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+
+function readSaved() {
+  try { return JSON.parse(localStorage.getItem('tt_saved_trips') || '[]'); } catch (e) { return []; }
+}
+function writeSaved(list) {
+  try { localStorage.setItem('tt_saved_trips', JSON.stringify(list.slice(-50))); } catch (e) {}
+}
+
+function shareText(trip) {
+  const lines = [
+    `${trip.boat} (${LANDING_SHORT[trip.landing] || trip.landing}), ${trip.tripLength}`,
+    `Departs ${trip.departLabel}`,
+    trip.price != null ? `$${trip.price}/person` : null,
+    trip.openSpots != null ? `${trip.openSpots} spots open as of ${asOfLabel(trip.spotsAsOf)}` : null,
+  ].filter(Boolean);
+  return lines.join(' · ');
+}
+
+function track(name, payload) {
+  try { if (window.TTTrack && TTTrack[name]) TTTrack[name](payload); } catch (e) {}
+}
+
+function ChatTripCard({ trip, position, msgIndex, onAsk }) {
+  const { useState: useS } = React;
+  const [stage, setStage] = useS('card');        // card → summary (booking hand-off)
+  const [live, setLive] = useS(null);            // null | 'checking' | {open, checkedAt} | 'unknown'
+  const [saved, setSaved] = useS(() => readSaved().includes(trip.tripId));
+  const [shareMsg, setShareMsg] = useS('');
+  const landingName = LANDING_SHORT[trip.landing] || trip.landing;
+  const asOf = asOfLabel(trip.spotsAsOf);
+  const ctx = { tripId: trip.tripId, boat: trip.boat, landing: trip.landing, tripLength: trip.tripLength, price: trip.price, position, msgIndex, bookingKind: trip.bookingKind };
+
+  function toggleSave() {
+    const list = readSaved().filter(id => id !== trip.tripId);
+    if (!saved) list.push(trip.tripId);
+    writeSaved(list);
+    setSaved(!saved);
+    track('chatSave', { ...ctx, saved: !saved });
+  }
+
+  async function share() {
+    const text = shareText(trip);
+    const url = trip.bookingUrl || `https://thetunatracker.com/${trip.boatPageUrl}`;
+    track('chatShare', ctx);
+    try {
+      if (navigator.share) { await navigator.share({ title: `${trip.boat}: ${trip.departLabel}`, text, url }); return; }
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setShareMsg('Copied. Paste it to your group.');
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      setShareMsg('Couldn’t share. Long-press the Book link to copy it.');
+    }
+    setTimeout(() => setShareMsg(''), 4000);
+  }
+
+  function openSummary() {
+    setStage('summary');
+    track('chatBookIntent', ctx);
+    if (window.getLiveSpots && live === null && trip.landing === 'H&M Landing') {
+      setLive('checking');
+      window.getLiveSpots(trip.tripId).then(r => {
+        setLive(r || 'unknown');
+        if (r) track('chatLiveCheck', { ...ctx, liveOpen: r.open });
+      });
+    }
+  }
+
+  const soldOut = live && typeof live === 'object' && live.open === 0;
+  const liveLine = live === 'checking' ? 'Checking live availability…'
+    : live && typeof live === 'object'
+      ? (live.open === 0 ? 'Sold out right now (it filled after our last update).'
+        : `${live.open} spots open right now (checked live).`)
+      : null;
+
+  function handOff() {
+    track('chatBookClick', ctx);
+    if (window.TTTrack?.chatLinkClick) TTTrack.chatLinkClick('Book', trip.bookingUrl, true);
+  }
+
+  const handOffCopy = trip.bookingKind === 'exact_trip'
+    ? (trip.landing === 'H&M Landing'
+        ? `Opens H&M Landing's booking checkout (Xola) with this departure already selected. You'll choose guests, then finish booking and pay there.`
+        : `Opens ${landingName}'s reservation page for this exact trip. You'll finish booking and pay there.`)
+    : trip.bookingKind === 'trip_type_calendar'
+      ? `Opens ${landingName}'s booking calendar for the ${trip.boat} ${trip.tripLength}. Tap ${trip.departLabel.split(' ').slice(0, 2).join(' ')} on the calendar, then finish booking and pay there.`
+      : `This trip can't be booked online from here. Call ${landingName} to book.`;
+
   return (
-    <div className="chat-trip-card">
-      <div className="chat-trip-header">
-        <div className="chat-trip-boat">{trip.boat}</div>
-        {trip.forecastScore != null && (
-          <span className="score-badge">{trip.forecastScore}/10</span>
-        )}
-      </div>
-
-      <div className="chat-trip-meta">
-        <span className="chat-trip-landing">{trip.landing}</span>
-        {trip.tripLength && <span className="chat-trip-length">{trip.tripLength}</span>}
-      </div>
-
-      <div className="chat-trip-details">
-        <div className="chat-trip-row">
-          <span className="label">DEP</span>
-          <span>{formatDate(trip.departureDate)}{trip.departureTime ? ` · ${trip.departureTime}` : ''}</span>
+    <div className="chat-trip-card cc-card" role="group" aria-label={`${trip.boat} ${trip.tripLength}, ${trip.departLabel}`}>
+      <div className="cc-card-top">
+        <div>
+          <div className="cc-boat">{trip.boat}</div>
+          <div className="cc-sub">{landingName} · {trip.tripLength}</div>
         </div>
-        <div className="chat-trip-row">
-          <span className="label">RET</span>
-          <span>{formatDate(trip.returnDate)}</span>
-        </div>
-        {trip.moonPhase && (
-          <div className="chat-trip-row">
-            <span>{trip.moonEmoji || '🌙'} {trip.moonPhase}</span>
-          </div>
-        )}
+        <button className={`cc-icon-btn${saved ? ' on' : ''}`} onClick={toggleSave}
+                aria-pressed={saved} aria-label={saved ? `Unsave ${trip.boat} trip` : `Save ${trip.boat} trip`}
+                title={saved ? 'Saved' : 'Save'}>{saved ? '★' : '☆'}</button>
       </div>
 
-      <div className="chat-trip-stats">
-        {trip.winRate != null && (
-          <div className="stat">
-            <span className="stat-value">{trip.winRate}%</span>
-            <span className="stat-label">Win Rate</span>
-          </div>
-        )}
-        {trip.avgTPA != null && (
-          <div className="stat">
-            <span className="stat-value">{trip.avgTPA}</span>
-            <span className="stat-label">TPA/day</span>
-          </div>
-        )}
+      <div className="cc-when">{trip.departLabel}{trip.returnLabel ? ` → ${trip.returnLabel}` : ''}</div>
+
+      <div className="cc-facts">
+        {trip.price != null && <span className="cc-price">${trip.price}<small>/person</small></span>}
         {trip.openSpots != null && (
-          <div className="stat">
-            <span className="stat-value">{trip.openSpots}{trip.maxLoad ? `/${trip.maxLoad}` : ''}</span>
-            <span className="stat-label">Open</span>
-          </div>
+          <span className={`cc-spots${trip.openSpots <= 5 ? ' low' : ''}`}>
+            {trip.openSpots}{trip.capacity ? ` of ${trip.capacity}` : ''} open
+          </span>
         )}
+        {trip.tripStatus && <span className="cc-tag">{trip.tripStatus}</span>}
       </div>
 
-      <div className="chat-trip-footer">
-        <div className="chat-trip-price">
-          ${trip.price}
-          {trip.mealsIncluded && <span className="meals-badge">🍽️ Meals</span>}
+      {trip.why && trip.why.length > 0 && (
+        <ul className="cc-why">
+          {trip.why.map((w, i) => <li key={i}>{w}</li>)}
+        </ul>
+      )}
+
+      {stage === 'card' ? (
+        <div className="cc-actions">
+          {trip.bookingUrl || trip.landingPhone ? (
+            <button className="cc-btn primary" onClick={openSummary}>Book this trip</button>
+          ) : null}
+          <button className="cc-btn" onClick={share}>Share</button>
+          <a className="cc-btn ghost" href={trip.boatPageUrl}
+             onClick={() => track('chatBoatClick', ctx)}>Boat stats</a>
         </div>
-        {trip.bookingUrl && trip.bookingUrl !== 'N/A' && (
-          <a
-            href={trip.bookingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="chat-trip-book-btn"
-            onClick={() => {
-              if (window.TTTrack?.chatLinkClick) TTTrack.chatLinkClick('Book', trip.bookingUrl, true);
-            }}
-          >Book →</a>
-        )}
-      </div>
+      ) : (
+        <div className="cc-summary" role="region" aria-label="Booking summary">
+          <div className="cc-summary-title">Before you go</div>
+          <ul>
+            <li><b>{trip.boat}</b>, {trip.tripLength}, departs <b>{trip.departLabel}</b> from {trip.landing}</li>
+            {trip.price != null && <li><b>${trip.price}</b> per person{trip.included ? ` (includes ${trip.included})` : ''}. Licenses, permits and fees may be extra.</li>}
+            {liveLine
+              ? <li className={soldOut ? 'cc-live bad' : 'cc-live'} aria-live="polite">{liveLine}</li>
+              : trip.openSpots != null && <li>{trip.openSpots} spots open as of {asOf}. Spots can go fast.</li>}
+            {!soldOut && <li>{handOffCopy}</li>}
+          </ul>
+          <div className="cc-actions">
+            {soldOut && onAsk && (
+              <button className="cc-btn primary" onClick={() => onAsk(`The ${trip.boat} ${trip.tripLength} on ${trip.departLabel} just sold out. What are the closest alternatives?`)}>
+                Show alternatives
+              </button>
+            )}
+            {trip.bookingUrl && !soldOut ? (
+              <a className="cc-btn primary" href={trip.bookingUrl} target="_blank" rel="noopener noreferrer" onClick={handOff}>
+                Continue to {landingName} →
+              </a>
+            ) : null}
+            {trip.landingPhone && (
+              <a className={`cc-btn${trip.bookingUrl ? '' : ' primary'}`} href={`tel:${trip.landingPhone.replace(/[^0-9+]/g, '')}`}
+                 onClick={() => track('chatCallClick', ctx)}>Call {trip.landingPhone}</a>
+            )}
+            <button className="cc-btn ghost" onClick={() => setStage('card')}>Back</button>
+          </div>
+        </div>
+      )}
+      {shareMsg && <div className="cc-note" role="status">{shareMsg}</div>}
+      <div className="cc-asof">Price & spots as of {asOf}. Confirm on the landing's site.</div>
     </div>
   );
 }
@@ -315,6 +422,10 @@ function ChatBot({ pageContext }) {
       const followups   = extractFollowups(rawText);
       const actions     = extractActions(rawText);
       const dataUsed    = extractDataUsed(msg, cleanText, pageContext?.regions || ['san_diego']);
+      const shownTrips  = parsedParts.filter(p => p.type === 'trip').map(p => p.data);
+      if (shownTrips.length && window.TTTrack?.chatRecommend) {
+        TTTrack.chatRecommend({ msgIndex: placeholderIdx, tripIds: shownTrips.map(t => t.tripId), landings: shownTrips.map(t => t.landing) });
+      }
 
       setMessages(prev => prev.map((m, i) =>
         i === placeholderIdx
@@ -462,11 +573,11 @@ function ChatBot({ pageContext }) {
                         </div>
                       ) : (
                         <Fragment>
-                          {(msg.parsedParts || parseMessageWithCards(msg.text)).map((part, pi) =>
+                          {(() => { let pos = 0; return (msg.parsedParts || parseMessageWithCards(msg.text)).map((part, pi) =>
                             part.type === 'trip'
-                              ? <ChatTripCard key={pi} trip={part.data} />
+                              ? <ChatTripCard key={pi} trip={part.data} position={++pos} msgIndex={i} onAsk={handleSend} />
                               : <Fragment key={pi}>{renderMessageContent(part.content, () => setOpen(false))}</Fragment>
-                          )}
+                          ); })()}
                           {msg.streaming && msg.buildingCard ? (
                             <div className="chat-building-indicator">
                               <span className="typing-dot">●</span>

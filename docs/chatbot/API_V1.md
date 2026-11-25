@@ -38,7 +38,8 @@ With `stream:true`, the same payloads arrive as SSE events: `text` (delta), `car
 | openSpots, capacity | number \| null | |
 | spotsAsOf | string | ISO, the scrape time |
 | bookingUrl | string \| null | |
-| bookingKind | `"exact_trip" \| "trip_type_calendar" \| "call_landing"` | H&M = `trip_type_calendar` (Xola, pick the date) |
+| bookingKind | `"exact_trip" \| "trip_type_calendar" \| "call_landing"` | All 4 landings are `exact_trip`. H&M = Xola `…/experiences/<expId>/<YYYY-MM-DD>/<Hmm>` (date and slot preselected). `trip_type_calendar` is only a fallback |
+| liveOpen | number? | H&M only: live spots from Xola's public availability API at answer time; 0 = sold out since the scrape |
 | landingPhone | string? | present when `call_landing` |
 | targetSpecies, included | string? | from the trip notes |
 | why | string[] | ≤3 short, data-backed reasons, e.g. "Last 10 trips: 2.1 yellowfin/angler" |
@@ -62,4 +63,4 @@ With `stream:true`, the same payloads arrive as SSE events: `text` (delta), `car
 - `429 {"error":"rate_limited","retryAfter":60}`, `400 {"error":"bad_request"}`, `503 {"error":"upstream"}`.
 
 ## Rules (each one is an eval case)
-Forecasts are R&D (no predictions). Prices and spots are always "as of" plus "confirm with the landing". No refund or availability promises. Never ask for personal info. Never invent trips, prices or links.
+**No forecasts at all** (user decision 2026-11-24): no scores, no "good bite day"; recommendations come only from catch history, spots, price and fit. Prices and spots are always "as of" plus "confirm with the landing". No refund or availability promises. Never ask for personal info. Never invent trips, prices or links.

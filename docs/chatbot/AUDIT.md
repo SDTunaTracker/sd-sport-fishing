@@ -1,5 +1,39 @@
 # Co-Captain chatbot audit — 2026-11-24
 
+## Progress log
+
+### Step 1–4 shipped on branch (2026-11-24, not deployed)
+User decisions: **forecasts removed entirely**. **"Book" must open the exact trip, not the boat page.**
+
+| | Baseline (10 cases) | After (13 cases) |
+|---|---|---|
+| H&M cards with wrong date/time | 8 of 8 | 0 (all times normalized to Pacific) |
+| Booking links to the exact trip | 17 of 26 (H&M went to the boat page) | **183 of 183 upcoming trips** (H&M via Xola exact departure) |
+| Card fields typed by the model | all | none: the model sends `tripId` + reasons; the site fills in every number; unknown ids are dropped |
+| Forecast mentions | 3 of 10 answers | 0; asked directly, it says "I don't make fishing predictions" |
+| Auto-checks passing | n/a | 14/16 turns. The 2 remaining are c05 (a regex false negative, now fixed) and c04 (below) |
+| Median latency | ~13 s | ~8 s |
+
+What changed:
+- `chat-api.js`:
+  - `ccPacific()` normalizes both `departureAt` formats.
+  - The prompt has explicit today, tomorrow and weekend dates.
+  - The prompt carries the whole 120-day schedule (183 trips) with ISO dates, and RECENT FORM per boat (last 10 trips, landed fish per angler by species).
+  - Hard rules: no invented facts, no predictions, prices and spots "as of", can't book, no personal info.
+  - `getTripCardData(tripId)` is the single source for cards. `getLiveSpots()` does a live Xola check for H&M.
+  - Fixed the season leaderboard (it showed `undefined%` win rate, and a 1-trip boat ranked #1).
+- **H&M exact-trip link:** `https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/<expId>/<YYYY-MM-DD>/<Hmm>?openExternal=true`. Verified in a browser: Producer 11/27 opens with the 8:00 PM slot selected and "12 open". The UTM-tagged version also works. The route was found in Xola's checkout router.
+- **Live sold-out handling:** Malihini 11/27 had 2 spots in our scrape and 0 live. The booking summary now says "Sold out right now (it filled after our last update)" and offers **Show alternatives** and **Call**.
+- `chatbot.jsx`: new trip card with Save (☆), Share (Web Share API, falling back to clipboard) and Boat stats. **Book → "Before you go" summary** (trip, price per person plus "licenses, permits and fees may be extra", live or as-of spots, an honest hand-off line), then **Continue to <landing> →** or **Call**.
+- `analytics-events.js`: funnel events `chat_recommend` → `chat_book_intent` → `chat_live_check` → `chat_book_click` (plus share, save, call and boat_click). Joined on `msg_index` and `trip_id`; the question text isn't sent. Book clicks also go into the admin `_logClick` log with `tab: co_captain`. UTM is now `utm_medium=co_captain`.
+
+Still open, next in the loop:
+- c04 says "no 3-day trips in January" and then recommends the Jan 8 3-day. The data is right, but the model reasons badly over 183 rows → move to a `search_trips` tool (step 5).
+- Group share text says "use Share on each card" rather than including links → add a "Share these trips" button that bundles every card's link.
+- Party size isn't passed to Xola yet. Its route supports `/:quantity`, so this can be added once the bot knows the group size.
+- Worker hardening and prompt caching (needs the user's OK to deploy).
+
+
 Base: `origin/main` @ `b9031ab1`. Data: `web/data.js` exported 2026-11-25 01:01 UTC (481 scheduled trips, all 4 SD landings).
 Method: 10 scripted conversations (13 turns) sent through the **live** worker using the exact `buildSystemPrompt()` the site uses
 (`docs/chatbot/eval/harness.js`, cases in `docs/chatbot/eval/cases.json`, transcripts in `docs/chatbot/eval/runs/2026-11-25T04-15-56/`).

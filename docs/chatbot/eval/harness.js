@@ -35,6 +35,7 @@ function loadWindow() {
     tripLength: 'all', species: 'all', minTrips: 1, includeZero: true,
   };
   vm.runInContext('var DEFAULT_FILTERS = window.DEFAULT_FILTERS;', ctx);
+  try { ctx.SDA.preprocessTrips(null); } catch (e) { /* app does this at startup */ }
   return ctx;
 }
 
@@ -76,18 +77,34 @@ function pacificParts(iso) {
   return { date: `${g('year')}-${g('month')}-${g('day')}`, time: `${g('hour')}:${g('minute')}` };
 }
 
+// Rules every answer must follow, whatever the question.
+const GLOBAL_PROSE_RULES = [
+  { re: /forecast score|\b\d+(\.\d)?\s*\/\s*10\b|bite (outlook|forecast)|will (fish|bite) (best|well|better)|conditions (look|are rated)/i, why: 'forecast/prediction language' },
+  { re: /^\s*\|.*\|\s*$/m, why: 'markdown table (UI renders raw pipes)' },
+  { re: /\]\(https?:\/\//, why: 'raw external URL in prose (cards carry links)' },
+  { re: /(link|this) (will )?(book|reserve)s? (it|your|the)|takes you straight to .*reservation page/i, why: 'claims a link books/reserves' },
+];
+
 function scoreCards(ctx, text) {
   const cards = [];
   const re = /<trip-card>([\s\S]*?)<\/trip-card>/g;
   let m;
   while ((m = re.exec(text))) {
     let c;
-    try { c = JSON.parse(m[1].trim()); } catch (e) { cards.push({ parseError: true }); continue; }
+    try { c = JSON.parse(m[1].trim()); } catch (e) { cards.push({ parseError: true, issues: ['card JSON parse error'] }); continue; }
+    if (c.tripId !== undefined) {
+      // New protocol: card is an id reference, hydrated from SCHEDULE by the client.
+      const h = ctx.getTripCardData ? ctx.getTripCardData(c.tripId) : null;
+      const issues = h ? [] : [`unknown tripId ${c.tripId} (card would be dropped)`];
+      if (h && !h.bookingUrl && !h.landingPhone) issues.push('no booking path');
+      cards.push({ tripId: c.tripId, hydrated: h, why: c.why || [], boat: h?.boat, date: h?.departDate, tripLength: h?.tripLength, price: h?.price, openSpots: h?.openSpots, landing: h?.landing, url: h?.bookingUrl, bookingKind: h?.bookingKind, issues });
+      continue;
+    }
+    // Legacy protocol: model wrote the whole card.
     const sched = ctx.SD.SCHEDULE.filter(t => t.boat === c.boat && t.landing === c.landing);
-    // Match on the date the bot claims (it copies the sliced UTC date for H&M).
     const sameDay = sched.filter(t => t.departureAt.slice(0, 10) === c.departureDate || pacificParts(t.departureAt).date === c.departureDate);
     const match = sameDay.find(t => !c.tripLength || t.tripLength === c.tripLength) || sameDay[0];
-    const issues = [];
+    const issues = ['legacy model-written card'];
     if (!sched.length) issues.push('boat/landing not in schedule');
     else if (!match) issues.push('no scheduled trip on that date');
     if (match) {
@@ -95,14 +112,37 @@ function scoreCards(ctx, text) {
       if (p.date !== c.departureDate) issues.push(`wrong local date (real ${p.date})`);
       if (Math.round(match.price) !== Math.round(+c.price)) issues.push(`price ${c.price} vs ${match.price}`);
       if (c.openSpots != null && c.openSpots !== match.openSpots) issues.push(`spots ${c.openSpots} vs ${match.openSpots}`);
-      const expectedUrl = ctx.buildBookingUrl(match);
-      if (!c.bookingUrl) issues.push('no booking url');
-      else if (c.bookingUrl !== expectedUrl) issues.push('booking url differs from buildBookingUrl()');
       if (match.landing === 'H&M Landing') issues.push('H&M link is boat page, not trip');
     }
     cards.push({ boat: c.boat, date: c.departureDate, tripLength: c.tripLength, price: c.price, url: c.bookingUrl, issues });
   }
   return cards;
+}
+
+// Per-turn expectations from cases.json `checks[turnIndex]`.
+function scoreTurn(text, cards, check) {
+  const prose = (text || '').replace(/<trip-card>[\s\S]*?<\/trip-card>/g, '').replace(/<followups>[\s\S]*?<\/followups>/g, '').replace(/<actions>[\s\S]*?<\/actions>/g, '');
+  const fails = [];
+  GLOBAL_PROSE_RULES.forEach(r => { if (r.re.test(prose)) fails.push(r.why); });
+  const ok = cards.filter(c => c.hydrated);
+  if (cards.some(c => c.issues && c.issues.length)) fails.push(`${cards.filter(c => c.issues && c.issues.length).length} card(s) with issues`);
+  if (cards.length > 3) fails.push(`${cards.length} cards (max 3)`);
+  if (check) {
+    if (check.minCards != null && ok.length < check.minCards) fails.push(`expected ≥${check.minCards} cards, got ${ok.length}`);
+    if (check.maxCards != null && ok.length > check.maxCards) fails.push(`expected ≤${check.maxCards} cards, got ${ok.length}`);
+    ok.forEach(c => {
+      const h = c.hydrated;
+      if (check.minSpots != null && h.openSpots < check.minSpots) fails.push(`${h.boat} ${h.departDate}: ${h.openSpots} spots < ${check.minSpots}`);
+      if (check.maxPrice != null && h.price > check.maxPrice) fails.push(`${h.boat} ${h.departDate}: $${h.price} > $${check.maxPrice}`);
+      if (check.dateFrom && h.departDate < check.dateFrom) fails.push(`${h.boat} departs ${h.departDate} < ${check.dateFrom}`);
+      if (check.dateTo && h.departDate > check.dateTo) fails.push(`${h.boat} departs ${h.departDate} > ${check.dateTo}`);
+      if (check.lengths && !check.lengths.includes(h.tripLength)) fails.push(`${h.boat} length ${h.tripLength} not in ${check.lengths.join('/')}`);
+      if (check.boat && h.boat !== check.boat) fails.push(`expected boat ${check.boat}, got ${h.boat}`);
+    });
+    (check.mustSay || []).forEach(s => { if (!new RegExp(s, 'i').test(prose)) fails.push(`missing /${s}/`); });
+    (check.mustNotSay || []).forEach(s => { if (new RegExp(s, 'i').test(prose)) fails.push(`said /${s}/`); });
+  }
+  return { pass: fails.length === 0, fails };
 }
 
 async function main() {
@@ -116,26 +156,31 @@ async function main() {
   for (const c of cases.filter(c => !only.length || only.includes(c.id))) {
     const history = [];
     const turns = [];
-    for (const u of c.turns) {
+    for (const [ti, u] of c.turns.entries()) {
       const r = await callBot(ctx, u, history);
       const cards = r.text ? scoreCards(ctx, r.text) : [];
-      turns.push({ user: u, ...r, cards });
+      const verdict = r.error ? { pass: false, fails: [r.error] } : scoreTurn(r.text, cards, (c.checks || [])[ti]);
+      turns.push({ user: u, ...r, cards, verdict });
       history.push({ role: 'user', content: u }, { role: 'assistant', content: r.text || '' });
-      process.stdout.write(`${c.id}: ${r.error ? 'ERR ' + r.error : `${cards.length} cards, ${r.ms}ms`}\n`);
+      process.stdout.write(`${verdict.pass ? 'PASS' : 'FAIL'} ${c.id}#${ti + 1}: ${cards.length} cards, ${r.ms}ms${verdict.fails.length ? ' | ' + verdict.fails.join('; ') : ''}\n`);
     }
     fs.writeFileSync(path.join(outDir, `${c.id}.json`), JSON.stringify({ case: c, turns }, null, 2));
     const allCards = turns.flatMap(t => t.cards);
     summary.push({
       id: c.id,
+      turnsPassed: `${turns.filter(t => t.verdict.pass).length}/${turns.length}`,
+      fails: turns.flatMap(t => t.verdict.fails),
       cards: allCards.length,
-      cardsWithIssues: allCards.filter(x => x.parseError || x.issues.length).length,
+      cardsWithIssues: allCards.filter(x => x.parseError || (x.issues || []).length).length,
       ms: turns.map(t => t.ms),
       inputTokens: turns.map(t => t.usage?.input_tokens),
     });
   }
   fs.writeFileSync(path.join(outDir, 'summary.json'), JSON.stringify(summary, null, 2));
-  console.log('Saved to', outDir);
+  const tp = summary.reduce((n, s) => n + +s.turnsPassed.split('/')[0], 0);
+  const tt = summary.reduce((n, s) => n + +s.turnsPassed.split('/')[1], 0);
+  console.log(`\nAuto-checks: ${tp}/${tt} turns pass. Saved to ${outDir}`);
 }
 
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = { loadWindow, scoreCards, pacificParts };
+module.exports = { loadWindow, scoreCards, scoreTurn, pacificParts };
