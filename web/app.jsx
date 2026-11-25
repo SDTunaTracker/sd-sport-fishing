@@ -431,11 +431,11 @@ function App() {
       try { window.history.replaceState(null, '', '#charts'); } catch (e) {}
     }
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings}/>
+      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'charts') {
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings}/>
+      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}

@@ -1354,7 +1354,7 @@ function _landingCoords(name) {
   for (var i = 0; i < metas.length; i++) {
     if (metas[i].name === name) return { lat: metas[i].lat, lng: metas[i].lng };
   }
-  return null;
+  return (window.OCLA_LANDING_COORDS && window.OCLA_LANDING_COORDS[name]) || null;
 }
 
 function _dominantSpecies(trip) {
@@ -1375,7 +1375,8 @@ function _tripJitter(id, axis) {
 
 // filterDateStr: optional YYYY-MM-DD upper bound. Catches after this date are hidden.
 // When scrubbing into the past, recency opacity is also relative to filterDate.
-function buildCatchLayer(trips, filterDateStr) {
+// regionLandings: landings of the selected region (null = all regions).
+function buildCatchLayer(trips, filterDateStr, regionLandings) {
   var todayMs = Date.now();
   var todayStr = window.TT_DATES.getPacificDate();
   var cutStr = window.TT_DATES.pacificDateOffsetDays(-_CATCH_DAYS);
@@ -1385,7 +1386,8 @@ function buildCatchLayer(trips, filterDateStr) {
   var group  = L.layerGroup();
 
   trips.filter(function(t) {
-    return t.date >= cutStr && t.date <= maxDateStr && !t.isPreliminary && (t.region === 'san_diego' || !t.region);
+    var inRegion = regionLandings ? regionLandings.indexOf(t.landing) !== -1 : true;
+    return t.date >= cutStr && t.date <= maxDateStr && !t.isPreliminary && inRegion;
   }).forEach(function(trip) {
     var zoneLoc = _zoneFromText(trip.rawText);
     var isZone  = !!zoneLoc;
@@ -1433,6 +1435,78 @@ function buildCatchLayer(trips, filterDateStr) {
     marker.addTo(group);
   });
 
+  return group;
+}
+
+// ── BloodyDecks forum spots (api/v1/forum_spots.geojson) ─────────────────────
+// One feature per spot with recent forum reports (scraper/paddies/spots.py).
+// properties.region is san_diego | oc_la | both; a single-region view keeps
+// its own region plus "both"; SD + OC/LA together shows everything.
+var _spotsPromise = null;
+function loadForumSpots() {
+  if (!_spotsPromise) {
+    _spotsPromise = fetch('api/v1/forum_spots.geojson', { cache: 'no-cache' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; });
+  }
+  return _spotsPromise;
+}
+
+function forumSpotsForRegion(geo, effRegion) {
+  var feats = (geo && geo.features) || [];
+  if (!effRegion || effRegion === 'all_socal') return feats;
+  return feats.filter(function(f) {
+    var r = f.properties && f.properties.region;
+    return r === effRegion || r === 'both';
+  });
+}
+
+var _HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function _escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) { return _HTML_ESC[c]; });
+}
+
+function buildForumSpotLayer(features) {
+  var group = L.layerGroup();
+  features.forEach(function(f) {
+    var p = f.properties || {};
+    var c = f.geometry && f.geometry.coordinates;
+    if (!c || c.length < 2) return;
+    var latlng = [c[1], c[0]];
+    var n = p.reports_14d || 1;
+    if (p.precision_nm && p.precision_nm >= 1) {
+      L.circle(latlng, { radius: p.precision_nm * 1852, color: '#f59e0b', weight: 1,
+        opacity: 0.5, fillOpacity: 0.06, interactive: false }).addTo(group);
+    }
+    var marker = L.circleMarker(latlng, {
+      radius: Math.max(6, Math.min(16, 5 + Math.sqrt(n) * 3)),
+      color: '#ffffff', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.85,
+    });
+    var species = Object.keys(p.species || {}).slice(0, 4).map(function(s) {
+      return _escHtml(s) + ' (' + _escHtml(p.species[s]) + ')';
+    }).join(', ');
+    var links = (p.sources || []).slice(0, 3).map(function(s) {
+      var url = /^https:\/\//.test(s.url || '') ? s.url : null;
+      return url ? '<a href="' + _escHtml(url) + '" target="_blank" rel="noopener">' +
+        _escHtml(s.title || 'Forum post') + (s.date ? ' · ' + _escHtml(s.date) : '') + '</a>' : '';
+    }).filter(Boolean).join('');
+    var posTag = p.position === 'posted' ? 'Posted coordinates'
+      : p.position === 'estimate' ? 'Estimated position' : 'Spot centre';
+    marker.bindPopup(
+      '<div class="catch-popup forum-spot-popup">' +
+        '<div class="catch-popup-boat">' + _escHtml(p.name || 'Forum report') + '</div>' +
+        '<div class="catch-popup-meta">' + n + ' report' + (n === 1 ? '' : 's') + ' in 14 days' +
+          (p.last_report ? ' &middot; last ' + _escHtml(p.last_report) : '') + '</div>' +
+        (species ? '<div class="catch-popup-species">' + species + '</div>' : '') +
+        '<div class="catch-popup-loc">' + posTag +
+          (p.precision_nm ? ' &middot; ±' + _escHtml(p.precision_nm) + ' nm' : '') + '</div>' +
+        (links ? '<div class="forum-spot-links">' + links + '</div>' : '') +
+        '<div class="forum-spot-src">BloodyDecks forum, summarized automatically</div>' +
+      '</div>',
+      { className: 'catch-popup-wrap', maxWidth: 260 }
+    );
+    marker.addTo(group);
+  });
   return group;
 }
 
@@ -1507,7 +1581,8 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 // Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
 function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode, dirMode,
-                      onBase, onCond, onTides, onBoats, onCatches, onSstMode, onDirMode }) {
+                      onBase, onCond, onTides, onBoats, onCatches, onSstMode, onDirMode,
+                      spotCount, showSpots, onSpots }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
     { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
@@ -1589,6 +1664,12 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
           <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
             <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
           </button>
+          {spotCount > 0 && onSpots && (
+            <button className={'layer-btn' + (showSpots ? ' active' : '')} onClick={function() { onSpots(!showSpots); }}
+              title="Spots mentioned in recent BloodyDecks forum reports">
+              <span className="layer-btn-icon">💬</span>Forum
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -1786,13 +1867,17 @@ function ChartReadoutDock({ readout, onClose, onSave }) {
 
 // ── ChartsView ────────────────────────────────────────────────────────────────
 
-function ChartsView({ navigate, settings }) {
+function ChartsView({ navigate, settings, regions }) {
+  var effRegion = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : 'san_diego';
+  var regionLandings = (window.getLandingsForRegion && window.getLandingsForRegion(effRegion)) || null;
   var unitSystem = (settings && settings.unitSystem) || 'imperial';
   const [baseLayer, setBaseLayer]   = React.useState('sst');
   const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false, pressure: false });
   const [showTides, setShowTides]   = React.useState(false);
   const [showBoats, setShowBoats]   = React.useState(false);
   const [showCatches, setShowCatches] = React.useState(false);
+  const [showSpots, setShowSpots]     = React.useState(false);
+  const [spotsGeo, setSpotsGeo]       = React.useState(null);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
   const [sstMode, setSstMode]       = React.useState(function() {
     return localStorage.getItem('tt_sst_mode') || 'mur';
@@ -1841,6 +1926,7 @@ function ChartsView({ navigate, settings }) {
   const murSSTLayerRef   = React.useRef(null);
   const murFrontLayerRef = React.useRef(null);
   const catchLayerRef    = React.useRef(null);
+  const spotLayerRef     = React.useRef(null);
   const sliderThrottleRef = React.useRef(null);
   // Raw, sampleable grid data for the tap-to-read popup (refs stay current
   // inside the stable map-click closure).
@@ -2464,10 +2550,27 @@ function ChartsView({ navigate, settings }) {
       var filterDateStr = scrubberDayKey
         ? scrubberDayKey.slice(0,4) + '-' + scrubberDayKey.slice(4,6) + '-' + scrubberDayKey.slice(6,8)
         : null;
-      catchLayerRef.current = buildCatchLayer(trips, filterDateStr);
+      catchLayerRef.current = buildCatchLayer(trips, filterDateStr, regionLandings);
       catchLayerRef.current.addTo(mapInstance.current);
     }
-  }, [showCatches, scrubberDayKey]);
+  }, [showCatches, scrubberDayKey, effRegion]);
+
+  // BloodyDecks forum spots — region-filtered; the button only shows when the
+  // selected region has at least one spot.
+  React.useEffect(function() {
+    var live = true;
+    loadForumSpots().then(function(g) { if (live) setSpotsGeo(g); });
+    return function() { live = false; };
+  }, []);
+  var regionSpots = React.useMemo(function() { return forumSpotsForRegion(spotsGeo, effRegion); }, [spotsGeo, effRegion]);
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    if (spotLayerRef.current) { mapInstance.current.removeLayer(spotLayerRef.current); spotLayerRef.current = null; }
+    if (showSpots && regionSpots.length) {
+      spotLayerRef.current = buildForumSpotLayer(regionSpots);
+      spotLayerRef.current.addTo(mapInstance.current);
+    }
+  }, [showSpots, regionSpots]);
 
   function handleSliderInput(val) {
     setSliderStep(val);
@@ -2518,6 +2621,7 @@ function ChartsView({ navigate, settings }) {
   if (showTides)           activeLayerLabels.push('Tides');
   if (showCatches)         activeLayerLabels.push('Catches');
   if (showBoats)           activeLayerLabels.push('Boats');
+  if (showSpots && regionSpots.length) activeLayerLabels.push('Forum');
 
   var maxSliderStep = sliderSeries ? sliderSeries.frames.length - 1 : 0;
 
@@ -2550,6 +2654,7 @@ function ChartsView({ navigate, settings }) {
             onCond={onCond}
             onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
             onSstMode={setSstMode} onDirMode={setDirMode}
+            spotCount={regionSpots.length} showSpots={showSpots} onSpots={setShowSpots}
           />
         </div>
 
@@ -2650,6 +2755,7 @@ function ChartsView({ navigate, settings }) {
               onCond={onCond}
               onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
               onSstMode={setSstMode} onDirMode={setDirMode}
+              spotCount={regionSpots.length} showSpots={showSpots} onSpots={setShowSpots}
             />
             <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
           </div>
