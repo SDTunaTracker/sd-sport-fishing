@@ -1572,3 +1572,37 @@ def main(argv=None) -> int:
 if __name__ == "__main__":
     import sys
     sys.exit(main())
+
+
+# ─── Rolling conditions refresh (called from main.py / recover_gaps) ─────────
+
+def refresh_recent_conditions(
+    conn: sqlite3.Connection, start: date, end: date | None = None,
+) -> dict:
+    """Rebuild historical_conditions for [start, end] from current inputs.
+
+    Before this, historical_conditions was only written by the 30-day
+    recalibration, so the live forecast and accuracy scoring read stale or
+    missing rows for up to a month. Wind/pressure (Open-Meteo ERA5 archive)
+    and swell (NDBC 46047) are refetched; when a fetch returns nothing for a
+    day, the values already stored for that day are kept instead of being
+    overwritten with NULL.
+    """
+    end = end or (date.today() - timedelta(days=1))
+    wind = _fetch_openmeteo_wind(start, end)
+    swell = _fetch_ndbc_swell("46047", start, end)
+    for r in conn.execute(
+        "SELECT date, wind_speed, wind_direction, pressure, pressure_trend,"
+        "       swell_height, swell_period FROM historical_conditions"
+        " WHERE date BETWEEN ? AND ?", (start.isoformat(), end.isoformat()),
+    ).fetchall():
+        w = wind.get(r["date"]) or {}
+        if w.get("wind_speed") is None and r["wind_speed"] is not None:
+            wind[r["date"]] = {k: r[k] for k in
+                               ("wind_speed", "wind_direction", "pressure", "pressure_trend")}
+        s = swell.get(r["date"]) or {}
+        if s.get("swell_height") is None and r["swell_height"] is not None:
+            swell[r["date"]] = {"swell_height": r["swell_height"],
+                                "swell_period": r["swell_period"]}
+    n = build_historical_conditions(conn, start, end, wind, swell)
+    return {"rows": n, "wind_days": len(wind), "swell_days": len(swell)}

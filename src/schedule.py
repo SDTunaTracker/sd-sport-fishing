@@ -467,9 +467,11 @@ def scrape_schedule(src: ScheduleSource) -> list[dict]:
         raise ValueError(f"unknown schedule kind: {src.kind}")
 
 
-def scrape_all_schedules() -> list[tuple[ScheduleSource, list[dict], str | None]]:
+def scrape_all_schedules(
+    sources: "tuple[ScheduleSource, ...] | list[ScheduleSource] | None" = None,
+) -> list[tuple[ScheduleSource, list[dict], str | None]]:
     results = []
-    for src in SOURCES:
+    for src in (SOURCES if sources is None else sources):
         try:
             trips = scrape_schedule(src)
             results.append((src, trips, None))

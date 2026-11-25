@@ -1,10 +1,15 @@
-"""Chlorophyll-a concentration from NASA ERDDAP CoastWatch (AQUA MODIS 8-day).
+"""Chlorophyll-a concentration from NOAA CoastWatch ERDDAP (VIIRS NOAA-20 daily).
 
-Data source: NOAA CoastWatch ERDDAP — erdMH1chla8day (MODIS Aqua 8-day composite).
-- Resolution: 0.025° (~2.5 km)
-- Lag: 1-8 days depending on cloud cover; we use most recent non-null reading.
+Data source: NOAA CoastWatch ERDDAP — nesdisVHNnoaa20chlaDaily
+  (VIIRS on NOAA-20, NOAA MSL12 science-quality daily chlor_a).
+- Resolution: ~4 km; one value per day, NULL under cloud.
+- Lag: ~8 days; we use the most recent non-null reading in the lookback.
 - Units: mg/m³ (milligrams per cubic metre)
-- Coverage: 2003–2022-06-14 (MODIS Aqua decommissioned; dataset ends there)
+- Coverage: 2021-08-26 to present.
+
+History: until 2026-11 this module queried erdMH1chla8day (MODIS Aqua), which
+stopped at 2022-06-14 and now returns HTTP 503, so chlorophyll_obs was never
+populated and every forecast used the neutral 5.0 chlorophyll score.
 
 Chlorophyll interpretation for SD offshore fishing:
   High nearshore + low offshore: classic upwelling — bad for offshore tuna
@@ -28,10 +33,12 @@ import requests
 
 log = logging.getLogger(__name__)
 
-# ERDDAP endpoint — MODIS Aqua 8-day composite chlorophyll-a
-_ERDDAP_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day.json"
-# MODIS Aqua decommissioned; dataset has no data past this date
-_ERDDAP_MAX_DATE = date(2022, 6, 14)
+# ERDDAP endpoint — VIIRS NOAA-20 daily chlorophyll-a (4-D: time, altitude, lat, lon)
+_ERDDAP_BASE = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNnoaa20chlaDaily.json"
+_ERDDAP_VAR = "chlor_a"
+_ERDDAP_MIN_DATE = date(2021, 8, 26)
+# Rolling end of coverage (kept for callers that clamp ranges).
+_ERDDAP_MAX_DATE = date.max
 _UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
        "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
 
@@ -75,23 +82,32 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
 
 
 def _fetch_chl(lat: float, lon: float, start: date, end: date,
-               timeout: float = 45.0) -> list[tuple[date, float]]:
+               timeout: float = 45.0, attempts: int = 3) -> list[tuple[date, float]]:
     """Fetch chlorophyll-a from ERDDAP for a single location over a date range.
 
     Returns [(date, chl_mg_m3)] for non-null observations; [] on failure.
-    MODIS 8-day composites have one value per 8-day period — we store against
-    the composite start date.
+    One value per day at the grid cell nearest (lat, lon); cloudy days are NULL
+    and skipped. Retries ERDDAP's intermittent 502/503s.
     """
-    t0 = f"{start.isoformat()}T00:00:00Z"
-    t1 = f"{end.isoformat()}T00:00:00Z"
+    start = max(start, _ERDDAP_MIN_DATE)
+    if end < start:
+        return []
+    t0 = f"{start.isoformat()}T12:00:00Z"
+    t1 = f"{end.isoformat()}T12:00:00Z"
     url = (
-        f"{_ERDDAP_BASE}?chlorophyll"
+        f"{_ERDDAP_BASE}?{_ERDDAP_VAR}"
         f"[({t0}):1:({t1})]"
-        f"[({lat - 0.01}):1:({lat + 0.01})]"
-        f"[({lon - 0.01}):1:({lon + 0.01})]"
+        f"[(0.0)]"
+        f"[({lat})]"
+        f"[({lon})]"
     )
     try:
-        r = requests.get(url, headers={"User-Agent": _UA}, timeout=(10, timeout))
+        from .net import get_with_retry
+        try:
+            r = get_with_retry(url, headers={"User-Agent": _UA}, timeout=(10, timeout),
+                               attempts=attempts, backoff=10.0)
+        except requests.HTTPError as he:
+            r = he.response
         if r.status_code == 404:
             log.debug("Chlorophyll 404 %s-%s (%.2f, %.2f)", start, end, lat, lon)
             return []
@@ -102,7 +118,7 @@ def _fetch_chl(lat: float, lon: float, start: date, end: date,
         col_names = tbl.get("columnNames", [])
         try:
             t_idx   = col_names.index("time")
-            chl_idx = col_names.index("chlorophyll")
+            chl_idx = col_names.index(_ERDDAP_VAR)
         except ValueError:
             log.warning("Chlorophyll unexpected columns: %s", col_names)
             return []
@@ -144,7 +160,9 @@ def fetch_chlorophyll(
         chl_by_loc: dict[str, float | None] = {}
 
         for name, (lat, lon) in LOCATIONS.items():
-            rows = _fetch_chl(lat, lon, start, target_date)
+            # Single attempt: this runs inside scheduled jobs with a time limit,
+            # and ERDDAP outages last hours. The next run picks it up.
+            rows = _fetch_chl(lat, lon, start, target_date, timeout=30.0, attempts=1)
             if not rows:
                 log.debug("No chlorophyll data for %s", name)
                 chl_by_loc[name] = None
@@ -186,9 +204,8 @@ def backfill_chlorophyll(
 ) -> int:
     """Backfill chlorophyll_obs and historical_conditions from start date to today.
 
-    MODIS goes back to 2003; we default to 2015-01-01 to match the backtest window.
+    VIIRS NOAA-20 starts 2021-08-26; earlier start dates are clamped to that.
     Fetches in 30-day chunks to avoid ERDDAP timeouts.
-    Dataset ends at 2022-06-14 (MODIS Aqua decommissioned).
 
     Each chunk fetches from ERDDAP outside the DB connection, then opens a
     short-lived connection just for the insert. This releases the write lock
@@ -197,8 +214,9 @@ def backfill_chlorophyll(
     from . import db as dbmod
 
     if start is None:
-        start = date(2015, 1, 1)
-    end = min(date.today() - timedelta(days=1), _ERDDAP_MAX_DATE)
+        start = _ERDDAP_MIN_DATE
+    start = max(start, _ERDDAP_MIN_DATE)
+    end = date.today() - timedelta(days=1)
 
     # Ensure schema exists before looping.
     with dbmod.connect(db_path) as conn:
