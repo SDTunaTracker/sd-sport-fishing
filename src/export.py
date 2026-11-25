@@ -818,77 +818,49 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     except Exception as e:
         _log.warning("app.json generation failed: %s", e)
 
-    # Regenerate sitemap.xml alongside data.js.
-    try:
-        _write_sitemap(out_path, boats)
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning("Sitemap generation failed: %s", e)
-
-    # Generate pre-rendered static HTML pages for boats, landings, and species.
+    # Generate pre-rendered static HTML pages for boats, landings, and species,
+    # then build sitemap.xml from the pages actually written.
+    pages: list[dict] = []
     try:
         from .generate_pages import generate_all_pages
-        generate_all_pages(conn, out_path.parent, out_path.parent / "index.html")
+        pages = generate_all_pages(conn, out_path.parent, out_path.parent / "index.html")
     except Exception as e:
-        import logging as _logging
-        _logging.getLogger(__name__).warning("Page generation failed: %s", e)
+        _log.warning("Page generation failed: %s", e)
+
+    try:
+        latest = max((t.get("date") or "" for t in trips), default="") or date.today().isoformat()
+        _write_sitemap(out_path, pages, latest[:10])
+    except Exception as e:
+        _log.warning("Sitemap generation failed: %s", e)
 
     return len(trips)
 
 
-def _write_sitemap(data_js_path: Path, boats: list[dict]) -> None:
-    """Write sitemap.xml to the same directory as data.js."""
-    from urllib.parse import quote
-    base  = "https://thetunatracker.com"
-    today = date.today().isoformat()
-    sd_landings = {
-        "H&M Landing", "Fisherman's Landing", "Seaforth Sportfishing",
-        "Point Loma Sportfishing", "Oceanside Sea Center",
-    }
-    # Path-based URLs (crawlable). Each view is a real indexable URL; the static
-    # host serves index.html for these paths via the 404.html SPA fallback.
-    entries = [
-        (base + "/",                      "1.0", "daily"),
-        (base + "/sd/today",              "0.9", "daily"),
-        # /sd/forecast removed 2026-09-06 (soft-retire); web/_redirects 301s it to /sd/charts.
-        (base + "/sd/boats",              "0.8", "weekly"),
-        (base + "/sd/analytics/overview", "0.7", "weekly"),
-        (base + "/sd/tripplanner",        "0.6", "daily"),
-    ]
-    seen: set[str] = set()
-    for b in boats:
-        name    = b.get("name") or b.get("boat", "")
-        landing = b.get("landing", "")
-        if not name or name in seen or landing not in sd_landings:
-            continue
-        seen.add(name)
-        entries.append((f"{base}/sd/boat/{quote(name)}", "0.5", "weekly"))
+def _write_sitemap(data_js_path: Path, pages: list[dict], latest: str) -> None:
+    """Write sitemap.xml to the same directory as data.js.
 
-    # Landing pages
-    for landing, slug in [
-        ("H&M Landing", "hm-landing"),
-        ("Fisherman's Landing", "fishermans-landing"),
-        ("Seaforth Sportfishing", "seaforth"),
-        ("Point Loma Sportfishing", "point-loma"),
-        ("Oceanside Sea Center", "oceanside"),
-    ]:
-        entries.append((f"{base}/sd/landing/{slug}", "0.6", "weekly"))
-
-    # Species pages
-    for slug in ["bluefin-tuna", "yellowfin-tuna", "yellowtail", "dorado"]:
-        entries.append((f"{base}/sd/species/{slug}", "0.6", "weekly"))
+    pages: generate_pages.generate_all_pages() output. Only indexable pages go
+    in, at their canonical (trailing-slash) URLs, with lastmod = the date of
+    the newest trip behind the page. Google ignores <changefreq>/<priority>,
+    and ignores <lastmod> when it's always "today", so neither is faked.
+    """
+    from xml.sax.saxutils import escape
+    from .generate_pages import SITE_URL
+    # SPA routes, served as index.html by the 200 rewrites in web/_redirects.
+    # /sd/forecast removed 2026-09-06 (soft-retire); web/_redirects 301s it to /sd/charts.
+    entries = [(path, latest) for path in (
+        "/", "/sd/today", "/sd/boats", "/sd/analytics/overview", "/sd/tripplanner",
+    )]
+    entries += [(p["url"], p["lastmod"] or latest) for p in pages if p.get("index")]
 
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for url, priority, freq in entries:
+    for path, lastmod in entries:
         lines += [
             "  <url>",
-            f"    <loc>{url}</loc>",
-            f"    <lastmod>{today}</lastmod>",
-            f"    <changefreq>{freq}</changefreq>",
-            f"    <priority>{priority}</priority>",
+            f"    <loc>{escape(SITE_URL + path)}</loc>",
+            f"    <lastmod>{lastmod[:10]}</lastmod>",
             "  </url>",
         ]
     lines.append("</urlset>")
     (data_js_path.parent / "sitemap.xml").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    # sitemap.xml uses path-based URLs (see entries above) for crawlable routes.
