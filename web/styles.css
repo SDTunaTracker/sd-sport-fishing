@@ -6172,10 +6172,41 @@ main[data-screen-label="charts"] + .app-footer { display: none; }
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
 .catch-popup-wrap .leaflet-popup-content { margin: 10px 12px 11px; }
-.forum-spot-links { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; font-size: 12px; }
-.forum-spot-links a { color: var(--accent); text-decoration: none; }
-.forum-spot-links a:hover { text-decoration: underline; }
-.forum-spot-src { margin-top: 6px; font-size: 10.5px; opacity: .6; }
+/* ── BloodyDecks forum spots layer (Charts) ── */
+.fs-hit { background: none; border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.fs-dot { width: 8px; height: 8px; border-radius: 50%; background: #CF6A3C; box-shadow: 0 0 0 2px #fff; display: block; }
+.fs-pop { font-family: var(--tb-font-body); color: var(--ink); }
+.fs-eyebrow { font: 500 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.fs-title { font: 600 17px/1.25 var(--serif); margin: 4px 0 3px; }
+.fs-meta { font: 400 11.5px/1.4 var(--mono); color: var(--muted); }
+.fs-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.fs-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: var(--band); font-size: 12px; }
+.fs-chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.fs-chip b { font-weight: 600; }
+.fs-facts { display: flex; gap: 16px; margin-top: 8px; font-size: 12.5px; }
+.fs-facts span { color: var(--muted); margin-right: 5px; }
+.fs-links { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.fs-links a { display: flex; flex-direction: column; text-decoration: none; color: var(--accent); font-size: 12.5px; font-weight: 600; }
+.fs-links a small { color: var(--muted); font-weight: 400; font-size: 11.5px; }
+.fs-links a:hover span { text-decoration: underline; }
+.fs-foot { margin-top: 8px; font-size: 12px; color: var(--faint); }
+.fs-controls { margin-top: 8px; }
+.fs-seg { display: inline-flex; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; }
+.fs-seg button { height: 36px; padding: 0 14px; background: transparent; color: rgba(255,255,255,.8); border: 0; font-size: 12.5px; cursor: pointer; }
+.fs-seg button.on { background: #CF6A3C; color: #fff; }
+.fs-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font-size: 11.5px; color: rgba(255,255,255,.75); }
+.fs-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.fs-lg-dot { width: 8px; height: 8px; border-radius: 50%; background: #CF6A3C; box-shadow: 0 0 0 2px #fff; display: inline-block; }
+.fs-lg-circle { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #CF6A3C; background: rgba(207,106,60,.14); display: inline-block; }
+.fs-lg-attr { flex-basis: 100%; opacity: .7; }
+.layers-sheet .fs-seg { border-color: var(--line); }
+.layers-sheet .fs-seg button { color: var(--ink); }
+.layers-sheet .fs-seg button.on { color: #fff; }
+.layers-sheet .fs-legend { color: var(--muted); }
+.fs-sheet-overlay { position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,.25); display: flex; align-items: flex-end; }
+.fs-sheet { position: relative; width: 100%; max-height: 70vh; overflow-y: auto; background: #fff; border-radius: 16px 16px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 24px rgba(0,0,0,.18); }
+.fs-sheet-close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; }
+.fs-sheet .fs-pop { padding-right: 36px; }
 
 @media (max-width: 768px) {
   .catch-toggle-pill { top: 60px; font-size: 11px; padding: 5px 10px 5px 8px; }

@@ -1440,8 +1440,18 @@ function buildCatchLayer(trips, filterDateStr, regionLandings) {
 
 // ── BloodyDecks forum spots (api/v1/forum_spots.geojson) ─────────────────────
 // One feature per spot with recent forum reports (scraper/paddies/spots.py).
-// properties.region is san_diego | oc_la | both; a single-region view keeps
-// its own region plus "both"; SD + OC/LA together shows everything.
+// Contract: side-session notes bloodydecks-forum-spots.md. Design: UX session
+// spec 2026-11-25 (size = location certainty only; no pins; 7d/14d window).
+// Region: a single-region view keeps its own region plus "both"; SD + OC/LA
+// together shows everything.
+var FS_ACCENT = '#CF6A3C';
+var FS_SPECIES = {
+  yellowfin: ['Yellowfin', '#C9A227'], bluefin: ['Bluefin', '#2F5D8A'],
+  yellowtail: ['Yellowtail', '#4F8A5B'], dorado: ['Dorado', '#2F7F86'],
+};
+var FS_BITE = { wide_open: 'Wide open', good: 'Good', fair: 'Fair', slow: 'Slow', none: 'No bite' };
+var FS_MAX_AREA_PX = 60;   // on-screen cap for islands / large areas (precision_nm > 10)
+
 var _spotsPromise = null;
 function loadForumSpots() {
   if (!_spotsPromise) {
@@ -1452,12 +1462,13 @@ function loadForumSpots() {
   return _spotsPromise;
 }
 
-function forumSpotsForRegion(geo, effRegion) {
+function forumSpotsForRegion(geo, effRegion, windowDays) {
   var feats = (geo && geo.features) || [];
-  if (!effRegion || effRegion === 'all_socal') return feats;
   return feats.filter(function(f) {
-    var r = f.properties && f.properties.region;
-    return r === effRegion || r === 'both';
+    var p = f.properties || {};
+    if (effRegion && effRegion !== 'all_socal' && p.region !== effRegion && p.region !== 'both') return false;
+    if (windowDays === 7 && !(p.reports_7d > 0)) return false;
+    return true;
   });
 }
 
@@ -1465,47 +1476,91 @@ var _HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&
 function _escHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) { return _HTML_ESC[c]; });
 }
+function _fsDate(iso) {
+  if (!iso) return '';
+  var d = new Date(iso + 'T12:00:00Z');
+  return isNaN(d) ? String(iso) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+function _fsTitle(s) { return String(s).replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }); }
 
-function buildForumSpotLayer(features) {
+function forumSpotPopupHtml(p) {
+  var r7 = p.reports_7d || 0, r14 = p.reports_14d || 0;
+  var chips = Object.keys(p.species || {}).sort(function(a, b) { return p.species[b] - p.species[a]; })
+    .slice(0, 6).map(function(k) {
+      var sp = FS_SPECIES[String(k).toLowerCase()];
+      var label = sp ? sp[0] : _fsTitle(k);
+      var color = sp ? sp[1] : 'var(--faint)';
+      return '<span class="fs-chip"><i style="background:' + color + '"></i>' + _escHtml(label) +
+        ' <b>' + _escHtml(p.species[k]) + '</b></span>';
+    }).join('');
+  var q = p.quality || {}, topQ = null;
+  Object.keys(q).forEach(function(k) { if (!topQ || q[k] > q[topQ]) topQ = k; });
+  var t = p.water_temp_f;
+  var water = t && t.min != null ? (Math.round(t.min) === Math.round(t.max)
+    ? Math.round(t.min) + '°F' : Math.round(t.min) + '–' + Math.round(t.max) + '°F') : null;
+  var links = (p.sources || []).slice(0, 5).map(function(src) {
+    if (!/^https:\/\//.test(src.url || '')) return '';
+    return '<a href="' + _escHtml(src.url) + '" target="_blank" rel="noopener">' +
+      '<span>Read on BloodyDecks ↗</span><small>' + _escHtml(src.title || 'Forum thread') +
+      (src.date ? ' · ' + _escHtml(_fsDate(src.date)) : '') + '</small></a>';
+  }).filter(Boolean).join('');
+  var foot = p.position === 'posted' ? 'Position as posted.'
+    : p.position === 'estimate' ? 'Approximate (±' + _escHtml(p.precision_nm) + ' nm).' : 'Spot centre.';
+  return '<div class="fs-pop">' +
+    '<div class="fs-eyebrow">From BloodyDecks reports</div>' +
+    '<div class="fs-title">' + _escHtml(p.name || 'Forum spot') + '</div>' +
+    '<div class="fs-meta">' + r7 + ' this week · ' + r14 + ' in 14 days' +
+      (p.last_report ? ' · last ' + _escHtml(_fsDate(p.last_report)) : '') + '</div>' +
+    (chips ? '<div class="fs-chips">' + chips + '</div>' : '') +
+    ((topQ || water) ? '<div class="fs-facts">' +
+      (topQ ? '<div><span>Bite</span><b>' + _escHtml(FS_BITE[topQ] || _fsTitle(topQ)) + '</b></div>' : '') +
+      (water ? '<div><span>Water</span><b>' + water + '</b></div>' : '') + '</div>' : '') +
+    (links ? '<div class="fs-links">' + links + '</div>' : '') +
+    '<div class="fs-foot">' + foot + ' Spot list courtesy SWYC Anglers.</div>' +
+  '</div>';
+}
+
+function _metersToPx(meters, lat, zoom) {
+  var mpp = 40075016.686 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom + 8);
+  return meters / mpp;
+}
+
+// onSelect(props, latlng): called on tap/click. Caller decides popup vs sheet.
+function buildForumSpotLayer(map, features, windowDays, onSelect) {
   var group = L.layerGroup();
+  var zoom = map.getZoom();
   features.forEach(function(f) {
     var p = f.properties || {};
     var c = f.geometry && f.geometry.coordinates;
     if (!c || c.length < 2) return;
     var latlng = [c[1], c[0]];
-    var n = p.reports_14d || 1;
-    if (p.precision_nm && p.precision_nm >= 1) {
-      L.circle(latlng, { radius: p.precision_nm * 1852, color: '#f59e0b', weight: 1,
-        opacity: 0.5, fillOpacity: 0.06, interactive: false }).addTo(group);
+    var dim = (windowDays === 14 && !(p.reports_7d > 0)) ? 0.45 : 1;
+    var posted = p.position === 'posted';
+    var nm = p.precision_nm || 1;
+    if (!posted) {
+      if (nm > 10) {
+        L.circleMarker(latlng, {
+          radius: Math.min(FS_MAX_AREA_PX, _metersToPx(nm * 1852, latlng[0], zoom)),
+          color: FS_ACCENT, weight: 1.5, dashArray: '5 4', fill: false, opacity: dim, interactive: false,
+        }).addTo(group);
+      } else {
+        L.circle(latlng, {
+          radius: nm * 1852, color: FS_ACCENT, weight: 1.5, opacity: dim,
+          fillColor: FS_ACCENT, fillOpacity: 0.14 * dim, interactive: false,
+        }).addTo(group);
+      }
     }
-    var marker = L.circleMarker(latlng, {
-      radius: Math.max(6, Math.min(16, 5 + Math.sqrt(n) * 3)),
-      color: '#ffffff', weight: 2, fillColor: '#f59e0b', fillOpacity: 0.85,
+    // 44px hit target at the spot; visible 8px dot only for posted positions.
+    var hit = L.marker(latlng, {
+      icon: L.divIcon({
+        className: 'fs-hit',
+        html: posted ? '<span class="fs-dot" style="opacity:' + dim + '"></span>' : '',
+        iconSize: [44, 44], iconAnchor: [22, 22],
+      }),
+      title: p.name || 'Forum spot', keyboard: true, riseOnHover: true,
     });
-    var species = Object.keys(p.species || {}).slice(0, 4).map(function(s) {
-      return _escHtml(s) + ' (' + _escHtml(p.species[s]) + ')';
-    }).join(', ');
-    var links = (p.sources || []).slice(0, 3).map(function(s) {
-      var url = /^https:\/\//.test(s.url || '') ? s.url : null;
-      return url ? '<a href="' + _escHtml(url) + '" target="_blank" rel="noopener">' +
-        _escHtml(s.title || 'Forum post') + (s.date ? ' · ' + _escHtml(s.date) : '') + '</a>' : '';
-    }).filter(Boolean).join('');
-    var posTag = p.position === 'posted' ? 'Posted coordinates'
-      : p.position === 'estimate' ? 'Estimated position' : 'Spot centre';
-    marker.bindPopup(
-      '<div class="catch-popup forum-spot-popup">' +
-        '<div class="catch-popup-boat">' + _escHtml(p.name || 'Forum report') + '</div>' +
-        '<div class="catch-popup-meta">' + n + ' report' + (n === 1 ? '' : 's') + ' in 14 days' +
-          (p.last_report ? ' &middot; last ' + _escHtml(p.last_report) : '') + '</div>' +
-        (species ? '<div class="catch-popup-species">' + species + '</div>' : '') +
-        '<div class="catch-popup-loc">' + posTag +
-          (p.precision_nm ? ' &middot; ±' + _escHtml(p.precision_nm) + ' nm' : '') + '</div>' +
-        (links ? '<div class="forum-spot-links">' + links + '</div>' : '') +
-        '<div class="forum-spot-src">BloodyDecks forum, summarized automatically</div>' +
-      '</div>',
-      { className: 'catch-popup-wrap', maxWidth: 260 }
-    );
-    marker.addTo(group);
+    hit.on('click', function() { onSelect(p, latlng); });
+    hit.addTo(group);
   });
   return group;
 }
@@ -1582,7 +1637,7 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 
 function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode, dirMode,
                       onBase, onCond, onTides, onBoats, onCatches, onSstMode, onDirMode,
-                      spotCount, showSpots, onSpots }) {
+                      spotCount, showSpots, onSpots, spotWindow, onSpotWindow }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
     { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
@@ -1671,6 +1726,21 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
             </button>
           )}
         </div>
+        {spotCount > 0 && showSpots && onSpotWindow && (
+          <div className="fs-controls">
+            <div className="fs-seg" role="group" aria-label="Forum report window">
+              {[7, 14].map(function(d) {
+                return <button key={d} className={spotWindow === d ? 'on' : ''} aria-pressed={spotWindow === d}
+                  onClick={function() { onSpotWindow(d); }}>{d} days</button>;
+              })}
+            </div>
+            <div className="fs-legend">
+              <span><i className="fs-lg-dot"></i>Posted position</span>
+              <span><i className="fs-lg-circle"></i>Approximate area</span>
+              <span className="fs-lg-attr">BloodyDecks reports · spot list courtesy SWYC Anglers</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1878,6 +1948,9 @@ function ChartsView({ navigate, settings, regions }) {
   const [showCatches, setShowCatches] = React.useState(false);
   const [showSpots, setShowSpots]     = React.useState(false);
   const [spotsGeo, setSpotsGeo]       = React.useState(null);
+  const [spotWindow, setSpotWindow]   = React.useState(14);
+  const [spotSheet, setSpotSheet]     = React.useState(null);   // phone bottom sheet
+  const [mapZoom, setMapZoom]         = React.useState(null);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
   const [sstMode, setSstMode]       = React.useState(function() {
     return localStorage.getItem('tt_sst_mode') || 'mur';
@@ -2562,15 +2635,45 @@ function ChartsView({ navigate, settings, regions }) {
     loadForumSpots().then(function(g) { if (live) setSpotsGeo(g); });
     return function() { live = false; };
   }, []);
-  var regionSpots = React.useMemo(function() { return forumSpotsForRegion(spotsGeo, effRegion); }, [spotsGeo, effRegion]);
+  var regionSpots14 = React.useMemo(function() { return forumSpotsForRegion(spotsGeo, effRegion, 14); }, [spotsGeo, effRegion]);
+  var regionSpots = React.useMemo(function() { return forumSpotsForRegion(spotsGeo, effRegion, spotWindow); }, [spotsGeo, effRegion, spotWindow]);
+  // Turning the layer on frames the region's spots, so small (1–2 nm) areas are
+  // legible and their tap targets don't overlap; also fixes the SD-centred view
+  // for OC/LA. Only on the off→on transition, never while the user pans.
+  const spotsFramedRef = React.useRef(false);
   React.useEffect(function() {
-    if (!mapInstance.current) return;
-    if (spotLayerRef.current) { mapInstance.current.removeLayer(spotLayerRef.current); spotLayerRef.current = null; }
+    var map = mapInstance.current;
+    if (!showSpots) { spotsFramedRef.current = false; return; }
+    if (!map || spotsFramedRef.current || !regionSpots14.length) return;
+    var pts = regionSpots14.map(function(f) { return [f.geometry.coordinates[1], f.geometry.coordinates[0]]; });
+    map.fitBounds(L.latLngBounds(pts), { padding: [60, 60], maxZoom: 9 });
+    spotsFramedRef.current = true;
+  }, [showSpots, regionSpots14]);
+
+  // Area circles are capped in screen pixels, so rebuild on zoom.
+  React.useEffect(function() {
+    var map = mapInstance.current;
+    if (!map || !showSpots) return;
+    function onZoom() { setMapZoom(map.getZoom()); }
+    map.on('zoomend', onZoom);
+    return function() { map.off('zoomend', onZoom); };
+  }, [showSpots]);
+  React.useEffect(function() {
+    var map = mapInstance.current;
+    if (!map) return;
+    if (spotLayerRef.current) { map.removeLayer(spotLayerRef.current); spotLayerRef.current = null; }
+    map.closePopup();
     if (showSpots && regionSpots.length) {
-      spotLayerRef.current = buildForumSpotLayer(regionSpots);
-      spotLayerRef.current.addTo(mapInstance.current);
+      spotLayerRef.current = buildForumSpotLayer(map, regionSpots, spotWindow, function(p, latlng) {
+        if (window.innerWidth <= 720) { setSpotSheet(p); return; }
+        L.popup({ className: 'catch-popup-wrap fs-popup-wrap', maxWidth: 300, minWidth: 240, offset: [0, -6] })
+          .setLatLng(latlng).setContent(forumSpotPopupHtml(p)).openOn(map);
+      });
+      spotLayerRef.current.addTo(map);
+    } else {
+      setSpotSheet(null);
     }
-  }, [showSpots, regionSpots]);
+  }, [showSpots, regionSpots, spotWindow, mapZoom]);
 
   function handleSliderInput(val) {
     setSliderStep(val);
@@ -2621,7 +2724,7 @@ function ChartsView({ navigate, settings, regions }) {
   if (showTides)           activeLayerLabels.push('Tides');
   if (showCatches)         activeLayerLabels.push('Catches');
   if (showBoats)           activeLayerLabels.push('Boats');
-  if (showSpots && regionSpots.length) activeLayerLabels.push('Forum');
+  if (showSpots && regionSpots14.length) activeLayerLabels.push('Forum');
 
   var maxSliderStep = sliderSeries ? sliderSeries.frames.length - 1 : 0;
 
@@ -2654,9 +2757,20 @@ function ChartsView({ navigate, settings, regions }) {
             onCond={onCond}
             onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
             onSstMode={setSstMode} onDirMode={setDirMode}
-            spotCount={regionSpots.length} showSpots={showSpots} onSpots={setShowSpots}
+            spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
+            spotWindow={spotWindow} onSpotWindow={setSpotWindow}
           />
         </div>
+
+        {spotSheet && (
+          <div className="fs-sheet-overlay" onClick={function(e) { if (e.target === e.currentTarget) setSpotSheet(null); }}>
+            <div className="fs-sheet" role="dialog" aria-label={spotSheet.name || 'Forum spot'}>
+              <button className="fs-sheet-close" aria-label="Close" onClick={function() { setSpotSheet(null); }}>×</button>
+              {/* forumSpotPopupHtml escapes every field from the feed. */}
+              <div dangerouslySetInnerHTML={{ __html: forumSpotPopupHtml(spotSheet) }} />
+            </div>
+          </div>
+        )}
 
         {/* Left-edge vertical color scale */}
         <ChartScaleBar baseLayer={baseLayer} condLayers={condLayers} unitSystem={unitSystem}
@@ -2755,7 +2869,8 @@ function ChartsView({ navigate, settings, regions }) {
               onCond={onCond}
               onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
               onSstMode={setSstMode} onDirMode={setDirMode}
-              spotCount={regionSpots.length} showSpots={showSpots} onSpots={setShowSpots}
+              spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
+              spotWindow={spotWindow} onSpotWindow={setSpotWindow}
             />
             <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
           </div>

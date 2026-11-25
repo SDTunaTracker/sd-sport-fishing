@@ -370,8 +370,7 @@ function ccRegionBlock(regions, trips) {
 
 ORANGE COUNTY / LA LANDINGS (the user is browsing ${r.includes('san_diego') ? 'all of Southern California' : 'the OC / LA region'}):
 - Landings: ${ocla.join(', ')}.
-${scheduled.size ? `- Trips from ${[...scheduled].join(', ')} are in UPCOMING TRIPS above; use trip cards for those as usual.${nl}` : ''}- Tunatracker has NO trip schedules, prices or open spots for: ${noFeed.join(', ')}. Never invent them and never write a <trip-card> for those landings. Recommend boats from OC/LA RECENT CATCH below, then tell the user to check the schedule and book on the landing's own site:
-${noFeed.map(l => `  ${l}: ${sites[l] || 'contact the landing directly'}`).join(nl)}
+${scheduled.size ? `- Trips from ${[...scheduled].join(', ')} are in UPCOMING TRIPS above; use trip cards for those as usual.${nl}` : ''}- Tunatracker has NO trip schedules, prices or open spots for: ${noFeed.join(', ')}. Never invent them and never write a <trip-card> for those landings. Recommend boats from OC/LA RECENT CATCH below, then tell the user to check the schedule and book on that landing's own website, by name (e.g. "book on Davey's Locker's site"). Do not write URLs, phone numbers or markdown links for these landings. ${noFeed.some(l => sites[l]) ? `The Trip Planner page the user is on lists booking links for: ${noFeed.filter(l => sites[l]).join(', ')}; you may say so.` : ''}${noFeed.some(l => !sites[l]) ? ` For ${noFeed.filter(l => !sites[l]).join(', ')}, say to contact the landing directly.` : ''}
 - Most OC/LA trips target rockfish, whitefish, calico bass, bonito and other local species; tuna/yellowtail/dorado are seasonal there. Use "fish per angler (all species)" for OC/LA boats, not trophy-only stats, unless the user asks about a specific species.
 - All HARD RULES apply here too: only the data below, landed fish only, no forecasts or predictions.
 
