@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from .analytics import (
@@ -619,6 +619,105 @@ def _scrape_status_payload(conn: sqlite3.Connection) -> dict:
     return {"lastFullScrape": last_full, "landings": landings}
 
 
+# ── Slim mobile-app export: web/api/v1/app.json ────────────────────────────
+# Same keys and row shapes as window.SD, cut to what the Expo app reads.
+# Spec: tuna-tracker docs/ux/APP_DATA_ENDPOINT.md. Bump APP_SCHEMA_VERSION on
+# any breaking change to the shape.
+APP_SCHEMA_VERSION = 1
+APP_JSON_REL = Path("api") / "v1" / "app.json"
+APP_JSON_GZ_BUDGET = 250 * 1024
+_TOP_SPECIES = frozenset({
+    "Bluefin", "Yellowfin", "Yellowtail", "Dorado", "Skipjack", "Bigeye", "Albacore",
+    "Rockfish", "Sheephead", "Calico Bass", "Sand Bass", "Halibut", "Lingcod",
+    "Whitefish", "Bonito", "Barracuda", "White Sea Bass",
+})
+
+
+def _app_trip(t: dict, recent_cutoff: str, scraped_at: dict) -> dict:
+    """Copy of a TRIPS row for app.json: fullCatch keeps only species with no
+    top-level column, and every trip in the last 7 days carries reportedAt
+    (landing-reported time, else when we first scraped it)."""
+    t = dict(t)
+    fc = t.get("fullCatch")
+    if fc is not None:
+        extra = {k: v for k, v in fc.items() if k not in _TOP_SPECIES}
+        if extra:
+            t["fullCatch"] = extra
+        else:
+            del t["fullCatch"]
+    if t["date"] >= recent_cutoff and not t.get("reportedAt"):
+        t["reportedAt"] = scraped_at.get(t["id"])
+    return t
+
+
+def _monthly_rollup(conn: sqlite3.Connection) -> list[dict]:
+    rows = conn.execute(
+        """SELECT CAST(substr(date,1,4) AS INTEGER) y, CAST(substr(date,6,2) AS INTEGER) m,
+                  COUNT(*), SUM(COALESCE(anglers,0) * COALESCE(trip_length_days,0)),
+                  SUM(COALESCE(trophy_count,0)), SUM(COALESCE(bluefin,0)), SUM(COALESCE(yellowfin,0))
+             FROM trips
+            WHERE is_half_day = 0 AND COALESCE(is_preliminary,0) = 0
+              AND COALESCE(region,'san_diego') = 'san_diego' AND date >= '2015-01-01'
+            GROUP BY y, m ORDER BY y, m"""
+    ).fetchall()
+    return [
+        {"year": y, "month": m, "trips": n, "anglerDays": _round(ad, 1),
+         "trophy": tr, "bluefin": bf, "yellowfin": yf}
+        for y, m, n, ad, tr, bf, yf in rows
+    ]
+
+
+def build_app_payload(conn: sqlite3.Connection, full: dict, today: date | None = None,
+                      now: datetime | None = None) -> dict:
+    """Derive the app.json payload from the full window.SD payload."""
+    today = today or date.today()
+    now = now or datetime.now(timezone.utc)
+    recent_cutoff = (today - timedelta(days=7)).isoformat()
+    scraped_at = {
+        r[0]: r[1] for r in conn.execute(
+            "SELECT id, scraped_at FROM trips WHERE date >= ?", (recent_cutoff,))
+    }
+    sd = lambda t: (t.get("region") or "san_diego") == "san_diego"
+    yr = today.year
+    trips = [_app_trip(t, recent_cutoff, scraped_at)
+             for t in full["TRIPS"] if sd(t) and t["year"] >= yr - 1]
+    half = [_app_trip(t, recent_cutoff, scraped_at)
+            for t in full["HALF_DAY_TRIPS"] if sd(t) and t["year"] == yr]
+    sd_landings = {m["name"] for m in LANDINGS_META if m.get("region") == "san_diego"}
+    today_s = today.isoformat()
+    schedule = [s for s in full["SCHEDULE"]
+                if (s.get("departureAt") or "")[:10] >= today_s
+                and s["landing"] in sd_landings]
+    return {
+        "schemaVersion": APP_SCHEMA_VERSION,
+        "generatedAt": now.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "META": {**full["META"], "tripCount": len(trips), "scheduleCount": len(schedule)},
+        "LANDINGS_META": full["LANDINGS_META"],
+        "TODAY": full["TODAY"],
+        "SCHEDULE": schedule,
+        "TRIPS": trips,
+        "HALF_DAY_TRIPS": half,
+        "MONTHLY": _monthly_rollup(conn),
+        "BOAT_PROFILES": full["BOAT_PROFILES"],
+    }
+
+
+def write_app_json(conn: sqlite3.Connection, full: dict, web_dir: Path) -> Path:
+    import gzip
+    import logging as _logging
+    path = web_dir / APP_JSON_REL
+    path.parent.mkdir(parents=True, exist_ok=True)
+    body = json.dumps(build_app_payload(conn, full), separators=(",", ":"), default=str)
+    path.write_text(body, encoding="utf-8")
+    gz = len(gzip.compress(body.encode("utf-8"), 9))
+    log = _logging.getLogger(__name__)
+    log.info("app.json: %.0f KB raw, %.0f KB gzipped", len(body) / 1024, gz / 1024)
+    if gz > APP_JSON_GZ_BUDGET:
+        log.warning("app.json is %.0f KB gzipped, over the %d KB budget",
+                    gz / 1024, APP_JSON_GZ_BUDGET // 1024)
+    return path
+
+
 def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | None = None) -> int:
     """Write data.js. Returns trip count written.
 
@@ -711,6 +810,12 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         _log.warning(
             "data.js is %.1f MiB — approaching 25 MiB Cloudflare Pages limit.", _size_mb
         )
+
+    # Slim JSON for the mobile app — never fails the main export.
+    try:
+        write_app_json(conn, payload, out_path.parent)
+    except Exception as e:
+        _log.warning("app.json generation failed: %s", e)
 
     # Regenerate sitemap.xml alongside data.js.
     try:

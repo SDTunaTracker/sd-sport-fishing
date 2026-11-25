@@ -341,7 +341,8 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 completeness.write_run_status(
                     conn, mode, exit_code,
                     f"core landing(s) failed: {', '.join(core_failures)}" if core_failures else "")
-                probs = completeness.check(conn, run_status=completeness.load_run_status(conn))
+                probs = completeness.check(conn, run_status=completeness.load_run_status(conn),
+                                           app_json=completeness.APP_JSON)
                 # BloodyDecks paddies have their own DB/workflow; their health
                 # check reads published state. Only present once that branch merges.
                 try:

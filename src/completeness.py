@@ -23,6 +23,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / "tracker.db"
+APP_JSON = ROOT / "web" / "api" / "v1" / "app.json"   # mobile-app export (src/export.py)
+APP_JSON_MAX_AGE = timedelta(hours=26)
 
 CORE_LANDINGS = (
     "H&M Landing",
@@ -110,7 +112,8 @@ def _age(d: date | None, today: date) -> int | None:
 
 
 def check(conn: sqlite3.Connection, today: date | None = None,
-          run_status: dict | None = None, now: datetime | None = None) -> list[Problem]:
+          run_status: dict | None = None, now: datetime | None = None,
+          app_json: Path | None = None) -> list[Problem]:
     today = today or date.today()
     now = now or datetime.now(timezone.utc)
     probs: list[Problem] = []
@@ -193,6 +196,18 @@ def check(conn: sqlite3.Connection, today: date | None = None,
             elif st.get("exit_code"):
                 probs.append(Problem(f"job:{mode}:exit", "scheduler", "critical",
                                      f"last {mode} run exited {st['exit_code']}: {st.get('reason', '')}"))
+
+    # 7. Mobile-app export written recently (only when a path is given).
+    if app_json is not None:
+        gen = None
+        try:
+            gen = json.loads(app_json.read_text(encoding="utf-8")).get("generatedAt")
+            last = datetime.fromisoformat(gen.replace("Z", "+00:00")) if gen else None
+        except (OSError, ValueError, AttributeError):
+            last = None
+        if last is None or now - last > APP_JSON_MAX_AGE:
+            probs.append(Problem("export:app.json", "app.json", "warning",
+                                 f"api/v1/app.json last generated {gen or 'never'}"))
     return probs
 
 
