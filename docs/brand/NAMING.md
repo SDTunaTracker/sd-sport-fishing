@@ -96,3 +96,30 @@ Coordinated with the "SEO for thetunatracker.com" session before anything happen
 - Trademark mirrors: [WIDE OPEN](https://trademark.justia.com/852/16/wide-85216788.html), [WIDE OPEN OUTDOOR ADVENTURES](https://trademark.justia.com/856/28/wide-open-outdoor-85628787.html), [WIDE OPEN MARINE](https://trademarks.justia.com/997/08/wide-open-99708166.html), [FISH WIDE OPEN](https://trademark.justia.com/982/51/fish-wide-98251986.html), [MR. FOAMER](https://markinton.com/trademark/mr-foamer-86108666), [976-TUNA](https://trademark.justia.com/851/12/976-tuna-85112188.html). Searches for TUNA TRACKER and RAILSIDE returned no matching marks.
 - "Foamer" usage: [Half Past First Cast](https://www.halfpastfirstcast.com/blogstuff-we-like/tuna-on-the-brain-foamers-on-your-dome).
 - Domains: Verisign RDAP (.com) and Google Registry RDAP (.app) lookups, plus public DNS, 2026-11-24. "Unregistered" means the registry returned not-found that day; it can change at any time.
+
+---
+
+## 7. Decision: Tunatracker (2026-11-25)
+
+The owner chose the one-word name **Tunatracker**, dropping "The". The styling (Tunatracker / TunaTracker / tunatracker) is still open; the mockups are in `mockups/brand-review.html`, and the recommendation is **Tunatracker**.
+
+### Preliminary checks on the one-word form (2026-11-25, not legal clearance)
+
+| Check | Result |
+|---|---|
+| Trademark mirrors (Justia, Markinton) | No TUNATRACKER or TUNA TRACKER mark found. Closest marks: TUNERTRACK (class 35, advertising) and TASTETRACKER (mobile app); neither is in fishing |
+| App Store / brands | No app or fishing brand named Tunatracker found |
+| X @tunatracker | **Taken:** a personal account belonging to someone else |
+| YouTube @tunatracker | **Taken:** a channel exists (no description visible) |
+| TikTok @tunatracker | **Appears taken:** the profile page returns that user ID |
+| Instagram, Facebook, Threads | **Can't tell:** these pages require login. The owner should check in the apps |
+| Fallback handles | @tunatrackerapp, @tunatracker.sd, @gotunatracker (the owner checks and claims; I haven't registered anything) |
+| Domains | thetunatracker.com: owned (valid to 2027-05-21). tunatracker.com: someone else's, in redemption, last changed 2026-11-18, so it's likely to drop around late December 2026 if it isn't redeemed. tunatracker.app, tunatracker.net, tunatracker.co, tunatracker.io: no registration found |
+
+As before: get a trademark attorney's clearance search (classes 9, 42, 35, 41) before filing or spending on the name.
+
+### Domain plan
+
+1. **Now:** the brand becomes Tunatracker on **thetunatracker.com**. No URL changes. Titles, `og:site_name`, the manifest, schema `name` and the header all say "Tunatracker" (the SEO session updates titles, schema and OG before its push).
+2. **Owner, optional:** backorder tunatracker.com through a registrar's drop-catch service before late December. Consider also registering tunatracker.app (cheap, matches the app, and it's what the app-store listing can link to). I have not bought, backordered or registered anything.
+3. **If tunatracker.com is acquired:** do the migration in section 6 (path-for-path 301s from thetunatracker.com, Search Console change of address, sitemap/canonical/`web/CNAME` updates, keep the old domain renewed for at least 2 years), jointly with the SEO session. If it isn't acquired, thetunatracker.com stays primary and nothing else changes.
