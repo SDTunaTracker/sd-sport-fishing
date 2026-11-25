@@ -20,6 +20,8 @@ from typing import Iterable
 import requests
 from bs4 import BeautifulSoup, Tag
 
+from . import polite
+
 from . import parse as P
 from .dates import pacific_today
 from .moon import moon_info
@@ -152,6 +154,9 @@ def _fetch(src: LandingSource, timeout: float = 30.0) -> str:
     headers = {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"}
     if src.referer:
         headers["Referer"] = src.referer
+    if polite.is_teck(src.url):  # socalfishreports etc.: honest UA, rate-limited
+        headers = polite.headers(src.url, headers)
+        polite.wait_turn(src.url)
     r = requests.get(src.url, headers=headers, timeout=timeout)
     r.raise_for_status()
     return r.text
@@ -833,8 +838,10 @@ def classify_report_status(text: str) -> str:
 
 def _fetch_optional(url: str, timeout: float = 20.0) -> str | None:
     """Fetch a URL, returning None on any error (used for supplementary pages)."""
-    headers = {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"}
+    headers = polite.headers(url, {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"})
     try:
+        if polite.is_teck(url):
+            polite.wait_turn(url)
         r = requests.get(url, headers=headers, timeout=timeout)
         r.raise_for_status()
         return r.text

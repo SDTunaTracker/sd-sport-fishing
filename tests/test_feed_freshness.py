@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 
 from src import completeness as C
+from src.schedule import SOURCES as SCHED_SOURCES
 
 TODAY = date(2026, 11, 24)
 NOW = datetime(2026, 11, 24, 20, 0, tzinfo=timezone.utc)
@@ -34,7 +35,8 @@ def _fresh_db(tmp_path) -> sqlite3.Connection:
     conn.executescript("""
         CREATE TABLE scrape_log (started_at TEXT, landing TEXT, status TEXT);
         CREATE TABLE scheduled_trips (landing TEXT, scraped_at TEXT);
-        CREATE TABLE trips (date TEXT, landing TEXT);
+        CREATE TABLE trips (date TEXT, landing TEXT, region TEXT);
+        CREATE TABLE ocla_conditions (date TEXT, location TEXT, sst_celsius REAL);
         CREATE TABLE ocean_temps (date TEXT, location TEXT);
         CREATE TABLE historical_conditions (date TEXT);
         CREATE TABLE upwelling_obs (date TEXT);
@@ -45,10 +47,13 @@ def _fresh_db(tmp_path) -> sqlite3.Connection:
     ts = (NOW - timedelta(hours=1)).isoformat()
     for ln in C.CORE_LANDINGS:
         conn.execute("INSERT INTO scrape_log VALUES (?,?,'ok')", (ts, ln))
-        conn.execute("INSERT INTO scheduled_trips VALUES (?,?)", (ln, ts))
+    for src in SCHED_SOURCES:
+        conn.execute("INSERT INTO scheduled_trips VALUES (?,?)", (src.name, ts))
     for i in range(1, 31):
         d = (TODAY - timedelta(days=i)).isoformat()
-        conn.execute("INSERT INTO trips VALUES (?,?)", (d, C.CORE_LANDINGS[0]))
+        conn.execute("INSERT INTO trips VALUES (?,?,'san_diego')", (d, C.CORE_LANDINGS[0]))
+        conn.execute("INSERT INTO trips VALUES (?,?,'oc_la')", (d, "Davey's Locker"))
+        conn.execute("INSERT INTO ocla_conditions VALUES (?,?,15.0)", (d, "Catalina Channel"))
         for loc in C.SST_LOCATIONS:
             conn.execute("INSERT INTO ocean_temps VALUES (?,?)", (d, loc))
         for t in ("historical_conditions", "daily_segment_stats",
@@ -73,12 +78,23 @@ def test_fresh_synthetic_db_passes(tmp_path):
     ("UPDATE scheduled_trips SET scraped_at='2026-11-20T00:00:00+00:00' WHERE landing like 'Seaforth%'",
      "schedule:Seaforth Sportfishing"),
     ("DELETE FROM upwelling_obs", "feed:upwelling_obs"),
+    ("UPDATE scheduled_trips SET scraped_at='2026-11-20T00:00:00+00:00' WHERE landing='Redondo Beach Sportfishing'",
+     "schedule:Redondo Beach Sportfishing"),
+    ("DELETE FROM ocla_conditions WHERE date > '2026-11-10'", "ocla_conditions:Catalina Channel"),
 ])
 def test_each_stale_feed_is_flagged(tmp_path, sql, key):
     conn = _fresh_db(tmp_path)
     conn.execute(sql)
     keys = {p.key for p in C.check(conn, today=TODAY, now=NOW)}
     assert key in keys
+
+
+def test_schedule_refresh_with_no_trips_counts_as_fresh(tmp_path):
+    conn = _fresh_db(tmp_path)
+    conn.execute("DELETE FROM scheduled_trips WHERE landing='Redondo Beach Sportfishing'")
+    assert "schedule:Redondo Beach Sportfishing" in {p.key for p in C.check(conn, today=TODAY, now=NOW)}
+    C.mark_schedule_refresh(conn, "Redondo Beach Sportfishing")
+    assert C.last_schedule_refresh(conn, "Redondo Beach Sportfishing") is not None
 
 
 def test_missed_or_failed_job_is_flagged(tmp_path):

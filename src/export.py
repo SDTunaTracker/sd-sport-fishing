@@ -297,6 +297,28 @@ def _sst_payload(conn: sqlite3.Connection) -> dict:
     }
 
 
+def _ocla_conditions_payload(conn: sqlite3.Connection, days: int = 60) -> dict:
+    """Build window.SD.OCLA_CONDITIONS: daily SST + wind at the OC/LA points.
+
+    {"points": {name: {"lat", "lng"}}, "landingPoint": {landing: point},
+     "daily": [{"date", "location", "sstF", "windKn", "windDeg"}, ...]}
+    Empty "daily" if the table doesn't exist yet.
+    """
+    from .ocla_conditions import LANDING_POINT, POINTS
+    out = {"points": {n: {"lat": la, "lng": lo} for n, (la, lo) in POINTS.items()},
+           "landingPoint": dict(LANDING_POINT), "daily": []}
+    try:
+        rows = conn.execute(
+            "SELECT date, location, sst_fahrenheit, wind_speed_kn, wind_dir_deg"
+            " FROM ocla_conditions WHERE date >= ? ORDER BY date, location",
+            ((date.today() - timedelta(days=days)).isoformat(),)).fetchall()
+    except sqlite3.OperationalError:
+        return out
+    out["daily"] = [{"date": r[0], "location": r[1], "sstF": _round(r[2], 1),
+                     "windKn": _round(r[3], 1), "windDeg": _round(r[4], 0)} for r in rows]
+    return out
+
+
 def _recent_predictions(conn: sqlite3.Connection, days: int = 14) -> list[dict]:
     """Last `days` days of model-predicted score vs actual fishing quality."""
     cutoff = (date.today() - timedelta(days=days)).isoformat()
@@ -788,6 +810,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "TODAY": _today_summary(all_rows),
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
+        "OCLA_CONDITIONS": _ocla_conditions_payload(conn),
         "FORECAST": forecast_payload,
         "REVIEWS": _reviews_payload(conn),
         "BOAT_PROFILES": _boat_profiles_payload(conn),

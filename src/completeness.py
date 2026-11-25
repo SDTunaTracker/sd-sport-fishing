@@ -44,6 +44,8 @@ FEEDS: dict[str, tuple[str, int]] = {
     "forecast_accuracy_log": ("date", 5),
 }
 
+OCLA_CONDITIONS_MAX_AGE = 7
+
 # Feeds whose upstream source is gone. Reported once in the docs, never alerted.
 ABANDONED = {
     "ocean_currents": "PFEG ERDDAP HYCOM datasets end 2018-11; used only by the 2014-2018 backtest",
@@ -163,13 +165,27 @@ def check(conn: sqlite3.Connection, today: date | None = None,
             probs.append(Problem(f"feed:{table}", table, "warning",
                                  f"{table} newest row is {a} days old (limit {max_age})"))
 
-    # 5. Schedules — every core landing refreshed in the last 48h.
-    for ln in CORE_LANDINGS:
-        row = conn.execute("SELECT MAX(scraped_at) FROM scheduled_trips WHERE landing=?", (ln,)).fetchone()
-        last = datetime.fromisoformat(row[0]) if row and row[0] else None
+    # 5. Schedules — every schedule source refreshed in the last 48h.
+    from .schedule import SOURCES as SCHED_SOURCES
+    for ln in [s.name for s in SCHED_SOURCES]:
+        last = last_schedule_refresh(conn, ln)
         if last is None or now - last > timedelta(hours=48):
             probs.append(Problem(f"schedule:{ln}", "scheduled_trips", "warning",
                                  f"{ln} schedule last refreshed {last or 'never'}"))
+
+    # 5a. OC/LA conditions (src.ocla_conditions). OC/LA scrape health and
+    # region-silence rules live with the OC/LA launch (REGIONAL_LANDINGS).
+    try:
+        for loc, d in conn.execute(
+                "SELECT location, MAX(date) FROM ocla_conditions WHERE sst_celsius IS NOT NULL"
+                " GROUP BY location"):
+            a = _age(date.fromisoformat(d), today)
+            if a > OCLA_CONDITIONS_MAX_AGE:
+                probs.append(Problem(f"ocla_conditions:{loc}", "ocla_conditions", "warning",
+                                     f"OC/LA SST for {loc} newest row is {a} days old"
+                                     f" (limit {OCLA_CONDITIONS_MAX_AGE})"))
+    except sqlite3.OperationalError:
+        pass
 
     # 5b. Sites blocking us with a CAPTCHA — its own alert type, not a code bug.
     try:
@@ -209,6 +225,33 @@ def check(conn: sqlite3.Connection, today: date | None = None,
             probs.append(Problem("export:app.json", "app.json", "warning",
                                  f"api/v1/app.json last generated {gen or 'never'}"))
     return probs
+
+
+_SCHED_REFRESH_DDL = """CREATE TABLE IF NOT EXISTS schedule_refresh (
+    landing TEXT PRIMARY KEY,
+    refreshed_at TEXT NOT NULL     -- UTC ISO of the last successful schedule scrape
+)"""
+
+
+def mark_schedule_refresh(conn: sqlite3.Connection, landing: str) -> None:
+    """Record a successful schedule scrape, even one that found no trips."""
+    conn.execute(_SCHED_REFRESH_DDL)
+    conn.execute("INSERT OR REPLACE INTO schedule_refresh (landing, refreshed_at) VALUES (?,?)",
+                 (landing, datetime.now(timezone.utc).isoformat(timespec="seconds")))
+
+
+def last_schedule_refresh(conn: sqlite3.Connection, landing: str) -> datetime | None:
+    """Latest of schedule_refresh and the landing's newest scheduled_trips row."""
+    vals = []
+    try:
+        vals.append(conn.execute("SELECT refreshed_at FROM schedule_refresh WHERE landing=?",
+                                 (landing,)).fetchone())
+    except sqlite3.OperationalError:
+        pass
+    vals.append(conn.execute("SELECT MAX(scraped_at) FROM scheduled_trips WHERE landing=?",
+                             (landing,)).fetchone())
+    ts = [datetime.fromisoformat(v[0]) for v in vals if v and v[0]]
+    return max(ts) if ts else None
 
 
 _JOB_RUNS_DDL = """CREATE TABLE IF NOT EXISTS job_runs (
