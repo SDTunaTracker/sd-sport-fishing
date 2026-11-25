@@ -17,6 +17,7 @@ Health alerts cover the new feeds: `bd:feed-errors:<feed>`, `bd:no-new-posts:<fe
 | 4 | **Spot locations.** Trip reports now record every place the trip fished, saw fish/paddies/kelp, or where "the fleet" was (`forum_locations`, append-only, quote-checked; coordinates and "N miles <dir> of X" offsets are parsed in code from the quote, never taken from the model). `spots.py` merges these with the paddy-forum mentions into `forum_spot_reports`: date, knowable-at time, species, catch quality, source link, geocode method and confidence, precision radius. | `scraper/paddies/spots.py`; `data/forum_places.json` (Baja / long-range places the SWYC list lacks); `web/api/v1/forum_spots.geojson`; `python -m scraper.paddies.spots --research-csv out.csv` for forecast R&D |
 | 5 | **Positions as posted** (owner's decision, 2026-11-25: "if they posted it online then its fair game"). Coordinates printed in a thread are published as written, with `precision_nm` 0.1. "N miles off X" estimates get max(1 nm, N/4), and named spots get the spot's radius. Every point has `position` (posted / estimate / spot), a date and a thread link. `reports.json` pins gain `precision_nm`. | `spots._exact_fields`, `spots.offset_precision` |
 | 6 | **Back-catalogue for boat reviews**: the trip-report extractor now accepts threads up to 365 days old (was 120, which silently skipped any listing backfill), runs 80 posts per run (was 40), and the workflow takes `backfill_feeds` so a one-off year walk touches only Sportboats + Long Range. | `boat_reports.MAX_POST_AGE_DAYS`; `paddies.yml` |
+| 7 | **Region tags for OC/LA** (`san_diego` / `oc_la` / `both` / null, the site's region ids). Each item takes the union of its boat's landing region (parsed from `web/regions.js`), the regions of the spots it names, title keywords (Catalina, PV, Horseshoe, Point Loma…) and, as a fallback, the forum (Long Range / Baja → SD). An SD boat at Catalina is `both`; 4+ day trips use the landing only. Every output carries it: boat entries and reports, `whats_working.by_region`, spot features, `banks.json`, `paddies.json` banks, and `reports.json` banks and pins. The gazetteer gains OC/LA coast and Channel Islands places. A new `bd-california` feed (California Sport Fishing Reports) brings in Catalina, SCI and inshore reports. | `scraper/paddies/regions.py`; `data/forum_places.json` |
 
 ## TL;DR
 
@@ -181,6 +182,13 @@ On the current DB: 342 place mentions, 171 placed. The rest are paddy-forum bite
 **Public layer** (`forum_spots.geojson`): one point per named spot, plus one per posted or estimated position, for the last 14 days. Each has 7-day and 14-day report counts, species (fixed site vocabulary plus "other"), catch-quality tallies, water temperature range, kinds (bite, paddy, kelp, fleet…), `position`, `precision_nm` and up to 5 thread links. No quotes or usernames.
 
 **Research series** (`--research-csv`): every row with report date, trip date, published and fetched (knowable-at) times, the point, precision, species and quality. Forecast R&D: hypotheses only; nothing here is a tested predictor.
+
+## 3b-2. OC/LA coverage (2026-11-25, current DB)
+
+- **Posts**: of 569 stored posts, 49 are OC/LA and 10 both. 289 can't be placed yet, mostly because they haven't been extracted (486 are pending). Placed OC/LA posts by month: Sep 36, Oct 11, Nov 6, which works out to about 9 a week in September and 1–3 a week since. Most come from the SoCal Offshore forum (private boats at Horseshoe, the Domes, the Slide, 14 Mile Bank, Catalina).
+- **Spots**: 84 of 171 placed mentions are in OC/LA or both. The top spots are Horseshoe (31), Domes (11), the Slide, 105 Spot, 209, Salt Creek, 14 Mile Bank and Catalina.
+- **Boats**: 1 of the ~60 OC/LA boats that ran trips in the last year has a forum review (Pursuit, 22nd Street). The Sportboats forum is mostly San Diego boats.
+- **Thin**: OC/LA party-boat reviews and anything north of Palos Verdes (Channel Islands, Ventura, Oxnard). The year back-catalogue and `bd-california` will help a little. OC/LA landings' own report pages would do more than BloodyDecks, but that's out of scope here.
 
 ## 3c. Next proposals (ranked)
 

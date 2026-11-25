@@ -92,6 +92,20 @@ FEEDS: list[Feed] = [
         "kind":      "boat_reports",
         "initial_backfill_days": 150,
     },
+    {
+        # "California Sport Fishing Reports": the general SoCal report forum.
+        # Low volume (a few threads a week) but it carries Catalina / San
+        # Clemente Island / inshore reports that matter for OC/LA. Mixed
+        # private and party-boat posts, so the paddy extractor (places,
+        # bites, conditions) reads it rather than the boat-review one.
+        "id":        "bd-california",
+        "name":      "BD California Sport Fishing Reports",
+        "forum_url": "https://www.bdoutdoors.com/forums/forum/california-sport-fishing-reports/",
+        "rss_url":   "https://www.bdoutdoors.com/forums/forum/california-sport-fishing-reports/index.rss",
+        "enabled":   True,
+        "kind":      "paddies",
+        "initial_backfill_days": 120,
+    },
 ]
 
 

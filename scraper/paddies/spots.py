@@ -43,6 +43,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import coords as coords_mod
+from . import regions as regions_mod
 
 log = logging.getLogger("paddies.spots")
 
@@ -394,6 +395,7 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
             "properties": {
                 "id": key, "name": name,
                 "position": position,      # posted | estimate | spot
+                "region": regions_mod.region_for_point(first["lat_pub"], first["lon_pub"]),
                 "precision_nm": max(r["precision_nm"] or COORD_PRECISION_NM for r in rs),
                 "reports_7d": len(srcs_7), "reports_14d": len(srcs_14),
                 "last_report": first["report_date"],
@@ -415,6 +417,7 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
                  "from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far "
                  "to trust each point. Follow the links for the original posts."),
         "attribution": "Spot list courtesy SWYC Anglers",
+        "regions_note": "properties.region: san_diego | oc_la | both, from where the point is.",
         "features": features,
     }
 

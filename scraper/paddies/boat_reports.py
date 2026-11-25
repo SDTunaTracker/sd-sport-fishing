@@ -49,6 +49,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import coords as coords_mod
+from . import regions as regions_mod
 from . import extract as paddy_extract
 from .feeds import feed_ids, get_feed
 
@@ -874,6 +875,31 @@ def _dedupe_quotes(quotes: dict) -> dict:
     return out
 
 
+_GAZ = None
+
+
+def _gazetteer():
+    global _GAZ
+    if _GAZ is None:
+        from .spots import Gazetteer     # late import: spots reads the DB tables defined here
+        _GAZ = Gazetteer()
+    return _GAZ
+
+
+def _row_region(r, gaz=None) -> str | None:
+    """san_diego | oc_la | both | None for one forum_boat_reports row (+ its source)."""
+    gaz = gaz or _gazetteer()
+    keys = r.keys()
+    # 4+ day trips pass half of SoCal on the way south: the landing decides.
+    long_trip = LENGTH_DAYS.get(r["trip_length"] or "", 0) >= 4
+    places = [] if long_trip else [gaz.lookup(sp) for sp in json.loads(r["spots"] or "[]")]
+    landing = r["landing"] if "landing" in keys else None
+    return regions_mod.item_region(landings=[landing] if landing else [],
+                                   places=[p for p in places if p],
+                                   title=r["title"] if "title" in keys else None,
+                                   feed_id=r["feed_id"])
+
+
 def build_export(conn, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     cutoff = (now - timedelta(days=EXPORT_WINDOW_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -883,13 +909,15 @@ def build_export(conn, now: datetime | None = None) -> dict:
         "WHERE f.boat IS NOT NULL AND s.published_at >= ? "
         "AND COALESCE(f.match_confidence, 0) >= ? "
         "ORDER BY s.published_at DESC", (cutoff, MATCH_CONFIDENCE_MIN)).fetchall()
+    gaz = _gazetteer()
     boats: dict[str, dict] = {}
     for r in rows:
         b = boats.setdefault(r["boat"], {
-            "landing": None, "report_count": 0,
+            "landing": None, "region": None, "report_count": 0,
             "aspects": {a: {"pos": 0, "mixed": 0, "neg": 0} for a in ASPECTS},
             "rebook": {"yes": 0, "no": 0}, "reports": []})
         b["landing"] = b["landing"] or r["landing"]
+        b["region"] = b["region"] or regions_mod.region_for_landing(b["landing"])
         b["report_count"] += 1
         for a in ASPECTS:
             k = _bucket(r[a])
@@ -908,6 +936,7 @@ def build_export(conn, now: datetime | None = None) -> dict:
             "catch_summary": r["catch_summary"],
             "tackle": json.loads(r["tackle"] or "[]"),
             "spots": json.loads(r["spots"] or "[]"),
+            "region": _row_region(r, gaz),
             "landing_count": json.loads(r["trip_match"]) if r["trip_match"] else None,
             "match_confidence": r["match_confidence"],
         })
@@ -919,6 +948,8 @@ def build_export(conn, now: datetime | None = None) -> dict:
                  "Not verified reviews; follow the links for the original posts."),
         "window_days": EXPORT_WINDOW_DAYS,
         "min_match_confidence": MATCH_CONFIDENCE_MIN,
+        "regions_note": ("region: san_diego | oc_la | both | null, from the boat's landing and the "
+                         "spots fished (an SD boat at Catalina is 'both'). Boat-level region = landing."),
         "boats": dict(sorted(boats.items())),
     }
 
@@ -984,6 +1015,23 @@ def build_whats_working(conn, now: datetime | None = None) -> dict:
         "JOIN paddy_sources s ON s.id = f.source_id "
         "WHERE COALESCE(f.trip_date, substr(s.published_at, 1, 10)) >= ? "
         "ORDER BY COALESCE(f.trip_date, substr(s.published_at, 1, 10)) DESC", (oldest,)).fetchall()
+    gaz = _gazetteer()
+    region_of = {r["id"]: _row_region(r, gaz) for r in rows}
+    by_region = {reg: _ww_classes([r for r in rows if regions_mod.in_region(region_of[r["id"]], reg)],
+                                  now, region_of)
+                 for reg in (regions_mod.SD, regions_mod.OCLA)}
+    return {
+        "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "label": "What's working, from BloodyDecks trip reports",
+        "note": "Automatic summaries of recent public forum posts; follow the links for details.",
+        "classes": _ww_classes(rows, now, region_of),
+        "by_region": by_region,
+        "regions_note": ("classes = every report; by_region.<san_diego|oc_la> = reports from that "
+                         "region's landings or spots (a 'both' report is in each)."),
+    }
+
+
+def _ww_classes(rows, now, region_of) -> dict:
     classes = {}
     for key, label, _lengths in TRIP_CLASSES:
         mine = [r for r in rows if trip_class(r["trip_length"]) == key
@@ -1006,6 +1054,7 @@ def build_whats_working(conn, now: datetime | None = None) -> dict:
             "title": r["title"], "url": r["url"],
             "tackle": json.loads(r["tackle"] or "[]")[:4],
             "bait": r["bait"], "conditions": r["conditions"],
+            "region": region_of.get(r["id"]),
         } for r in recent[:WW_MAX_ITEMS]]
         top_spots = [spot_names[k] for k, _ in
                      sorted(spot_counts.items(), key=lambda x: (-x[1], x[0]))][:5]
@@ -1017,12 +1066,7 @@ def build_whats_working(conn, now: datetime | None = None) -> dict:
             "top_spots": top_spots,
             "items": items,
         }
-    return {
-        "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "label": "What's working, from BloodyDecks trip reports",
-        "note": "Automatic summaries of recent public forum posts; follow the links for details.",
-        "classes": classes,
-    }
+    return classes
 
 
 def write_whats_working(path: Path = WHATS_WORKING_PATH, db_path: Path | None = None) -> dict:
