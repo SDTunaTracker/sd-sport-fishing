@@ -4,7 +4,7 @@ Reviewed 2026-11-25 on branch `claude/ocla-launch`, using the live `tracker.db` 
 and the site served locally at `/ocla/...?preview_ocla=true` at 1440px and 375px (15 routes × 2 widths, scripted
 with Playwright, plus an SD regression pass).
 
-## Verdict: NO-GO today. GO once the 4 owner decisions and 3 remaining blockers below are done
+## Verdict: NO-GO today. GO once the owner decisions and the launch gates below are done
 
 The plumbing works: OC/LA routing, region filtering, the 11 landings' daily scrapes, and every page renders
 with no JS errors and no horizontal overflow at 375px. This branch fixes the San Diego-only content that leaked
@@ -21,6 +21,8 @@ into OC/LA pages. **The remaining blocker is the metric.** Every headline number
 | D1 | **Headline metric for OC/LA** | (a) keep trophy/angler/day; (b) **fish per angler per day, all species** (from `full_catch`); (c) the angler picks a species preset, with the default set per region | **(b) for OC/LA, with trophy kept as a secondary column.** The data is already there: `full_catch` is stored for every OC/LA trip. Numbers below. |
 | D2 | **Which landings count as "OC / LA"** | Today: 11 landings, including Channel Islands (Oxnard) and Ventura Harbor, which are in Ventura County. Oceanside is grouped with San Diego. | Keep all 11, but name the region for what it covers (D3). Keep Oceanside in San Diego. |
 | D3 | **Region name and URL** | `OC / LA` + `/ocla/` (current); "LA & Orange County"; "OC, LA & Ventura" | Keep the `/ocla/` URL (it's in code, sitemap plans and user localStorage). Display it as **"OC / LA"** in the header, and say "Orange County, LA & Ventura" in page titles and descriptions. This branch already uses "Orange County & LA" in SEO titles, so tell me if you want Ventura added. |
+| D5 | **Hooks Landing (Oxnard)** | It's in the socalfishreports archive but not scraped (data-gaps session finding). Black Pearl, Santa Barbara and Morro Bay are also there but further north. | Add Hooks Landing to OC/LA, since it's next to Channel Islands Sportfishing. Leave the others out. |
+| D6 | **OC/LA history vs `data.js` size** | `data.js` is ~21.5 MB of Cloudflare's 25 MB file limit. One year of OC/LA history adds ~10k rows and would push it over; full history (~100k rows) would also push `tracker.db` past GitHub's 100 MB limit. | Put OC/LA trips in a **separate file loaded only when OC/LA is selected** (SD visitors don't pay for it), then backfill. Until then OC/LA launches with Jun–Nov 2026 complete plus the patchy older history. |
 | D4 | **Nav placement and launch style** | (a) flip `OCLA_PUBLIC` so the header region switcher shows for everyone; (b) soft launch: share `/?preview_ocla=true` for a week first | **(b) then (a).** The soft-launch URL already works today with no deploy. See the launch plan. |
 
 ### D1 data: OC/LA vs San Diego, full-day+ trips, 2026
@@ -65,7 +67,7 @@ Legend: ✅ done/OK · 🔧 fixed on this branch · ❌ blocker · ⚠️ should
 | Boats leaderboard | ⚠️ D1 | Correct boats. Ranked by trophy/day. |
 | Boat page | 🔧 / ⚠️ | 🔧 "Book a trip" went to an empty Trip Planner; it now says **"Book with {landing}"** and links to the landing's booking page. ⚠️ "Total fish: All tracked species" shows 172 for Enterprise, which landed 6,236 fish in total (1,666 rockfish, 1,133 barracuda…). The 7 tracked species exclude local species. ⚠️ No photos, specs or captains for any OC/LA boat (see Data). |
 | Landing page | 🔧 | The SEO title was "Today's San Diego Fish Counts" for **every** landing page (SD too). It's now "{Landing} Fish Counts — Fleet & Boat Stats", matching the prerendered SD landing pages. |
-| Trip Planner | 🔧 | Showed **San Diego trips** ("San Diego Seaforth Full Day…") and SD BloodyDecks long-range reports under OC/LA. It's now region-filtered. For OC/LA it shows "Trip schedules for OC / LA landings aren't on Tunatracker yet" with booking links for 10 landings (verified 2026-11-25), and the SD-only "What's working" card is hidden. |
+| Trip Planner | 🔧 | Showed **San Diego trips** ("San Diego Seaforth Full Day…") and SD BloodyDecks long-range reports under OC/LA. It's now region-filtered. For OC/LA it shows "Trip schedules for OC / LA landings aren't on Tunatracker yet" with booking links for 10 landings (verified 2026-11-25), and OC/LA landings without a schedule feed get a "book directly" strip once others have trips. The "What's working" card follows the region once `claude/bd-spots` merges (gate G3). |
 | Charts | ✅ / ⚠️ | Region-neutral SoCal map. ⚠️ The tide panel is hard-wired to the "San Diego — NOAA 9410230" station. ⚠️ Mobile Charts takes about 34s to settle on **SD too** (a pre-existing UX issue, not OC/LA). |
 | Footer | 🔧 | Said "San Diego's most complete…" and listed the 5 SD landings as data sources, with nav links to `/sd/...`. It now follows the region (SD output is unchanged). |
 | Co-Captain chat | 🔧 | See §4. Only mounted on Trip Planner. |
@@ -112,19 +114,34 @@ Before/after screenshots are in `docs/ocla/screens/` (home, Trip Planner at 1440
 
 ---
 
-## Remaining blockers before flipping
+## Launch gates (all must be ✅ before flipping)
 
-1. **D1 metric**: implement the decided OC/LA headline (region-default species set + labels on Today, Overview, Boats and boat page).
-2. **`_redirects`** `/ocla/...` rewrites (in the flip PR).
-3. **Prerendered `/ocla/` pages + sitemap** (SEO session, S26).
-4. Live Co-Captain check (3 questions above).
+| # | Gate | Owner | Status |
+|---|---|---|---|
+| G1 | **Headline metric** (D1) implemented on Today, Overview, Boats and the boat page | this session, after D1 | ❌ waiting on D1 |
+| G2 | **Data completeness**: counts, species, schedules, booking, boat profiles and conditions for OC/LA, checked and backfilled where possible | "Backfill data gaps and add data-health alerts" | 🟡 counts and species complete Jun 1–Nov 24 (checked against the socalfishreports per-date archive: 0 missing rows). Schedules being added for 22nd St, Pierpoint, Redondo, Channel Islands and Ventura (fishingreservations). Still missing: Dana Wharf (FareHarbor), Davey's (Rezdy), LA Waterfront (TripWorks), Newport, Long Beach, MdR; **boat profiles/photos (0 of ~60)**; OC/LA conditions (tide station, SST); history (D6). |
+| G3 | **Region-specific BloodyDecks** (owner must-have, below) | "Revive BloodyDecks data collection" (data) + this session (UI) | 🟡 data tagged on `claude/bd-spots` (not merged); UI below |
+| G4 | `/ocla/...` rewrites in `web/_redirects` + flag flip | this session, launch PR | ❌ launch PR |
+| G5 | Prerendered `/ocla/` pages + sitemap (S26) | SEO session | ❌ |
+| G6 | Live Co-Captain check: eval case `c14-ocla-newport` + 3 manual questions | this session / Co-Captain | ❌ needs the production proxy |
 
-Not blocking, but worth doing next: OC/LA schedule scraping (fishingreservations.net landings), OC/LA boat profiles and photos,
-tide station by region, and a "vs prior year" guard for landings with less than one year of history.
+### G3: region-specific BloodyDecks (owner must-have)
+
+> Owner: *"Make sure my OC/LA page is grabbing bloodydecks information specific to that region for example Catalina Island fish reports would be relevant for that region."*
+
+Rule: on a single-region page, show items where `region == <that region>` or `"both"`. With SD+OC/LA selected, show everything. San Diego pages never show OC/LA-only items, and vice versa.
+
+| Surface | Data (BloodyDecks session) | UI | Status |
+|---|---|---|---|
+| Trip Planner "What's working" | `whats_working.json` → `by_region.oc_la` / `by_region.san_diego` (`claude/bd-spots`) | Card picks `by_region[region]` (`claude/bd-spots`); Trip Planner passes `regions` (this branch, same line) | 🟡 Until bd-spots merges, the live card ignores region and shows SD tips on OC/LA. **Ask:** if `by_region[region]` is missing, the card must hide, not fall back to all reports. |
+| Forum boat reports on boat pages | `boat_forum_reports.json` → `boats[].region`, `reports[].region` | Per-boat, so already region-correct (an OC/LA boat page only shows that boat's reports) | ✅ shape; ⚠️ coverage: 1 of ~60 OC/LA boats has a forum report (Pursuit) |
+| Catalina / San Clemente / local-spot reports | `forum_spots.geojson` → `features[].properties.region`. Catalina, the Isthmus, Horseshoe, PV, 14 Mile, Lasuen, Huntington Flats, Dana Point and the Channel Islands = `oc_la`. SCI and the Oceanside–Dana band = `both`. | Charts spot layer (below) | ❌ |
+| Charts spot map layer | `forum_spots.geojson` (not on main yet) | **Doesn't exist yet.** Nothing on main consumes `forum_spots.geojson`, `banks.json`, `paddies.json` or `reports.json`. Proposed: a "Forum reports" toggle on Charts, filtered by region, with popups (spot, last report, species, thread links) and a precision circle. | ❌ to build once a sample geojson is available |
+| Volume | about 1–3 placed OC/LA posts a week since October | — | ⚠️ thin. Expect "no recent reports" states for OC/LA. |
 
 ## Launch plan
 
-1. **Soft launch (no deploy needed):** share `https://thetunatracker.com/?preview_ocla=true` and pick OC / LA in the
+1. **Soft launch (no deploy needed, possible now but not recommended until G1/G3):** share `https://thetunatracker.com/?preview_ocla=true` and pick OC / LA in the
    header switcher. Deep links to `/ocla/...` will 404 until step 2, so start from `/`.
 2. **Flip PR** (separate, after D1–D4 are done and the owner OKs it): set `OCLA_PUBLIC: true` in `web/feature-flags.js`,
    add `/ocla` rewrites to `web/_redirects`, and merge the SEO S26 pages and sitemap.
@@ -142,13 +159,13 @@ Nothing in the data pipeline depends on the flag.
 | File | Change |
 |---|---|
 | `web/regions.js` | `OCLA_LANDING_SITES`: verified booking pages for 10 OC/LA landings |
-| `web/tripplanner.jsx`, `web/styles.css` | Region-filter schedules, OC/LA empty state with landing links, hide SD BloodyDecks card for OC/LA |
+| `web/tripplanner.jsx`, `web/styles.css` | Region-filter schedules; OC/LA empty state with landing links; a "book directly" strip for OC/LA landings with no schedule feed (works once the data-gaps session adds 5 OC/LA schedules); pass `regions` to the BloodyDecks card |
 | `web/home.jsx`, `web/analytics.js` | Region-aware hero kicker, hide SD forecast/conditions for OC/LA, region-filtered "Book next" and "Still fishing" |
 | `web/drilldown.jsx` | OC/LA boat pages: "Book with {landing}" links to the landing site |
 | `web/analytics.jsx` | "By Landing" panel label follows the region |
 | `web/ui.jsx`, `web/app.jsx` | Region-aware footer blurb, links and data sources |
 | `web/seo.js` | OC/LA titles/descs, landing-page titles (fixes SD too), boat JSON-LD city |
-| `web/chat-api.js` | Co-Captain OC/LA block (gated to the OC/LA region) |
+| `web/chat-api.js`, `docs/chatbot/eval/*` | Co-Captain `ccRegionBlock(regions, trips)`: OC/LA landings with schedule rows get normal cards, the rest get "book with the landing". SD prompt verified byte-identical to main. New eval case `c14-ocla-newport` (harness reads per-case `regions`) |
 | `src/completeness.py`, `tests/test_feed_freshness.py` | OC/LA scrape-health + region-gap alerts, no-spam test |
 | `web/dist/*`, `web/index.html` | Rebuilt the changed bundles; cache-bust versions bumped |
 

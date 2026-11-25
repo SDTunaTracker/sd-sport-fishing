@@ -39,11 +39,11 @@ function loadWindow() {
   return ctx;
 }
 
-async function callBot(ctx, userMessage, history) {
+async function callBot(ctx, userMessage, history, regions) {
   // Mirror streamChatMessage() exactly, but with an Origin header (node has none).
   const body = {
     model: 'claude-opus-4-7', max_tokens: 1500, stream: true,
-    system: ctx.buildSystemPrompt({ page: 'tripplanner', regions: ['san_diego'] }),
+    system: ctx.buildSystemPrompt({ page: 'tripplanner', regions: regions || ['san_diego'] }),
     messages: [...history, { role: 'user', content: userMessage }],
   };
   const t0 = Date.now();
@@ -157,7 +157,7 @@ async function main() {
     const history = [];
     const turns = [];
     for (const [ti, u] of c.turns.entries()) {
-      const r = await callBot(ctx, u, history);
+      const r = await callBot(ctx, u, history, c.regions);
       const cards = r.text ? scoreCards(ctx, r.text) : [];
       const verdict = r.error ? { pass: false, fails: [r.error] } : scoreTurn(r.text, cards, (c.checks || [])[ti]);
       turns.push({ user: u, ...r, cards, verdict });

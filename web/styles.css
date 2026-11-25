@@ -1783,6 +1783,8 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-landing-links a    { display: inline-block; padding: 6px 12px; border: 1px solid var(--line, #ddd); border-radius: 999px; font-size: 13px; text-decoration: none; }
 .tp-landing-links a:hover { border-color: var(--accent); }
 .tp-landing-links i    { font-size: 10px; opacity: .6; margin-left: 2px; }
+.tp-landing-strip      { margin: 0 0 14px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; font-size: 13px; color: var(--tb-gray-2); }
+.tp-landing-strip .tp-landing-links { justify-content: flex-start; }
 
 /* ── Mobile filter sheet ─────────────────────────────────────── */
 .tp-sheet-backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.5); }
