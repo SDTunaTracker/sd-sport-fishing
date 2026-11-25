@@ -19,6 +19,9 @@ Rules (keys are stable for alert de-duplication):
   bd:no-new-posts warning   newest stored post older than NO_POSTS_MAX_AGE
   bd:extract      warning   Claude extraction failing while posts wait
   bd:publish      warning   live paddies.json not regenerated in PUBLISH_MAX_AGE
+  bd:feed-errors:<feed>     warning  a secondary feed failing FEED_FAIL_RUNS runs in a row
+  bd:no-new-posts:<feed>    warning  a boat-report forum quiet for BOAT_FEED_MAX_AGE
+  bd:boat-reports warning   trip-report extraction failing while posts wait
   bd:health       warning   state could not be read at all
 
 CLI:
@@ -52,6 +55,12 @@ FEED_FAIL_RUNS = 3
 NO_POSTS_MAX_AGE = timedelta(days=3)     # SoCal offshore forum posts most days
 EXTRACT_MAX_AGE = timedelta(hours=48)
 PUBLISH_MAX_AGE = timedelta(hours=24)
+# Sportboats / Long Range forums are slower than SoCal Offshore (a few threads
+# a week off-season), and RSS dates are last activity, so two weeks of silence
+# means the feed is broken, not just quiet.
+BOAT_FEED_MAX_AGE = timedelta(days=14)
+BOAT_REPORTS_MAX_AGE = timedelta(hours=48)
+PRIMARY_FEED_ID = "bd-socal-offshore"
 
 FEED = "bloodydecks"
 
@@ -127,6 +136,30 @@ def evaluate(state: dict | None, paddies: dict | None, now: datetime) -> list[Pr
                              f"BloodyDecks Claude extraction failing ({ex_fails} runs, "
                              f"{pending} posts waiting; raw posts are still being saved): "
                              f"{state.get('extract_last_error') or 'unknown error'}"))
+
+    from .feeds import feed_ids
+    boat_feeds = set(feed_ids("boat_reports"))
+    for fid, fst in sorted((state.get("feeds") or {}).items()):
+        if fid == PRIMARY_FEED_ID or not isinstance(fst, dict):
+            continue
+        n = fst.get("consecutive_failures") or 0
+        if n >= FEED_FAIL_RUNS:
+            probs.append(Problem(f"bd:feed-errors:{fid}", FEED, "warning",
+                                 f"BloodyDecks feed {fid} failed {n} runs in a row: "
+                                 f"{fst.get('last_error') or 'unknown error'}"))
+        newest_f = _parse(fst.get("newest_post_published_at"))
+        if fid in boat_feeds and newest_f is not None and now - newest_f > BOAT_FEED_MAX_AGE:
+            probs.append(Problem(f"bd:no-new-posts:{fid}", FEED, "warning",
+                                 f"No new posts on BloodyDecks feed {fid} since "
+                                 f"{newest_f:%Y-%m-%d} ({_ago(newest_f, now)})"))
+
+    br_pending = state.get("boat_reports_pending") or 0
+    br_ok = _parse(state.get("boat_reports_last_success_utc"))
+    br_err = state.get("boat_reports_last_error")
+    if br_pending and br_err and (br_ok is None or now - br_ok > BOAT_REPORTS_MAX_AGE):
+        probs.append(Problem("bd:boat-reports", FEED, "warning",
+                             f"BloodyDecks trip-report summaries failing ({br_pending} posts "
+                             f"waiting): {br_err}"))
 
     if paddies is not None:
         gen = _parse(paddies.get("generated_at"))

@@ -148,3 +148,37 @@ def test_record_health_all_failed(tmp_path, monkeypatch):
     assert st["extract_consecutive_failed_runs"] == 2
     assert "AuthenticationError" in st["extract_last_error"]
     assert "extract_last_success_utc" not in st
+
+
+# ------------------------------------------------------------- new feeds
+
+def test_secondary_feed_errors_warn_per_feed():
+    st = healthy_state()
+    st["feeds"] = {"bd-long-range": {"consecutive_failures": 3, "last_error": "HTTPError 403"},
+                   "bd-socal-sportboats": {"consecutive_failures": 1}}
+    probs = health.evaluate(st, None, NOW)
+    assert keys(probs) == {"bd:feed-errors:bd-long-range"}
+    assert "403" in probs[0].detail
+
+
+def test_quiet_boat_report_forum_warns_after_two_weeks():
+    st = healthy_state()
+    st["feeds"] = {"bd-socal-sportboats": {"newest_post_published_at": _iso(NOW - timedelta(days=15))},
+                   "bd-long-range": {"newest_post_published_at": _iso(NOW - timedelta(days=13))},
+                   "bd-baja": {"newest_post_published_at": _iso(NOW - timedelta(days=30))}}
+    assert keys(health.evaluate(st, None, NOW)) == {"bd:no-new-posts:bd-socal-sportboats"}
+
+
+def test_boat_report_extraction_failing_warns():
+    st = healthy_state()
+    st.update(boat_reports_pending=7, boat_reports_last_error="AuthenticationError",
+              boat_reports_last_success_utc=_iso(NOW - timedelta(days=3)))
+    probs = health.evaluate(st, None, NOW)
+    assert keys(probs) == {"bd:boat-reports"} and "AuthenticationError" in probs[0].detail
+
+
+def test_boat_report_backlog_without_errors_is_fine():
+    st = healthy_state()
+    st.update(boat_reports_pending=40, boat_reports_last_error=None,
+              boat_reports_last_success_utc=_iso(NOW - timedelta(hours=1)))
+    assert health.evaluate(st, None, NOW) == []

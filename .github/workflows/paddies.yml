@@ -40,7 +40,8 @@ permissions:
 jobs:
   paddies:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # A newly added feed walks ~150 days of listing pages once (~15 min).
+    timeout-minutes: 60
 
     steps:
       - name: Check out repository
@@ -80,11 +81,24 @@ jobs:
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "::error title=paddies extract::ANTHROPIC_API_KEY secret is empty or not available to this workflow"
           fi
-          python -m scraper.paddies.extract
+          # Capped so a big backlog cannot run the job past its timeout (and lose
+          # the commit); the rest drains on later runs.
+          python -m scraper.paddies.extract --limit 80
+
+      - name: Summarise party-boat trip reports with Claude
+        id: boat_reports
+        # Sportboats + Long Range forums -> per-boat sentiment, quotes, links.
+        # Capped at 40 posts per run, so a backlog drains over a few runs.
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m scraper.paddies.boat_reports
 
       - name: Write /api/v1/*.json
         if: always() && steps.ingest.outcome != 'cancelled'
-        run: python -m scraper.paddies.write_json
+        run: |
+          python -m scraper.paddies.write_json
+          python -m scraper.paddies.boat_reports --export-only
 
       - name: Health check
         if: always()
@@ -99,7 +113,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/paddies.db data/paddies_ingest_state.json \
-                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json
+                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json                   web/api/v1/boat_forum_reports.json web/api/v1/whats_working.json
           if git diff --staged --quiet; then
             echo "No paddies changes to commit."
             exit 0

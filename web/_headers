@@ -11,3 +11,13 @@
   Content-Type: application/json
   Access-Control-Allow-Origin: *
   Cache-Control: no-cache, must-revalidate
+
+/api/v1/boat_forum_reports.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/whats_working.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache, must-revalidate

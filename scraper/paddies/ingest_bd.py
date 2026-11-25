@@ -30,7 +30,7 @@ import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
@@ -579,6 +579,14 @@ def run(feed_ids: list[str] | None = None, backfill_since: datetime | None = Non
                     print(f"[paddies:ingest_bd] {feed['id']}: GAP - oldest feed item "
                           f"{_iso(oldest)} is newer than newest stored {_iso(newest_before)}; "
                           f"backfilling from listing pages", file=sys.stderr)
+            # A feed added to feeds.py with initial_backfill_days gets one walk
+            # of its listing pages on its first run, so it starts with a season
+            # of history instead of just the ~25 RSS items.
+            if since is None and newest_before is None and feed.get("initial_backfill_days"):
+                since = fetched_at - timedelta(days=feed["initial_backfill_days"])
+                fs["initial_backfill"] = True
+                print(f"[paddies:ingest_bd] {feed['id']}: new feed - initial backfill "
+                      f"from {_iso(since)}", file=sys.stderr)
             if since is not None:
                 fs["backfill"] = backfill_from_listing(
                     conn, feed, since, fetched_at, max_pages=max_pages, sleep=sleep)
@@ -600,7 +608,10 @@ def run(feed_ids: list[str] | None = None, backfill_since: datetime | None = Non
             "new_rows": sum(f["new_rows"] for f in per_feed.values()),
             "truncation_repair": repair_stats,
             "total_rows": _count(""),
-            "pending_extract": _count("AND extracted=0"),
+            # Only paddy-kind feeds go through extract.py; boat-report feeds
+            # are tracked by boat_reports.py's own table.
+            "pending_extract": _count("AND extracted=0 AND feed_id IN (%s)" % ",".join(
+                "'%s'" % f for f in feeds_mod.feed_ids("paddies"))),
             "still_truncated": _count("AND truncated=1"),
         }
     finally:
