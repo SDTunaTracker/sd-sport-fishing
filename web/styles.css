@@ -6174,7 +6174,7 @@ main[data-screen-label="charts"] + .app-footer { display: none; }
 .catch-popup-wrap .leaflet-popup-content { margin: 10px 12px 11px; }
 /* ── BloodyDecks forum spots layer (Charts) ── */
 .fs-hit { background: none; border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.fs-dot { width: 8px; height: 8px; border-radius: 50%; background: #CF6A3C; box-shadow: 0 0 0 2px #fff; display: block; }
+.fs-dot { width: 8px; height: 8px; border-radius: 50%; background: #CF6A3C; box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(23,51,44,.55); display: block; }
 .fs-pop { font-family: var(--tb-font-body); color: var(--ink); }
 .fs-eyebrow { font: 500 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
 .fs-title { font: 600 17px/1.25 var(--serif); margin: 4px 0 3px; }
@@ -6190,18 +6190,16 @@ main[data-screen-label="charts"] + .app-footer { display: none; }
 .fs-links a small { color: var(--muted); font-weight: 400; font-size: 11.5px; }
 .fs-links a:hover span { text-decoration: underline; }
 .fs-foot { margin-top: 8px; font-size: 12px; color: var(--faint); }
+.fs-sec + .fs-sec { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.fs-credit { margin-top: 10px; }
 .fs-controls { margin-top: 8px; }
-.fs-seg { display: inline-flex; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; }
-.fs-seg button { height: 36px; padding: 0 14px; background: transparent; color: rgba(255,255,255,.8); border: 0; font-size: 12.5px; cursor: pointer; }
-.fs-seg button.on { background: #CF6A3C; color: #fff; }
+.fs-seg { display: inline-flex; gap: 5px; }
+.fs-seg .layer-btn { height: 36px; min-height: 36px; }
 .fs-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font-size: 11.5px; color: rgba(255,255,255,.75); }
 .fs-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.fs-lg-dot { width: 8px; height: 8px; border-radius: 50%; background: #CF6A3C; box-shadow: 0 0 0 2px #fff; display: inline-block; }
-.fs-lg-circle { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #CF6A3C; background: rgba(207,106,60,.14); display: inline-block; }
+.fs-lg-dot { width: 8px; height: 8px; border-radius: 50%; background: #CF6A3C; box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(23,51,44,.55); display: inline-block; margin: 0 3px; }
+.fs-lg-circle { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid #fff; background: rgba(255,255,255,.16); box-shadow: 0 0 0 1.5px rgba(23,51,44,.55); display: inline-block; }
 .fs-lg-attr { flex-basis: 100%; opacity: .7; }
-.layers-sheet .fs-seg { border-color: var(--line); }
-.layers-sheet .fs-seg button { color: var(--ink); }
-.layers-sheet .fs-seg button.on { color: #fff; }
 .layers-sheet .fs-legend { color: var(--muted); }
 .fs-sheet-overlay { position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,.25); display: flex; align-items: flex-end; }
 .fs-sheet { position: relative; width: 100%; max-height: 70vh; overflow-y: auto; background: #fff; border-radius: 16px 16px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 24px rgba(0,0,0,.18); }
