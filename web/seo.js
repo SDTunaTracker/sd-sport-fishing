@@ -94,7 +94,45 @@
   var prerenderedPath = document.documentElement.hasAttribute('data-prerendered')
     ? normPath(window.location.pathname) : null;
 
+  // SF Bay Area (/sfbay/...). Its own titles; noindex until SFBAY_PUBLIC is on so
+  // soft-launch preview URLs never get indexed. Prerender + sitemap: SEO session.
+  function updateSfbay(view, params) {
+    var path = window.location.pathname.replace(/\/+$/, '') || '/';
+    // Read the view from the path itself: the popstate fallback below doesn't
+    // know the /sfbay prefix and would otherwise pass 'today' for every page.
+    var segs = path.split('/');           // ['', 'sfbay', view, detail]
+    view = segs[2] || 'today';
+    if (view === 'boat' && segs[3]) params = { boat: decodeURIComponent(segs[3]) };
+    var S = ' | Tunatracker';
+    var T = {
+      today:    ['SF Bay Area Fish Counts Today — Emeryville, Berkeley, Sausalito, SF, Half Moon Bay' + S,
+                 'Daily open-party fish counts from SF Bay Area sportfishing boats, scored by limit rate for rockfish, salmon, crab and halibut.'],
+      boats:    ['SF Bay Area Sportfishing Boat Leaderboard — Limit Rates by Target' + S,
+                 'Compare SF Bay Area party boats by how often they put anglers on limits of rockfish, salmon, crab and halibut.'],
+      landings: ['SF Bay Area Sportfishing Landings' + S,
+                 'Every SF Bay Area sportfishing landing and boat: Emeryville, Berkeley, Sausalito, San Francisco and Half Moon Bay.'],
+    };
+    var cfg = view === 'boat' && params.boat
+      ? [params.boat + ' Fish Counts & Limit Rates — SF Bay Area' + S,
+         params.boat + ' recent fish counts and limit rates by target (rockfish, salmon, crab, halibut).']
+      : (T[view] || T.today);
+    document.title = cfg[0];
+    setMeta('description', cfg[1]);
+    setMeta('og:title', cfg[0], 'property');
+    setMeta('og:description', cfg[1], 'property');
+    setCanonical(BASE + path);
+    var pub = window.FEATURES && window.FEATURES.SFBAY_PUBLIC;
+    var robots = document.querySelector('meta[name="robots"]');
+    if (!pub) {
+      if (!robots) { robots = document.createElement('meta'); robots.setAttribute('name', 'robots'); document.head.appendChild(robots); }
+      robots.setAttribute('content', 'noindex');
+    } else if (robots && robots.getAttribute('content') === 'noindex') {
+      robots.remove();
+    }
+  }
+
   function update(view, params) {
+    if (/^\/sfbay(\/|$)/.test(window.location.pathname)) { updateSfbay(view, params || {}); return; }
     if (prerenderedPath !== null) {
       if (normPath(window.location.pathname) === prerenderedPath) return;
       prerenderedPath = null;
