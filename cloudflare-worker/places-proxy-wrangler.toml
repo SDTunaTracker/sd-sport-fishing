@@ -1,0 +1,24 @@
+name               = "places-proxy"
+main               = "places-proxy.js"
+compatibility_date = "2024-09-23"
+workers_dev        = true
+
+[vars]
+# 30/day is about 900/month, inside Google's 1,000 free Enterprise+Atmosphere
+# calls a month. Raise only after checking the bill.
+DAILY_CAP         = "30"
+# 0 = no edge cache (Google allows caching only place_id). See OWNER_SETUP_KEYS.md.
+CACHE_TTL_SECONDS = "0"
+ALLOWLIST_URL     = "https://thetunatracker.com/api/v1/google_places.json"
+
+# ── KV namespace for the daily call counter (counts only, no Google content) ──
+# Create it in CF dashboard → Workers & Pages → KV → "PLACES_KV", then paste the IDs.
+# and uncomment. While it stays commented out, the Google Cloud per-day quota
+# (set in OWNER_SETUP_KEYS.md step 6) is the cap.
+# [[kv_namespaces]]
+# binding    = "PLACES_KV"
+# id         = "REPLACE_WITH_KV_NAMESPACE_ID"
+# preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
+
+# ── Secret (never in this file) ───────────────────────────────────────────────
+# npx wrangler secret put GOOGLE_PLACES_API_KEY --config places-proxy-wrangler.toml

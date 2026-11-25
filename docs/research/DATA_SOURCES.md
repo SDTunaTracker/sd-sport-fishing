@@ -2,6 +2,21 @@
 
 *Research date: 2026-11-25. Research only: no production code or data was changed. No logins, accounts, sign-ups or purchases. Requests were one page at a time, with a 1–2 s gap or more. Prices and terms were read on this date and can change, so re-check them before signing anything. This is not legal advice.*
 
+## Build status (2026-11-25, after the owner approved the quick wins)
+
+| Item | Owner | State |
+|---|---|---|
+| AIS archive, conditions pack, retiring `scrape-mmsi.py` | "Backfill data gaps and add data-health alerts" | Assigned |
+| Landing narratives | "Revive BloodyDecks data collection" | Assigned |
+| Regs card | "Co-Captain chatbot" | Assigned |
+| Schedule snapshots | Forecast R&D | Started |
+| CDFW request | Owner sends `CDFW_EMAIL_DRAFT.md` | Drafted |
+| Google reviews | This branch: `cloudflare-worker/places-proxy.js`, `web/google-reviews.jsx`, `scripts/match_google_places.py` | Built, flag off; needs the owner's key (`OWNER_SETUP_KEYS.md` §A) |
+| Currents | This branch: `src/currents_cmems.py`, Charts loader | Built, falls back to DEMO; needs a Copernicus account (§B). HF radar still 404/503 |
+| YouTube videos | This branch: `src/youtube.py`, `web/boat-videos.jsx` | Built, flag off; needs a key and a privacy-page line (§C) |
+| ENSO/ONI | This branch: `src/enso.py`, Co-Captain context | Built; runs weekly, no key |
+| User catch reports | `USER_CATCH_REPORTS_SPEC.md` | Spec only, awaiting the owner's decision |
+
 ## TL;DR
 
 1. **The best new data is data we already touch and throw away.**

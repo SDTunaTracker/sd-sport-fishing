@@ -1,0 +1,76 @@
+{
+ "updated": "2026-11-25T19:13:44+00:00",
+ "source": "NOAA Climate Prediction Center (ONI, ENSO Alert System)",
+ "latest": {
+  "season": "ASO",
+  "year": 2026,
+  "oni": 2.46,
+  "phase": "El Niño",
+  "strength": "very strong"
+ },
+ "alert": "El Niño Advisory",
+ "synopsis": "El Niño continues to strengthen, with a strong-to-very strong El Niño likely through January-March 2027 (remaining greater than a 79% chance).",
+ "recent": [
+  {
+   "season": "SON",
+   "year": 2025,
+   "oni": -0.57
+  },
+  {
+   "season": "OND",
+   "year": 2025,
+   "oni": -0.61
+  },
+  {
+   "season": "NDJ",
+   "year": 2025,
+   "oni": -0.6
+  },
+  {
+   "season": "DJF",
+   "year": 2026,
+   "oni": -0.39
+  },
+  {
+   "season": "JFM",
+   "year": 2026,
+   "oni": -0.21
+  },
+  {
+   "season": "FMA",
+   "year": 2026,
+   "oni": 0.11
+  },
+  {
+   "season": "MAM",
+   "year": 2026,
+   "oni": 0.46
+  },
+  {
+   "season": "AMJ",
+   "year": 2026,
+   "oni": 0.95
+  },
+  {
+   "season": "MJJ",
+   "year": 2026,
+   "oni": 1.39
+  },
+  {
+   "season": "JJA",
+   "year": 2026,
+   "oni": 1.8
+  },
+  {
+   "season": "JAS",
+   "year": 2026,
+   "oni": 2.16
+  },
+  {
+   "season": "ASO",
+   "year": 2026,
+   "oni": 2.46
+  }
+ ],
+ "note": "Context only. Tunatracker's backtests found ENSO does not improve day-to-day catch forecasts."
+}

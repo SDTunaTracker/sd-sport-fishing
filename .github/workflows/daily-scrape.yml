@@ -197,6 +197,31 @@ jobs:
               print('WARNING: all ERDDAP attempts failed — keeping existing sst_grid.json')
           PYEOF
 
+      - name: Fetch currents grid (full mode, Copernicus Marine)
+        # Real currents for the Charts map (src/currents_cmems.py). Skips until
+        # the owner adds the two COPERNICUSMARINE_* secrets; the map keeps its
+        # DEMO layer meanwhile. Never fails the run.
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+        run: |
+          if [ -z "$COPERNICUSMARINE_SERVICE_USERNAME" ]; then
+            echo "Skipping currents (no Copernicus credentials)."; exit 0
+          fi
+          pip install --quiet copernicusmarine || { echo "::warning::copernicusmarine install failed"; exit 0; }
+          python -m src.currents_cmems
+
+      - name: Refresh YouTube trip videos (full mode)
+        # Boat-page videos via the YouTube Data API (src/youtube.py). Skips until
+        # the YOUTUBE_API_KEY secret exists. Never fails the run.
+        if: steps.mode.outputs.mode == 'full'
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          if [ -z "$YOUTUBE_API_KEY" ]; then echo "Skipping YouTube (no key)."; exit 0; fi
+          python -m src.youtube || echo "::warning::YouTube refresh failed"
+
       - name: Push admin data to the owner dashboard
         # build/admin.json (scrape health, backtests, review queue) is written by
         # src/export.py and never committed: the repo is public. The analytics
@@ -218,6 +243,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
+          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

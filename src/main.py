@@ -259,6 +259,15 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             except Exception as e:
                 summary_lines.append(f"  Chlorophyll fetch ERROR (non-fatal): {e}")
 
+        # ENSO context (NOAA CPC ONI + alert), refreshed weekly. Co-Captain context
+        # only, not a forecast input (see src/enso.py).
+        if not hourly:
+            try:
+                from .enso import update as enso_update
+                summary_lines.append("  " + enso_update(DB_PATH))
+            except Exception as e:
+                summary_lines.append(f"  ENSO fetch ERROR (non-fatal): {e}")
+
         if hourly:
             # Daily accuracy check — score yesterday's forecast vs actual catch.
             try:

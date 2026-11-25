@@ -254,6 +254,8 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
         <>
           <ReviewsSection boat={boat} landing={meta.landing} openSignal={reviewOpenSignal}/>
           {window.ForumReportsSection && <ForumReportsSection boat={boat}/>}
+          {window.GoogleReviewsSection && <GoogleReviewsSection boat={boat} landing={meta.landing}/>}
+          {window.BoatVideosSection && <BoatVideosSection boat={boat}/>}
         </>
       )}
 
@@ -438,6 +440,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
           data={monthly.map((m,i) => ({ label: MONTH_NAMES[i], value: m.tuna, color: m === bestMonth ? '#FF7705' : '#008566' }))}
           formatY={v => fmt.n(Math.round(v))}/>
       </Panel>
+      {window.GoogleReviewsSection && <GoogleReviewsSection boat={null} landing={landing}/>}
     </React.Fragment>
   );
 }

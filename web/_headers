@@ -7,6 +7,21 @@
 /sst_grid.json
   Cache-Control: no-cache, must-revalidate
 
+/currents_grid.json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/enso.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/boat_videos.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/google_places.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
 /api/v1/app.json
   Content-Type: application/json
   Access-Control-Allow-Origin: *

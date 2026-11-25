@@ -293,12 +293,32 @@ function _syntheticCurrentGrid() {
   ];
 }
 
+// Real currents: web/currents_grid.json, written daily by src/currents_cmems.py
+// from Copernicus Marine (once the owner adds credentials). Until that file
+// exists, or if it is more than 4 days old, the layer falls back to the
+// synthetic California-Current climatology and keeps its DEMO badge.
+// window.TT_CURRENTS_LIVE = { credit, refTime } when real data is in use.
+var _CURR_MAX_AGE_MS = 4 * 86400000;
+var _currentGridPromise = null;
+function _loadRealCurrentGrid() {
+  if (!_currentGridPromise) {
+    _currentGridPromise = fetch('currents_grid.json', { cache: 'no-cache' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(g) {
+        if (!g || !Array.isArray(g.data) || g.data.length !== 2) return null;
+        var t = Date.parse(g.refTime);
+        if (!isFinite(t) || Date.now() - t > _CURR_MAX_AGE_MS) return null;
+        window.TT_CURRENTS_LIVE = { credit: g.credit, refTime: g.refTime };
+        return g.data;
+      })
+      .catch(function() { return null; });
+  }
+  return _currentGridPromise;
+}
+_loadRealCurrentGrid();
+
 function getCachedCurrentGrid() {
-  // HYCOM_GLOBAL_UV_3z (the real-data source used previously) was retired
-  // from NOAA CoastWatch ERDDAP. Until a replacement is wired in, we serve
-  // the synthetic California-Current climatology directly. The layer button
-  // carries a DEMO badge so users don't mistake the arrows for real data.
-  return Promise.resolve(_syntheticCurrentGrid());
+  return _loadRealCurrentGrid().then(function(data) { return data || _syntheticCurrentGrid(); });
 }
 
 // ── 14-day forecast time series (wind + waves) ───────────────────────────────
@@ -1517,7 +1537,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
   var conds = [
     { id: 'wind',     icon: '💨', label: 'Wind' },
     { id: 'waves',    icon: '🌊', label: 'Swell' },
-    { id: 'currents', icon: '🌀', label: 'Currents', badge: 'DEMO' },
+    { id: 'currents', icon: '🌀', label: 'Currents', badge: window.TT_CURRENTS_LIVE ? null : 'DEMO' },
     { id: 'pressure', icon: '🔵', label: 'Pressure' },
   ];
   return (
@@ -1625,7 +1645,9 @@ function ChartsHeader({ baseLayer, condLayers, sstMode }) {
     satellite:   'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.',
     wind:        'Animated wind flow. Green = calm (<8 kt), yellow = moderate, red = rough. Data: Open-Meteo.',
     waves:       'Animated swell field. Particles colored by height (blue=calm, red=rough 3m+). Data: Open-Meteo Marine.',
-    currents:    'Animated surface current flow. Simulated California-Current climatology — HYCOM live feed was retired, so arrows are illustrative, not real-time.',
+    currents:    window.TT_CURRENTS_LIVE
+      ? 'Animated surface current flow (model analysis, ' + String(window.TT_CURRENTS_LIVE.refTime).slice(0, 10) + '). ' + window.TT_CURRENTS_LIVE.credit + '.'
+      : 'Animated surface current flow. Simulated California-Current climatology — HYCOM live feed was retired, so arrows are illustrative, not real-time.',
     pressure:    'Atmospheric pressure isobars (hPa). Tightly-spaced lines = strong winds. Blue = low pressure, red = high pressure. Data: Open-Meteo.',
   };
   var cl = condLayers || {};
