@@ -367,6 +367,9 @@ def test_reports_pins_include_resolution(reports_db):
     assert gps_pin["species"] == ["yellowtail"]
     assert gps_pin["raw"] == "32.4083 -117.3017"
     assert gps_pin["precision"] == "gps"
+    assert gps_pin["precision_nm"] == 0.1
+    off_pin = next(pin for pin in p["pins"] if pin["resolution"] == "offset:182")
+    assert off_pin["precision_nm"] >= 1.0
 
 
 def test_reports_summary_48h(reports_db):

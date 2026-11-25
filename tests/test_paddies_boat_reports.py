@@ -169,6 +169,17 @@ def test_pending_rows_filters_feed_truncation_and_stale_bumps(db):
     conn.close()
 
 
+def test_back_catalogue_within_a_year_is_extracted(db):
+    # A listing-page backfill stores year-old threads; they still feed the 365-day export.
+    add_source(db, "5" * 40, "bd-long-range", published="2026-01-15T00:00:00Z",
+               fetched="2026-11-25T00:00:00Z")
+    add_source(db, "6" * 40, "bd-long-range", published="2025-09-01T00:00:00Z",
+               fetched="2026-11-25T00:00:00Z")
+    conn = br.open_db(db)
+    assert [r["id"] for r in br.pending_rows(conn)] == ["5" * 40]
+    conn.close()
+
+
 # ------------------------------------------------------------------ process + export
 
 def test_process_row_stores_entries_and_exports(db, tracker, monkeypatch):

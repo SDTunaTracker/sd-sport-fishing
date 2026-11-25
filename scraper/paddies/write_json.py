@@ -16,6 +16,8 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone, date, timedelta
 from pathlib import Path
 
+from . import regions as regions_mod
+from . import spots as spots_mod
 from .feeds import enabled_feeds
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +33,11 @@ RECENT_PER_BANK = 5
 RECENT_PER_BANK_REPORTS = 8   # v2 spec: last 8 per bank in reports.json
 TOP_BANKS_48H = 3
 SUMMARY_HOURS = 48
+
+
+def _feature_region(f: dict) -> str | None:
+    lon, lat = f["geometry"]["coordinates"][:2]
+    return regions_mod.region_for_point(lat, lon)
 
 
 def short_sha() -> str:
@@ -63,8 +70,8 @@ def build_banks_json(features: list[dict], build_sha: str, generated_at: str) ->
             "type": "Feature",
             "geometry": f["geometry"],
             "properties": {
-                k: v for k, v in f["properties"].items()
-                if k != "source_name"
+                **{k: v for k, v in f["properties"].items() if k != "source_name"},
+                "region": _feature_region(f),
             },
         })
     return {
@@ -126,6 +133,7 @@ def build_paddies_json(conn: sqlite3.Connection, features: list[dict],
             continue
         per_bank[e["bank"]].append(e)
 
+    id_to_feat = {f["properties"]["id"]: f for f in features}
     banks_out: dict[str, dict] = {}
     for bank_id, entries in per_bank.items():
         mentions_14d = len(entries)
@@ -148,6 +156,7 @@ def build_paddies_json(conn: sqlite3.Connection, features: list[dict],
             })
         banks_out[bank_id] = {
             "name":                    id_to_name[bank_id],
+            "region":                  _feature_region(id_to_feat[bank_id]),
             "mentions_14d":            mentions_14d,
             "paddies_reported_14d":    paddies_reported,
             "holding_ratio_14d":       holding_ratio,
@@ -272,6 +281,7 @@ def build_reports_json(conn: sqlite3.Connection, features: list[dict],
 
         banks_out[bank_id] = {
             "name":          feat["properties"]["name"],
+            "region":        regions_mod.region_for_point(lat, lon),
             "lat":           lat,
             "lon":           lon,
             "radius_nm":     radius_nm,
@@ -318,7 +328,11 @@ def build_reports_json(conn: sqlite3.Connection, features: list[dict],
         pins.append({
             "lat":        r["lat"],
             "lon":        r["lon"],
+            "region":     regions_mod.region_for_point(r["lat"], r["lon"]),
             "precision":  r["precision"],
+            # how far to trust the point: printed coordinates vs "N miles off X"
+            "precision_nm": (spots_mod.COORD_PRECISION_NM if kind == "gps"
+                             else spots_mod.offset_precision(pl.get("distance_nm"))),
             "resolution": resolution,
             "trip_date":  r["effective_date"],
             "bank":       pin_bank,
