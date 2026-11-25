@@ -1,0 +1,455 @@
+<title>Tuna Tracker Brand Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: a paper logbook — one column of numbered review sections, artboards sit on a band like specimens on a chart table. Single light look by choice (the brand is cream paper). */
+:root {
+  --bg: #FBFAF6; --surface: #FFFFFF; --band: #F4F1E9; --line: #EAE6DC; --line-2: #DCD6C8;
+  --ink: #17332C; --pine-2: #1F4A3F; --muted: #5A6E66; --faint: #8C978F;
+  --accent: #CF6A3C; --accent-ink: #B0542A; --accent-50: #FCEFE7; --sea: #2F7F86; --good: #2E7D5B;
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.6 var(--sans); margin: 0;
+       padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 48px 96px; display: grid; gap: 64px; }
+.eyebrow { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(34px, 6vw, 56px)/1.05 var(--serif); letter-spacing: -.03em; margin: 10px 0 14px; text-wrap: balance; }
+h2 { font: 600 28px/1.15 var(--serif); letter-spacing: -.02em; margin: 6px 0 8px; text-wrap: balance; }
+h3 { font: 600 17px/1.3 var(--serif); margin: 0 0 4px; }
+p { margin: 0; max-width: 64ch; color: var(--ink); }
+.lede { color: var(--muted); font-size: 17px; }
+.sec-head { display: grid; gap: 4px; margin-bottom: 20px; }
+.sec-head p { color: var(--muted); }
+.board { background: var(--band); border: 1px solid var(--line); border-radius: 16px; padding: 28px; display: grid; gap: 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: grid; gap: 14px; align-content: start; flex: 1 1 300px; min-width: 0; }
+.tile.dark { background: var(--ink); border-color: var(--ink); color: #F4F1E9; }
+.tile.dark .cap { color: #B9C6BF; }
+.cap { font: 400 13px/1.5 var(--sans); color: var(--muted); }
+.cap b { color: inherit; font-weight: 600; }
+.tag { display: inline-block; font: 500 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 6px 9px; border-radius: 999px; background: var(--accent-50); color: var(--accent-ink); justify-self: start; }
+.tag.alt { background: #E3F0EF; color: #236369; }
+svg { display: block; max-width: 100%; height: auto; }
+.wm { font-family: var(--serif); }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.sw { display: grid; gap: 6px; width: 132px; }
+.sw i { display: block; height: 64px; border-radius: 10px; border: 1px solid rgba(0,0,0,.06); }
+.sw span { font: 500 11px/1.3 var(--mono); color: var(--muted); }
+.sw b { font: 600 13px/1.2 var(--sans); color: var(--ink); }
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.scroll { overflow-x: auto; }
+.icons-row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end; }
+.icons-row figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
+.icons-row figcaption { font: 500 11px/1 var(--mono); color: var(--muted); }
+.phone { background: linear-gradient(160deg, #1F4A3F, #2F7F86); border-radius: 28px; padding: 26px 20px; display: grid; grid-template-columns: repeat(4, 60px); gap: 18px 16px; justify-content: center; width: fit-content; max-width: 100%; }
+.phone figure { margin: 0; display: grid; gap: 5px; justify-items: center; }
+.phone figcaption { font: 500 10px/1 var(--sans); color: #fff; white-space: nowrap; }
+.ghost-ic { width: 60px; height: 60px; border-radius: 14px; background: rgba(255,255,255,.18); }
+.browser { border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: #E9E6DE; max-width: 520px; }
+.browser .tabs { display: flex; gap: 6px; padding: 8px 8px 0; }
+.browser .tab { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 8px 8px 0 0; padding: 8px 12px; font: 500 12px/1 var(--sans); color: var(--ink); }
+.browser .tab.off { background: transparent; color: var(--muted); }
+.browser .bar { background: var(--surface); padding: 8px 12px; font: 400 12px/1 var(--mono); color: var(--muted); border-top: 1px solid var(--line); }
+.header-mock { background: rgba(255,255,255,.95); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.header-mock nav { display: flex; gap: 16px; font: 500 14px/1 var(--sans); color: var(--muted); flex-wrap: wrap; }
+.header-mock nav b { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+.header-mock .cta { margin-left: auto; background: var(--ink); color: #fff; font: 600 13px/34px var(--sans); padding: 0 16px; border-radius: 999px; }
+table.voice { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+table.voice th { text-align: left; font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line-2); }
+table.voice td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.naming td:first-child { color: var(--ink) !important; text-decoration: none !important; }
+table.voice td:first-child { color: var(--faint); text-decoration: line-through; text-decoration-color: rgba(184,67,47,.5); }
+.decide { background: var(--ink); color: #F4F1E9; border-radius: 16px; padding: 28px; display: grid; gap: 14px; }
+.decide h2 { color: #fff; }
+.decide ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 70ch; }
+.decide .eyebrow { color: #B9C6BF; }
+@media (max-width: 560px) { .board { padding: 16px; } .tile { padding: 18px; } }
+</style>
+
+<!-- Shared symbol definitions -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- "Tail & Tally": three rising count bars running into a tuna's crescent tail -->
+    <symbol id="tail" viewBox="0 0 64 64">
+      <path d="M22 30.6 C28 30.4 32 29.6 35 28.6 C37 19 45 10 59 4 C52 12 47.5 22 47 32 C47.5 42 52 52 59 60 C45 54 37 45 35 35.4 C32 34.4 28 33.6 22 33.4 Z"/>
+      <rect x="3" y="35" width="4.5" height="7" rx="1.2"/>
+      <rect x="9.5" y="30" width="4.5" height="12" rx="1.2"/>
+      <rect x="16" y="25" width="4.5" height="17" rx="1.2"/>
+    </symbol>
+    <symbol id="tail-only" viewBox="0 0 64 64">
+      <path d="M6 30 C16 29.5 24 28.5 30 27 C32 16 42 8 59 3 C50 11 44.5 21 44 32 C44.5 43 50 53 59 61 C42 56 32 48 30 37 C24 35.5 16 34.5 6 34 Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+
+<header style="display:grid;gap:6px">
+  <div class="eyebrow">Brand review · Draft 2 · 25 Nov 2026</div>
+  <h1>Tunatracker, tightened up</h1>
+  <p class="lede">Proposals for the logo, icons, link previews and voice. Nothing here is live. The cream, pine and orange from the site redesign stay; the old navy badge goes. You pick the direction and the name.</p>
+</header>
+
+<!-- 0. Styling choice for the one-word name -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">New · 25 Nov · You chose the name</div>
+    <h2>Tunatracker: pick the styling</h2>
+    <p>Same name, three ways to write it, each shown with the Tail &amp; Tally mark (direction A). The styling you pick is used everywhere: logo, page titles, app name and copy.</p>
+  </div>
+  <div class="board">
+    <div class="compare">
+      <div class="tile" style="flex:none">
+        <span class="tag">1 · Tunatracker · recommended</span>
+        <svg viewBox="0 0 420 100" role="img" aria-label="Tunatracker wordmark">
+          <svg x="0" y="18" width="64" height="64" fill="#CF6A3C"><use href="#tail"/></svg>
+          <text x="74" y="64" class="wm" font-size="44" font-weight="600" letter-spacing="-1.4" fill="#17332C">Tunatracker</text>
+        </svg>
+        <p class="cap">Reads as one proper name, like a product. Works at the start of a sentence and in running text ("Tunatracker ranks every boat…"). Clean in the App Store. The capital T plus the long ascenders give a calm, premium shape.</p>
+      </div>
+      <div class="tile" style="flex:none">
+        <span class="tag alt">2 · TunaTracker</span>
+        <svg viewBox="0 0 420 100" role="img" aria-label="TunaTracker wordmark">
+          <svg x="0" y="18" width="64" height="64" fill="#CF6A3C"><use href="#tail"/></svg>
+          <text x="74" y="64" class="wm" font-size="44" font-weight="600" letter-spacing="-1.4" fill="#17332C">TunaTracker</text>
+        </svg>
+        <p class="cap">Easiest to read at a glance, and makes the two words obvious. But the mid-word capital looks techy and a bit dated (2010s app style), and people will keep writing it as two words.</p>
+      </div>
+      <div class="tile" style="flex:none">
+        <span class="tag alt">3 · tunatracker</span>
+        <svg viewBox="0 0 420 100" role="img" aria-label="tunatracker wordmark">
+          <svg x="0" y="18" width="64" height="64" fill="#CF6A3C"><use href="#tail"/></svg>
+          <text x="74" y="64" class="wm" font-size="44" font-weight="600" letter-spacing="-1.4" fill="#17332C">tunatracker</text>
+        </svg>
+        <p class="cap">Matches the domain and the way you wrote it. Feels casual and modern. Awkward at the start of a sentence, and in a serif it reads a little softer and less premium. A middle path: lowercase in the logo only, "Tunatracker" in copy.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="tile dark">
+        <svg viewBox="0 0 420 90" role="img" aria-label="Tunatracker reversed">
+          <svg x="0" y="13" width="64" height="64" fill="#CF6A3C"><use href="#tail"/></svg>
+          <text x="74" y="58" class="wm" font-size="40" font-weight="600" letter-spacing="-1.2" fill="#FBFAF6">Tunatracker</text>
+        </svg>
+        <p class="cap">Option 1 reversed on pine, as on the app splash and daily share card</p>
+      </div>
+      <div class="tile">
+        <div class="header-mock" style="border:none;padding:0">
+          <div style="display:flex;align-items:center;gap:10px">
+            <svg width="30" height="30" viewBox="0 0 64 64" fill="#CF6A3C"><use href="#tail"/></svg>
+            <div style="display:grid;gap:2px">
+              <span style="font:600 18px/1 var(--serif);letter-spacing:-.02em">Tunatracker</span>
+              <span style="font:500 11px/1 var(--sans);color:var(--muted)">San Diego ▾</span>
+            </div>
+          </div>
+        </div>
+        <p class="cap">Site header · browser tab: <b>Today's fish counts · Tunatracker</b> · App Store: <b>Tunatracker: SoCal Fish Counts</b> (30 characters)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 1. Problem -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">01 · Where we are</div>
+    <h2>The badge and the site don't match</h2>
+    <p>The current logo is a detailed navy-and-yellow illustration. It reads well on a T-shirt, but at favicon and app-icon sizes it turns to noise, and it belongs to the old blue site. The browser bar and PWA still use leftover sky blue.</p>
+  </div>
+  <div class="board">
+    <div class="row">
+      <div class="tile">
+        <span class="tag alt">Today</span>
+        <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+          <div style="width:120px;height:120px;border-radius:50%;border:3px solid #1E2A5A;display:grid;place-items:center;text-align:center;font:900 15px/1 Impact, 'Arial Black', sans-serif;color:#1E2A5A;background:#fff">THE<br>TUNA<br>TRACKER</div>
+          <div style="width:32px;height:32px;border-radius:50%;border:2px solid #1E2A5A;background:repeating-linear-gradient(45deg,#1E2A5A 0 2px,#D9B23A 2px 4px,#fff 4px 6px)"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#5A6390"></div>
+        </div>
+        <p class="cap">Stand-in for <b>web/logo.png</b> at 120, 32 and 16 px. Detail collapses below about 64 px. Theme color <b>#0ea5e9</b> (sky blue) still set in the manifest and <code>&lt;meta name="theme-color"&gt;</code>.</p>
+      </div>
+      <div class="tile">
+        <span class="tag">Proposed</span>
+        <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+          <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Proposed app icon"><rect width="120" height="120" rx="27" fill="#17332C"/><svg x="18" y="18" width="84" height="84" fill="#CF6A3C"><use href="#tail"/></svg></svg>
+          <svg width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="32px favicon"><rect width="32" height="32" rx="7" fill="#17332C"/><svg x="3" y="3" width="26" height="26" fill="#CF6A3C"><use href="#tail-only"/></svg></svg>
+          <svg width="16" height="16" viewBox="0 0 16 16" role="img" aria-label="16px favicon"><rect width="16" height="16" rx="3.5" fill="#17332C"/><svg x="1" y="1" width="14" height="14" fill="#CF6A3C"><use href="#tail-only"/></svg></svg>
+        </div>
+        <p class="cap">Same sizes. One shape, two colors, readable at 16 px. Browser and PWA theme becomes pine <b>#17332C</b>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Logo directions -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">02 · Logo directions</div>
+    <h2>Three ways to sign the work</h2>
+    <p>All three drop "The" from the mark (the domain can keep it). A and B keep the current name; C shows how the system carries a rename to Railside, the strongest new name from the naming study.</p>
+  </div>
+  <div class="board">
+    <div class="tile" style="flex-basis:100%">
+      <span class="tag">A · Tail &amp; Tally · recommended</span>
+      <svg viewBox="0 0 640 140" role="img" aria-label="Tuna Tracker wordmark with Tail and Tally symbol">
+        <svg x="0" y="22" width="96" height="96" fill="#CF6A3C"><use href="#tail"/></svg>
+        <text x="110" y="86" class="wm" font-size="58" font-weight="600" letter-spacing="-1.6" fill="#17332C">Tuna Tracker</text>
+        <text x="113" y="114" font-family="DM Mono, monospace" font-size="13" letter-spacing="2.6" fill="#5A6E66">SOCAL SPORTBOAT FISH COUNTS</text>
+      </svg>
+      <p class="cap"><b>The idea:</b> three count bars, rising, become a tuna's crescent tail. Data turning into fish is the product in one shape. The bars read as "counts", the tail reads as "offshore", and the mark still works if coverage grows past tuna. Fraunces 600 matches the site's headings; the DM Mono descriptor carries the scope.</p>
+      <div class="compare">
+        <div class="tile dark" style="flex:none">
+          <svg viewBox="0 0 420 90" role="img" aria-label="Wordmark reversed on pine">
+            <svg x="0" y="13" width="64" height="64" fill="#CF6A3C"><use href="#tail"/></svg>
+            <text x="74" y="58" class="wm" font-size="38" font-weight="600" letter-spacing="-1" fill="#FBFAF6">Tuna Tracker</text>
+          </svg>
+          <p class="cap">Reversed on pine</p>
+        </div>
+        <div class="tile" style="flex:none">
+          <svg viewBox="0 0 220 170" role="img" aria-label="Stacked lockup">
+            <svg x="74" y="0" width="72" height="72" fill="#CF6A3C"><use href="#tail"/></svg>
+            <text x="110" y="118" text-anchor="middle" class="wm" font-size="34" font-weight="600" letter-spacing="-.8" fill="#17332C">Tuna Tracker</text>
+            <text x="110" y="146" text-anchor="middle" font-family="DM Mono, monospace" font-size="10.5" letter-spacing="2.2" fill="#5A6E66">SAN DIEGO · EST. 2026</text>
+          </svg>
+          <p class="cap">Stacked, for merch and the About page</p>
+        </div>
+        <div class="tile" style="flex:none">
+          <svg viewBox="0 0 220 120" role="img" aria-label="One-color mark">
+            <svg x="0" y="20" width="80" height="80" fill="#17332C"><use href="#tail"/></svg>
+            <svg x="120" y="20" width="80" height="80" fill="#17332C"><use href="#tail-only"/></svg>
+          </svg>
+          <p class="cap">One-color symbol, and the tail-only cut for 16–32 px</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="tile">
+        <span class="tag alt">B · Logbook seal</span>
+        <svg viewBox="0 0 320 150" role="img" aria-label="Logbook seal lockup">
+          <g transform="translate(70,75)">
+            <circle r="62" fill="none" stroke="#17332C" stroke-width="2"/>
+            <circle r="54" fill="none" stroke="#17332C" stroke-width=".8"/>
+            <g stroke="#17332C" stroke-width="1.2">
+              <line x1="0" y1="-62" x2="0" y2="-56"/><line x1="62" y1="0" x2="56" y2="0"/><line x1="0" y1="62" x2="0" y2="56"/><line x1="-62" y1="0" x2="-56" y2="0"/>
+              <line x1="43.8" y1="-43.8" x2="40" y2="-40"/><line x1="43.8" y1="43.8" x2="40" y2="40"/><line x1="-43.8" y1="43.8" x2="-40" y2="40"/><line x1="-43.8" y1="-43.8" x2="-40" y2="-40"/>
+            </g>
+            <text y="14" text-anchor="middle" class="wm" font-size="44" font-style="italic" font-weight="600" letter-spacing="-3" fill="#17332C">TT</text>
+            <text y="-26" text-anchor="middle" font-family="DM Mono, monospace" font-size="7.5" letter-spacing="1.6" fill="#5A6E66">32.71° N</text>
+            <text y="36" text-anchor="middle" font-family="DM Mono, monospace" font-size="7.5" letter-spacing="1.6" fill="#5A6E66">117.23° W</text>
+          </g>
+          <text x="150" y="70" class="wm" font-size="30" font-weight="600" letter-spacing="-.8" fill="#17332C">Tuna Tracker</text>
+          <text x="151" y="94" font-family="DM Mono, monospace" font-size="10" letter-spacing="2" fill="#CF6A3C">POINT LOMA · SAN DIEGO</text>
+        </svg>
+        <p class="cap"><b>The idea:</b> a chart-table seal with Point Loma's coordinates around an italic TT monogram. Feels heritage and premium; good on hats and stickers. Weaker as an app icon (letters, not a shape) and tied to one place.</p>
+      </div>
+      <div class="tile">
+        <span class="tag alt">C · If renamed: Railside</span>
+        <svg viewBox="0 0 320 150" role="img" aria-label="Railside wordmark">
+          <text x="10" y="78" class="wm" font-size="56" font-weight="600" letter-spacing="-1.8" fill="#17332C">Railside</text>
+          <line x1="10" y1="98" x2="248" y2="98" stroke="#17332C" stroke-width="3" stroke-linecap="round"/>
+          <g stroke="#CF6A3C" stroke-width="3" stroke-linecap="round">
+            <line x1="40" y1="98" x2="40" y2="110"/><line x1="90" y1="98" x2="90" y2="110"/><line x1="140" y1="98" x2="140" y2="110"/><line x1="190" y1="98" x2="190" y2="110"/><line x1="240" y1="98" x2="240" y2="110"/>
+          </g>
+          <text x="11" y="134" font-family="DM Mono, monospace" font-size="10.5" letter-spacing="2.2" fill="#5A6E66">SPORTBOAT FISH COUNTS · SAN DIEGO</text>
+        </svg>
+        <p class="cap"><b>The idea:</b> the boat rail as a baseline with stanchions as tally marks. Species-neutral and built to scale ("Railside Monterey"). Only worth it if you choose to rename; see the naming study.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Icons -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">03 · App icon and favicon</div>
+    <h2>One shape from 1024 px down to 16 px</h2>
+    <p>The full Tail &amp; Tally mark for the app icon; the tail alone below 48 px, where the bars would blur. The icon keeps clear of the corner mask so iOS and Android maskable crops both work.</p>
+  </div>
+  <div class="board">
+    <div class="row">
+      <div class="tile">
+        <div class="icons-row">
+          <figure><svg width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="#17332C"/><svg x="18" y="18" width="84" height="84" fill="#CF6A3C"><use href="#tail"/></svg></svg><figcaption>App · pine</figcaption></figure>
+          <figure><svg width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="#FBFAF6" stroke="#EAE6DC"/><svg x="18" y="18" width="84" height="84" fill="#17332C"><use href="#tail"/></svg></svg><figcaption>Alt · cream</figcaption></figure>
+          <figure><svg width="60" height="60" viewBox="0 0 60 60"><rect width="60" height="60" rx="13" fill="#17332C"/><svg x="9" y="9" width="42" height="42" fill="#CF6A3C"><use href="#tail"/></svg></svg><figcaption>60</figcaption></figure>
+          <figure><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#17332C"/><svg x="3" y="3" width="26" height="26" fill="#CF6A3C"><use href="#tail-only"/></svg></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="3.5" fill="#17332C"/><svg x="1" y="1" width="14" height="14" fill="#CF6A3C"><use href="#tail-only"/></svg></svg><figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <div class="tile" style="align-items:center">
+        <div class="phone" aria-label="Home screen mockup">
+          <figure><div class="ghost-ic"></div><figcaption>Weather</figcaption></figure>
+          <figure><svg width="60" height="60" viewBox="0 0 60 60"><rect width="60" height="60" rx="13" fill="#17332C"/><svg x="9" y="9" width="42" height="42" fill="#CF6A3C"><use href="#tail"/></svg></svg><figcaption>Tuna Tracker</figcaption></figure>
+          <figure><div class="ghost-ic"></div><figcaption>Tides</figcaption></figure>
+          <figure><div class="ghost-ic"></div><figcaption>Maps</figcaption></figure>
+        </div>
+      </div>
+    </div>
+    <div class="browser" aria-label="Browser tab mockup">
+      <div class="tabs">
+        <div class="tab"><svg width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="3.5" fill="#17332C"/><svg x="1" y="1" width="14" height="14" fill="#CF6A3C"><use href="#tail-only"/></svg></svg>Today's counts · Tuna Tracker</div>
+        <div class="tab off">Inbox</div>
+      </div>
+      <div class="bar">thetunatracker.com/sd/today</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Header -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">04 · On the site</div>
+    <h2>The header, with the mark</h2>
+    <p>Small change: the symbol joins the existing Fraunces wordmark, "The" drops, the region picker stays. Nothing else in the header moves, so the website UX work isn't disturbed.</p>
+  </div>
+  <div class="board">
+    <div class="header-mock">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="30" height="30" viewBox="0 0 64 64" fill="#CF6A3C"><use href="#tail"/></svg>
+        <div style="display:grid;gap:2px">
+          <span style="font:600 18px/1 var(--serif);letter-spacing:-.02em">Tuna Tracker</span>
+          <span style="font:500 11px/1 var(--sans);color:var(--muted)">San Diego ▾</span>
+        </div>
+      </div>
+      <nav><b>Today</b><span>Boats</span><span>Trip planner</span><span>Charts</span><span>Co-Captain</span></nav>
+      <span class="cta">Sign in</span>
+    </div>
+  </div>
+</section>
+
+<!-- 5. OG -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">05 · Link previews</div>
+    <h2>Share cards that say something</h2>
+    <p>Today the link preview is the square badge, cropped. These 1200 × 630 templates carry a headline and a real number. The daily one could be generated by the export step with that morning's leader; the static one covers every other page.</p>
+  </div>
+  <div class="board">
+    <div class="compare">
+      <div class="tile" style="flex:none">
+        <span class="tag">Static · site-wide</span>
+        <svg viewBox="0 0 1200 630" role="img" aria-label="Static share image">
+          <rect width="1200" height="630" fill="#FBFAF6"/>
+          <rect x="0" y="0" width="1200" height="12" fill="#CF6A3C"/>
+          <svg x="80" y="86" width="88" height="88" fill="#CF6A3C"><use href="#tail"/></svg>
+          <text x="180" y="146" class="wm" font-size="44" font-weight="600" letter-spacing="-1" fill="#17332C">Tuna Tracker</text>
+          <text x="80" y="330" class="wm" font-size="104" font-weight="600" letter-spacing="-4" fill="#17332C">Stop guessing.</text>
+          <text x="80" y="440" class="wm" font-size="104" font-weight="600" letter-spacing="-4" fill="#CF6A3C">Start catching.</text>
+          <text x="82" y="548" font-family="DM Mono, monospace" font-size="24" letter-spacing="4" fill="#5A6E66">EVERY SAN DIEGO SPORTBOAT, RANKED FAIRLY</text>
+        </svg>
+      </div>
+      <div class="tile" style="flex:none">
+        <span class="tag">Daily · generated</span>
+        <svg viewBox="0 0 1200 630" role="img" aria-label="Daily share image with example numbers">
+          <rect width="1200" height="630" fill="#17332C"/>
+          <svg x="80" y="70" width="64" height="64" fill="#CF6A3C"><use href="#tail"/></svg>
+          <text x="158" y="114" class="wm" font-size="34" font-weight="600" letter-spacing="-.6" fill="#FBFAF6">Tuna Tracker</text>
+          <text x="1120" y="112" text-anchor="end" font-family="DM Mono, monospace" font-size="22" letter-spacing="3" fill="#B9C6BF">MON · 24 NOV</text>
+          <text x="80" y="232" font-family="DM Mono, monospace" font-size="22" letter-spacing="4" fill="#CF6A3C">TOP BOAT YESTERDAY · EXAMPLE</text>
+          <text x="80" y="330" class="wm" font-size="86" font-weight="600" letter-spacing="-3" fill="#FBFAF6">[Boat name]</text>
+          <text x="80" y="388" font-family="Inter, sans-serif" font-size="28" fill="#B9C6BF">1.5-day · 28 anglers · H&amp;M Landing</text>
+          <line x1="80" y1="440" x2="1120" y2="440" stroke="#2D4A42" stroke-width="2"/>
+          <text x="80" y="540" font-family="DM Mono, monospace" font-size="96" font-weight="500" fill="#FBFAF6">2.41</text>
+          <text x="330" y="520" font-family="Inter, sans-serif" font-size="24" fill="#B9C6BF">trophy fish</text>
+          <text x="330" y="552" font-family="Inter, sans-serif" font-size="24" fill="#B9C6BF">per angler per day</text>
+          <text x="1120" y="540" text-anchor="end" font-family="DM Mono, monospace" font-size="26" fill="#B9C6BF">thetunatracker.com</text>
+        </svg>
+      </div>
+    </div>
+    <p class="cap">Numbers and boat in the daily card are placeholders to show the layout.</p>
+  </div>
+</section>
+
+<!-- 6. Color + type -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">06 · Color and type</div>
+    <h2>Keep the redesign's palette, give it rules</h2>
+    <p>No new colors. The guide names roles: pine is the brand, orange is for actions and the mark only, cream is the paper. Navy and sky blue retire.</p>
+  </div>
+  <div class="board">
+    <div class="chips">
+      <div class="sw"><i style="background:#17332C"></i><b>Pine</b><span>#17332C · brand, ink</span></div>
+      <div class="sw"><i style="background:#CF6A3C"></i><b>Orange</b><span>#CF6A3C · mark, actions</span></div>
+      <div class="sw"><i style="background:#FBFAF6"></i><b>Cream</b><span>#FBFAF6 · paper</span></div>
+      <div class="sw"><i style="background:#F4F1E9"></i><b>Sand band</b><span>#F4F1E9 · sections</span></div>
+      <div class="sw"><i style="background:#2F7F86"></i><b>Sea</b><span>#2F7F86 · data, links</span></div>
+      <div class="sw"><i style="background:#5A6E66"></i><b>Muted</b><span>#5A6E66 · secondary</span></div>
+    </div>
+    <div class="row">
+      <div class="tile">
+        <div class="eyebrow">Display · Fraunces 600</div>
+        <div style="font:600 40px/1.05 var(--serif);letter-spacing:-.03em">Who's on the fish this week</div>
+      </div>
+      <div class="tile">
+        <div class="eyebrow">UI · Inter 400–600</div>
+        <div style="font:400 16px/1.55 var(--sans)">Ranked by trophy fish per angler per day. Half-days and released fish are left out.</div>
+      </div>
+      <div class="tile">
+        <div class="eyebrow">Numbers · DM Mono 500</div>
+        <div style="font:500 34px/1 var(--mono);font-variant-numeric:tabular-nums">2.41 <span style="font-size:14px;color:var(--muted);letter-spacing:.1em">TPA/DAY</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Voice -->
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">07 · Voice</div>
+    <h2>A deckhand who keeps a spreadsheet</h2>
+    <p>Direct, specific, a little salty. Confident about the numbers, careful about the future.</p>
+  </div>
+  <div class="board">
+    <div class="scroll">
+      <table class="voice">
+        <thead><tr><th>Now</th><th>Proposed</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>★ San Diego's #1 Sportfishing Analytics</td><td>San Diego sportboat counts, ranked fairly</td><td>"#1" can't be proven; fairness is the real edge</td></tr>
+          <tr><td>Trusted by data from {N} trips</td><td>Built from {N} trips across every landing</td><td>Lead with the number</td></tr>
+          <tr><td>TRACK. ANALYZE. COMPARE. CATCH MORE.</td><td>(dropped from the logo)</td><td>A list of verbs isn't a tagline</td></tr>
+          <tr><td>(Never write) Our forecast shows where the fish will be</td><td>Experimental: how this week compares to past seasons</td><td>Forecasting is R&amp;D; never sell it as reliable</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">08 · Naming shortlist</div>
+    <h2>Keep the name, or rename before the app ships?</h2>
+    <p>"Tuna Tracker" is narrower than the product (yellowtail, dorado, booking, Co-Captain) but memorable and clear of conflicts. The site is only six months old and the app isn't published, so a rename is as cheap now as it will ever be. Checks below are preliminary web and registry lookups from today, not legal clearance; get an attorney's trademark search before committing to any name.</p>
+  </div>
+  <div class="board">
+    <div class="scroll">
+      <table class="voice naming">
+        <thead><tr><th>Name</th><th>Why it could work</th><th>Preliminary checks</th><th>Risk</th></tr></thead>
+        <tbody>
+          <tr><td><b>Tuna Tracker</b> (drop "The")</td><td>Keeps all equity; descriptor carries scope</td><td>No TUNA TRACKER mark or app found. tunatracker.com is in registrar redemption and may drop soon; tunatracker.app unregistered</td><td>Low</td></tr>
+          <tr><td><b>Railside</b></td><td>Where every sportboat angler stands; species-free; scales to regions</td><td>No mark or fishing brand found. railside.com and .app taken; railsidefishing.com unregistered</td><td>Low–med</td></tr>
+          <tr><td><b>Foamer</b></td><td>Tuna boiling the surface; cult insider word</td><td>No FOAMER mark found. foamer.app unregistered. Also slang mocking rail enthusiasts</td><td>Medium</td></tr>
+          <tr><td><b>Rail Count</b></td><td>Literally what we publish</td><td>No mark found; descriptive. railcount.app unregistered</td><td>Medium</td></tr>
+          <tr><td><b>Sportboat HQ</b></td><td>Plain, strong search intent</td><td>sportboathq.com and sportboat.app unregistered; hard to trademark</td><td>Low conflict, weak mark</td></tr>
+          <tr><td><b>Wide Open</b></td><td>Deck slang for the hottest bite</td><td>Several WIDE OPEN marks incl. a fishing/outdoor website; .com and .app taken</td><td>High</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="decide">
+  <div class="eyebrow">Your call</div>
+  <h2>Three decisions before anything goes live</h2>
+  <ol>
+    <li><b>Name:</b> keep it as "Tuna Tracker" (recommended), or explore Railside or another name from the naming study.</li>
+    <li><b>Logo direction:</b> A · Tail &amp; Tally (recommended), B · Logbook seal, or C · Railside.</li>
+    <li><b>Apply:</b> once you approve, I'll ship the mark, favicon, app icons, theme colors and share images on my branch, coordinated with the website and app UX sessions, and push only with your OK.</li>
+  </ol>
+</section>
+
+</main>

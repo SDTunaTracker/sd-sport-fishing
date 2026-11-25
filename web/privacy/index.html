@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy — The Tuna Tracker</title>
-<meta name="description" content="What The Tuna Tracker collects, why, and the choices you have.">
-<link rel="icon" href="/favicon.ico">
+<title>Privacy — Tunatracker</title>
+<meta name="description" content="What Tunatracker collects, why, and the choices you have.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
@@ -26,7 +27,8 @@
   .top { background: var(--surface); border-bottom: 1px solid var(--line); }
   .top-inner { max-width: 760px; margin: 0 auto; padding: 0 16px; height: 56px;
                display: flex; align-items: center; justify-content: space-between; }
-  .brand { font: 700 19px/1 Fraunces, Georgia, serif; color: var(--ink); text-decoration: none; }
+  .brand { display: inline-flex; align-items: center; gap: 8px; font: 700 19px/1 Fraunces, Georgia, serif; color: var(--ink); text-decoration: none; }
+  .brand svg { color: #CF6A3C; flex-shrink: 0; display: block; }
   .back { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px;
           font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; }
   .back:hover { color: var(--ink); }
@@ -68,7 +70,7 @@
 <body>
 <header class="top">
   <div class="top-inner">
-    <a class="brand" href="/sd/home">The Tuna Tracker</a>
+    <a class="brand" href="/sd/home"><svg width="26" height="26" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true"><path d="M22 30.6 C28 30.4 32 29.6 35 28.6 C37 19 45 10 59 4 C52 12 47.5 22 47 32 C47.5 42 52 52 59 60 C45 54 37 45 35 35.4 C32 34.4 28 33.6 22 33.4 Z"/><rect x="3" y="35" width="4.5" height="7" rx="1.2"/><rect x="9.5" y="30" width="4.5" height="12" rx="1.2"/><rect x="16" y="25" width="4.5" height="17" rx="1.2"/></svg>Tunatracker</a>
     <a class="back" href="/sd/home">← Back to the site</a>
   </div>
 </header>
@@ -78,7 +80,7 @@
   <h1>Your privacy</h1>
   <p class="updated">Last updated: November 24, 2026</p>
 
-  <p class="lede">The Tuna Tracker shows public fish counts from San Diego's sportfishing landings.
+  <p class="lede">Tunatracker shows public fish counts from San Diego's sportfishing landings.
   You can use almost all of it without an account. This page explains, in plain language,
   what the site collects, where it goes, and what you can do about it.</p>
 
@@ -161,7 +163,7 @@
 
 <footer>
   <div class="foot-inner">
-    <span>© 2026 The Tuna Tracker</span>
+    <span>© 2026 Tunatracker</span>
     <a href="/sd/home">thetunatracker.com</a>
   </div>
 </footer>

@@ -23,6 +23,20 @@ const fmt = {
 
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+// Brand symbol "Tail & Tally": three count bars running into a tuna tail.
+// See docs/brand/BRAND_GUIDE.md. Decorative next to the wordmark, so aria-hidden.
+const BRAND_NAME = 'Tunatracker';
+function BrandMark({ size = 28, className = 'brand-mark' }) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M22 30.6 C28 30.4 32 29.6 35 28.6 C37 19 45 10 59 4 C52 12 47.5 22 47 32 C47.5 42 52 52 59 60 C45 54 37 45 35 35.4 C32 34.4 28 33.6 22 33.4 Z"/>
+      <rect fill="currentColor" x="3" y="35" width="4.5" height="7" rx="1.2"/>
+      <rect fill="currentColor" x="9.5" y="30" width="4.5" height="12" rx="1.2"/>
+      <rect fill="currentColor" x="16" y="25" width="4.5" height="17" rx="1.2"/>
+    </svg>
+  );
+}
+
 function AuthButton() {
   const { user, loaded, signIn, isSignedIn } = useAuth();
 
@@ -148,8 +162,9 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
           {/* Logo: fish icon + wordmark + region dropdown */}
           <div className="logo-wrap" ref={dropdownRef}>
             <div className="logo" onClick={() => handleNavItem('home')} style={{cursor:'pointer'}}>
+              <BrandMark size={30} className="brand-mark logo-mark"/>
               <div className="logo-text">
-                <span className="logo-wordmark">The Tuna Tracker</span>
+                <span className="logo-wordmark">{BRAND_NAME}</span>
                 <button className="logo-region-btn" onClick={e => { e.stopPropagation(); setRegionOpen(o => !o); }}>
                   <span>{currentLabel}</span>
                   <i className={`fa-solid fa-chevron-${regionOpen ? 'up' : 'down'}`} style={{fontSize:7}}/>
@@ -217,7 +232,8 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu-head">
               <div className="mm-logo">
-                <span>The Tuna Tracker</span>
+                <BrandMark size={24}/>
+                <span>{BRAND_NAME}</span>
               </div>
               <span className="mm-close" onClick={closeMenu}>
                 <i className="fa-solid fa-xmark"></i>
@@ -575,7 +591,7 @@ function AppFooter() {
     <footer className="app-footer">
       <div className="app-footer-inner">
         <div className="app-footer-brand">
-          <div className="app-footer-logo">The Tuna Tracker</div>
+          <div className="app-footer-logo"><BrandMark size={26}/>{BRAND_NAME}</div>
           <p className="app-footer-blurb">
             San Diego's most complete sportfishing analytics — daily fish counts,
             boat leaderboards, and trip stats from every major San Diego landing.
@@ -614,7 +630,7 @@ function AppFooter() {
       </div>
 
       <div className="app-footer-bottom">
-        <span>&copy; 2026 The Tuna Tracker</span>
+        <span>&copy; 2026 {BRAND_NAME}</span>
         <nav className="app-footer-links">
           <a href="mailto:thetunatracker@gmail.com?subject=Tuna%20Tracker%20Inquiry"
              className="app-footer-link">Contact</a>
@@ -714,7 +730,7 @@ function SegmentedControl({ options, value, onChange }) {
 
 Object.assign(window, {
   SPECIES_COLORS, fmt, MONTH_NAMES,
-  AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel, SkeletonRows,
+  BrandMark, BRAND_NAME, AppHeader, AppFooter, SideNav, Crumbs, KPI, Panel, SkeletonRows,
   Sparkline, VBarChart, StackedBarChart, LineChart, Donut, MoonGlyph,
   PageHeader, SectionHeader,
   SettingsToggle, SettingsChip, SegmentedControl,

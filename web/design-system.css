@@ -392,6 +392,14 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .acct-gate-link { padding-left: 48px; }
 }
 
+/* ── Brand mark (Tail & Tally) ────────────────────────────────────────────────
+   Symbol + wordmark; see docs/brand/BRAND_GUIDE.md. The symbol is always the
+   accent orange; the wordmark follows the surface (ink on cream, white on pine). */
+.brand-mark { color: var(--accent); flex-shrink: 0; display: block; }
+.logo .logo-mark { margin-right: -1px; }
+.mobile-menu-head .mm-logo .brand-mark { margin-right: 2px; }
+.app-footer-logo { display: flex; align-items: center; gap: 10px; }
+
 /* ── Today's report v2 (web/home.jsx → TodayReport) ─────────────────────────
    Calm, data-first: date as title, one-sentence summary, quiet species strip,
    ranked boat list. All classes are td2-* so no other page is affected. */

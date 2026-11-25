@@ -985,7 +985,7 @@ function escXml(s) {
 function exportWaypoints(waypoints, format) {
   var content, filename, mime;
   if (format === 'gpx') {
-    content = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="The Tuna Tracker">\n' +
+    content = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Tunatracker">\n' +
       waypoints.map(function(wp) {
         return '  <wpt lat="' + wp.lat.toFixed(6) + '" lon="' + wp.lng.toFixed(6) + '">\n' +
                '    <name>' + escXml(wp.name) + '</name>\n' +

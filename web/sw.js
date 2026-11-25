@@ -1,7 +1,7 @@
-// The Tuna Tracker — app-shell service worker
+// Tunatracker — app-shell service worker
 // Bumping CACHE forces old service workers to be replaced on next visit
 // (the activate handler purges every key that isn't the current CACHE).
-var CACHE = 'tt-shell-v3';
+var CACHE = 'tt-shell-v4';
 
 // Regex for files that CHANGE without their URL changing. The daily scrape
 // commits a fresh data.js roughly every hour but does NOT re-stamp the

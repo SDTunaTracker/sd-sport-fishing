@@ -310,7 +310,7 @@ function SectionTraffic() {
     .sort(([,a],[,b]) => b - a)
     .map(([l, c]) => `  • ${c.toLocaleString()} clicks to ${l}`)
     .join('\n');
-  const pitchText = `In the past 30 days, The Tuna Tracker sent:\n${pitchLines}\n\nTotal: ${stats.total.toLocaleString()} trip planner clicks`;
+  const pitchText = `In the past 30 days, Tunatracker sent:\n${pitchLines}\n\nTotal: ${stats.total.toLocaleString()} trip planner clicks`;
 
   const copyPitch = () => {
     navigator.clipboard.writeText(pitchText).catch(() => {});
@@ -1140,7 +1140,7 @@ function SectionQRCodes() {
       <div className="adm-qr-card">
         <div className="adm-qr-code" ref={ref}/>
         <div className="adm-qr-landing">{landing}</div>
-        <div className="adm-qr-cta">Review your trip on The Tuna Tracker</div>
+        <div className="adm-qr-cta">Review your trip on Tunatracker</div>
         <div className="adm-qr-sub">Takes 2 minutes · Help other anglers</div>
         <div className="adm-qr-url" style={{fontSize:8, color:'#94A3B8', wordBreak:'break-all'}}>{url}</div>
       </div>
@@ -1180,7 +1180,7 @@ function AdminView() {
       <header className="adm-header">
         <div className="adm-header-inner">
           <div>
-            <span className="adm-title">The Tuna Tracker</span>
+            <span className="adm-title">Tunatracker</span>
             <span className="adm-badge">Admin</span>
           </div>
           <div className="adm-header-meta">
