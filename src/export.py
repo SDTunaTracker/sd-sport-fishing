@@ -298,7 +298,9 @@ def _sst_payload(conn: sqlite3.Connection) -> dict:
 
 
 def _ocla_conditions_payload(conn: sqlite3.Connection, days: int = 60) -> dict:
-    """Build window.SD.OCLA_CONDITIONS: daily SST + wind at the OC/LA points.
+    """OC/LA conditions for the OC/LA region file (not data.js, which is SD-only):
+    daily SST + wind at the OC/LA points. Meant for split_by_region's
+    per-region payload as "CONDITIONS".
 
     {"points": {name: {"lat", "lng"}}, "landingPoint": {landing: point},
      "daily": [{"date", "location", "sstF", "windKn", "windDeg"}, ...]}
@@ -810,7 +812,6 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "TODAY": _today_summary(all_rows),
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
-        "OCLA_CONDITIONS": _ocla_conditions_payload(conn),
         "FORECAST": forecast_payload,
         "REVIEWS": _reviews_payload(conn),
         "BOAT_PROFILES": _boat_profiles_payload(conn),
