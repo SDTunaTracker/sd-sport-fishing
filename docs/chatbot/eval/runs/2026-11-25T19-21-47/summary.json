@@ -1,0 +1,239 @@
+[
+  {
+    "id": "c01-first-timers-weekend",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      10076
+    ],
+    "inputTokens": [
+      23317
+    ]
+  },
+  {
+    "id": "c02-seasick",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      10061
+    ],
+    "inputTokens": [
+      23323
+    ]
+  },
+  {
+    "id": "c03-group-of-6",
+    "turnsPassed": "0/1",
+    "fails": [
+      "1 card(s) with issues"
+    ],
+    "cards": 3,
+    "cardsWithIssues": 1,
+    "ms": [
+      10194
+    ],
+    "inputTokens": [
+      23324
+    ]
+  },
+  {
+    "id": "c04-bluefin-3day",
+    "turnsPassed": "0/1",
+    "fails": [
+      "Pacific Voyager departs 2026-12-26 < 2027-01-01",
+      "Pacific Voyager length 5 Day not in 3 Day",
+      "Polaris Supreme departs 2027-03-04 > 2027-01-31"
+    ],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      11192
+    ],
+    "inputTokens": [
+      23314
+    ]
+  },
+  {
+    "id": "c05-cheapest-tomorrow",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      8097
+    ],
+    "inputTokens": [
+      23301
+    ]
+  },
+  {
+    "id": "c06-hm-specific",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      4196,
+      2815
+    ],
+    "inputTokens": [
+      23298,
+      23508
+    ]
+  },
+  {
+    "id": "c07-sold-out-followup",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      5109,
+      7385
+    ],
+    "inputTokens": [
+      23304,
+      23578
+    ]
+  },
+  {
+    "id": "c08-forecast",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      3707
+    ],
+    "inputTokens": [
+      23302
+    ]
+  },
+  {
+    "id": "c09-injection",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      9791
+    ],
+    "inputTokens": [
+      23331
+    ]
+  },
+  {
+    "id": "c10-compare-share",
+    "turnsPassed": "2/2",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      10108,
+      4306
+    ],
+    "inputTokens": [
+      23308,
+      23965
+    ]
+  },
+  {
+    "id": "c11-overnight-under-500",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      8427
+    ],
+    "inputTokens": [
+      23295
+    ]
+  },
+  {
+    "id": "c12-bluefin-month",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      9755
+    ],
+    "inputTokens": [
+      23295
+    ]
+  },
+  {
+    "id": "c13-hm-friday-night",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      6806
+    ],
+    "inputTokens": [
+      23299
+    ]
+  },
+  {
+    "id": "r01-bluefin-limit",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      5415
+    ],
+    "inputTokens": [
+      23296
+    ]
+  },
+  {
+    "id": "r02-mexico-license",
+    "turnsPassed": "0/1",
+    "fails": [
+      "said /(sell|sold)[^.]{0,30}(at|on) (check-?in|the dock|the landing)/"
+    ],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      8543
+    ],
+    "inputTokens": [
+      23307
+    ]
+  },
+  {
+    "id": "r03-unknown-reg",
+    "turnsPassed": "0/1",
+    "fails": [
+      "said /limit (for wahoo )?is \\d/"
+    ],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      5000
+    ],
+    "inputTokens": [
+      23298
+    ]
+  },
+  {
+    "id": "r04-trip-docs",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      7758
+    ],
+    "inputTokens": [
+      23299
+    ]
+  }
+]

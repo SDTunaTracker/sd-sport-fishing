@@ -1,0 +1,183 @@
+{
+  "case": {
+    "id": "r02-mexico-license",
+    "persona": "Regs: Mexico paperwork",
+    "turns": [
+      "Do I need a Mexican fishing license for a 1.5 day trip?"
+    ],
+    "expect": "Mexican permit (CONAPESCA) if fishing Mexican waters, FMM/passport via INM list, ask the landing, official link; no invented price.",
+    "checks": [
+      {
+        "mustSay": [
+          "CONAPESCA|Mexican (sport[- ]fishing )?(permit|licen[cs]e)",
+          "landing",
+          "check|confirm"
+        ],
+        "mustNotSay": [
+          "(permit|licen[cs]e)[^.]{0,30}\\$\\s?\\d+|\\$\\s?\\d+[^.]{0,30}(permit|licen[cs]e)",
+          "you (do not|don.t) need (a|any) (mexican )?(permit|license)",
+          "(most|many|usually|typically)\\b.{0,50}?\\b(cross|fish|go)\\b.{0,30}mexic",
+          "(sell|sold)[^.]{0,30}(at|on) (check-?in|the dock|the landing)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Do I need a Mexican fishing license for a 1.5 day trip?",
+      "text": "Short answer: it depends on whether the trip actually fishes in Mexican waters — and the trip listing (or the landing) is the place to confirm that.\n\nHere's what the rules say (summary, last checked 2026-11-25; confirm before you go):\n- If the trip fishes in Mexican waters, each angler needs an individual Mexican sport-fishing permit from CONAPESCA, bought online by day/week/month/year or \"excursion\" ([CONAPESCA](https://www.gob.mx/conapesca/documentos/conapesca-01-016-pesca-deportivo-recreativa)).\n- You also need to be on the boat's INM passenger list with the immigration fee paid (the FMM), and you should carry your passport ([INM](https://www.gob.mx/inm/acciones-y-programas/sport-fishing-and-nautical-tourism)).\n- Mexico bag limit is 10 fish/angler, max 5 of one species; dorado counts as 5 fish with a 2/day cap; billfish/sharks 1/day ([CONAPESCA](https://www.gob.mx/conapesca/documentos/conapesca-01-016-pesca-deportivo-recreativa)).\n\nMost 1.5-day listings in my data note \"MX permit extra\" (not included in the fare) — a couple of examples so you can see how it's worded:\n\n<trip-card>{\"tripId\": \"1086116\", \"why\": [\"Listing docs note: MX permit extra — buy it yourself before departure\", \"Confirm with Seaforth whether this trip enters Mexican waters\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b45a4-12041800\", \"why\": [\"H&M 1.5 day — listing doesn't specify docs; ask the landing whether a MX permit/passport is needed\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1091063\", \"why\": [\"Listing docs note: passport not required; MX permit extra\", \"Confirm with Fisherman's Landing whether this trip fishes Mexican waters\"]}</trip-card>\n\nBottom line: if the boat crosses the border you'll need the CONAPESCA permit (and FMM/passport setup) — call or check the landing's page for that exact trip to be sure.\n\n<followups>[\"Which 1.5 day trips don't require a passport?\", \"How do I buy a CONAPESCA permit?\", \"Show me the cheapest 1.5 day this weekend\"]</followups>",
+      "ms": 13879,
+      "usage": {
+        "input_tokens": 23416,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 813,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44511,
+      "cards": [
+        {
+          "tripId": "1086116",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086116",
+            "sourceId": "1086116",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-27T17:00:00-08:00",
+            "departLabel": "Fri 11/27 5:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 555,
+            "openSpots": 3,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "docs": "MX permit extra",
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "Listing docs note: MX permit extra — buy it yourself before departure",
+            "Confirm with Seaforth whether this trip enters Mexican waters"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 3,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b45a4-12041800",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b45a4-12041800",
+            "sourceId": "53f677dead2171442d8b45a4@2026-12-05T02:00:00+00:00",
+            "boat": "Old Glory",
+            "landing": "H&M Landing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-12-04T18:00:00-08:00",
+            "departLabel": "Fri 12/4 6:00 PM",
+            "departDate": "2026-12-04",
+            "returnLocal": "2026-12-06T06:00:00-08:00",
+            "returnLabel": "Sun 12/6 6:00 AM",
+            "price": 490,
+            "openSpots": 29,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/53f677dead2171442d8b45a4/2026-12-04/1800?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "docs": null,
+            "winRate": 31,
+            "avgTPA": 1.73,
+            "boatPageUrl": "#boat/Old%20Glory"
+          },
+          "why": [
+            "H&M 1.5 day — listing doesn't specify docs; ask the landing whether a MX permit/passport is needed"
+          ],
+          "boat": "Old Glory",
+          "date": "2026-12-04",
+          "tripLength": "1.5 Day",
+          "price": 490,
+          "openSpots": 29,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/53f677dead2171442d8b45a4/2026-12-04/1800?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1091063",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1091063",
+            "sourceId": "1091063",
+            "boat": "Constitution",
+            "landing": "Fisherman's Landing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-12-04T18:00:00-08:00",
+            "departLabel": "Fri 12/4 6:00 PM",
+            "departDate": "2026-12-04",
+            "returnLocal": "2026-12-06T06:00:00-08:00",
+            "returnLabel": "Sun 12/6 6:00 AM",
+            "price": 543,
+            "openSpots": 5,
+            "capacity": 21,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1091063",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 221-8500",
+            "targetSpecies": "Tuna, Yellowtail and more",
+            "included": "Meals, Bait & Bunk",
+            "tripStatus": null,
+            "docs": "passport not req; MX permit extra",
+            "winRate": 29,
+            "avgTPA": 2.87,
+            "boatPageUrl": "#boat/Constitution"
+          },
+          "why": [
+            "Listing docs note: passport not required; MX permit extra",
+            "Confirm with Fisherman's Landing whether this trip fishes Mexican waters"
+          ],
+          "boat": "Constitution",
+          "date": "2026-12-04",
+          "tripLength": "1.5 Day",
+          "price": 543,
+          "openSpots": 5,
+          "landing": "Fisherman's Landing",
+          "url": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1091063",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

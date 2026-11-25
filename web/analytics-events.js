@@ -175,6 +175,13 @@ window.TTTrack = {
   chatSave:      function(p) { this._ccEvent(p.saved ? 'chat_save' : 'chat_unsave', p); },
   chatBoatClick: function(p) { this._ccEvent('chat_boat_click', p); },
 
+  // Regs card: which official source people open (no personal data).
+  regsSourceClick: function(sourceName) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'regs_source_click', { source: sourceName || null });
+    }
+  },
+
   chatAction: function(actionType, data) {
     if (typeof gtag !== 'undefined') {
       gtag('event', 'chat_action', {

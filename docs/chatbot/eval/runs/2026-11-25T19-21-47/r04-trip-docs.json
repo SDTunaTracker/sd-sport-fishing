@@ -1,0 +1,136 @@
+{
+  "case": {
+    "id": "r04-trip-docs",
+    "persona": "Regs: passport for a specific trip",
+    "turns": [
+      "Which overnight trips this weekend need a passport?"
+    ],
+    "expect": "Uses the docs notes of real trips, tells them to confirm with the landing.",
+    "checks": [
+      {
+        "mustSay": [
+          "passport",
+          "confirm|check"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Which overnight trips this weekend need a passport?",
+      "text": "Looking at overnight trips departing Friday 11/27 or Saturday 11/28 (which fish the weekend), here's what the listings say about docs:\n\n- Producer (H&M) Fri 11/27 8:00 PM — no passport/permit note in the listing\n- Producer (H&M) Sat 11/28 8:00 PM — no passport/permit note in the listing\n\nNeither listing mentions a passport requirement, but a missing note just means the listing doesn't say — always confirm with the landing before you book. For reference, Mexican waters generally require a passport and FMM per [INM](https://www.gob.mx/inm/acciones-y-programas/sport-fishing-and-nautical-tourism).\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"Listing has no passport/permit note — confirm with H&M\", \"12 of 29 spots open as of last update\", \"Marked Definite Go\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4572-11282000\", \"why\": [\"Listing has no passport/permit note — confirm with H&M\", \"3 of 29 spots open as of last update\", \"Marked Definite Go\"]}</trip-card>\n\nCall H&M to verify what docs they'll want at check-in.\n\n<followups>[\"Show 1.5-day trips this weekend\", \"What about trips that explicitly don't need a passport?\", \"Cheapest weekend overnight?\"]</followups>",
+      "ms": 7758,
+      "usage": {
+        "input_tokens": 23299,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 480,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44160,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-28T18:00:00-08:00",
+            "returnLabel": "Sat 11/28 6:00 PM",
+            "price": 360,
+            "openSpots": 12,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "docs": null,
+            "winRate": 22,
+            "avgTPA": 1.91,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Listing has no passport/permit note — confirm with H&M",
+            "12 of 29 spots open as of last update",
+            "Marked Definite Go"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 12,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4572-11282000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11282000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-29T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-28T20:00:00-08:00",
+            "departLabel": "Sat 11/28 8:00 PM",
+            "departDate": "2026-11-28",
+            "returnLocal": "2026-11-29T18:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 PM",
+            "price": 360,
+            "openSpots": 3,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-28/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "docs": null,
+            "winRate": 22,
+            "avgTPA": 1.91,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Listing has no passport/permit note — confirm with H&M",
+            "3 of 29 spots open as of last update",
+            "Marked Definite Go"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-28",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 3,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-28/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}
