@@ -53,5 +53,20 @@
   "last_success_utc": "2026-11-25T17:00:47Z",
   "newest_post_published_at": "2026-11-25T06:08:54Z",
   "pending_extract": 202,
+  "spots_features": 1,
+  "spots_geocoded": 171,
+  "spots_last_run_utc": "2026-11-25T18:44:49Z",
+  "spots_rows": 342,
+  "spots_unresolved_names": {
+    "13 Fathom": 1,
+    "13 Fathom Spot": 1,
+    "Juggs Bank": 1,
+    "Lower Banks": 1,
+    "San Carlos": 1,
+    "San Pablo Bay": 1,
+    "The Rocks": 1,
+    "the Ridge": 2,
+    "the rocks": 1
+  },
   "total_rows": 569
 }

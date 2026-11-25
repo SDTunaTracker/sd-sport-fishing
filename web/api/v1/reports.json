@@ -1,6 +1,6 @@
 {
-  "build": "c45bbb2",
-  "generated_at": "2026-11-25T17:15:44Z",
+  "build": "8adb37e",
+  "generated_at": "2026-11-25T18:44:49Z",
   "window_days": 14,
   "feeds": [
     {
@@ -32,6 +32,12 @@
       "name": "BD Long Range Fishing",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/san-diego-long-range-sportfishing-reports/",
       "items_14d": 25
+    },
+    {
+      "id": "bd-california",
+      "name": "BD California Sport Fishing Reports",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/california-sport-fishing-reports/",
+      "items_14d": 0
     }
   ],
   "summary_48h": {
