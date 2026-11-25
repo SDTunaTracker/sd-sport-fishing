@@ -320,7 +320,7 @@ def test_whats_working_groups_by_trip_type_with_recency(db, tracker, monkeypatch
     assert multi["items"][0]["trip_date"] == "2026-11-19"
     assert multi["items"][0]["url"].startswith("https://")
     assert multi["top_spots"] == ["Colonet"]          # merged across both reports
-    assert multi["headline"] == "Colonet · 40 lb fluoro, #1 circle"
+    assert multi["headline"] == "Colonet · 40 lb fluoro"
     assert ww["classes"]["long_range"]["headline"] is None
     short = ww["classes"]["short"]                  # one old report -> wider window
     assert short["window_days"] == br.WW_FALLBACK_DAYS and short["report_count"] == 1

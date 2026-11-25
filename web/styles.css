@@ -6907,69 +6907,94 @@ button.btn-save-boat[data-saved="true"],
 }
 
 /* ── Forum trip reports (BloodyDecks) panel on the boat page ─────────────── */
-.fr-section { padding: 8px 0 24px; border-top: 1px solid #E2E8F0; margin-top: 8px; padding-top: 20px; }
-.fr-summary {
-  background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;
-  padding: 12px 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;
-}
-.fr-aspects { display: flex; gap: 6px; flex-wrap: wrap; }
-.fr-aspect {
-  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 14px;
-  font: 600 12px/16px var(--ss-font-sans); border: 1px solid #E2E8F0; background: #fff; color: var(--tb-slate);
-}
-.fr-aspect-n { font-weight: 400; }
-.fr-aspect.fr-pos   { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
-.fr-aspect.fr-neg   { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
-.fr-aspect.fr-mixed { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
-.fr-rebook { font: 500 13px/18px var(--ss-font-sans); color: var(--tb-ink); }
-.fr-list { display: flex; flex-direction: column; gap: 10px; }
-.fr-card {
-  background: #fff; border: 1px solid #E2E8F0; border-radius: 10px;
-  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0;
-}
-.fr-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.fr-card-title {
-  font: 700 14px/20px var(--ss-font-sans); color: var(--pine); text-decoration: none;
-  overflow-wrap: anywhere; min-width: 0;
-}
-.fr-card-title:hover { text-decoration: underline; }
-.fr-card-date { flex-shrink: 0; font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-2); }
-.fr-card-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.fr-card-catch { font: 400 13px/18px var(--ss-font-sans); color: var(--tb-ink); }
-.fr-card-confirm { font: 500 12px/16px var(--ss-font-sans); color: #047857; }
-.fr-quotes { margin: 0; padding-left: 16px; font: italic 400 13px/18px var(--ss-font-sans); color: var(--tb-slate); }
-.fr-card-tackle { font: 400 12px/17px var(--ss-font-sans); color: var(--tb-gray-2); }
-.fr-card-tackle b { color: var(--tb-slate); font-weight: 600; }
-.fr-more { margin-top: 10px; }
-.fr-attrib { margin-top: 12px; font: 400 11px/15px var(--ss-font-sans); color: var(--tb-gray-2); }
-.fr-attrib a { color: inherit; }
+/* Reads as forum summaries, not reviews: no stars, quiet tone dots, every card
+   links out. Uses design-system tokens (web/design-system.css). */
+.fr-section { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--ink-2); }
+.fr-eyebrow { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 8px; }
+.fr-title { font: 600 22px/1.2 var(--serif); color: var(--ink); margin: 0; }
+.fr-sub { font: 400 14px/1.55 var(--sans); color: var(--muted); max-width: 680px; margin: 6px 0 16px; }
+
+.fr-summary { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.fr-rebook { padding: 14px 28px 14px 0; margin-right: 28px; border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }
+.fr-rebook b { font: 500 24px/1 var(--mono); color: var(--ink); }
+.fr-rebook b small { font: 400 14px var(--sans); color: var(--muted); }
+.fr-rebook span { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.fr-aspects { list-style: none; margin: 0; padding: 10px 0; display: grid; flex: 1 1 360px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 24px; align-content: center; }
+.fr-aspect { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.fr-aspect-label { font: 600 13px/1.3 var(--sans); color: var(--ink); }
+.fr-aspect-tone { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.fr-aspect-n { color: var(--faint); font-family: var(--mono); font-size: 12px; }
+.fr-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: var(--faint); flex: none; }
+.fr-pos .fr-dot { background: var(--good); }
+.fr-neg .fr-dot { background: var(--bad); }
+.fr-mixed .fr-dot { background: #C9A227; }
+
+.fr-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.fr-card { padding: 16px 18px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fr-card:first-child { border-top: 0; }
+.fr-card-meta { font: 500 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.fr-rb-yes { color: var(--good); }
+.fr-rb-no { color: var(--bad); }
+.fr-card-title { font: 600 15.5px/1.35 var(--sans); color: var(--ink); text-decoration: none; overflow-wrap: anywhere; align-self: flex-start; }
+.fr-card-title:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+.fr-card-title:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+.fr-ext { color: var(--faint); font-weight: 400; }
+.fr-card-catch { font: 400 14px/1.5 var(--sans); color: var(--ink-2); margin: 0; }
+.fr-card-confirm { font: 400 12.5px/1.45 var(--sans); color: var(--muted); }
+.fr-card-confirm > span { color: var(--good); font-weight: 700; margin-right: 2px; }
+.fr-quotes { display: flex; flex-direction: column; gap: 4px; margin: 2px 0; }
+.fr-quotes blockquote { margin: 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--line-2); font: italic 400 13.5px/1.5 var(--sans); color: var(--ink-2); }
+.fr-card-tackle, .ww-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fr-k { font: 500 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-right: 4px; }
+.fr-chip { display: inline-block; padding: 3px 9px; border-radius: 999px; background: var(--band); color: var(--ink-2); font: 500 12px/1.4 var(--sans); overflow-wrap: anywhere; }
+.fr-more { margin-top: 12px; min-height: 44px; padding: 0 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink-2); font: 500 13.5px var(--sans); cursor: pointer; }
+.fr-more:hover { border-color: var(--line-2); color: var(--ink); }
+.fr-more:focus-visible { outline: none; box-shadow: var(--focus); }
+.fr-attrib { margin: 12px 0 0; font: 400 12px/1.5 var(--sans); color: var(--faint); }
+.fr-attrib a { color: var(--muted); text-underline-offset: 2px; }
 
 /* ── What's working card (trip planner) ─────────────────────────────────── */
-.ww-card {
-  background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
-  padding: 14px 16px; margin-bottom: 16px; min-width: 0;
+.ww-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 16px; margin-bottom: 16px; min-width: 0; color: var(--ink-2); }
+.ww-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 20px; flex-wrap: wrap; }
+.ww-card .ww-title { font: 600 22px/1.2 var(--serif); color: var(--ink); margin: 0; text-transform: none; letter-spacing: normal; }
+.ww-card .ww-sub { font: 400 13px/1.5 var(--sans); color: var(--muted); margin: 4px 0 0; text-transform: none; letter-spacing: normal; }
+.ww-spots { color: var(--ink-2); }
+.ww-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.ww-tabs::-webkit-scrollbar { display: none; }
+.ww-tab { flex: none; height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink-2); font: 500 13px var(--sans); cursor: pointer; }
+.ww-tab:hover { border-color: var(--line-2); }
+.ww-tab.on { background: var(--pine); border-color: var(--pine); color: #fff; }
+.ww-tab:focus-visible { outline: none; box-shadow: var(--focus); }
+.ww-list { list-style: none; margin: 16px 0 0; padding: 16px 0 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ww-item { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 0 20px; border-left: 1px solid var(--line); }
+.ww-item:first-child { padding-left: 0; border-left: 0; }
+.ww-item-meta { font: 500 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.ww-item-boat { font: 600 17px/1.2 var(--serif); color: var(--ink); margin-top: -2px; }
+.ww-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; margin: 2px 0 0; font-size: 13px; line-height: 1.45; }
+.ww-facts dt { font: 500 10.5px/1.9 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.ww-facts dd { margin: 0; color: var(--ink-2); }
+.ww-link { margin-top: auto; padding-top: 4px; align-self: flex-start; min-height: 32px; display: inline-flex; align-items: center; font: 500 13px var(--sans); color: var(--accent-ink); text-decoration: none; }
+.ww-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ww-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+.ww-card .fr-attrib { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+@media (max-width: 900px) {
+  .ww-list { grid-template-columns: minmax(0, 1fr); }
+  .ww-item { padding: 14px 0; border-left: 0; border-top: 1px solid var(--line); }
+  .ww-item:first-child { padding-top: 0; border-top: 0; }
+  .ww-item:last-child { padding-bottom: 0; }
+  .ww-link { min-height: 44px; }
 }
-.ww-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.ww-title { margin: 0; font: 700 15px/20px var(--ss-font-sans); color: var(--tb-ink); }
-.ww-sub { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-2); margin-top: 2px; }
-.ww-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-.ww-tab {
-  border: 1px solid #E2E8F0; background: #F8FAFC; color: var(--tb-slate); cursor: pointer;
-  border-radius: 14px; padding: 3px 10px; font: 500 12px/16px var(--ss-font-sans);
+@media (max-width: 760px) {
+  .fr-title, .ww-card .ww-title { font-size: 20px; }
+  .fr-rebook { width: 100%; margin: 0; padding: 14px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .fr-aspects { padding: 14px 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fr-card { padding: 14px 16px; }
+  .fr-more { width: 100%; }
+  .ww-card { padding: 16px; }
+  .ww-top { align-items: flex-start; }
+  .ww-tabs { width: calc(100% + 16px); margin-right: -16px; padding-right: 16px;
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
 }
-.ww-tab.active { background: var(--pine); border-color: var(--pine); color: #fff; }
-.ww-spots { margin-top: 10px; font: 400 13px/18px var(--ss-font-sans); color: var(--tb-ink); }
-.ww-spots b, .ww-line b { font-weight: 600; color: var(--tb-slate); }
-.ww-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-.ww-item { border: 1px solid #EEF2F6; border-radius: 10px; padding: 10px 12px;
-  display: flex; flex-direction: column; gap: 6px; min-width: 0; background: #FBFCFD; }
-.ww-item-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
-.ww-item-boat { font: 700 13px/18px var(--ss-font-sans); color: var(--tb-ink); }
-.ww-item-meta { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-2); white-space: nowrap; }
-.ww-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-.ww-chip { background: #EEF6F3; color: #0F5132; border-radius: 10px; padding: 2px 8px;
-  font: 500 11px/16px var(--ss-font-sans); overflow-wrap: anywhere; }
-.ww-line { font: 400 12px/17px var(--ss-font-sans); color: var(--tb-ink); }
-.ww-link { margin-top: auto; font: 600 12px/16px var(--ss-font-sans); color: var(--pine); text-decoration: none; }
-.ww-link:hover { text-decoration: underline; }

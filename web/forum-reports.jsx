@@ -51,6 +51,7 @@ function _frTone(c) {
   if (c.neg / n >= 0.5) return 'neg';
   return 'mixed';
 }
+const FR_TONE_WORD = { pos: 'Mostly positive', mixed: 'Mixed', neg: 'Mostly negative' };
 
 function ForumAspectRow({ aspects }) {
   const items = FR_ASPECTS
@@ -58,21 +59,22 @@ function ForumAspectRow({ aspects }) {
     .filter(x => x.c && (x.c.pos + x.c.mixed + x.c.neg) > 0);
   if (!items.length) return null;
   return (
-    <div className="fr-aspects">
+    <ul className="fr-aspects" aria-label="What reports said, by topic">
       {items.map(({ k, label, c }) => {
         const tone = _frTone(c);
         const n = c.pos + c.mixed + c.neg;
         const title = `${c.pos} positive, ${c.mixed} mixed, ${c.neg} negative mention${n === 1 ? '' : 's'}`;
         return (
-          <span key={k} className={`fr-aspect fr-${tone}`} title={title}>
-            {label}
-            <span className="fr-aspect-n">
-              {tone === 'pos' ? '👍' : tone === 'neg' ? '👎' : '±'} {n}
+          <li key={k} className="fr-aspect" title={title}>
+            <span className="fr-aspect-label">{label}</span>
+            <span className={`fr-aspect-tone fr-${tone}`}>
+              <i className="fr-dot" aria-hidden="true"/>{FR_TONE_WORD[tone]}
+              <span className="fr-aspect-n"> · {n}</span>
             </span>
-          </span>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 
@@ -82,36 +84,39 @@ function ForumReportCard({ r }) {
     .slice(0, 2);
   const lc = r.landing_count;
   const lcText = lc && lc.catch
-    ? Object.entries(lc.catch).filter(([, v]) => v > 0).map(([s, v]) => `${v} ${s}`).join(', ')
+    ? Object.entries(lc.catch).filter(([, v]) => v > 0).map(([s, v]) => `${v} ${s.toLowerCase()}`).join(', ')
     : null;
+  // RSS dates are the thread's last activity, so prefer the trip date
+  const when = r.trip_date ? `Departed ${_frDate(r.trip_date)}` : `Posted ${_frDate(r.published_at)}`;
   return (
-    <div className="fr-card">
-      <div className="fr-card-head">
-        <a className="fr-card-title" href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a>
-        {/* RSS dates are the thread's last activity, so prefer the trip date */}
-        {!r.trip_date && <span className="fr-card-date">{_frDate(r.published_at)}</span>}
+    <li className="fr-card">
+      <div className="fr-card-meta">
+        {[r.trip_length, when].filter(Boolean).join(' · ')}
+        {r.would_rebook === true && <span className="fr-rb fr-rb-yes"> · Would rebook</span>}
+        {r.would_rebook === false && <span className="fr-rb fr-rb-no"> · Wouldn't rebook</span>}
       </div>
-      <div className="fr-card-tags">
-        {r.trip_length && <span className="rv-card-tag">{r.trip_length}</span>}
-        {r.trip_date && <span className="rv-card-tag">Departed {_frDate(r.trip_date)}</span>}
-        {r.would_rebook === true && <span className="rv-card-rebook yes">Would rebook</span>}
-        {r.would_rebook === false && <span className="rv-card-rebook no">Wouldn't rebook</span>}
-      </div>
-      {r.catch_summary && <div className="fr-card-catch">{r.catch_summary}</div>}
+      <a className="fr-card-title" href={r.url} target="_blank" rel="noopener noreferrer">
+        {r.title}<span className="fr-ext" aria-hidden="true"> ↗</span>
+        <span className="sr-only"> (opens BloodyDecks in a new tab)</span>
+      </a>
+      {r.catch_summary && <p className="fr-card-catch">{r.catch_summary}</p>}
       {lc && (
         <div className="fr-card-confirm" title="Matched to the landing's published fish count">
-          ✓ Landing count {_frDate(lc.date)}: {lc.anglers} anglers{lcText ? ` · ${lcText}` : ''}
+          <span aria-hidden="true">✓</span> Matches the landing count for {_frDate(lc.date)}: {lc.anglers} anglers{lcText ? `, ${lcText}` : ''}
         </div>
       )}
       {quotes.length > 0 && (
-        <ul className="fr-quotes">
-          {quotes.map(([k, q]) => <li key={k}>“{q}”</li>)}
-        </ul>
+        <div className="fr-quotes">
+          {quotes.map(([k, q]) => <blockquote key={k}>“{q}”</blockquote>)}
+        </div>
       )}
       {r.tackle?.length > 0 && (
-        <div className="fr-card-tackle"><b>What worked:</b> {r.tackle.slice(0, 3).join(' · ')}</div>
+        <div className="fr-card-tackle">
+          <span className="fr-k">What worked</span>
+          {r.tackle.slice(0, 3).map((t, i) => <span key={i} className="fr-chip">{t}</span>)}
+        </div>
       )}
-    </div>
+    </li>
   );
 }
 
@@ -125,37 +130,37 @@ function ForumReportsSection({ boat }) {
   const rbN = rb.yes + rb.no;
 
   return (
-    <div className="fr-section">
-      <div className="rv-section-head">
-        <div>
-          <h2 className="rv-section-title">From BloodyDecks trip reports</h2>
-          <div className="rv-section-sub">
-            {data.report_count} report{data.report_count === 1 ? '' : 's'} on BloodyDecks in the last year,
-            summarised automatically. Not verified reviews: read the originals.
-          </div>
-        </div>
-      </div>
+    <section className="fr-section" aria-labelledby="fr-title">
+      <div className="fr-eyebrow">From the forums</div>
+      <h2 className="fr-title" id="fr-title">BloodyDecks trip reports</h2>
+      <p className="fr-sub">
+        {data.report_count} report{data.report_count === 1 ? '' : 's'} about {boat} in the last year, summarized automatically.
+        These aren't verified reviews and don't count toward the rating. Each one links to the original thread.
+      </p>
 
       <div className="fr-summary">
-        <ForumAspectRow aspects={data.aspects}/>
         {rbN > 0 && (
-          <div className="fr-rebook">{rb.yes} of {rbN} who said so would fish {boat} again</div>
+          <div className="fr-rebook">
+            <b>{rb.yes}<small> of {rbN}</small></b>
+            <span>would fish {boat} again</span>
+          </div>
         )}
+        <ForumAspectRow aspects={data.aspects}/>
       </div>
 
-      <div className="fr-list">
+      <ul className="fr-list">
         {reports.map(r => <ForumReportCard key={r.url} r={r}/>)}
-      </div>
+      </ul>
       {data.reports.length > FR_SHOW && (
-        <button className="rv-page-btn fr-more" onClick={() => setShowAll(s => !s)}>
-          {showAll ? 'Show fewer' : `Show all ${data.reports.length}`}
+        <button className="fr-more" onClick={() => setShowAll(s => !s)} aria-expanded={showAll}>
+          {showAll ? 'Show fewer reports' : `Show all ${data.reports.length} reports`}
         </button>
       )}
-      <div className="fr-attrib">
+      <p className="fr-attrib">
         Source: public posts on <a href="https://www.bdoutdoors.com/forums/" target="_blank" rel="noopener noreferrer">BloodyDecks</a>.
-        Quotes are excerpts; each card links to the full thread.
-      </div>
-    </div>
+        Quotes are short excerpts.
+      </p>
+    </section>
   );
 }
 
@@ -206,47 +211,51 @@ function WhatsWorkingCard({ lengths }) {
   const c = data.classes[key];
 
   return (
-    <section className="ww-card" aria-label="What's working, from BloodyDecks trip reports">
-      <div className="ww-head">
+    <section className="ww-card" aria-labelledby="ww-title">
+      <div className="ww-top">
         <div>
-          <h3 className="ww-title">What's working</h3>
-          <div className="ww-sub">
-            From {c.report_count} BloodyDecks trip report{c.report_count === 1 ? '' : 's'} · last {c.window_days} days
-          </div>
+          <div className="fr-eyebrow">From BloodyDecks trip reports</div>
+          <h3 className="ww-title" id="ww-title">What's working</h3>
+          <p className="ww-sub">
+            {c.report_count} report{c.report_count === 1 ? '' : 's'} · last {c.window_days} days
+            {c.top_spots?.length > 0 && <> · Where: <span className="ww-spots">{c.top_spots.join(', ')}</span></>}
+          </p>
         </div>
-        <div className="ww-tabs" role="tablist">
+        <div className="ww-tabs" role="tablist" aria-label="Trip type">
           {withItems.map(k => (
             <button key={k} role="tab" aria-selected={k === key}
-              className={`ww-tab${k === key ? ' active' : ''}`} onClick={() => setPick(k)}>
+              className={`ww-tab${k === key ? ' on' : ''}`} onClick={() => setPick(k)}>
               {data.classes[k].label}
             </button>
           ))}
         </div>
       </div>
-      {c.top_spots?.length > 0 && (
-        <div className="ww-spots"><b>Where:</b> {c.top_spots.join(' · ')}</div>
-      )}
-      <ul className="ww-list">
+      <ul className="ww-list" role="tabpanel">
         {c.items.slice(0, WW_SHOW).map(it => (
           <li key={it.url + (it.boat || '')} className="ww-item">
-            <div className="ww-item-head">
-              <span className="ww-item-boat">{it.boat || 'Party boat'}</span>
-              <span className="ww-item-meta">
-                {[it.trip_length, it.trip_date && _frDate(it.trip_date)].filter(Boolean).join(' · ')}
-              </span>
+            <div className="ww-item-meta">
+              {[it.trip_length, it.trip_date && _frDate(it.trip_date).replace(/, \d{4}$/, '')].filter(Boolean).join(' · ')}
             </div>
+            <div className="ww-item-boat">{it.boat || 'Party boat'}</div>
             {it.tackle?.length > 0 && (
-              <div className="ww-chips">{it.tackle.map((t, i) => <span key={i} className="ww-chip">{t}</span>)}</div>
+              <div className="ww-chips">{it.tackle.map((t, i) => <span key={i} className="fr-chip">{t}</span>)}</div>
             )}
-            {it.bait && <div className="ww-line"><b>Bait:</b> {it.bait}</div>}
-            {it.conditions && <div className="ww-line"><b>Conditions:</b> {it.conditions}</div>}
-            <a className="ww-link" href={it.url} target="_blank" rel="noopener noreferrer">Read the report →</a>
+            {(it.bait || it.conditions) && (
+              <dl className="ww-facts">
+                {it.bait && <><dt>Bait</dt><dd>{it.bait}</dd></>}
+                {it.conditions && <><dt>Conditions</dt><dd>{it.conditions}</dd></>}
+              </dl>
+            )}
+            <a className="ww-link" href={it.url} target="_blank" rel="noopener noreferrer">
+              Read the report<span aria-hidden="true"> ↗</span>
+              <span className="sr-only"> on BloodyDecks (new tab)</span>
+            </a>
           </li>
         ))}
       </ul>
-      <div className="fr-attrib">
+      <p className="fr-attrib">
         Automatic summaries of public posts on <a href="https://www.bdoutdoors.com/forums/" target="_blank" rel="noopener noreferrer">BloodyDecks</a>.
-      </div>
+      </p>
     </section>
   );
 }

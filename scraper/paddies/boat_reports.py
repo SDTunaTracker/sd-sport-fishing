@@ -204,7 +204,9 @@ REPORT_TOOL = {
                                                   "hooks, jigs and colours, technique. Max 5, each "
                                                   "8 words or fewer, e.g. 'pink Marauder trolled - wahoo'."},
                         "spots": {"type": "array", "items": {"type": "string"},
-                                  "description": "Named areas fished (e.g. Colonet, the Ridge). Max 5."},
+                                  "description": "Named fishing areas only: banks, islands, kelp beds, "
+                                                 "high spots (e.g. Colonet, the Ridge, 9 Mile Bank). "
+                                                 "Not directions, depths or descriptions. Max 5."},
                         "bait": {"type": ["string", "null"],
                                  "description": "12 words or fewer, your own words: bait type, size, "
                                                 "quality (e.g. 'green sardine 4-6 in, lively')."},
@@ -770,8 +772,8 @@ def make_headline(top_spots: list[str], items: list[dict]) -> str | None:
         parts.append(" and ".join(top_spots[:2]))
     lead = next((it for it in items if it.get("tackle") or it.get("bait")), None)
     if lead:
-        tackle = ", ".join(lead.get("tackle") or [])
-        parts.append(tackle or lead["bait"])
+        first = (lead.get("tackle") or [None])[0] or lead["bait"]
+        parts.append(_shorten(first, 45))
     if not parts:
         return None
     return _shorten(" · ".join(parts), HEADLINE_MAX)
