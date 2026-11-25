@@ -149,6 +149,8 @@ Also sampled, but not boat reviews: "Local full days" (multi-boat; Dolphin and G
 
 Sent to the "Fish forecast R&D: model and backtest" session as hypotheses only:
 
+> **Status (2026-11-25): none of these is tested.** Forecast R&D ranks bird pressure and bait quality as the most promising to test, because recent catch momentum (its strongest input) can't see them. Nothing will be backtested until about a season of `forum_signals` rows exists. Don't cite any of these as an improvement until R&D reports a held-out result.
+
 - **Bird pressure (shearwaters)**: mentioned in 5 of 16 reports in Oct–Nov as *the* limiting factor ("Birds birds birds"). This is a catch-*rate* suppressor independent of fish presence, and could explain low counts on days with fish around.
 - **Bait quality and size** ("green and slimy sardine, best of the season", "4–7 inch", "mostly anchovy under 4 in") versus catch per angler.
 - **Fleet location by trip length** (Colonet, San Martín, the Ridge, Cedros, Catalina backside) as a weekly "where the fleet went" series.
