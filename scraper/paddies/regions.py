@@ -28,8 +28,8 @@ _FALLBACK = {
          "Oceanside Sea Center"],
     OCLA: ["22nd Street Landing", "Long Beach Sportfishing", "LA Waterfront Sportfishing",
            "Marina Del Rey Sportfishing", "Redondo Beach Sportfishing", "Pierpoint Landing",
-           "Channel Islands Sportfishing", "Ventura Harbor Sportfishing", "Newport Landing",
-           "Davey's Locker", "Dana Wharf Sportfishing"],
+           "Channel Islands Sportfishing", "Hooks Landing", "Ventura Harbor Sportfishing",
+           "Newport Landing", "Davey's Locker", "Dana Wharf Sportfishing"],
 }
 
 # Feeds whose posts are San Diego fleet by default (long range leaves from SD).

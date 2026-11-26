@@ -33,7 +33,7 @@ DATA_JS_PATH = ROOT / "web" / "data.js"
 SCRAPE_RETRY_DELAYS = (20, 60, 120)
 SCRAPE_RETRY_DELAYS_HOURLY = (15, 45)
 # Days re-checked against the fishreports date archives on every run.
-ROLLING_DAYS = 3
+ROLLING_DAYS = 2
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -55,6 +55,13 @@ def _setup_logging(verbose: bool) -> None:
         logging.getLogger().addHandler(fh)
     except OSError:
         pass
+
+
+def _scraped_within(conn, landing: str, hours: float) -> bool:
+    row = conn.execute("SELECT MAX(started_at) FROM scrape_log WHERE landing=? AND status='ok'",
+                       (landing,)).fetchone()
+    return bool(row and row[0] and datetime.fromisoformat(row[0])
+                > datetime.now(timezone.utc) - timedelta(hours=hours))
 
 
 def _scrape_with_retry(sources, target_date, known_boats, sleep=None,
@@ -100,8 +107,18 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 summary_lines.append(f"  Network came up after {waited:.0f}s")
             elif waited is None:
                 summary_lines.append("  WARNING: DNS still failing; scraping anyway")
+            # Fish-report network pages (socalfishreports: the OC/LA landings) are
+            # fetched at most every 2 hours on 15-minute runs. See src/polite.py.
+            from . import polite
+            from .deep_backfill import ARCHIVE_SOURCE
+            teck_block = completeness.active_block(conn, ARCHIVE_SOURCE)
+            if teck_block:
+                summary_lines.append(f"  Fish-report network SKIPPED: blocked at {teck_block}")
+            run_sources = [s for s in SOURCES
+                           if not (polite.is_teck(s.url) and (
+                               teck_block or (hourly and _scraped_within(conn, s.name, hours=2))))]
             for src, trips, page_date, err in _scrape_with_retry(
-                SOURCES, target_date, known_boats_all,
+                run_sources, target_date, known_boats_all,
                 delays=SCRAPE_RETRY_DELAYS_HOURLY if hourly else SCRAPE_RETRY_DELAYS,
             ):
                 started = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -113,6 +130,8 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                         trips_seen=0, trips_kept=0, status="error", error=err,
                     )
                     summary_lines.append(f"  {src.name:30s} ERROR  {err}")
+                    if polite.is_teck(src.url) and completeness.is_block_error(err):
+                        completeness.record_block(conn, ARCHIVE_SOURCE, f"{src.url}: {err}")
                     if src.name in completeness.CORE_LANDINGS:
                         core_failures.append(src.name)
                     continue
@@ -136,7 +155,8 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
             refreshed: list[str] = []
             # Don't hammer the booking sites: skip a landing for BLOCK_COOLDOWN
             # after it served a CAPTCHA / bot check to this machine, and on
-            # 15-minute runs refresh each landing at most every 2 hours.
+            # 15-minute runs refresh each SD landing at most every 2 hours and
+            # each OC/LA landing at most every 12 hours.
             from .schedule import SOURCES as SCHED_SOURCES
             sched_sources = []
             for s in SCHED_SOURCES:
@@ -144,9 +164,9 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 if blk:
                     summary_lines.append(f"  {s.name:30s} SKIPPED  blocked at {blk} (cooling down)")
                     continue
-                last = conn.execute("SELECT MAX(scraped_at) FROM scheduled_trips WHERE landing=?",
-                                    (s.name,)).fetchone()[0]
-                if hourly and last and datetime.fromisoformat(last) >                         datetime.now(timezone.utc) - timedelta(hours=2):
+                last = completeness.last_schedule_refresh(conn, s.name)
+                every = timedelta(hours=12 if s.region == "oc_la" else 2)
+                if hourly and last and last > datetime.now(timezone.utc) - every:
                     continue
                 sched_sources.append(s)
             for src, sched, err in (scrape_all_schedules(sched_sources) if sched_sources else []):
@@ -159,6 +179,7 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                         completeness.record_block(conn, src.name, err)
                     continue
                 summary_lines.append(f"  {src.name:30s} upcoming={len(sched)}")
+                completeness.mark_schedule_refresh(conn, src.name)
                 refreshed.append(src.name)
                 all_scheduled.extend(sched)
             db.replace_scheduled_trips(conn, all_scheduled, landings=refreshed)
@@ -170,13 +191,16 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
 
             # Rolling re-check: fill any trips the live pages dropped (or that a
             # missed/asleep run never saw) from the date archives. Insert-only.
+            # Full (daily) runs only, so each archive day is fetched at most twice.
             try:
-                from .deep_backfill import recover_range
-                rr = recover_range(conn, today - timedelta(days=ROLLING_DAYS),
-                                   today - timedelta(days=1))
-                summary_lines.append(
-                    f"  Rolling archive check ({ROLLING_DAYS}d): +{rr['inserted']} trips"
-                    + (f", {len(rr['errors'])} fetch errors" if rr["errors"] else ""))
+                if not hourly:
+                    from .deep_backfill import recover_range
+                    rr = recover_range(conn, today - timedelta(days=ROLLING_DAYS),
+                                       today - timedelta(days=1))
+                    summary_lines.append(
+                        f"  Rolling archive check ({ROLLING_DAYS}d): +{rr['inserted']} trips"
+                        + (f", {len(rr['errors'])} fetch errors" if rr["errors"] else "")
+                        + (f"; STOPPED: {rr['blocked']}" if rr.get("blocked") else ""))
             except Exception as e:
                 summary_lines.append(f"  Rolling archive check ERROR (non-fatal): {e}")
 
@@ -243,6 +267,17 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 summary_lines.append(f"  historical_conditions refreshed: {hc['rows']} days")
         except Exception as e:
             summary_lines.append(f"  historical_conditions refresh ERROR (non-fatal): {e}")
+        # OC/LA SST + wind (own table). Full runs, or 15-minute runs when behind.
+        try:
+            from . import ocla_conditions as oc
+            conn.execute(oc.DDL)
+            last_oc = conn.execute(
+                "SELECT MAX(date) FROM ocla_conditions WHERE sst_celsius IS NOT NULL").fetchone()[0]
+            if not hourly or not last_oc or last_oc < (today - timedelta(days=4)).isoformat():
+                added = oc.fill_ocla_conditions(conn, today - timedelta(days=14))
+                summary_lines.append(f"  OC/LA conditions: {sum(added.values())} point-days written")
+        except Exception as e:
+            summary_lines.append(f"  OC/LA conditions ERROR (non-fatal): {e}")
         conn.commit()  # chlorophyll below opens its own connection
 
         # Chlorophyll-a — VIIRS NOAA-20 daily (~8-day lag). Full runs always;
@@ -258,6 +293,15 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 summary_lines.append(f"  Chlorophyll fetched: {n_chl} location-days stored")
             except Exception as e:
                 summary_lines.append(f"  Chlorophyll fetch ERROR (non-fatal): {e}")
+
+        # ENSO context (NOAA CPC ONI + alert), refreshed weekly. Co-Captain context
+        # only, not a forecast input (see src/enso.py).
+        if not hourly:
+            try:
+                from .enso import update as enso_update
+                summary_lines.append("  " + enso_update(DB_PATH))
+            except Exception as e:
+                summary_lines.append(f"  ENSO fetch ERROR (non-fatal): {e}")
 
         if hourly:
             # Daily accuracy check — score yesterday's forecast vs actual catch.

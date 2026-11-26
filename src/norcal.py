@@ -212,12 +212,14 @@ GROUP_SPECIES: dict[str, tuple[str, ...]] = {
 
 # Bag limit per angler. None = no harvest allowed (catch and release only), so
 # the target is ranked by fish per angler instead of a limit rate.
-# VERIFY each value against the current CDFW regs before launch.
+# Checked 2026-11-26 against CDFW's 2026 Ocean Sport Fishing Regulations
+# (last updated July 17, 2026) and the Groundfish Summary page (June 23, 2026).
+# Re-check each year when the new booklet is out.
 BAG_LIMITS: dict[str, dict] = {
     "rcg":      {"limit": 10,   "note": "RCG complex: rockfish, cabezon, greenling combined (CDFW ocean regs)"},
     "lingcod":  {"limit": 2,    "note": "CDFW ocean regs"},
     "salmon":   {"limit": 2,    "note": "Ocean king salmon, in season only (season set yearly by PFMC/CDFW)"},
-    "halibut":  {"limit": 3,    "note": "California halibut north of Pt. Sur"},
+    "halibut":  {"limit": 2,    "note": "California halibut north of Pt. Sur (T14 CCR 28.15; 5 south of Pt. Sur)"},
     "striper":  {"limit": 2,    "note": "Striped bass, statewide"},
     "sturgeon": {"limit": None, "note": "White sturgeon: harvest closed since 2024 (catch and release)"},
     "crab":     {"limit": 10,   "note": "Dungeness crab, from a CPFV"},

@@ -1,0 +1,6 @@
+{
+  "_about": "Hand-checked Google place_id per boat and landing. Only place_id may be stored (Google Maps Platform terms). Review text and ratings are fetched live by cloudflare-worker/places-proxy.js. Fill with scripts/match_google_places.py, then confirm each match by hand.",
+  "updated": null,
+  "boats": {},
+  "landings": {}
+}

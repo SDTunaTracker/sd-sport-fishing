@@ -1,4 +1,4 @@
-"""Open-party schedule scrapers for the 4 SD landings.
+"""Open-party schedule scrapers for the 4 SD landings and 5 OC/LA landings.
 
 Three of the four landings (Fisherman's, Point Loma, Seaforth) publish their
 schedules through fishingreservations.net with identical HTML structure
@@ -37,7 +37,14 @@ class ScheduleSource:
     url: str
     kind: Literal["fishingreservations", "xola_jsonp"]
     referer: str | None = None
+    region: str = "san_diego"
+    # fishingreservations pages to read at most (None = _MAX_SCHEDULE_PAGES).
+    # OC/LA landings list months of half-day trips; a cap keeps each refresh
+    # to a handful of requests so the platform's bot check isn't triggered.
+    max_pages: int | None = None
 
+
+OCLA_MAX_PAGES = 10
 
 SOURCES: tuple[ScheduleSource, ...] = (
     ScheduleSource(
@@ -60,6 +67,44 @@ SOURCES: tuple[ScheduleSource, ...] = (
         name="Seaforth Sportfishing",
         url="https://seaforth.fishingreservations.net/sales",
         kind="fishingreservations",
+    ),
+    # OC/LA landings on fishingreservations (same HTML as FL/PL/SF). Not yet
+    # covered: Dana Wharf (FareHarbor), Davey's Locker (Rezdy), LA Waterfront
+    # (TripWorks), Newport Landing (own site), Long Beach / Marina Del Rey.
+    ScheduleSource(
+        name="22nd Street Landing",
+        url="https://22ndstreet.fishingreservations.net/sales/",
+        kind="fishingreservations",
+        region="oc_la",
+        max_pages=OCLA_MAX_PAGES,
+    ),
+    ScheduleSource(
+        name="Pierpoint Landing",
+        url="https://pierpoint.fishingreservations.com/sales/",
+        kind="fishingreservations",
+        region="oc_la",
+        max_pages=OCLA_MAX_PAGES,
+    ),
+    ScheduleSource(
+        name="Redondo Beach Sportfishing",
+        url="https://redondo.fishingreservations.com/sales/",
+        kind="fishingreservations",
+        region="oc_la",
+        max_pages=OCLA_MAX_PAGES,
+    ),
+    ScheduleSource(
+        name="Channel Islands Sportfishing",
+        url="https://ciscos.fishingreservations.net/sales/",
+        kind="fishingreservations",
+        region="oc_la",
+        max_pages=OCLA_MAX_PAGES,
+    ),
+    ScheduleSource(
+        name="Ventura Harbor Sportfishing",
+        url="https://ventura.fishingreservations.com/sales/",
+        kind="fishingreservations",
+        region="oc_la",
+        max_pages=OCLA_MAX_PAGES,
     ),
 )
 
@@ -436,7 +481,7 @@ def _fetch_fishingreservations_all_pages(src: ScheduleSource) -> list[str]:
                 f"{src.name}: schedule page returned no pager or trip ids (likely a bot challenge)"
             )
     m = _PAGE_OF_RE.search(first)
-    total = min(int(m.group(1)), _MAX_SCHEDULE_PAGES) if m else 1
+    total = min(int(m.group(1)), src.max_pages or _MAX_SCHEDULE_PAGES) if m else 1
     pages = [first]
     for p in range(2, total + 1):
         # fishingreservations.net will present a CAPTCHA challenge if we hammer
