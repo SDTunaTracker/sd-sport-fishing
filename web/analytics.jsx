@@ -798,15 +798,28 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
     _selSp.length !== _defSp.length || !_defSp.every(s => _selSp.includes(s))
   );
 
+  // Each subtab is its own route, so the strip remounts scrolled to the start.
+  // On phones that hid the current tab (Seasonality, Moon, Half-day) off the
+  // right edge and the bar seemed to jump. Keep the selected tab in view.
+  const subtabRef = React.useRef(null);
+  React.useLayoutEffect(() => {
+    const bar = subtabRef.current;
+    const sel = bar && bar.querySelector('a.sel');
+    if (!bar || !sel || bar.scrollWidth <= bar.clientWidth) return;
+    bar.scrollLeft = Math.max(0, sel.offsetLeft - (bar.clientWidth - sel.offsetWidth) / 2);
+  }, [subtab]);
+
   return (
     <React.Fragment>
-      {/* Sub-tab bar — always visible */}
-      <div className="tabbar analytics-subtabbar">
+      {/* Sub-tab bar — always visible, pinned under the header */}
+      <nav className="tabbar analytics-subtabbar" ref={subtabRef} aria-label="Analytics sections">
         {SUBTABS.map(t => (
           <a key={t.id} className={subtab === t.id ? 'sel' : ''}
-             onClick={() => navigate('analytics', { subtab: t.id })}>{t.label}</a>
+             aria-current={subtab === t.id ? 'page' : undefined}
+             href={window.ttPathFromRoute ? window.ttPathFromRoute('analytics', { subtab: t.id }, regions) : undefined}
+             onClick={(e) => { e.preventDefault(); navigate('analytics', { subtab: t.id }); }}>{t.label}</a>
         ))}
-      </div>
+      </nav>
 
       {/* Shared filter bar — one instance for all subtabs EXCEPT half-day
           (which uses its own extended filter panel: slot, extended species

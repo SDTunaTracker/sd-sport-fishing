@@ -717,3 +717,18 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .charts-immersive .leaflet-top.leaflet-left { left: 244px; }
   .wp-floating.open { z-index: 1150; }
 }
+
+/* ── Locked header + Analytics section bar ────────────────────────────────
+   Owner: "the nav bar at the top moves around… it should be locked".
+   The header was un-pinned on phones when it held a tall tab strip; it is a
+   54px row now, so it stays put everywhere. .main-content clipped overflow
+   with `hidden`, which made it a scroll box and stopped anything inside it
+   from sticking; `clip` trims the same overflow without that side effect. */
+@supports (overflow: clip) { .main-content { overflow-x: clip; } }
+.analytics-subtabbar { position: sticky; top: 48px; z-index: 40; }
+@media (max-width: 768px) {
+  .app-header { position: sticky; top: 0; z-index: 50; }
+  .analytics-subtabbar { top: 54px; }
+  .analytics-subtabbar a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px; font-size: 13px; }
+  .analytics-subtabbar { scroll-padding-inline: 16px; }
+}
