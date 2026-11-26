@@ -10,6 +10,16 @@
 
 Health alerts cover the new feeds: `bd:feed-errors:<feed>`, `bd:no-new-posts:<feed>` and `bd:boat-reports`.
 
+*Second round, 2026-11-25 (branch `claude/bd-spots`, not yet merged):*
+
+| # | Built as | Where |
+|---|---|---|
+| 4 | **Spot locations.** Trip reports now record every place the trip fished, saw fish/paddies/kelp, or where "the fleet" was (`forum_locations`, append-only, quote-checked; coordinates and "N miles <dir> of X" offsets are parsed in code from the quote, never taken from the model). `spots.py` merges these with the paddy-forum mentions into `forum_spot_reports`: date, knowable-at time, species, catch quality, source link, geocode method and confidence, precision radius. | `scraper/paddies/spots.py`; `data/forum_places.json` (Baja / long-range places the SWYC list lacks); `web/api/v1/forum_spots.geojson`; `python -m scraper.paddies.spots --research-csv out.csv` for forecast R&D |
+| 5 | **Positions as posted** (owner's decision, 2026-11-25: "if they posted it online then its fair game"). Coordinates printed in a thread are published as written, with `precision_nm` 0.1. "N miles off X" estimates get max(1 nm, N/4), and named spots get the spot's radius. Every point has `position` (posted / estimate / spot), a date and a thread link. `reports.json` pins gain `precision_nm`. | `spots._exact_fields`, `spots.offset_precision` |
+| 6 | **Back-catalogue for boat reviews**: the trip-report extractor now accepts threads up to 365 days old (was 120, which silently skipped any listing backfill), runs 80 posts per run (was 40), and the workflow takes `backfill_feeds` so a one-off year walk touches only Sportboats + Long Range. | `boat_reports.MAX_POST_AGE_DAYS`; `paddies.yml` |
+| 7 | **Region tags for OC/LA** (`san_diego` / `oc_la` / `both` / null, the site's region ids). Each item takes the union of its boat's landing region (parsed from `web/regions.js`), the regions of the spots it names, title keywords (Catalina, PV, Horseshoe, Point Loma…) and, as a fallback, the forum (Long Range / Baja → SD). An SD boat at Catalina is `both`; 4+ day trips use the landing only. Every output carries it: boat entries and reports, `whats_working.by_region`, spot features, `banks.json`, `paddies.json` banks, and `reports.json` banks and pins. The gazetteer gains OC/LA coast and Channel Islands places. A new `bd-california` feed (California Sport Fishing Reports) brings in Catalina, SCI and inshore reports. | `scraper/paddies/regions.py`; `data/forum_places.json` |
+| 8 | **The landings' own reports** (data-sources Brief 2, owner-approved 2026-11-25). These are read from the report feeds of sandiegofishreports.com and socalfishreports.com, which carry the landings' daily updates, "called in with …" posts and skipper reports, including longrangesportfishing.net for the long-range boats. Each run fetches 2 listing pages, then one page per new report at 2.5 s intervals; robots.txt allows all three sites. Claude records per boat: size grade, bait (type, on board), tackle, a skipper note, conditions, one quote and the open spots a post advertises. Size, bait and tackle values each need a verbatim quote found in the post. Photos are hot-linked from media.fishreports.com and never re-hosted. | `scraper/paddies/landing_reports.py` → `landing_notes.json` (boat page "From the landing"; `by_region`; `open_spots`), merged into What's working with `source: landing`; `--research-csv` for forecast H2 |
+
 ## TL;DR
 
 The best find is the **Southern California Sportboats** forum
@@ -157,6 +167,36 @@ Sent to the "Fish forecast R&D: model and backtest" session as hypotheses only:
 - **Bite timing** (grey light vs. twilight vs. "last stop") as a distribution per species.
 - **Water temperature / El Niño mentions** from Baja and Spearfishing posts. These are weak, and satellite SST is better.
 - **Size grade** ("dorado were all 1 lb", "YFT 20–40 with 60+") to complement count-only landing data.
+
+## 3b. Spot coordinates
+
+**What a report gives us, by source**
+
+| Source | Location signals | How it is placed |
+|---|---|---|
+| SoCal Offshore / Baja / Spearfishing (`report_mentions`) | SWYC bank ids, GPS numbers, "3–4 miles off IB", paddies, bite outcome, water temp | Bank centre, or the parsed / computed position as posted |
+| Sportboats / Long Range (`forum_locations`) | Named banks, islands, kelp, paddies, "the fleet was at …", coordinates, offsets, species, quality, temp | Gazetteer + `forum_places.json` lookup; offsets from the named place |
+| Older trip reports (`forum_boat_reports.spots`) | Names only | Gazetteer lookup |
+
+On the current DB: 342 place mentions, 171 placed. The rest are paddy-forum bite/conditions rows with no place, plus names we deliberately leave unresolved because they are ambiguous ("the Ridge", "the Rocks", "Lower Banks", "13 Fathom") or not yet in `forum_places.json` ("San Carlos", "San Pablo Bay", "Juggs Bank"). `spots_unresolved_names` in the state file lists them, so the gazetteer can be extended with a source and confidence for each.
+
+**Public layer** (`forum_spots.geojson`): one point per named spot, plus one per posted or estimated position, for the last 14 days. Each has 7-day and 14-day report counts, species (fixed site vocabulary plus "other"), catch-quality tallies, water temperature range, kinds (bite, paddy, kelp, fleet…), `position`, `precision_nm` and up to 5 thread links. No quotes or usernames.
+
+**Research series** (`--research-csv`): every row with report date, trip date, published and fetched (knowable-at) times, the point, precision, species and quality. Forecast R&D: hypotheses only; nothing here is a tested predictor.
+
+## 3b-2. OC/LA coverage (2026-11-25, current DB)
+
+- **Posts**: of 569 stored posts, 49 are OC/LA and 10 both. 289 can't be placed yet, mostly because they haven't been extracted (486 are pending). Placed OC/LA posts by month: Sep 36, Oct 11, Nov 6, which works out to about 9 a week in September and 1–3 a week since. Most come from the SoCal Offshore forum (private boats at Horseshoe, the Domes, the Slide, 14 Mile Bank, Catalina).
+- **Spots**: 84 of 171 placed mentions are in OC/LA or both. The top spots are Horseshoe (31), Domes (11), the Slide, 105 Spot, 209, Salt Creek, 14 Mile Bank and Catalina.
+- **Boats**: 1 of the ~60 OC/LA boats that ran trips in the last year has a forum review (Pursuit, 22nd Street). The Sportboats forum is mostly San Diego boats.
+- **Thin**: OC/LA party-boat reviews and anything north of Palos Verdes (Channel Islands, Ventura, Oxnard). The year back-catalogue and `bd-california` will help a little. OC/LA landings' own report pages would do more than BloodyDecks, but that's out of scope here.
+
+## 3c. Next proposals (ranked)
+
+1. **Open-load / "needs N more" trips** (Sportboats + Trip Planning forums). Titles alone carry most of it ("Help get the X 1.5 day off the dock 12/5"). A small "Trips looking for anglers" list on the trip planner, each linking to the thread, auto-expiring after the departure date. Low effort, high value for users, time-sensitive, so it needs the 3-hourly run.
+2. **Show the forum panel from 1 report** on boats with a landing-count match. Today it needs 2 reports, so only 2 of 120 active boats show it. One matched report is still a useful, honest signal with the "not a verified review" label. UX call for the design sessions.
+3. **Tackle and bait by month and species** from `forum_boat_reports.tackle`/`bait` (already extracted): a "what people used last October for YFT" view. Low effort once a season of rows exists.
+4. **Long-range season narrative** (per-trip one-liners for 8–16 day trips). Medium effort, niche audience.
 
 ## 4. Risks
 

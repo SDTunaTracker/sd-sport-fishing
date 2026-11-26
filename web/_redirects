@@ -8,6 +8,11 @@
 /sd/forecast     /sd/charts    301
 /sd/forecast/*   /sd/charts    301
 
+# Admin moved behind Cloudflare Access (see docs/analytics/SETUP.md).
+/admin           /owner/admin/   301
+/sd/admin        /owner/admin/   301
+/owner           /owner/         301
+
 # SPA routes: serve the app shell with HTTP 200.
 # Without these, Pages has no file for these paths and serves 404.html with
 # status 404 (it then bounces to "/" in JS). Browsers recover, but crawlers
@@ -25,3 +30,12 @@
 /sd/account          /   200
 /sd/analytics        /   200
 /sd/analytics/*      /   200
+
+# OC / LA region (launched 2026-11-25, docs/ocla/LAUNCH_REVIEW.md). Nothing is
+# prerendered under /ocla yet, so the whole tree is the app shell.
+# Rollback: set OCLA_PUBLIC false in web/feature-flags.js (app.jsx then drops
+# oc_la and these paths render San Diego); these lines can stay.
+/ocla                /   200
+/ocla/*              /   200
+/sd+ocla             /   200
+/sd+ocla/*           /   200

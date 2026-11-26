@@ -22,25 +22,31 @@
 </script>
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0ea5e9">
+<meta name="theme-color" content="#17332C">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta name="description" content="Stop guessing. Start catching. San Diego's most detailed sportfishing analytics. Daily fish counts, boat leaderboards, and trip stats from H&M, Fisherman's, Seaforth, and Point Loma landings.">
+<meta name="description" content="Compare daily fish counts from every San Diego sportfishing boat. See who's catching tuna, yellowtail, and dorado — and book your next trip in one place.">
+<!-- Brand name + domain: keep in sync with web/seo.js (SITE_NAME/BASE) and
+     src/generate_pages.py. See docs/seo/DOMAIN_MIGRATION.md. -->
 <!-- Open Graph -->
 <meta property="og:type"        content="website" />
-<meta property="og:site_name"   content="The Tuna Tracker" />
-<meta property="og:title"       content="The Tuna Tracker — San Diego Sportfishing Fish Counts &amp; Boat Leaderboards" />
+<meta property="og:site_name"   content="Tunatracker" />
+<meta property="og:title"       content="Tunatracker — San Diego Fish Counts &amp; Sportfishing Boat Leaderboards" />
 <meta property="og:description" content="Compare daily fish counts from every San Diego sportfishing boat. See who's catching tuna, yellowtail, and dorado." />
-<meta property="og:image"       content="https://thetunatracker.com/logo.png" />
+<meta property="og:image"       content="https://thetunatracker.com/og-image.png" />
 <meta property="og:url"         content="https://thetunatracker.com/" />
 <!-- Twitter card -->
 <meta name="twitter:card"        content="summary_large_image" />
-<meta name="twitter:title"       content="The Tuna Tracker — San Diego Sportfishing Analytics" />
+<meta name="twitter:title"       content="Tunatracker — San Diego Fish Counts &amp; Sportfishing Boat Leaderboards" />
 <meta name="twitter:description" content="Daily fish counts, boat leaderboards, and trip analytics from San Diego's top sportfishing landings." />
-<meta name="twitter:image"       content="https://thetunatracker.com/logo.png" />
-<title>The Tuna Tracker — San Diego Sportfish Analytics</title>
+<meta name="twitter:image"       content="https://thetunatracker.com/og-image.png" />
+<title>Tunatracker — San Diego Fish Counts &amp; Sportfishing Boat Leaderboards</title>
+<!-- Site name for Google (in raw HTML, not only after JS runs). seo.js keeps
+     these on the home route and removes them on other routes. -->
+<script type="application/ld+json" id="jld-site">{"@context":"https://schema.org","@type":"WebSite","name":"Tunatracker","alternateName":["Tuna Tracker","The Tuna Tracker"],"url":"https://thetunatracker.com/"}</script>
+<script type="application/ld+json" id="jld-org">{"@context":"https://schema.org","@type":"Organization","name":"Tunatracker","alternateName":["Tuna Tracker","The Tuna Tracker"],"url":"https://thetunatracker.com","logo":"https://thetunatracker.com/logo.png","description":"San Diego sportfishing analytics platform","areaServed":"San Diego, California"}</script>
 <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="canonical" href="https://thetunatracker.com/" />
 <!-- Vessel tracking Worker URL — set after deploying cloudflare-worker/vessel-tracker.js -->
 <!-- Replace '' with your Worker URL, e.g. 'https://vessel-tracker.YOUR-ACCOUNT.workers.dev' -->
@@ -57,8 +63,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css" />
-<link rel="stylesheet" href="styles.css?v=20261125-3">
-<link rel="stylesheet" href="design-system.css?v=20261124-8">
+<link rel="stylesheet" href="styles.css?v=20261125-63">
+<link rel="stylesheet" href="design-system.css?v=20261125-14">
+<link rel="stylesheet" href="sfbay.css?v=20261125-19">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- Clerk browser SDK — async so it doesn't block page render -->
 <script
@@ -111,7 +118,7 @@
     if (!root || root.childElementCount > 0) return;
     root.innerHTML =
       '<div style="padding:16px;font:13px/1.6 -apple-system,system-ui,monospace;color:#7f1d1d">' +
-      '<b style="font-size:15px">The Tuna Tracker hit a load error</b>' +
+      '<b style="font-size:15px">Tunatracker hit a load error</b>' +
       '<pre style="white-space:pre-wrap;margin:12px 0">' +
       (errs.length ? errs.join('\n') : '(no JS error captured — likely a resource/memory limit)') +
       '</pre><div style="color:#475569;font-size:11px">' + navigator.userAgent + '</div></div>';
@@ -125,42 +132,43 @@
 <script type="text/javascript-deferred" id="tt-leaflet-js" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin="anonymous"></script>
 
 <script src="dates.js?v=20261124-1"></script>
-<script src="feature-flags.js?v=20261124-1"></script>
-<script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261125-1"></script>
-<script src="chat-api.js?v=20261124-2"></script>
-<script src="analytics.js?v=20261124-10"></script>
-<script src="analytics-events.js?v=20261124-1"></script>
+<script src="feature-flags.js?v=20261125-5"></script>
+<script src="regions.js?v=20261125-54"></script>
+<script src="data.js?v=20261125-4"></script>
+<script src="region-data.js?v=20261125-5"></script>
+<script src="chat-api.js?v=20261125-54"></script>
+<script src="analytics.js?v=20261125-56"></script>
+<script src="analytics-events.js?v=20261125-9"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
 <script src="user-prefs.js?v=20261124-1"></script>
 <script src="metric-definitions.js?v=20261124-1"></script>
 
-<script src="dist/tweaks-panel.js?v=20261124-8"></script>
-<script src="dist/metric-label.js?v=20261124-8"></script>
-<script src="dist/ui.js?v=20261124-8"></script>
-<script src="dist/components.js?v=20261124-8"></script>
-<script src="dist/filterbar.js?v=20261124-8"></script>
-<script src="dist/dashboard.js?v=20261125-4"></script>
-<script src="dist/home.js?v=20261125-4"></script>
-<script src="dist/boats.js?v=20261124-8"></script>
-<script src="dist/drilldown.js?v=20261125-3"></script>
-<script src="dist/boat-reviews.js?v=20261124-8"></script>
-<script src="dist/forum-reports.js?v=20261125-5"></script>
+<script src="dist/tweaks-panel.js?v=20261125-4"></script>
+<script src="dist/metric-label.js?v=20261125-4"></script>
+<script src="dist/ui.js?v=20261125-56"></script>
+<script src="dist/components.js?v=20261125-5"></script>
+<script src="dist/filterbar.js?v=20261125-15"></script>
+<script src="dist/dashboard.js?v=20261125-17"></script>
+<script src="dist/home.js?v=20261125-58"></script>
+<script src="dist/boats.js?v=20261125-10"></script>
+<script src="dist/drilldown.js?v=20261125-57"></script>
+<script src="dist/boat-reviews.js?v=20261125-12"></script>
+<script src="dist/forum-reports.js?v=20261125-26"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261124-8"></script>
-<script src="dist/tripplanner.js?v=20261125-4"></script>
-<script src="dist/headtohead.js?v=20261124-8"></script>
-<script src="dist/seasonality.js?v=20261124-8"></script>
-<script src="dist/moon.js?v=20261124-8"></script>
-<script src="dist/settings.js?v=20261124-8"></script>
-<script src="dist/account.js?v=20261124-9"></script>
-<script src="dist/analytics.js?v=20261124-9"></script>
-<script src="dist/forecast.js?v=20261124-8"></script>
-<script src="dist/admin.js?v=20261124-8"></script>
-<script src="dist/chatbot.js?v=20261124-8"></script>
-<script src="dist/app.js?v=20261124-9"></script>
-<script src="seo.js?v=20261124-1"></script>
+<script src="dist/charts.js?v=20261125-16"></script>
+<script src="dist/tripplanner.js?v=20261125-54"></script>
+<script src="dist/headtohead.js?v=20261125-9"></script>
+<script src="dist/seasonality.js?v=20261125-4"></script>
+<script src="dist/moon.js?v=20261125-8"></script>
+<script src="dist/settings.js?v=20261125-4"></script>
+<script src="dist/account.js?v=20261125-8"></script>
+<script src="dist/analytics.js?v=20261125-55"></script>
+<script src="dist/forecast.js?v=20261125-4"></script>
+<script src="dist/chatbot.js?v=20261125-14"></script>
+<script src="dist/sfbay.js?v=20261125-19"></script>
+<script src="dist/app.js?v=20261125-60"></script>
+<script src="seo.js?v=20261125-55"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

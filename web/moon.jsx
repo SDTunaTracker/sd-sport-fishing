@@ -8,7 +8,7 @@ function MoonView({ filters, setFilters, navigate, regions }) {
   const waxWan = useMemo(() => SDA.waxingVsWaning(trips, filters.species), [trips, filters.species]);
 
   const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel = speciesActive ? filters.species : 'Tuna';
+  const speciesLabel = speciesActive ? filters.species : SDA.headlineLabel();
 
   return (
     <React.Fragment>

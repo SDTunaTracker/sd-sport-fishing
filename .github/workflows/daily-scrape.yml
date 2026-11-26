@@ -197,11 +197,30 @@ jobs:
               print('WARNING: all ERDDAP attempts failed — keeping existing sst_grid.json')
           PYEOF
 
+      - name: Push admin data to the owner dashboard
+        # build/admin.json (scrape health, backtests, review queue) is written by
+        # src/export.py and never committed: the repo is public. The analytics
+        # Worker stores it in D1 and serves it only behind Cloudflare Access.
+        # Skips quietly until the ADMIN_INGEST_TOKEN secret exists.
+        env:
+          ADMIN_INGEST_TOKEN: ${{ secrets.ADMIN_INGEST_TOKEN }}
+        run: |
+          if [ -z "$ADMIN_INGEST_TOKEN" ] || [ ! -f build/admin.json ]; then
+            echo "Skipping admin push (no token or no build/admin.json)."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/admin-push.txt -w '%{http_code}' -X POST             -H "Authorization: Bearer $ADMIN_INGEST_TOKEN" -H 'Content-Type: application/json'             --data-binary @build/admin.json https://thetunatracker.com/a/admin || echo 000)
+          echo "admin push: HTTP $code"; cat /tmp/admin-push.txt || true; echo
+          if [ "$code" != "200" ]; then echo "::warning::Admin data push failed (HTTP $code)"; fi
+
       - name: Commit and push updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
+          # Per-region data files: data-region-oc_la.js, ... (src/export.py) and
+          # data-region-sfbay.js (src/export_sfbay.py).
+          if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

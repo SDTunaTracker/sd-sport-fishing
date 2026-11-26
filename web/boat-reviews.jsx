@@ -357,7 +357,7 @@ function StepTellUsMore({ form, set }) {
 }
 
 function SuccessScreen({ boat, onClose }) {
-  const shareText = `Just left a review for ${boat} on The Tuna Tracker! thetunatracker.com`;
+  const shareText = `Just left a review for ${boat} on Tunatracker! thetunatracker.com`;
   const copyLink = () => {
     navigator.clipboard.writeText('https://thetunatracker.com').catch(() => {});
     alert('Link copied!');

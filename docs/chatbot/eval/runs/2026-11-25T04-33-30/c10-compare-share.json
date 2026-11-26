@@ -1,0 +1,167 @@
+{
+  "case": {
+    "id": "c10-compare-share",
+    "persona": "Compare two trips and share with group",
+    "turns": [
+      "Compare the San Diego full day and the Sea Watch full day this Sunday",
+      "Can you give me something I can text my buddies with both options?"
+    ],
+    "expect": "Sunday 11/29: San Diego $250 5:30 AM; Sea Watch $150 7:00 AM. Share text is plain text.",
+    "checks": [
+      {
+        "minCards": 2,
+        "maxCards": 2,
+        "dateFrom": "2026-11-29",
+        "dateTo": "2026-11-29"
+      },
+      {
+        "mustNotSay": [
+          "\\*\\*"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Compare the San Diego full day and the Sea Watch full day this Sunday",
+      "text": "Here's how the two Sunday 11/29 full days stack up:\n\n- **San Diego** ($250): **36% Win Rate** (best catch per angler among same-day, same-length trips), season **TPA 1.48** (trophy fish per angler per day). Last 10 trips: **2.78 yellowfin per angler**, trophy/angler/day **2.92**. **19/35 open** as of last update.\n- **Sea Watch** ($150): WR 11%, season TPA 0.96. Last 10 trips: 1.22 yellowfin per angler, trophy/angler/day 1.66. **29/35 open**, targets yellowtail/bass/barracuda/bonito.\n\n<trip-card>{\"tripId\": \"1083153\", \"why\": [\"36% Win Rate vs 11% for Sea Watch\", \"Recent form: 2.78 yellowfin per angler over last 10 trips\", \"Trophy/angler/day 2.92 recently\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1090884\", \"why\": [\"$150 — $100 cheaper than San Diego\", \"29/35 open as of last update\", \"Targets yellowtail, bass, barracuda, bonito\"]}</trip-card>\n\nShort version: San Diego has clearly stronger recent catches, Sea Watch is cheaper and targets more inshore species — confirm prices and availability on Seaforth's site before booking.\n\n<followups>[\"Any cheaper Sunday options?\", \"What about a 1.5 day Sunday?\", \"Show me overnights this weekend\"]</followups>",
+      "ms": 8125,
+      "usage": {
+        "input_tokens": 18963,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 517,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [
+        {
+          "tripId": "1083153",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1083153",
+            "sourceId": "1083153",
+            "boat": "San Diego",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "Full Day",
+            "departLocal": "2026-11-29T05:30:00-08:00",
+            "departLabel": "Sun 11/29 5:30 AM",
+            "departDate": "2026-11-29",
+            "returnLocal": "2026-11-29T17:00:00-08:00",
+            "returnLabel": "Sun 11/29 5:00 PM",
+            "price": 250,
+            "openSpots": 19,
+            "capacity": 36,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 36,
+            "avgTPA": 1.48,
+            "boatPageUrl": "#boat/San%20Diego"
+          },
+          "why": [
+            "36% Win Rate vs 11% for Sea Watch",
+            "Recent form: 2.78 yellowfin per angler over last 10 trips",
+            "Trophy/angler/day 2.92 recently"
+          ],
+          "boat": "San Diego",
+          "date": "2026-11-29",
+          "tripLength": "Full Day",
+          "price": 250,
+          "openSpots": 19,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1083153",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1090884",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1090884",
+            "sourceId": "1090884",
+            "boat": "Sea Watch",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "Full Day",
+            "departLocal": "2026-11-29T07:00:00-08:00",
+            "departLabel": "Sun 11/29 7:00 AM",
+            "departDate": "2026-11-29",
+            "returnLocal": "2026-11-29T16:00:00-08:00",
+            "returnLabel": "Sun 11/29 4:00 PM",
+            "price": 150,
+            "openSpots": 29,
+            "capacity": 35,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1090884",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Yellowtail, Bass, Barracuda and Bonito",
+            "included": null,
+            "tripStatus": null,
+            "winRate": 11,
+            "avgTPA": 0.96,
+            "boatPageUrl": "#boat/Sea%20Watch"
+          },
+          "why": [
+            "$150 — $100 cheaper than San Diego",
+            "29/35 open as of last update",
+            "Targets yellowtail, bass, barracuda, bonito"
+          ],
+          "boat": "Sea Watch",
+          "date": "2026-11-29",
+          "tripLength": "Full Day",
+          "price": 150,
+          "openSpots": 29,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1090884",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    },
+    {
+      "user": "Can you give me something I can text my buddies with both options?",
+      "text": "Here's a plain-text version to paste into a text — hit the Share button on each card above to grab the booking links.\n\nSunday 11/29 full day options out of Seaforth:\n\n1) San Diego — Sun 11/29, 5:30 AM, $250. Recent form: 2.78 yellowfin per angler last 10 trips, 36% win rate.\nbook: use Share on the San Diego card\n\n2) Sea Watch — Sun 11/29, 7:00 AM, $150. Targets yellowtail, bass, barracuda, bonito.\nbook: use Share on the Sea Watch card\n\nPrices and open spots are a snapshot — confirm on Seaforth's site before booking.\n\n<followups>[\"Add an overnight option too\", \"Make it shorter\", \"Show Saturday options instead\"]</followups>",
+      "ms": 4309,
+      "usage": {
+        "input_tokens": 19503,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 265,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

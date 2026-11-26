@@ -1,0 +1,378 @@
+{
+ "type": "FeatureCollection",
+ "generated_at": "2026-11-26T04:00:26Z",
+ "label": "Recent forum reports by spot",
+ "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
+ "window_days": 14,
+ "short_window_days": 7,
+ "note": "position 'posted' = coordinates printed in the thread; 'estimate' = worked out from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far to trust each point. Follow the links for the original posts.",
+ "attribution": "Spot list courtesy SWYC Anglers",
+ "regions_note": "properties.region: san_diego | oc_la | both, from where the point is.",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.2445,
+     33.2833
+    ]
+   },
+   "properties": {
+    "id": "the-slide",
+    "name": "The Slide",
+    "position": "spot",
+    "region": "both",
+    "precision_nm": 2.0,
+    "reports_7d": 1,
+    "reports_14d": 2,
+    "last_report": "2026-11-23",
+    "species": {
+     "yellowfin": 3,
+     "other": 1
+    },
+    "quality": {
+     "wide_open": 3,
+     "slow": 1
+    },
+    "kinds": {
+     "bite": 4,
+     "conditions": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/el-ni%C3%B1o-november-giant-yellowfin-at-catalina-keep-fishing-hooked-up-on-every-pass-60-100-lb-yft.872513/",
+      "title": "El Niño November GIANT Yellowfin at Catalina, KEEP FISHING! HOOKED UP ON EVERY PASS 60-100 lb YFT!",
+      "date": "2026-11-23",
+      "feed": "bd-socal-offshore"
+     },
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+      "title": "Marlin & Jumbo Yellowfin in under 60 minutes!!!",
+      "date": "2026-11-17",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.2792,
+     32.8667
+    ]
+   },
+   "properties": {
+    "id": "pt:32.8667,-117.2792",
+    "name": "1 ¼ Spot",
+    "position": "estimate",
+    "region": "san_diego",
+    "precision_nm": 1.25,
+    "reports_7d": 0,
+    "reports_14d": 1,
+    "last_report": "2026-11-15",
+    "species": {},
+    "quality": {},
+    "kinds": {
+     "offset": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/11-15-26-wahoo-hell-yeah.872438/",
+      "title": "11-15-26 Wahoo hell Yeah !!",
+      "date": "2026-11-15",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.58,
+     32.4483
+    ]
+   },
+   "properties": {
+    "id": "302",
+    "name": "302",
+    "position": "spot",
+    "region": "san_diego",
+    "precision_nm": 2.0,
+    "reports_7d": 0,
+    "reports_14d": 1,
+    "last_report": "2026-11-13",
+    "species": {
+     "other": 1
+    },
+    "quality": {},
+    "kinds": {
+     "conditions": 1,
+     "bite": 1
+    },
+    "water_temp_f": {
+     "min": 76.5,
+     "max": 76.5
+    },
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
+      "title": "320 pound Black Marlin 302 Thursday",
+      "date": "2026-11-13",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.39165,
+     32.59085
+    ]
+   },
+   "properties": {
+    "id": "9-mile-bank",
+    "name": "9 Mile Bank",
+    "position": "spot",
+    "region": "san_diego",
+    "precision_nm": 2.0,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-22",
+    "species": {
+     "yellowfin": 1,
+     "other": 1
+    },
+    "quality": {
+     "wide_open": 1,
+     "slow": 1,
+     "none": 1
+    },
+    "kinds": {
+     "bite": 3,
+     "conditions": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
+      "title": "Yellowfin Repellant",
+      "date": "2026-11-22",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.42316000000001,
+     33.40424
+    ]
+   },
+   "properties": {
+    "id": "catalina",
+    "name": "Catalina",
+    "position": "spot",
+    "region": "oc_la",
+    "precision_nm": 10.0,
+    "reports_7d": 0,
+    "reports_14d": 1,
+    "last_report": "2026-11-17",
+    "species": {
+     "other": 2,
+     "yellowfin": 2
+    },
+    "quality": {
+     "good": 4
+    },
+    "kinds": {
+     "bite": 4,
+     "conditions": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+      "title": "Marlin & Jumbo Yellowfin in under 60 minutes!!!",
+      "date": "2026-11-17",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.1315,
+     33.5902
+    ]
+   },
+   "properties": {
+    "id": "double-rigs-reef",
+    "name": "Double Rigs Reef",
+    "position": "spot",
+    "region": "oc_la",
+    "precision_nm": 2.0,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-22",
+    "species": {
+     "yellowfin": 3
+    },
+    "quality": {},
+    "kinds": {
+     "bite": 2,
+     "conditions": 1,
+     "paddy": 1
+    },
+    "water_temp_f": {
+     "min": 74.0,
+     "max": 74.0
+    },
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/",
+      "title": "Small YFT Dbl Rigs",
+      "date": "2026-11-22",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.2599,
+     32.7576
+    ]
+   },
+   "properties": {
+    "id": "mission-bay-jetty",
+    "name": "Mission Bay Jetty",
+    "position": "spot",
+    "region": "san_diego",
+    "precision_nm": 2.0,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-22",
+    "species": {},
+    "quality": {
+     "slow": 1
+    },
+    "kinds": {
+     "bite": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/secret-spot-lobster.872371/",
+      "title": "Secret spot lobster",
+      "date": "2026-11-22",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.2599,
+     32.6243
+    ]
+   },
+   "properties": {
+    "id": "pt:32.6243,-117.2599",
+    "name": "New Point Loma Lighthouse",
+    "position": "estimate",
+    "region": "san_diego",
+    "precision_nm": 2.0,
+    "reports_7d": 0,
+    "reports_14d": 1,
+    "last_report": "2026-11-12",
+    "species": {
+     "yellowfin": 2,
+     "other": 2
+    },
+    "quality": {
+     "wide_open": 1
+    },
+    "kinds": {
+     "bite": 4,
+     "conditions": 1,
+     "offset": 1
+    },
+    "water_temp_f": {
+     "min": 75.0,
+     "max": 75.0
+    },
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/nat-geo.872328/",
+      "title": "Nat Geo",
+      "date": "2026-11-12",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.5,
+     32.9
+    ]
+   },
+   "properties": {
+    "id": "san-clemente-island",
+    "name": "San Clemente Island",
+    "position": "spot",
+    "region": "both",
+    "precision_nm": 10.0,
+    "reports_7d": 0,
+    "reports_14d": 1,
+    "last_report": "2026-11-14",
+    "species": {
+     "yellowtail": 2,
+     "other": 2
+    },
+    "quality": {
+     "good": 2,
+     "slow": 1
+    },
+    "kinds": {
+     "bite": 3,
+     "conditions": 2
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
+      "title": "Over night on the Eldorado",
+      "date": "2026-11-14",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  }
+ ]
+}

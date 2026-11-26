@@ -29,6 +29,10 @@ on:
         description: 'Optional YYYY-MM-DD: walk forum listing pages and backfill threads started on/after this date'
         required: false
         default: ''
+      backfill_feeds:
+        description: 'Optional space-separated feed ids to limit the backfill to (e.g. bd-socal-sportboats bd-long-range)'
+        required: false
+        default: ''
 
 concurrency:
   group: paddies
@@ -41,7 +45,7 @@ jobs:
   paddies:
     runs-on: ubuntu-latest
     # A newly added feed walks ~150 days of listing pages once (~15 min).
-    timeout-minutes: 60
+    timeout-minutes: 75
 
     steps:
       - name: Check out repository
@@ -64,9 +68,15 @@ jobs:
         id: ingest
         env:
           BACKFILL_SINCE: ${{ github.event.inputs.backfill_since }}
+          BACKFILL_FEEDS: ${{ github.event.inputs.backfill_feeds }}
         run: |
           if [ -n "$BACKFILL_SINCE" ]; then
-            python -m scraper.paddies.ingest_bd --backfill-since "$BACKFILL_SINCE"
+            FEED_ARGS=""
+            for f in $BACKFILL_FEEDS; do
+              case "$f" in *[!a-z0-9-]*) echo "bad feed id: $f"; exit 1;; esac
+              FEED_ARGS="$FEED_ARGS --feed $f"
+            done
+            python -m scraper.paddies.ingest_bd --backfill-since "$BACKFILL_SINCE" $FEED_ARGS
           else
             python -m scraper.paddies.ingest_bd
           fi
@@ -88,17 +98,31 @@ jobs:
       - name: Summarise party-boat trip reports with Claude
         id: boat_reports
         # Sportboats + Long Range forums -> per-boat sentiment, quotes, links.
-        # Capped at 40 posts per run, so a backlog drains over a few runs.
+        # Also records every place each trip fished (forum_locations, research).
+        # Capped at 80 posts per run, so a backlog drains over a few runs.
         continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python -m scraper.paddies.boat_reports
+        run: python -m scraper.paddies.boat_reports --limit 80
+
+      - name: Read the landings' own reports with Claude
+        id: landing_reports
+        # sandiegofishreports.com + socalfishreports.com report feeds (2 listing
+        # pages, then one fetch per new report, 2.5 s apart): size grade, bait,
+        # tackle, skipper notes, photo links, open spots -> landing_notes.
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m scraper.paddies.landing_reports --limit 80
 
       - name: Write /api/v1/*.json
         if: always() && steps.ingest.outcome != 'cancelled'
         run: |
           python -m scraper.paddies.write_json
+          python -m scraper.paddies.landing_reports --export-only
           python -m scraper.paddies.boat_reports --export-only
+          # Spot layer for the Charts map: snapped / ~2 nm points, never exact numbers.
+          python -m scraper.paddies.spots
 
       - name: Health check
         if: always()
@@ -113,7 +137,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/paddies.db data/paddies_ingest_state.json \
-                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json                   web/api/v1/boat_forum_reports.json web/api/v1/whats_working.json
+                  web/api/v1/paddies.json web/api/v1/banks.json web/api/v1/reports.json                   web/api/v1/boat_forum_reports.json web/api/v1/whats_working.json                   web/api/v1/forum_spots.geojson web/api/v1/landing_notes.json
           if git diff --staged --quiet; then
             echo "No paddies changes to commit."
             exit 0

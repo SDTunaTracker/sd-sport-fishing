@@ -17,6 +17,8 @@ logs/
 # Local tool state / caches
 .claude/
 node_modules/
+# Owner admin payload (pushed to the analytics Worker, never committed)
+build/
 downloaded_files/
 _seaforth_dump/
 data/.mmsi-search-cache.json
@@ -25,3 +27,6 @@ data/.mmsi-search-cache.json
 tracker.db.*
 tracker_*.db
 tracker_dump.sql
+
+# NorCal (SF Bay) fetch cache — raw pages, never committed
+.cache/

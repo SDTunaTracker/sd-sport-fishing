@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy — The Tuna Tracker</title>
-<meta name="description" content="What The Tuna Tracker collects, why, and the choices you have.">
-<link rel="icon" href="/favicon.ico">
+<title>Privacy — Tunatracker</title>
+<meta name="description" content="What Tunatracker collects, why, and the choices you have.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
@@ -26,7 +27,8 @@
   .top { background: var(--surface); border-bottom: 1px solid var(--line); }
   .top-inner { max-width: 760px; margin: 0 auto; padding: 0 16px; height: 56px;
                display: flex; align-items: center; justify-content: space-between; }
-  .brand { font: 700 19px/1 Fraunces, Georgia, serif; color: var(--ink); text-decoration: none; }
+  .brand { display: inline-flex; align-items: center; gap: 8px; font: 700 19px/1 Fraunces, Georgia, serif; color: var(--ink); text-decoration: none; }
+  .brand svg { color: #CF6A3C; flex-shrink: 0; display: block; }
   .back { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px;
           font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; }
   .back:hover { color: var(--ink); }
@@ -68,7 +70,7 @@
 <body>
 <header class="top">
   <div class="top-inner">
-    <a class="brand" href="/sd/home">The Tuna Tracker</a>
+    <a class="brand" href="/sd/home"><svg width="26" height="26" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true"><path d="M22 30.6 C28 30.4 32 29.6 35 28.6 C37 19 45 10 59 4 C52 12 47.5 22 47 32 C47.5 42 52 52 59 60 C45 54 37 45 35 35.4 C32 34.4 28 33.6 22 33.4 Z"/><rect x="3" y="35" width="4.5" height="7" rx="1.2"/><rect x="9.5" y="30" width="4.5" height="12" rx="1.2"/><rect x="16" y="25" width="4.5" height="17" rx="1.2"/></svg>Tunatracker</a>
     <a class="back" href="/sd/home">← Back to the site</a>
   </div>
 </header>
@@ -76,9 +78,9 @@
 <main>
   <p class="eyebrow">Privacy</p>
   <h1>Your privacy</h1>
-  <p class="updated">Last updated: November 24, 2026</p>
+  <p class="updated">Last updated: November 25, 2026</p>
 
-  <p class="lede">The Tuna Tracker shows public fish counts from San Diego's sportfishing landings.
+  <p class="lede">Tunatracker shows public fish counts from San Diego's sportfishing landings.
   You can use almost all of it without an account. This page explains, in plain language,
   what the site collects, where it goes, and what you can do about it.</p>
 
@@ -86,6 +88,7 @@
     <h2 id="short">The short version</h2>
     <ul>
       <li>We use Google Analytics to see which pages and features people use.</li>
+      <li>We also keep our own visit statistics, without cookies and without storing your IP address. If your browser sends Do Not Track or Global Privacy Control, we don't count you.</li>
       <li>If you sign in, your account is handled by Clerk, and your saved preferences are stored with it.</li>
       <li>Boat reviews you post are public. We store a shortened, one-way hash of your IP address with each review to fight spam.</li>
       <li>Messages you type into the trip-planning chat are sent to Anthropic's AI to write the reply.</li>
@@ -98,6 +101,21 @@
   your general location and device type, and some actions on the site. Examples include which trip you click in the Trip Planner
   (boat, dates, price) and which filters you apply. We use this to understand what's useful and what to improve.
   Google processes this data under <a href="https://policies.google.com/privacy" rel="noopener">its own privacy policy</a>.</p>
+  <h3 id="visit-statistics">Our own visit statistics</h3>
+  <p>We also count visits ourselves, on our own server (a Cloudflare Worker), so we can see how many people use the site and which features help them find a trip.
+  This doesn't use cookies, and nothing is shared with or sold to anyone. When you load a page or use a feature, your browser sends:</p>
+  <ul>
+    <li>the page address, without anything after a <code>?</code> or <code>#</code>, and the website that linked you here (just its name, such as google.com) or a campaign tag in the link</li>
+    <li>your screen width, which we turn into "phone", "tablet" or "desktop"</li>
+    <li>which feature you used, such as viewing a boat, clicking Book, opening the trip-planning chat, or creating an account, plus the public boat, landing and trip it was about (never what you typed)</li>
+    <li>on your first page of the day, how many days it has been since your last visit</li>
+  </ul>
+  <p>Our server adds your country and your browser and operating-system family (for example "iOS, Safari"). To count each visitor once per day, it mixes your IP address
+  and browser details with a random value that changes every day, and keeps only a short scrambled code (a one-way hash).
+  We never store your IP address or your full browser details, and the daily random value is deleted after two days, so the code can't be traced back to you
+  or linked from one day to the next. Individual visit records are deleted after 90 days. We keep daily totals, which say nothing about any one person.</p>
+  <p><strong>Do Not Track and Global Privacy Control:</strong> if your browser sends either signal, the site doesn't send any of this, and our server discards anything that arrives with one.</p>
+
   <p>The site is hosted on <strong>Cloudflare</strong>. Like any web host, Cloudflare receives your IP address and basic request details when you load a page.</p>
   <p>Some content loads from other services, which also see your IP address when your browser fetches from them:</p>
   <table>
@@ -139,6 +157,7 @@
     <li>Your region, map and display settings</li>
     <li>Trips you've recently viewed, and a log of the trips you've clicked</li>
     <li>A daily count of chat messages, used to apply the chat limit</li>
+    <li>The date of your last visit (<code>tt_seen</code>), so our visit statistics don't count you as new each day. It's just a date, with no identifier.</li>
   </ul>
   <p>The site also installs a service worker that caches pages so they load quickly and work offline.</p>
 
@@ -151,6 +170,7 @@
     <li><strong>Clear what's stored on your device</strong> by clearing this site's data in your browser settings.</li>
     <li><strong>Limit analytics</strong> with your browser's tracking protection, a content blocker, or
     <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener">Google's opt-out add-on</a>.</li>
+    <li><strong>Turn on Global Privacy Control or Do Not Track</strong> in your browser to opt out of our own visit statistics.</li>
     <li><strong>Ask us to delete</strong> your account or a review you posted by emailing us (below).</li>
   </ul>
 
@@ -161,7 +181,7 @@
 
 <footer>
   <div class="foot-inner">
-    <span>© 2026 The Tuna Tracker</span>
+    <span>© 2026 Tunatracker</span>
     <a href="/sd/home">thetunatracker.com</a>
   </div>
 </footer>

@@ -1,0 +1,482 @@
+{
+ "_about": "Places named in BloodyDecks trip reports that the SWYC spot list (banks.geojson) does not cover: Baja islands, long-range grounds, OC/LA coast and the Channel Islands. Island/point centres from public charts; radius_nm is how far a report there may really be. aliases_to_bank maps common forum spellings onto existing banks.geojson ids. Used by scraper/paddies/spots.py.",
+ "places": [
+  {
+   "id": "todos-santos-islands",
+   "name": "Todos Santos Islands",
+   "lat": 31.8,
+   "lon": -116.8,
+   "radius_nm": 4,
+   "confidence": 0.8,
+   "aliases": [
+    "todos santos"
+   ]
+  },
+  {
+   "id": "colonet",
+   "name": "Colonet",
+   "lat": 30.96,
+   "lon": -116.33,
+   "radius_nm": 10,
+   "confidence": 0.7,
+   "aliases": [
+    "cabo colonet",
+    "punta colonet",
+    "colnett",
+    "colonet zone",
+    "colnett zone"
+   ]
+  },
+  {
+   "id": "san-martin-island",
+   "name": "San Martin Island",
+   "lat": 30.48,
+   "lon": -116.11,
+   "radius_nm": 4,
+   "confidence": 0.85,
+   "aliases": [
+    "st martin island",
+    "st martin",
+    "san martin",
+    "isla san martin"
+   ]
+  },
+  {
+   "id": "san-quintin",
+   "name": "San Quintin",
+   "lat": 30.4,
+   "lon": -116.0,
+   "radius_nm": 12,
+   "confidence": 0.7,
+   "aliases": [
+    "san quintin bay"
+   ]
+  },
+  {
+   "id": "guadalupe-island",
+   "name": "Guadalupe Island",
+   "lat": 29.03,
+   "lon": -118.28,
+   "radius_nm": 15,
+   "confidence": 0.85,
+   "aliases": [
+    "guadalupe",
+    "lupe",
+    "isla guadalupe"
+   ]
+  },
+  {
+   "id": "cedros-island",
+   "name": "Cedros Island",
+   "lat": 28.18,
+   "lon": -115.22,
+   "radius_nm": 15,
+   "confidence": 0.8,
+   "aliases": [
+    "cedros",
+    "isla cedros"
+   ]
+  },
+  {
+   "id": "san-benito-islands",
+   "name": "San Benito Islands",
+   "lat": 28.31,
+   "lon": -115.58,
+   "radius_nm": 5,
+   "confidence": 0.8,
+   "aliases": [
+    "benitos",
+    "san benitos",
+    "the benitos"
+   ]
+  },
+  {
+   "id": "alijos-rocks",
+   "name": "Alijos Rocks",
+   "lat": 24.95,
+   "lon": -115.75,
+   "radius_nm": 4,
+   "confidence": 0.85,
+   "aliases": [
+    "alijos",
+    "rocas alijos",
+    "alejos",
+    "alejos rocks"
+   ]
+  },
+  {
+   "id": "magdalena-bay",
+   "name": "Magdalena Bay",
+   "lat": 24.6,
+   "lon": -112.1,
+   "radius_nm": 25,
+   "confidence": 0.6,
+   "aliases": [
+    "mag bay"
+   ]
+  },
+  {
+   "id": "cabo-san-lucas",
+   "name": "Cabo San Lucas",
+   "lat": 22.88,
+   "lon": -109.91,
+   "radius_nm": 10,
+   "confidence": 0.8,
+   "aliases": [
+    "cabo"
+   ]
+  },
+  {
+   "id": "socorro-island",
+   "name": "Socorro Island",
+   "lat": 18.78,
+   "lon": -110.97,
+   "radius_nm": 12,
+   "confidence": 0.8,
+   "aliases": [
+    "socorro"
+   ]
+  },
+  {
+   "id": "san-benedicto-island",
+   "name": "San Benedicto Island",
+   "lat": 19.3,
+   "lon": -110.81,
+   "radius_nm": 5,
+   "confidence": 0.8,
+   "aliases": [
+    "san benedicto"
+   ]
+  },
+  {
+   "id": "clarion-island",
+   "name": "Clarion Island",
+   "lat": 18.36,
+   "lon": -114.72,
+   "radius_nm": 6,
+   "confidence": 0.8,
+   "aliases": [
+    "clarion"
+   ]
+  },
+  {
+   "id": "roca-partida",
+   "name": "Roca Partida",
+   "lat": 18.99,
+   "lon": -112.07,
+   "radius_nm": 3,
+   "confidence": 0.8,
+   "aliases": [
+    "partida"
+   ]
+  },
+  {
+   "id": "santa-barbara-island",
+   "name": "Santa Barbara Island",
+   "lat": 33.48,
+   "lon": -119.03,
+   "radius_nm": 4,
+   "confidence": 0.8,
+   "aliases": [
+    "sbi"
+   ]
+  },
+  {
+   "id": "san-nicolas-island",
+   "name": "San Nicolas Island",
+   "lat": 33.25,
+   "lon": -119.5,
+   "radius_nm": 6,
+   "confidence": 0.8,
+   "aliases": [
+    "san nic"
+   ]
+  },
+  {
+   "id": "dana-point",
+   "name": "Dana Point",
+   "lat": 33.45,
+   "lon": -117.71,
+   "radius_nm": 4,
+   "confidence": 0.7,
+   "aliases": []
+  },
+  {
+   "id": "oceanside",
+   "name": "Oceanside",
+   "lat": 33.2,
+   "lon": -117.4,
+   "radius_nm": 4,
+   "confidence": 0.7,
+   "aliases": []
+  },
+  {
+   "id": "newport-beach",
+   "name": "Newport Beach",
+   "lat": 33.59,
+   "lon": -117.9,
+   "radius_nm": 4,
+   "confidence": 0.7,
+   "aliases": [
+    "newport"
+   ]
+  },
+  {
+   "id": "palos-verdes",
+   "name": "Palos Verdes",
+   "lat": 33.76,
+   "lon": -118.42,
+   "radius_nm": 4,
+   "confidence": 0.75,
+   "aliases": [
+    "pv",
+    "palos verdes peninsula"
+   ]
+  },
+  {
+   "id": "huntington-flats",
+   "name": "Huntington Flats",
+   "lat": 33.6,
+   "lon": -118.05,
+   "radius_nm": 5,
+   "confidence": 0.6,
+   "aliases": []
+  },
+  {
+   "id": "huntington-beach",
+   "name": "Huntington Beach",
+   "lat": 33.65,
+   "lon": -118.0,
+   "radius_nm": 3,
+   "confidence": 0.7,
+   "aliases": [
+    "huntington",
+    "hb pier"
+   ]
+  },
+  {
+   "id": "lasuen-knoll",
+   "name": "Lasuen Knoll",
+   "lat": 33.4,
+   "lon": -118.0,
+   "radius_nm": 2,
+   "confidence": 0.6,
+   "aliases": [
+    "lasuen"
+   ]
+  },
+  {
+   "id": "laguna-beach",
+   "name": "Laguna Beach",
+   "lat": 33.54,
+   "lon": -117.79,
+   "radius_nm": 3,
+   "confidence": 0.7,
+   "aliases": [
+    "laguna"
+   ]
+  },
+  {
+   "id": "long-beach",
+   "name": "Long Beach",
+   "lat": 33.74,
+   "lon": -118.17,
+   "radius_nm": 4,
+   "confidence": 0.7,
+   "aliases": [
+    "long beach breakwall",
+    "lb breakwall",
+    "long beach breakwater"
+   ]
+  },
+  {
+   "id": "san-pedro",
+   "name": "San Pedro",
+   "lat": 33.71,
+   "lon": -118.27,
+   "radius_nm": 3,
+   "confidence": 0.7,
+   "aliases": [
+    "pedro"
+   ]
+  },
+  {
+   "id": "santa-monica-bay",
+   "name": "Santa Monica Bay",
+   "lat": 33.9,
+   "lon": -118.55,
+   "radius_nm": 10,
+   "confidence": 0.6,
+   "aliases": []
+  },
+  {
+   "id": "malibu",
+   "name": "Malibu",
+   "lat": 34.02,
+   "lon": -118.75,
+   "radius_nm": 6,
+   "confidence": 0.7,
+   "aliases": []
+  },
+  {
+   "id": "ship-rock-catalina",
+   "name": "Ship Rock (Catalina)",
+   "lat": 33.46,
+   "lon": -118.49,
+   "radius_nm": 1,
+   "confidence": 0.7,
+   "aliases": [
+    "ship rock"
+   ]
+  },
+  {
+   "id": "catalina-backside",
+   "name": "Catalina backside",
+   "lat": 33.37,
+   "lon": -118.45,
+   "radius_nm": 8,
+   "confidence": 0.6,
+   "aliases": [
+    "backside of catalina",
+    "catalina backside"
+   ]
+  },
+  {
+   "id": "santa-cruz-island",
+   "name": "Santa Cruz Island",
+   "lat": 34.0,
+   "lon": -119.72,
+   "radius_nm": 10,
+   "confidence": 0.8,
+   "aliases": [
+    "santa cruz",
+    "santa cruz island"
+   ]
+  },
+  {
+   "id": "anacapa-island",
+   "name": "Anacapa Island",
+   "lat": 34.01,
+   "lon": -119.4,
+   "radius_nm": 4,
+   "confidence": 0.8,
+   "aliases": [
+    "anacapa"
+   ]
+  },
+  {
+   "id": "santa-rosa-island",
+   "name": "Santa Rosa Island",
+   "lat": 33.95,
+   "lon": -120.1,
+   "radius_nm": 10,
+   "confidence": 0.8,
+   "aliases": [
+    "santa rosa"
+   ]
+  },
+  {
+   "id": "san-miguel-island",
+   "name": "San Miguel Island",
+   "lat": 34.04,
+   "lon": -120.37,
+   "radius_nm": 6,
+   "confidence": 0.8,
+   "aliases": [
+    "san miguel"
+   ]
+  },
+  {
+   "id": "ventura",
+   "name": "Ventura",
+   "lat": 34.27,
+   "lon": -119.29,
+   "radius_nm": 5,
+   "confidence": 0.7,
+   "aliases": [
+    "ventura flats"
+   ]
+  },
+  {
+   "id": "oxnard",
+   "name": "Oxnard / Channel Islands Harbor",
+   "lat": 34.16,
+   "lon": -119.24,
+   "radius_nm": 5,
+   "confidence": 0.7,
+   "aliases": [
+    "oxnard",
+    "channel islands harbor"
+   ]
+  },
+  {
+   "id": "point-mugu",
+   "name": "Point Mugu",
+   "lat": 34.08,
+   "lon": -119.06,
+   "radius_nm": 4,
+   "confidence": 0.7,
+   "aliases": [
+    "mugu",
+    "pt mugu"
+   ]
+  },
+  {
+   "id": "rincon",
+   "name": "Rincon",
+   "lat": 34.37,
+   "lon": -119.48,
+   "radius_nm": 3,
+   "confidence": 0.6,
+   "aliases": []
+  },
+  {
+   "id": "ensenada",
+   "name": "Ensenada",
+   "lat": 31.85,
+   "lon": -116.65,
+   "radius_nm": 6,
+   "confidence": 0.7,
+   "aliases": []
+  },
+  {
+   "id": "del-mar",
+   "name": "Del Mar",
+   "lat": 32.96,
+   "lon": -117.28,
+   "radius_nm": 3,
+   "confidence": 0.7,
+   "aliases": []
+  }
+ ],
+ "aliases_to_bank": {
+  "pt loma": "point-loma-kelp",
+  "point loma": "point-loma-kelp",
+  "loma kelp": "point-loma-kelp",
+  "la jolla": "point-la-jolla",
+  "la jolla kelp": "point-la-jolla",
+  "the islands": "coronado-islands",
+  "coronado island": "coronado-islands",
+  "catalina island": "catalina",
+  "avalon": "catalina",
+  "clemente": "san-clemente-island",
+  "the 9": "9-mile-bank",
+  "the nine": "9-mile-bank",
+  "isthmus": "isthmus-high-spot",
+  "the isthmus": "isthmus-high-spot",
+  "two harbors": "isthmus-high-spot",
+  "east end": "east-end-seal-rocks",
+  "east end catalina": "east-end-seal-rocks",
+  "horseshoe kelp": "horseshoe",
+  "the horseshoe": "horseshoe",
+  "redondo canyon": "redondo-canyon-west-wall",
+  "rocky point": "rocky-point-85ft",
+  "point vicente": "vicente-outside-rock-80ft",
+  "pt vicente": "vicente-outside-rock-80ft",
+  "mission bay": "mission-bay-jetty",
+  "newport pier": "newport-reef-1",
+  "osborne bank": "osborn-bank",
+  "osbourne bank": "osborn-bank",
+  "osborne": "osborn-bank"
+ }
+}

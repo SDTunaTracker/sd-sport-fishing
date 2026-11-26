@@ -1,14 +1,14 @@
-// The Tuna Tracker — app-shell service worker
+// Tunatracker — app-shell service worker
 // Bumping CACHE forces old service workers to be replaced on next visit
 // (the activate handler purges every key that isn't the current CACHE).
-var CACHE = 'tt-shell-v3';
+var CACHE = 'tt-shell-v4';
 
 // Regex for files that CHANGE without their URL changing. The daily scrape
 // commits a fresh data.js roughly every hour but does NOT re-stamp the
 // ?v= query in index.html (only full deploys via build-prod.py do that),
 // so cache-first-by-URL leaves mobile users looking at hours-old counts.
 // These files must be network-first with cache as an offline fallback.
-var _MUTABLE_DATA = /\/(data\.js|ais_positions\.json|sst_grid\.json)(\?|$)/;
+var _MUTABLE_DATA = /\/(data\.js|data-region-[a-z0-9_]+\.js|ais_positions\.json|sst_grid\.json)(\?|$)/;
 
 // Resources to pre-cache on install (app shell)
 var SHELL = [
@@ -51,6 +51,10 @@ self.addEventListener('fetch', function(e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url = req.url;
+
+  // Owner pages (behind Cloudflare Access) and the analytics collector: never cache.
+  var swPath = new URL(url).pathname;
+  if (swPath.indexOf('/owner/') === 0 || swPath.indexOf('/a/') === 0) return;
 
   // Immutable, version-pinned CDN libraries (Leaflet, React): cache-first.
   if (

@@ -1,13 +1,13 @@
 {
-  "build": "b3a6229",
-  "generated_at": "2026-11-25T09:19:22Z",
+  "build": "4aa4b00",
+  "generated_at": "2026-11-26T04:00:25Z",
   "window_days": 14,
   "feeds": [
     {
       "id": "bd-socal-offshore",
       "name": "BD Southern California Offshore",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-offshore-fishing-reports/",
-      "items_14d": 34
+      "items_14d": 33
     },
     {
       "id": "bd-spearfishing",
@@ -19,7 +19,25 @@
       "id": "bd-baja",
       "name": "BD Baja Mexico Fishing Reports",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/baja-mexico-fishing-reports-discussion/",
-      "items_14d": 10
+      "items_14d": 11
+    },
+    {
+      "id": "bd-socal-sportboats",
+      "name": "BD Southern California Sportboats",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-sportboats/",
+      "items_14d": 12
+    },
+    {
+      "id": "bd-long-range",
+      "name": "BD Long Range Fishing",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/san-diego-long-range-sportfishing-reports/",
+      "items_14d": 25
+    },
+    {
+      "id": "bd-california",
+      "name": "BD California Sport Fishing Reports",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/california-sport-fishing-reports/",
+      "items_14d": 4
     }
   ],
   "summary_48h": {
@@ -29,7 +47,546 @@
     "water_color_mode": null,
     "paddies_reported": 0
   },
-  "banks": {},
-  "pins": [],
-  "unresolved_14d": 0
+  "banks": {
+    "the-slide": {
+      "name": "The Slide",
+      "region": "both",
+      "lat": 33.2833,
+      "lon": -118.2445,
+      "radius_nm": 2,
+      "mentions_14d": 5,
+      "bite_14d": 4,
+      "species_14d": {
+        "yellowfin": 3,
+        "marlin": 1
+      },
+      "outcome_mode": "wide_open",
+      "last_report": "2026-11-23",
+      "recent": [
+        {
+          "type": "bite",
+          "trip_date": "2026-11-23",
+          "species": [
+            "yellowfin"
+          ],
+          "count": null,
+          "size_lb": 60.0,
+          "outcome": "wide_open",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "The other YFT on the boat hit the scale at 60 lbs and these were quite a bit bigger, so I am guessing 80-100 lbrs",
+          "url": "https://www.bdoutdoors.com/forums/threads/el-ni%C3%B1o-november-giant-yellowfin-at-catalina-keep-fishing-hooked-up-on-every-pass-60-100-lb-yft.872513/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-23",
+          "species": [
+            "yellowfin"
+          ],
+          "count": 2,
+          "size_lb": null,
+          "outcome": "wide_open",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "A double hookup on spreader bars made for an exciting start!",
+          "url": "https://www.bdoutdoors.com/forums/threads/el-ni%C3%B1o-november-giant-yellowfin-at-catalina-keep-fishing-hooked-up-on-every-pass-60-100-lb-yft.872513/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-23",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "YFT in dolphin school, great success in only a few hours",
+          "url": "https://www.bdoutdoors.com/forums/threads/el-ni%C3%B1o-november-giant-yellowfin-at-catalina-keep-fishing-hooked-up-on-every-pass-60-100-lb-yft.872513/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-23",
+          "species": [
+            "yellowfin"
+          ],
+          "count": null,
+          "size_lb": 80.0,
+          "outcome": "wide_open",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Trolled at Catalina the Slide another day for these big YFT in dolphin school",
+          "url": "https://www.bdoutdoors.com/forums/threads/el-ni%C3%B1o-november-giant-yellowfin-at-catalina-keep-fishing-hooked-up-on-every-pass-60-100-lb-yft.872513/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-17",
+          "species": [
+            "marlin"
+          ],
+          "count": 2,
+          "size_lb": null,
+          "outcome": "scratchy",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Earlier in the summer at the Slide Tucker and I had a double marlin hookup on 20 lb line and we lost the fish",
+          "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    },
+    "9-mile-bank": {
+      "name": "9 Mile Bank",
+      "region": "san_diego",
+      "lat": 32.59085,
+      "lon": -117.39165,
+      "radius_nm": 2,
+      "mentions_14d": 4,
+      "bite_14d": 3,
+      "species_14d": {
+        "yellowfin": 1,
+        "bonito": 1
+      },
+      "outcome_mode": "scratchy",
+      "last_report": "2026-11-22",
+      "recent": [
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-22",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Mobula rays jumping and swimming around the boat at the skippy bight",
+          "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-22",
+          "species": [
+            "yellowfin"
+          ],
+          "count": 0,
+          "size_lb": 30.0,
+          "outcome": "scratchy",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "throwing a popper and a 30# yf went airborne right at the boat to ultimately miss is.",
+          "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-22",
+          "species": [
+            "bonito"
+          ],
+          "count": null,
+          "size_lb": null,
+          "outcome": "wide_open",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Met up with a group of boats and the Producer which was leaving when we got there on some wide open (for some boats) skippies.",
+          "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-22",
+          "species": [],
+          "count": 0,
+          "size_lb": null,
+          "outcome": "skunk",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Trolled the border to the north nine for nada.",
+          "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    },
+    "mission-bay-jetty": {
+      "name": "Mission Bay Jetty",
+      "region": "san_diego",
+      "lat": 32.7576,
+      "lon": -117.2599,
+      "radius_nm": 2,
+      "mentions_14d": 1,
+      "bite_14d": 1,
+      "species_14d": {},
+      "outcome_mode": "scratchy",
+      "last_report": "2026-11-22",
+      "recent": [
+        {
+          "type": "bite",
+          "trip_date": "2026-11-22",
+          "species": [],
+          "count": 2,
+          "size_lb": null,
+          "outcome": "scratchy",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Went to my super secret lobster spot in Mission bay for a limit of crawdads.",
+          "url": "https://www.bdoutdoors.com/forums/threads/secret-spot-lobster.872371/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    },
+    "double-rigs-reef": {
+      "name": "Double Rigs Reef",
+      "region": "oc_la",
+      "lat": 33.5902,
+      "lon": -118.1315,
+      "radius_nm": 2,
+      "mentions_14d": 4,
+      "bite_14d": 2,
+      "species_14d": {
+        "yellowfin": 3
+      },
+      "outcome_mode": null,
+      "last_report": "2026-11-22",
+      "recent": [
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-22",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": 74.0,
+          "water_color": "blue",
+          "quote": "Beautiful blue water. Water temp was around 74*.",
+          "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-22",
+          "species": [
+            "yellowfin"
+          ],
+          "count": 1,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "A purple/chartreuse feather got hit but didn't stick. Circled around and got another.",
+          "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-22",
+          "species": [
+            "yellowfin"
+          ],
+          "count": 1,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "Hooked up on a Rapala xrap slash bait.",
+          "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "paddy",
+          "trip_date": "2026-11-22",
+          "species": [
+            "yellowfin"
+          ],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": 74.0,
+          "water_color": null,
+          "quote": "As we got close there was a small kelp paddy.",
+          "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    },
+    "catalina": {
+      "name": "Catalina",
+      "region": "oc_la",
+      "lat": 33.40424,
+      "lon": -118.42316000000001,
+      "radius_nm": 10,
+      "mentions_14d": 5,
+      "bite_14d": 4,
+      "species_14d": {
+        "marlin": 2,
+        "yellowfin": 2
+      },
+      "outcome_mode": "steady",
+      "last_report": "2026-11-17",
+      "recent": [
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-17",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "the perfect ending with a Jumbo YFT on the dolphins",
+          "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-17",
+          "species": [
+            "marlin"
+          ],
+          "count": 1,
+          "size_lb": 150.0,
+          "outcome": "steady",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "super long spreader bar, out past wake, water trail, so FRICKIN FAR OUT on a Penn Intl 16, and to top things off the 150 lb marlin is side snagged",
+          "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-17",
+          "species": [
+            "yellowfin"
+          ],
+          "count": 1,
+          "size_lb": null,
+          "outcome": "steady",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "DTX short corner, trolling it 7-8 knots, it hooks the yellowfin at the swim step",
+          "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-17",
+          "species": [
+            "marlin"
+          ],
+          "count": 1,
+          "size_lb": 150.0,
+          "outcome": "steady",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "then a marlin on the outside and BOOM it all happens in under an hour",
+          "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-17",
+          "species": [
+            "yellowfin"
+          ],
+          "count": 1,
+          "size_lb": null,
+          "outcome": "steady",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "the perfect ending with a Jumbo YFT on the dolphins",
+          "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    },
+    "san-clemente-island": {
+      "name": "San Clemente Island",
+      "region": "both",
+      "lat": 32.9,
+      "lon": -118.5,
+      "radius_nm": 10,
+      "mentions_14d": 5,
+      "bite_14d": 3,
+      "species_14d": {
+        "yellowtail": 2,
+        "bonito": 1,
+        "calico": 1
+      },
+      "outcome_mode": "steady",
+      "last_report": "2026-11-14",
+      "recent": [
+        {
+          "type": "bite",
+          "trip_date": "2026-11-14",
+          "species": [
+            "yellowtail"
+          ],
+          "count": 2,
+          "size_lb": null,
+          "outcome": "steady",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "then we moved to another spot on the island, and I caught 2 more",
+          "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-14",
+          "species": [
+            "bonito",
+            "calico",
+            "yellowtail"
+          ],
+          "count": 3,
+          "size_lb": null,
+          "outcome": "steady",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "there was A few bass And Bonita mixed in with the yellows, and I ended catching 3 on that spot",
+          "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-14",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": "scratchy",
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "people were catching some small White fish",
+          "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-14",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "the Current was ripping, and it helped get your bait back far enough to get bit",
+          "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-13",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "woke up in the morning to flat com seas",
+          "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    },
+    "302": {
+      "name": "302",
+      "region": "san_diego",
+      "lat": 32.4483,
+      "lon": -117.58,
+      "radius_nm": 2,
+      "mentions_14d": 2,
+      "bite_14d": 1,
+      "species_14d": {
+        "marlin": 1
+      },
+      "outcome_mode": null,
+      "last_report": "2026-11-13",
+      "recent": [
+        {
+          "type": "conditions",
+          "trip_date": "2026-11-13",
+          "species": [],
+          "count": null,
+          "size_lb": null,
+          "outcome": null,
+          "water_temp_f": 76.5,
+          "water_color": null,
+          "quote": "water was 76.5 degrees",
+          "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
+          "feed_id": "bd-socal-offshore"
+        },
+        {
+          "type": "bite",
+          "trip_date": "2026-11-13",
+          "species": [
+            "marlin"
+          ],
+          "count": 1,
+          "size_lb": 304.0,
+          "outcome": null,
+          "water_temp_f": null,
+          "water_color": null,
+          "quote": "we had a huge marlin jump out of the water and smash the mean joe green",
+          "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
+          "feed_id": "bd-socal-offshore"
+        }
+      ]
+    }
+  },
+  "pins": [
+    {
+      "lat": 32.4,
+      "lon": -117.25,
+      "region": "san_diego",
+      "precision": "bank",
+      "precision_nm": 1.0,
+      "resolution": "offset:coronado-islands",
+      "trip_date": "2026-11-18",
+      "bank": null,
+      "species": [
+        "marlin"
+      ],
+      "quote": "west of the coronados",
+      "url": "https://www.bdoutdoors.com/forums/threads/blue-marlin-coronado-canyon.872009/",
+      "feed_id": "bd-socal-offshore",
+      "raw": "west of the coronados"
+    },
+    {
+      "lat": 32.8667,
+      "lon": -117.2792,
+      "region": "san_diego",
+      "precision": "offset",
+      "precision_nm": 1.25,
+      "resolution": "offset:del-mar-kelp",
+      "trip_date": "2026-11-15",
+      "bank": null,
+      "species": [],
+      "quote": "Area between Delmar and La Jolla",
+      "url": "https://www.bdoutdoors.com/forums/threads/11-15-26-wahoo-hell-yeah.872438/",
+      "feed_id": "bd-socal-offshore",
+      "raw": "Area between Delmar and La Jolla"
+    },
+    {
+      "lat": 32.6243,
+      "lon": -117.2599,
+      "region": "san_diego",
+      "precision": "offset",
+      "precision_nm": 2.0,
+      "resolution": "offset:mission-bay-jetty",
+      "trip_date": "2026-11-12",
+      "bank": null,
+      "species": [
+        "bonito",
+        "yellowfin"
+      ],
+      "quote": "trolled South about 8 miles out",
+      "url": "https://www.bdoutdoors.com/forums/threads/nat-geo.872328/",
+      "feed_id": "bd-socal-offshore",
+      "raw": "8 miles out"
+    }
+  ],
+  "unresolved_14d": 57
 }

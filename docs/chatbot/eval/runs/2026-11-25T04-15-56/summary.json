@@ -1,0 +1,118 @@
+[
+  {
+    "id": "c01-first-timers-weekend",
+    "cards": 3,
+    "cardsWithIssues": 2,
+    "ms": [
+      15820
+    ],
+    "inputTokens": [
+      19612
+    ]
+  },
+  {
+    "id": "c02-seasick",
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      16191
+    ],
+    "inputTokens": [
+      19618
+    ]
+  },
+  {
+    "id": "c03-group-of-6",
+    "cards": 3,
+    "cardsWithIssues": 2,
+    "ms": [
+      13126
+    ],
+    "inputTokens": [
+      19619
+    ]
+  },
+  {
+    "id": "c04-bluefin-3day",
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      18572
+    ],
+    "inputTokens": [
+      19609
+    ]
+  },
+  {
+    "id": "c05-cheapest-tomorrow",
+    "cards": 3,
+    "cardsWithIssues": 1,
+    "ms": [
+      12835
+    ],
+    "inputTokens": [
+      19596
+    ]
+  },
+  {
+    "id": "c06-hm-specific",
+    "cards": 1,
+    "cardsWithIssues": 1,
+    "ms": [
+      8508,
+      5480
+    ],
+    "inputTokens": [
+      19593,
+      20200
+    ]
+  },
+  {
+    "id": "c07-sold-out-followup",
+    "cards": 5,
+    "cardsWithIssues": 1,
+    "ms": [
+      9568,
+      12957
+    ],
+    "inputTokens": [
+      19599,
+      20263
+    ]
+  },
+  {
+    "id": "c08-forecast",
+    "cards": 3,
+    "cardsWithIssues": 2,
+    "ms": [
+      14698
+    ],
+    "inputTokens": [
+      19597
+    ]
+  },
+  {
+    "id": "c09-injection",
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      12160
+    ],
+    "inputTokens": [
+      19626
+    ]
+  },
+  {
+    "id": "c10-compare-share",
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      14891,
+      5191
+    ],
+    "inputTokens": [
+      19603,
+      20789
+    ]
+  }
+]

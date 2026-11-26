@@ -1,0 +1,178 @@
+{
+  "case": {
+    "id": "c11-overnight-under-500",
+    "persona": "App opener",
+    "turns": [
+      "Find me an overnight trip under $500"
+    ],
+    "expect": "Overnight trips <= $500.",
+    "checks": [
+      {
+        "minCards": 1,
+        "maxPrice": 500,
+        "lengths": [
+          "Overnight"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Find me an overnight trip under $500",
+      "text": "Here are the overnight options under **$500** with open spots — all on the Producer or Sea Adventure 80.\n\n- The Producer has been the top-producing overnight boat recently, averaging **4.91 trophy fish per angler per day** over its last 10 trips (mostly yellowfin).\n- Sea Adventure 80 is a solid backup at **3.3 TPA/day** recently.\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"Producer: 3.81 yellowfin per angler over last 10 trips\", \"Marked Definite Go\", \"14 of 29 spots open as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4572-11282000\", \"why\": [\"Producer: top recent overnight boat at 4.91 trophy/angler/day\", \"Saturday night departure\", \"Only 6 of 29 spots open as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4580-12041900\", \"why\": [\"Sea Adventure 80: 4.39 yellowfin per angler last 10 trips\", \"$340 — cheapest overnight on the board\", \"Full 32 spots open as of last update\"]}</trip-card>\n\nConfirm price and availability on H&M Landing's site before you commit.\n\n<followups>[\"Show me Producer trips only\", \"What about 1.5 day trips under $500?\", \"Which has best recent yellowfin counts?\"]</followups>",
+      "ms": 8945,
+      "usage": {
+        "input_tokens": 18950,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 487,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 360,
+            "openSpots": 14,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.9,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Producer: 3.81 yellowfin per angler over last 10 trips",
+            "Marked Definite Go",
+            "14 of 29 spots open as of last update"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 14,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4572-11282000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11282000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-29T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-28T20:00:00-08:00",
+            "departLabel": "Sat 11/28 8:00 PM",
+            "departDate": "2026-11-28",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 360,
+            "openSpots": 6,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-28/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.9,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Producer: top recent overnight boat at 4.91 trophy/angler/day",
+            "Saturday night departure",
+            "Only 6 of 29 spots open as of last update"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-28",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 6,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-28/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4580-12041900",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4580-12041900",
+            "sourceId": "559175c7cf8b9c18468b4580@2026-12-05T03:00:00+00:00",
+            "boat": "Sea Adventure 80",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-12-04T19:00:00-08:00",
+            "departLabel": "Fri 12/4 7:00 PM",
+            "departDate": "2026-12-04",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 340,
+            "openSpots": 32,
+            "capacity": 32,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-04/1900?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "winRate": 16,
+            "avgTPA": 1.68,
+            "boatPageUrl": "#boat/Sea%20Adventure%2080"
+          },
+          "why": [
+            "Sea Adventure 80: 4.39 yellowfin per angler last 10 trips",
+            "$340 — cheapest overnight on the board",
+            "Full 32 spots open as of last update"
+          ],
+          "boat": "Sea Adventure 80",
+          "date": "2026-12-04",
+          "tripLength": "Overnight",
+          "price": 340,
+          "openSpots": 32,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-04/1900?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

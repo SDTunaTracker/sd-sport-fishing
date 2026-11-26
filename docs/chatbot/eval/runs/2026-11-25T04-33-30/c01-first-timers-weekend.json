@@ -1,0 +1,140 @@
+{
+  "case": {
+    "id": "c01-first-timers-weekend",
+    "persona": "2 people, first time, want yellowfin, this weekend, under $400 each",
+    "turns": [
+      "2 of us, first time out, we want yellowfin. This weekend, under $400 each. What should we book?"
+    ],
+    "expect": "Weekend = Sat 11/28–Sun 11/29 (a Fri-evening departure is OK if called out). Only trips <= $400 with >= 2 open spots. Yellowfin evidence from recent form.",
+    "checks": [
+      {
+        "minCards": 2,
+        "maxPrice": 400,
+        "minSpots": 2,
+        "dateFrom": "2026-11-27",
+        "dateTo": "2026-11-29",
+        "mustSay": [
+          "yellowfin"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "2 of us, first time out, we want yellowfin. This weekend, under $400 each. What should we book?",
+      "text": "For two first-timers chasing yellowfin on a budget, the **Producer overnight** is the standout — shorter than a multi-day, and it's been the hottest yellowfin boat on this list recently.\n\n- **Producer, Fri 11/27 overnight** — last 10 trips averaged **3.81 yellowfin per angler**, $360/pp, 14/29 spots open as of last update, listed as Definite Go.\n- **Producer, Sat 11/28 overnight** — same boat, same price, 6/29 spots open as of last update — good if Friday doesn't work.\n\nTPA/day = trophy fish (bluefin/yellowfin/yellowtail/dorado) per angler per day; Producer leads your weekend options on recent yellowfin form.\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"Last 10 trips: 3.81 yellowfin per angler — top recent yellowfin boat here\", \"Overnight is a manageable first trip\", \"$360/pp, under budget\", \"14/29 open as of last update, Definite Go\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4572-11282000\", \"why\": [\"Same boat, Saturday night option\", \"Last 10 trips: 3.81 yellowfin per angler\", \"$360/pp\", \"6/29 open as of last update, Definite Go\"]}</trip-card>\n\nConfirm price and spots on H&M Landing's site before booking, and ask the crew about seasickness remedies when you call or check in.\n\n<followups>[\"Any cheaper weekend options?\", \"What about a 3/4 day instead?\", \"Compare Producer Fri vs Sat\"]</followups>",
+      "ms": 10857,
+      "usage": {
+        "input_tokens": 18972,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 560,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 34711,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 360,
+            "openSpots": 14,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.9,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Last 10 trips: 3.81 yellowfin per angler — top recent yellowfin boat here",
+            "Overnight is a manageable first trip",
+            "$360/pp, under budget",
+            "14/29 open as of last update, Definite Go"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 14,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4572-11282000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11282000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-29T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-28T20:00:00-08:00",
+            "departLabel": "Sat 11/28 8:00 PM",
+            "departDate": "2026-11-28",
+            "returnLocal": null,
+            "returnLabel": null,
+            "price": 360,
+            "openSpots": 6,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T01:01:53+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-28/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.9,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Same boat, Saturday night option",
+            "Last 10 trips: 3.81 yellowfin per angler",
+            "$360/pp",
+            "6/29 open as of last update, Definite Go"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-28",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 6,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-28/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

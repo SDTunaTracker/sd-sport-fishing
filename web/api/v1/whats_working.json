@@ -1,0 +1,679 @@
+{
+ "generated_at": "2026-11-26T04:00:26Z",
+ "label": "What's working, from BloodyDecks trip reports",
+ "note": "Automatic summaries of recent public forum posts; follow the links for details.",
+ "classes": {
+  "short": {
+   "label": "Half & 3/4 day",
+   "headline": "Del Mar and Pt Loma · Zacana Jig - bonito",
+   "window_days": 21,
+   "report_count": 4,
+   "top_spots": [
+    "Del Mar",
+    "Pt Loma"
+   ],
+   "items": [
+    {
+     "boat": null,
+     "trip_length": "1/2 Day",
+     "trip_date": "2026-11-21",
+     "title": "Dana Wharf PM 1/2 Day 11/21 - Take a kid fishing",
+     "url": "https://www.bdoutdoors.com/forums/threads/dana-wharf-pm-1-2-day-11-21-take-a-kid-fishing.872608/",
+     "tackle": [
+      "Zacana Jig - bonito",
+      "8 oz sinker, live anchovy - calico/bottom",
+      "fly-lining live anchovy - bonito"
+     ],
+     "bait": "anchovy, good size, lively",
+     "conditions": "2-5 mph wind, sunny, clean water, shearwaters a problem.",
+     "region": "oc_la"
+    },
+    {
+     "boat": "New Seaforth",
+     "trip_length": "1/2 Day",
+     "trip_date": "2026-11-11",
+     "title": "New Seaforth half day 11/11/26",
+     "url": "https://www.bdoutdoors.com/forums/threads/new-seaforth-half-day-11-11-26.872360/",
+     "tackle": [
+      "blue/white JRI-6 jig - yellowtail",
+      "yo-yo technique - yellowtail"
+     ],
+     "bait": null,
+     "conditions": "Beautiful weather, calm seas, ~250 ft water depth.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Premier",
+     "trip_length": "1/2 Day",
+     "trip_date": "2026-11-10",
+     "title": "Nov 10 Premier Extended 1/2 Day - Redemption!",
+     "url": "https://www.bdoutdoors.com/forums/threads/nov-10-premier-extended-1-2-day-redemption.872304/",
+     "tackle": [
+      "40 lb setup, yo-yo / dropper loop",
+      "dropper loop, weights up to 1 lb"
+     ],
+     "bait": null,
+     "conditions": "Fishing 300–350 ft off Pt Loma; afternoon required heavy weights.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Sea Watch",
+     "trip_length": "3/4 Day",
+     "trip_date": "2026-11-05",
+     "title": "Seaforth 11/5",
+     "url": "https://www.bdoutdoors.com/forums/threads/seaforth-11-5.872186/",
+     "tackle": [],
+     "bait": "anchovy",
+     "conditions": "Shearwaters relentless, hard to fish bait.",
+     "region": "san_diego"
+    }
+   ]
+  },
+  "full": {
+   "label": "Full day & overnight",
+   "headline": "Avalon and Catalina · fluorocarbon - YT",
+   "window_days": 21,
+   "report_count": 2,
+   "top_spots": [
+    "Avalon",
+    "Catalina"
+   ],
+   "items": [
+    {
+     "boat": "Pursuit",
+     "trip_length": "Full Day",
+     "trip_date": "2026-11-08",
+     "title": "Pursuit, 9th inning 2 outs down 2 runs.",
+     "url": "https://www.bdoutdoors.com/forums/threads/pursuit-9th-inning-2-outs-down-2-runs.870877/",
+     "tackle": [
+      "fluorocarbon - YT"
+     ],
+     "bait": null,
+     "conditions": null,
+     "region": "oc_la"
+    },
+    {
+     "boat": "Grande",
+     "trip_length": "Full Day",
+     "trip_date": "2026-11-07",
+     "title": "Local full days 10/29+30, 11/7",
+     "url": "https://www.bdoutdoors.com/forums/threads/local-full-days-10-29-30-11-7.872243/",
+     "tackle": [
+      "butt-hooked sardine, 1/2 oz slider, 15/20 lb — drop straight down",
+      "anchovy, 1/4-1/2 oz carolina rig (top angler)",
+      "42 or 60gr Colt Sniper jig (hit, pulled hook)"
+     ],
+     "bait": "anchovy, mostly; some sardine",
+     "conditions": "Severe shearwater pressure; small 3-5 lb fish grade.",
+     "region": "san_diego"
+    }
+   ]
+  },
+  "multi": {
+   "label": "1.5 to 3.5 day",
+   "headline": "Colonet and St Martin Island · 40–50 lb fluorocarbon leader",
+   "window_days": 21,
+   "report_count": 2,
+   "top_spots": [
+    "Colonet",
+    "St Martin Island"
+   ],
+   "items": [
+    {
+     "boat": "New Lo-An",
+     "trip_length": "2 Day",
+     "trip_date": "2026-11-11",
+     "title": "New Lo Ann 11-11 2 day  Pretty Great",
+     "url": "https://www.bdoutdoors.com/forums/threads/new-lo-ann-11-11-2-day-pretty-great.872398/",
+     "tackle": [],
+     "bait": null,
+     "conditions": "Hot, sunny November; generator overheated; bait dying briefly.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Pacific Queen",
+     "trip_length": "2 Day",
+     "trip_date": "2026-11-08",
+     "title": "Pacific Queen 2 day 11/8-11/10",
+     "url": "https://www.bdoutdoors.com/forums/threads/pacific-queen-2-day-11-8-11-10.872292/",
+     "tackle": [
+      "40–50 lb fluorocarbon leader",
+      "#1 or 1/0–2/0 circle/jay hook",
+      "Gamakatsu light wire live bait ringed hook, size 1",
+      "50 lb gold fluoro, size 1 J-hook - yellowfin"
+     ],
+     "bait": "sardine, green and slimy, lively; some anchovy for chum",
+     "conditions": "Light wind, long-period swells, mid-to-high 70s°F, deep blue water.",
+     "region": "san_diego"
+    }
+   ]
+  },
+  "extended": {
+   "label": "4 to 7 day",
+   "headline": null,
+   "window_days": 45,
+   "report_count": 0,
+   "top_spots": [],
+   "items": []
+  },
+  "long_range": {
+   "label": "Long range (8+ days)",
+   "headline": "Cedros and the Ridge · trolling at cruise speed - wahoo",
+   "window_days": 21,
+   "report_count": 7,
+   "top_spots": [
+    "Cedros",
+    "the Ridge",
+    "The Rocks",
+    "13 Fathom",
+    "13 Fathom Spot"
+   ],
+   "items": [
+    {
+     "boat": "Excel",
+     "trip_length": "10 Day",
+     "trip_date": "2026-11-14",
+     "title": "Water Cooling down for 2027 16 day trips?",
+     "url": "https://www.bdoutdoors.com/forums/threads/water-cooling-down-for-2027-16-day-trips.872509/",
+     "tackle": [
+      "trolling at cruise speed - wahoo",
+      "bomb - wahoo (only 1)"
+     ],
+     "bait": null,
+     "conditions": "Water cooling; northern bank 85°F; bait not in best shape.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Shogun",
+     "trip_length": "10 Day",
+     "trip_date": null,
+     "title": "Shogun 10 Day 10/27 to 11/6",
+     "url": "https://www.bdoutdoors.com/forums/threads/shogun-10-day-10-27-to-11-6.872300/",
+     "tackle": [
+      "DTX trolling - wahoo",
+      "dropper loop - yellowfin/yellowtail",
+      "yoyo - yellowfin/yellowtail",
+      "Salas 6x Jr"
+     ],
+     "bait": "live bait (dying late trip); lures primary producers",
+     "conditions": "extremely hot water, bad weather incoming, bait scarce late trip.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Vagabond",
+     "trip_length": "10 Day",
+     "trip_date": "2026-11-09",
+     "title": "Vagabond SD Anglers 10-Day 11/9 to 11/19 (edited - photos now [maybe!] but no vids)",
+     "url": "https://www.bdoutdoors.com/forums/threads/vagabond-sd-anglers-10-day-11-9-to-11-19-edited-photos-now-maybe-but-no-vids.872601/",
+     "tackle": [
+      "pink Rapala Mag 40 - wahoo troll",
+      "gold Hopkins Spoon, 55lb leader - wahoo",
+      "gold Raider jig - wahoo",
+      "small Marauder - wahoo"
+     ],
+     "bait": "sardine, mostly decent, not quite as cured as hoped; scad mackerel up to 5 lbs live",
+     "conditions": "Warm south, temps dropped; 24-ft groundswell late; blustery near San Martin.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Searcher",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-09",
+     "title": "Searcher 8 day: different take",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-different-take.872516/",
+     "tackle": [
+      "braid + 3 ft topshot"
+     ],
+     "bait": null,
+     "conditions": "Unusually warm water; wind event ~30 knots evening of Nov 16.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Searcher",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-09",
+     "title": "Searcher 8-Day Report #2",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-report-2.872499/",
+     "tackle": [
+      "Tady 4/0 solid mint - yellowtail",
+      "Salas 6X Jr. solid mint - yellowtail",
+      "dropper loop - yellowtail",
+      "homemade bomb - wahoo"
+     ],
+     "bait": "sardine, good quantity, lasted full trip",
+     "conditions": "abundant wildlife; scarce bottom life; barracuda infestation at San Carlos",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Searcher",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-09",
+     "title": "8 day Searcher report Nov 9-17",
+     "url": "https://www.bdoutdoors.com/forums/threads/8-day-searcher-report-nov-9-17.872469/",
+     "tackle": [
+      "pink Marauder - wahoo",
+      "orange Marauder - wahoo",
+      "40-50 lb line, #1-1/0 hooks - yellowtail flyline",
+      "scrambled egg 6x JR jig - yellowtail yo-yo"
+     ],
+     "bait": "sardine/anchovy 4-7 in, lively, good shape",
+     "conditions": "Good weather early; rough seas and long uphill run back.",
+     "region": "san_diego"
+    },
+    {
+     "boat": "Shogun",
+     "trip_length": "8 Day",
+     "trip_date": "2026-11-06",
+     "title": "Shogun Izorline - Sophie Huynh Charter - Nov 6 2026 to Nov 14 2026",
+     "url": "https://www.bdoutdoors.com/forums/threads/shogun-izorline-sophie-huynh-charter-nov-6-2026-to-nov-14-2026.872405/",
+     "tackle": [
+      "Marauders – yellowfin tuna",
+      "Colt Snipers dropped deep – YFT",
+      "dropper loop – yellowtail",
+      "yo-yo jig – yellowtail"
+     ],
+     "bait": "live bait (bait-making noted); sardine/mackerel unspecified",
+     "conditions": "ripping current; slow troll stretches; wide-open bite Wednesday afternoon.",
+     "region": "san_diego"
+    }
+   ]
+  }
+ },
+ "by_region": {
+  "san_diego": {
+   "short": {
+    "label": "Half & 3/4 day",
+    "headline": "Del Mar and Pt Loma · blue/white JRI-6 jig - yellowtail",
+    "window_days": 21,
+    "report_count": 3,
+    "top_spots": [
+     "Del Mar",
+     "Pt Loma"
+    ],
+    "items": [
+     {
+      "boat": "New Seaforth",
+      "trip_length": "1/2 Day",
+      "trip_date": "2026-11-11",
+      "title": "New Seaforth half day 11/11/26",
+      "url": "https://www.bdoutdoors.com/forums/threads/new-seaforth-half-day-11-11-26.872360/",
+      "tackle": [
+       "blue/white JRI-6 jig - yellowtail",
+       "yo-yo technique - yellowtail"
+      ],
+      "bait": null,
+      "conditions": "Beautiful weather, calm seas, ~250 ft water depth.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Premier",
+      "trip_length": "1/2 Day",
+      "trip_date": "2026-11-10",
+      "title": "Nov 10 Premier Extended 1/2 Day - Redemption!",
+      "url": "https://www.bdoutdoors.com/forums/threads/nov-10-premier-extended-1-2-day-redemption.872304/",
+      "tackle": [
+       "40 lb setup, yo-yo / dropper loop",
+       "dropper loop, weights up to 1 lb"
+      ],
+      "bait": null,
+      "conditions": "Fishing 300–350 ft off Pt Loma; afternoon required heavy weights.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Sea Watch",
+      "trip_length": "3/4 Day",
+      "trip_date": "2026-11-05",
+      "title": "Seaforth 11/5",
+      "url": "https://www.bdoutdoors.com/forums/threads/seaforth-11-5.872186/",
+      "tackle": [],
+      "bait": "anchovy",
+      "conditions": "Shearwaters relentless, hard to fish bait.",
+      "region": "san_diego"
+     }
+    ]
+   },
+   "full": {
+    "label": "Full day & overnight",
+    "headline": "Clemente · butt-hooked sardine, 1/2 oz slider, 15/20…",
+    "window_days": 45,
+    "report_count": 3,
+    "top_spots": [
+     "Clemente"
+    ],
+    "items": [
+     {
+      "boat": "Grande",
+      "trip_length": "Full Day",
+      "trip_date": "2026-11-07",
+      "title": "Local full days 10/29+30, 11/7",
+      "url": "https://www.bdoutdoors.com/forums/threads/local-full-days-10-29-30-11-7.872243/",
+      "tackle": [
+       "butt-hooked sardine, 1/2 oz slider, 15/20 lb — drop straight down",
+       "anchovy, 1/4-1/2 oz carolina rig (top angler)",
+       "42 or 60gr Colt Sniper jig (hit, pulled hook)"
+      ],
+      "bait": "anchovy, mostly; some sardine",
+      "conditions": "Severe shearwater pressure; small 3-5 lb fish grade.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Eldorado",
+      "trip_length": "Overnight",
+      "trip_date": null,
+      "title": "El Dorado.......AHUEVO CABRONES",
+      "url": "https://www.bdoutdoors.com/forums/threads/el-dorado-ahuevo-cabrones.871928/",
+      "tackle": [],
+      "bait": null,
+      "conditions": "Great weather; good bait.",
+      "region": "both"
+     },
+     {
+      "boat": "Dolphin",
+      "trip_length": "Full Day",
+      "trip_date": "2026-10-29",
+      "title": "Local full days 10/29+30, 11/7",
+      "url": "https://www.bdoutdoors.com/forums/threads/local-full-days-10-29-30-11-7.872243/",
+      "tackle": [
+       "80gr Colt Sniper jig",
+       "flyline sardine, 30 lb (10/29)",
+       "flyline sardine, 20 lb (10/30)"
+      ],
+      "bait": "sardine, flylined",
+      "conditions": "Heavy shearwater pressure both days.",
+      "region": "san_diego"
+     }
+    ]
+   },
+   "multi": {
+    "label": "1.5 to 3.5 day",
+    "headline": "Colonet and St Martin Island · 40–50 lb fluorocarbon leader",
+    "window_days": 21,
+    "report_count": 2,
+    "top_spots": [
+     "Colonet",
+     "St Martin Island"
+    ],
+    "items": [
+     {
+      "boat": "New Lo-An",
+      "trip_length": "2 Day",
+      "trip_date": "2026-11-11",
+      "title": "New Lo Ann 11-11 2 day  Pretty Great",
+      "url": "https://www.bdoutdoors.com/forums/threads/new-lo-ann-11-11-2-day-pretty-great.872398/",
+      "tackle": [],
+      "bait": null,
+      "conditions": "Hot, sunny November; generator overheated; bait dying briefly.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Pacific Queen",
+      "trip_length": "2 Day",
+      "trip_date": "2026-11-08",
+      "title": "Pacific Queen 2 day 11/8-11/10",
+      "url": "https://www.bdoutdoors.com/forums/threads/pacific-queen-2-day-11-8-11-10.872292/",
+      "tackle": [
+       "40–50 lb fluorocarbon leader",
+       "#1 or 1/0–2/0 circle/jay hook",
+       "Gamakatsu light wire live bait ringed hook, size 1",
+       "50 lb gold fluoro, size 1 J-hook - yellowfin"
+      ],
+      "bait": "sardine, green and slimy, lively; some anchovy for chum",
+      "conditions": "Light wind, long-period swells, mid-to-high 70s°F, deep blue water.",
+      "region": "san_diego"
+     }
+    ]
+   },
+   "extended": {
+    "label": "4 to 7 day",
+    "headline": null,
+    "window_days": 45,
+    "report_count": 0,
+    "top_spots": [],
+    "items": []
+   },
+   "long_range": {
+    "label": "Long range (8+ days)",
+    "headline": "Cedros and the Ridge · trolling at cruise speed - wahoo",
+    "window_days": 21,
+    "report_count": 7,
+    "top_spots": [
+     "Cedros",
+     "the Ridge",
+     "The Rocks",
+     "13 Fathom",
+     "13 Fathom Spot"
+    ],
+    "items": [
+     {
+      "boat": "Excel",
+      "trip_length": "10 Day",
+      "trip_date": "2026-11-14",
+      "title": "Water Cooling down for 2027 16 day trips?",
+      "url": "https://www.bdoutdoors.com/forums/threads/water-cooling-down-for-2027-16-day-trips.872509/",
+      "tackle": [
+       "trolling at cruise speed - wahoo",
+       "bomb - wahoo (only 1)"
+      ],
+      "bait": null,
+      "conditions": "Water cooling; northern bank 85°F; bait not in best shape.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Shogun",
+      "trip_length": "10 Day",
+      "trip_date": null,
+      "title": "Shogun 10 Day 10/27 to 11/6",
+      "url": "https://www.bdoutdoors.com/forums/threads/shogun-10-day-10-27-to-11-6.872300/",
+      "tackle": [
+       "DTX trolling - wahoo",
+       "dropper loop - yellowfin/yellowtail",
+       "yoyo - yellowfin/yellowtail",
+       "Salas 6x Jr"
+      ],
+      "bait": "live bait (dying late trip); lures primary producers",
+      "conditions": "extremely hot water, bad weather incoming, bait scarce late trip.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Vagabond",
+      "trip_length": "10 Day",
+      "trip_date": "2026-11-09",
+      "title": "Vagabond SD Anglers 10-Day 11/9 to 11/19 (edited - photos now [maybe!] but no vids)",
+      "url": "https://www.bdoutdoors.com/forums/threads/vagabond-sd-anglers-10-day-11-9-to-11-19-edited-photos-now-maybe-but-no-vids.872601/",
+      "tackle": [
+       "pink Rapala Mag 40 - wahoo troll",
+       "gold Hopkins Spoon, 55lb leader - wahoo",
+       "gold Raider jig - wahoo",
+       "small Marauder - wahoo"
+      ],
+      "bait": "sardine, mostly decent, not quite as cured as hoped; scad mackerel up to 5 lbs live",
+      "conditions": "Warm south, temps dropped; 24-ft groundswell late; blustery near San Martin.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Searcher",
+      "trip_length": "8 Day",
+      "trip_date": "2026-11-09",
+      "title": "Searcher 8 day: different take",
+      "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-different-take.872516/",
+      "tackle": [
+       "braid + 3 ft topshot"
+      ],
+      "bait": null,
+      "conditions": "Unusually warm water; wind event ~30 knots evening of Nov 16.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Searcher",
+      "trip_length": "8 Day",
+      "trip_date": "2026-11-09",
+      "title": "Searcher 8-Day Report #2",
+      "url": "https://www.bdoutdoors.com/forums/threads/searcher-8-day-report-2.872499/",
+      "tackle": [
+       "Tady 4/0 solid mint - yellowtail",
+       "Salas 6X Jr. solid mint - yellowtail",
+       "dropper loop - yellowtail",
+       "homemade bomb - wahoo"
+      ],
+      "bait": "sardine, good quantity, lasted full trip",
+      "conditions": "abundant wildlife; scarce bottom life; barracuda infestation at San Carlos",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Searcher",
+      "trip_length": "8 Day",
+      "trip_date": "2026-11-09",
+      "title": "8 day Searcher report Nov 9-17",
+      "url": "https://www.bdoutdoors.com/forums/threads/8-day-searcher-report-nov-9-17.872469/",
+      "tackle": [
+       "pink Marauder - wahoo",
+       "orange Marauder - wahoo",
+       "40-50 lb line, #1-1/0 hooks - yellowtail flyline",
+       "scrambled egg 6x JR jig - yellowtail yo-yo"
+      ],
+      "bait": "sardine/anchovy 4-7 in, lively, good shape",
+      "conditions": "Good weather early; rough seas and long uphill run back.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Shogun",
+      "trip_length": "8 Day",
+      "trip_date": "2026-11-06",
+      "title": "Shogun Izorline - Sophie Huynh Charter - Nov 6 2026 to Nov 14 2026",
+      "url": "https://www.bdoutdoors.com/forums/threads/shogun-izorline-sophie-huynh-charter-nov-6-2026-to-nov-14-2026.872405/",
+      "tackle": [
+       "Marauders – yellowfin tuna",
+       "Colt Snipers dropped deep – YFT",
+       "dropper loop – yellowtail",
+       "yo-yo jig – yellowtail"
+      ],
+      "bait": "live bait (bait-making noted); sardine/mackerel unspecified",
+      "conditions": "ripping current; slow troll stretches; wide-open bite Wednesday afternoon.",
+      "region": "san_diego"
+     }
+    ]
+   }
+  },
+  "oc_la": {
+   "short": {
+    "label": "Half & 3/4 day",
+    "headline": "Green buoy and the domes · Zacana Jig - bonito",
+    "window_days": 45,
+    "report_count": 3,
+    "top_spots": [
+     "Green buoy",
+     "the domes"
+    ],
+    "items": [
+     {
+      "boat": null,
+      "trip_length": "1/2 Day",
+      "trip_date": "2026-11-21",
+      "title": "Dana Wharf PM 1/2 Day 11/21 - Take a kid fishing",
+      "url": "https://www.bdoutdoors.com/forums/threads/dana-wharf-pm-1-2-day-11-21-take-a-kid-fishing.872608/",
+      "tackle": [
+       "Zacana Jig - bonito",
+       "8 oz sinker, live anchovy - calico/bottom",
+       "fly-lining live anchovy - bonito"
+      ],
+      "bait": "anchovy, good size, lively",
+      "conditions": "2-5 mph wind, sunny, clean water, shearwaters a problem.",
+      "region": "oc_la"
+     },
+     {
+      "boat": "Monte Carlo",
+      "trip_length": "1/2 Day",
+      "trip_date": "2026-10-17",
+      "title": "Monte Carlo 10/17",
+      "url": "https://www.bdoutdoors.com/forums/threads/monte-carlo-10-17.871746/",
+      "tackle": [
+       "dropper loop anchovy - calico",
+       "strip of squid - yellowtail",
+       "80g Sniper jig - bonito",
+       "small jet head troller - bonito"
+      ],
+      "bait": "anchovy under 4 in, some lively 5-6 in mixed",
+      "conditions": "fast current at anchor; private boaters nearby at the rigs.",
+      "region": "oc_la"
+     },
+     {
+      "boat": "Sum Fun",
+      "trip_length": "3/4 Day",
+      "trip_date": "2026-10-15",
+      "title": "10/15 Sumfun 3/4 day.",
+      "url": "https://www.bdoutdoors.com/forums/threads/10-15-sumfun-3-4-day.871596/",
+      "tackle": [
+       "sardine bait",
+       "50w rod – wahoo setup"
+      ],
+      "bait": "sardine",
+      "conditions": "Morning slow; warmer water found near the domes around noon.",
+      "region": "oc_la"
+     }
+    ]
+   },
+   "full": {
+    "label": "Full day & overnight",
+    "headline": "Avalon and Catalina · fluorocarbon - YT",
+    "window_days": 45,
+    "report_count": 2,
+    "top_spots": [
+     "Avalon",
+     "Catalina",
+     "Clemente"
+    ],
+    "items": [
+     {
+      "boat": "Pursuit",
+      "trip_length": "Full Day",
+      "trip_date": "2026-11-08",
+      "title": "Pursuit, 9th inning 2 outs down 2 runs.",
+      "url": "https://www.bdoutdoors.com/forums/threads/pursuit-9th-inning-2-outs-down-2-runs.870877/",
+      "tackle": [
+       "fluorocarbon - YT"
+      ],
+      "bait": null,
+      "conditions": null,
+      "region": "oc_la"
+     },
+     {
+      "boat": "Eldorado",
+      "trip_length": "Overnight",
+      "trip_date": null,
+      "title": "El Dorado.......AHUEVO CABRONES",
+      "url": "https://www.bdoutdoors.com/forums/threads/el-dorado-ahuevo-cabrones.871928/",
+      "tackle": [],
+      "bait": null,
+      "conditions": "Great weather; good bait.",
+      "region": "both"
+     }
+    ]
+   },
+   "multi": {
+    "label": "1.5 to 3.5 day",
+    "headline": null,
+    "window_days": 45,
+    "report_count": 0,
+    "top_spots": [],
+    "items": []
+   },
+   "extended": {
+    "label": "4 to 7 day",
+    "headline": null,
+    "window_days": 45,
+    "report_count": 0,
+    "top_spots": [],
+    "items": []
+   },
+   "long_range": {
+    "label": "Long range (8+ days)",
+    "headline": null,
+    "window_days": 45,
+    "report_count": 0,
+    "top_spots": [],
+    "items": []
+   }
+  }
+ },
+ "regions_note": "classes = every report; by_region.<san_diego|oc_la> = reports from that region's landings or spots (a 'both' report is in each)."
+}

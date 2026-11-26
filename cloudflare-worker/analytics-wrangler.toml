@@ -1,0 +1,40 @@
+name               = "tt-analytics"
+main               = "analytics.js"
+compatibility_date = "2024-09-23"
+workers_dev        = false
+
+# Same-origin routes on the thetunatracker.com zone. Worker routes run before the
+# Pages custom domain, so only these paths hit the Worker; everything else is Pages.
+#   /a/*          public collector + admin-payload ingest (bearer token)
+#   /owner/api/*  owner stats API. Cloudflare Access protects /owner*, and the
+#                 Worker re-verifies the Access JWT itself (fails closed).
+routes = [
+  { pattern = "thetunatracker.com/a/*",         zone_name = "thetunatracker.com" },
+  { pattern = "thetunatracker.com/owner/api/*", zone_name = "thetunatracker.com" },
+]
+
+# Daily rollup + retention cleanup at 08:15 UTC (00:15 / 01:15 Pacific).
+[triggers]
+crons = ["15 8 * * *"]
+
+[vars]
+TZ_NAME        = "America/Los_Angeles"
+ALLOWED_HOSTS  = "thetunatracker.com,www.thetunatracker.com"
+RETENTION_DAYS = "90"
+
+# D1: create in the dashboard (Storage & Databases → D1 → Create, name tt_analytics),
+# then paste its Database ID here. See docs/analytics/SETUP.md.
+[[d1_databases]]
+binding       = "DB"
+database_name = "tt_analytics"
+database_id   = "REPLACE_WITH_D1_DATABASE_ID"
+
+# ── Secrets (set with wrangler, never committed) ─────────────────────────────
+#   npx wrangler secret put ACCESS_TEAM_DOMAIN  --config cloudflare-worker/analytics-wrangler.toml
+#       e.g. tunatracker.cloudflareaccess.com
+#   npx wrangler secret put ACCESS_AUD          --config cloudflare-worker/analytics-wrangler.toml
+#       the Access application's "Application Audience (AUD) Tag"
+#   npx wrangler secret put OWNER_EMAILS        --config cloudflare-worker/analytics-wrangler.toml
+#       comma-separated; must match the Access policy (defense in depth)
+#   npx wrangler secret put ADMIN_INGEST_TOKEN  --config cloudflare-worker/analytics-wrangler.toml
+#       random string; the same value goes in the GitHub secret ADMIN_INGEST_TOKEN
