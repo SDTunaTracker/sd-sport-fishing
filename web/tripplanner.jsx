@@ -1314,6 +1314,9 @@ function TripPlanner({ navigate, regions }) {
         </div>
       </div>
 
+      {/* Pick my trip: one best boat with open seats (Home + here only). */}
+      {window.HomePicker && <HomePicker regions={regions} navigate={navigate} bare/>}
+
       {/* Top search bar */}
       <div className="tp-search-wrap" ref={searchWrapRef}>
         <TopSearchBar

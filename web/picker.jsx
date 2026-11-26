@@ -410,17 +410,14 @@
     );
   }
 
-  // Today: answers first, then (Simple) the picker + big numbers with the full
-  // report behind "See the details", or (Detailed) the full report.
+  // Today: answers first, then (Simple) big numbers with the full report
+  // behind "See the details", or (Detailed) the full report. Pick my trip
+  // lives only on Home and the Trip Planner (owner, 2026-11-26).
   function TodaySimple({ regions, navigate, settings, Report }) {
     const [mode, setMode] = useViewMode();
     const [open, setOpen] = useState(false);
     const region = regionOf(regions);
     const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';
-    const tick = useDataTick();
-    // No picker where the region has no trip schedule (it could only say "none").
-    const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
-      window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
     const hasAnswers = !!window.TTPicker && region !== 'sf_bay';
     return (
       <div className={`tsim tsim-${mode}`}>
@@ -436,7 +433,6 @@
         {hasAnswers && <TodayAnswers regions={regions} navigate={navigate}/>}
         {mode === 'simple' ? (
           <React.Fragment>
-            {hasPicker && <PickMyTrip regions={regions} navigate={navigate} startEmpty/>}
             <SimpleNumbers regions={regions}/>
             <div className="tsim-details">
               <button className="tsim-more" aria-expanded={open} onClick={() => setOpen(o => !o)}>
@@ -447,12 +443,7 @@
             {open && <Report navigate={navigate} settings={settings} regions={regions}/>}
           </React.Fragment>
         ) : (
-          <React.Fragment>
-            {hasPicker && (
-              <button className="tsim-pick" onClick={() => navigate('pick')}>Pick my trip: choose dates, type and budget<span aria-hidden="true">{' →'}</span></button>
-            )}
-            <Report navigate={navigate} settings={settings} regions={regions}/>
-          </React.Fragment>
+          <Report navigate={navigate} settings={settings} regions={regions}/>
         )}
       </div>
     );
@@ -478,13 +469,16 @@
     );
   }
 
-  // Home, lower down: Pick my trip (quick picks + link to /pick).
-  function HomePicker({ regions, navigate }) {
+  // Pick my trip block (quick picks + link to /pick). Shown only on Home
+  // (lower down, after the counts) and on the Trip Planner (bare: no Home
+  // section wrapper). Owner, 2026-11-26: not on every page.
+  function HomePicker({ regions, navigate, bare }) {
     const region = regionOf(regions);
     const tick = useDataTick();
     const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
       window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
     if (!hasPicker) return null;
+    if (bare) return <div className="tp-pick"><PickMyTrip regions={regions} navigate={navigate} startEmpty compact/></div>;
     return (
       <section className="ha ha-pick" aria-label="Pick my trip">
         <div className="ha-in">
@@ -507,16 +501,5 @@
     );
   }
 
-  // Always-reachable entry on phones (no chat on mobile): a sticky button on
-  // every page except the picker itself. Hidden above 760px by CSS.
-  function PickFab({ navigate, regions }) {
-    return (
-      <a className="pk-fab" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
-         onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
-        <span className="pk-fab-dot" aria-hidden="true"/>Pick my trip
-      </a>
-    );
-  }
-
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, HomePicker, PickTripView, ViewModeSwitch, PickFab });
+  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, HomePicker, PickTripView, ViewModeSwitch });
 })();
