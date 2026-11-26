@@ -15,6 +15,7 @@
     "Redondo Beach Sportfishing",
     "Pierpoint Landing",
     "Channel Islands Sportfishing",
+    "Hooks Landing",
     "Ventura Harbor Sportfishing",
     "Newport Landing",
     "Davey's Locker",
@@ -47,6 +48,7 @@
     "Marina Del Rey Sportfishing":  { lat: 33.9770, lng: -118.4490 },
     "Redondo Beach Sportfishing":   { lat: 33.8430, lng: -118.3950 },
     "Channel Islands Sportfishing": { lat: 34.1620, lng: -119.2240 },
+    "Hooks Landing": { lat: 34.1640, lng: -119.2250 },   // Channel Islands Harbor, Oxnard
     "Ventura Harbor Sportfishing":  { lat: 34.2460, lng: -119.2640 },
     "Newport Landing":              { lat: 33.6020, lng: -117.8880 },
     "Davey's Locker":               { lat: 33.6040, lng: -117.8920 },
