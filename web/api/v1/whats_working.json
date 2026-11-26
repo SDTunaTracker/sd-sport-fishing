@@ -1,14 +1,15 @@
 {
- "generated_at": "2026-11-25T18:05:51Z",
+ "generated_at": "2026-11-26T04:00:26Z",
  "label": "What's working, from BloodyDecks trip reports",
  "note": "Automatic summaries of recent public forum posts; follow the links for details.",
  "classes": {
   "short": {
    "label": "Half & 3/4 day",
-   "headline": "Pt Loma · Zacana Jig - bonito",
+   "headline": "Del Mar and Pt Loma · Zacana Jig - bonito",
    "window_days": 21,
-   "report_count": 3,
+   "report_count": 4,
    "top_spots": [
+    "Del Mar",
     "Pt Loma"
    ],
    "items": [
@@ -54,14 +55,25 @@
      "bait": null,
      "conditions": "Fishing 300–350 ft off Pt Loma; afternoon required heavy weights.",
      "region": "san_diego"
+    },
+    {
+     "boat": "Sea Watch",
+     "trip_length": "3/4 Day",
+     "trip_date": "2026-11-05",
+     "title": "Seaforth 11/5",
+     "url": "https://www.bdoutdoors.com/forums/threads/seaforth-11-5.872186/",
+     "tackle": [],
+     "bait": "anchovy",
+     "conditions": "Shearwaters relentless, hard to fish bait.",
+     "region": "san_diego"
     }
    ]
   },
   "full": {
    "label": "Full day & overnight",
    "headline": "Avalon and Catalina · fluorocarbon - YT",
-   "window_days": 45,
-   "report_count": 1,
+   "window_days": 21,
+   "report_count": 2,
    "top_spots": [
     "Avalon",
     "Catalina"
@@ -79,15 +91,31 @@
      "bait": null,
      "conditions": null,
      "region": "oc_la"
+    },
+    {
+     "boat": "Grande",
+     "trip_length": "Full Day",
+     "trip_date": "2026-11-07",
+     "title": "Local full days 10/29+30, 11/7",
+     "url": "https://www.bdoutdoors.com/forums/threads/local-full-days-10-29-30-11-7.872243/",
+     "tackle": [
+      "butt-hooked sardine, 1/2 oz slider, 15/20 lb — drop straight down",
+      "anchovy, 1/4-1/2 oz carolina rig (top angler)",
+      "42 or 60gr Colt Sniper jig (hit, pulled hook)"
+     ],
+     "bait": "anchovy, mostly; some sardine",
+     "conditions": "Severe shearwater pressure; small 3-5 lb fish grade.",
+     "region": "san_diego"
     }
    ]
   },
   "multi": {
    "label": "1.5 to 3.5 day",
-   "headline": "St Martin Island · 40 lb FC, Mak10 - YFT",
-   "window_days": 45,
+   "headline": "Colonet and St Martin Island · 40–50 lb fluorocarbon leader",
+   "window_days": 21,
    "report_count": 2,
    "top_spots": [
+    "Colonet",
     "St Martin Island"
    ],
    "items": [
@@ -103,19 +131,19 @@
      "region": "san_diego"
     },
     {
-     "boat": "Islander",
-     "trip_length": "3 Day",
-     "trip_date": "2026-10-23",
-     "title": "Quick Report - Islander 3 day 10/23/26",
-     "url": "https://www.bdoutdoors.com/forums/threads/quick-report-islander-3-day-10-23-26.872028/",
+     "boat": "Pacific Queen",
+     "trip_length": "2 Day",
+     "trip_date": "2026-11-08",
+     "title": "Pacific Queen 2 day 11/8-11/10",
+     "url": "https://www.bdoutdoors.com/forums/threads/pacific-queen-2-day-11-8-11-10.872292/",
      "tackle": [
-      "40 lb FC, Mak10 - YFT",
-      "50 lb FC, LX Raptor, 2/0 circle - YFT",
-      "60 lb FC, HX Raptor - YFT",
-      "flyline 25-30 lb FC"
+      "40–50 lb fluorocarbon leader",
+      "#1 or 1/0–2/0 circle/jay hook",
+      "Gamakatsu light wire live bait ringed hook, size 1",
+      "50 lb gold fluoro, size 1 J-hook - yellowfin"
      ],
-     "bait": "live bait (livewells), lively",
-     "conditions": "windy, rain squalls, blue water, dawn bite active",
+     "bait": "sardine, green and slimy, lively; some anchovy for chum",
+     "conditions": "Light wind, long-period swells, mid-to-high 70s°F, deep blue water.",
      "region": "san_diego"
     }
    ]
@@ -255,10 +283,11 @@
   "san_diego": {
    "short": {
     "label": "Half & 3/4 day",
-    "headline": "Pt Loma · blue/white JRI-6 jig - yellowtail",
+    "headline": "Del Mar and Pt Loma · blue/white JRI-6 jig - yellowtail",
     "window_days": 21,
-    "report_count": 2,
+    "report_count": 3,
     "top_spots": [
+     "Del Mar",
      "Pt Loma"
     ],
     "items": [
@@ -289,23 +318,79 @@
       "bait": null,
       "conditions": "Fishing 300–350 ft off Pt Loma; afternoon required heavy weights.",
       "region": "san_diego"
+     },
+     {
+      "boat": "Sea Watch",
+      "trip_length": "3/4 Day",
+      "trip_date": "2026-11-05",
+      "title": "Seaforth 11/5",
+      "url": "https://www.bdoutdoors.com/forums/threads/seaforth-11-5.872186/",
+      "tackle": [],
+      "bait": "anchovy",
+      "conditions": "Shearwaters relentless, hard to fish bait.",
+      "region": "san_diego"
      }
     ]
    },
    "full": {
     "label": "Full day & overnight",
-    "headline": null,
+    "headline": "Clemente · butt-hooked sardine, 1/2 oz slider, 15/20…",
     "window_days": 45,
-    "report_count": 0,
-    "top_spots": [],
-    "items": []
+    "report_count": 3,
+    "top_spots": [
+     "Clemente"
+    ],
+    "items": [
+     {
+      "boat": "Grande",
+      "trip_length": "Full Day",
+      "trip_date": "2026-11-07",
+      "title": "Local full days 10/29+30, 11/7",
+      "url": "https://www.bdoutdoors.com/forums/threads/local-full-days-10-29-30-11-7.872243/",
+      "tackle": [
+       "butt-hooked sardine, 1/2 oz slider, 15/20 lb — drop straight down",
+       "anchovy, 1/4-1/2 oz carolina rig (top angler)",
+       "42 or 60gr Colt Sniper jig (hit, pulled hook)"
+      ],
+      "bait": "anchovy, mostly; some sardine",
+      "conditions": "Severe shearwater pressure; small 3-5 lb fish grade.",
+      "region": "san_diego"
+     },
+     {
+      "boat": "Eldorado",
+      "trip_length": "Overnight",
+      "trip_date": null,
+      "title": "El Dorado.......AHUEVO CABRONES",
+      "url": "https://www.bdoutdoors.com/forums/threads/el-dorado-ahuevo-cabrones.871928/",
+      "tackle": [],
+      "bait": null,
+      "conditions": "Great weather; good bait.",
+      "region": "both"
+     },
+     {
+      "boat": "Dolphin",
+      "trip_length": "Full Day",
+      "trip_date": "2026-10-29",
+      "title": "Local full days 10/29+30, 11/7",
+      "url": "https://www.bdoutdoors.com/forums/threads/local-full-days-10-29-30-11-7.872243/",
+      "tackle": [
+       "80gr Colt Sniper jig",
+       "flyline sardine, 30 lb (10/29)",
+       "flyline sardine, 20 lb (10/30)"
+      ],
+      "bait": "sardine, flylined",
+      "conditions": "Heavy shearwater pressure both days.",
+      "region": "san_diego"
+     }
+    ]
    },
    "multi": {
     "label": "1.5 to 3.5 day",
-    "headline": "St Martin Island · 40 lb FC, Mak10 - YFT",
-    "window_days": 45,
+    "headline": "Colonet and St Martin Island · 40–50 lb fluorocarbon leader",
+    "window_days": 21,
     "report_count": 2,
     "top_spots": [
+     "Colonet",
      "St Martin Island"
     ],
     "items": [
@@ -321,19 +406,19 @@
       "region": "san_diego"
      },
      {
-      "boat": "Islander",
-      "trip_length": "3 Day",
-      "trip_date": "2026-10-23",
-      "title": "Quick Report - Islander 3 day 10/23/26",
-      "url": "https://www.bdoutdoors.com/forums/threads/quick-report-islander-3-day-10-23-26.872028/",
+      "boat": "Pacific Queen",
+      "trip_length": "2 Day",
+      "trip_date": "2026-11-08",
+      "title": "Pacific Queen 2 day 11/8-11/10",
+      "url": "https://www.bdoutdoors.com/forums/threads/pacific-queen-2-day-11-8-11-10.872292/",
       "tackle": [
-       "40 lb FC, Mak10 - YFT",
-       "50 lb FC, LX Raptor, 2/0 circle - YFT",
-       "60 lb FC, HX Raptor - YFT",
-       "flyline 25-30 lb FC"
+       "40–50 lb fluorocarbon leader",
+       "#1 or 1/0–2/0 circle/jay hook",
+       "Gamakatsu light wire live bait ringed hook, size 1",
+       "50 lb gold fluoro, size 1 J-hook - yellowfin"
       ],
-      "bait": "live bait (livewells), lively",
-      "conditions": "windy, rain squalls, blue water, dawn bite active",
+      "bait": "sardine, green and slimy, lively; some anchovy for chum",
+      "conditions": "Light wind, long-period swells, mid-to-high 70s°F, deep blue water.",
       "region": "san_diego"
      }
     ]
@@ -472,10 +557,13 @@
   "oc_la": {
    "short": {
     "label": "Half & 3/4 day",
-    "headline": "Zacana Jig - bonito",
+    "headline": "Green buoy and the domes · Zacana Jig - bonito",
     "window_days": 45,
-    "report_count": 1,
-    "top_spots": [],
+    "report_count": 3,
+    "top_spots": [
+     "Green buoy",
+     "the domes"
+    ],
     "items": [
      {
       "boat": null,
@@ -491,6 +579,36 @@
       "bait": "anchovy, good size, lively",
       "conditions": "2-5 mph wind, sunny, clean water, shearwaters a problem.",
       "region": "oc_la"
+     },
+     {
+      "boat": "Monte Carlo",
+      "trip_length": "1/2 Day",
+      "trip_date": "2026-10-17",
+      "title": "Monte Carlo 10/17",
+      "url": "https://www.bdoutdoors.com/forums/threads/monte-carlo-10-17.871746/",
+      "tackle": [
+       "dropper loop anchovy - calico",
+       "strip of squid - yellowtail",
+       "80g Sniper jig - bonito",
+       "small jet head troller - bonito"
+      ],
+      "bait": "anchovy under 4 in, some lively 5-6 in mixed",
+      "conditions": "fast current at anchor; private boaters nearby at the rigs.",
+      "region": "oc_la"
+     },
+     {
+      "boat": "Sum Fun",
+      "trip_length": "3/4 Day",
+      "trip_date": "2026-10-15",
+      "title": "10/15 Sumfun 3/4 day.",
+      "url": "https://www.bdoutdoors.com/forums/threads/10-15-sumfun-3-4-day.871596/",
+      "tackle": [
+       "sardine bait",
+       "50w rod – wahoo setup"
+      ],
+      "bait": "sardine",
+      "conditions": "Morning slow; warmer water found near the domes around noon.",
+      "region": "oc_la"
      }
     ]
    },
@@ -498,10 +616,11 @@
     "label": "Full day & overnight",
     "headline": "Avalon and Catalina · fluorocarbon - YT",
     "window_days": 45,
-    "report_count": 1,
+    "report_count": 2,
     "top_spots": [
      "Avalon",
-     "Catalina"
+     "Catalina",
+     "Clemente"
     ],
     "items": [
      {
@@ -516,6 +635,17 @@
       "bait": null,
       "conditions": null,
       "region": "oc_la"
+     },
+     {
+      "boat": "Eldorado",
+      "trip_length": "Overnight",
+      "trip_date": null,
+      "title": "El Dorado.......AHUEVO CABRONES",
+      "url": "https://www.bdoutdoors.com/forums/threads/el-dorado-ahuevo-cabrones.871928/",
+      "tackle": [],
+      "bait": null,
+      "conditions": "Great weather; good bait.",
+      "region": "both"
      }
     ]
    },

@@ -139,7 +139,7 @@ function FilterBar({ filters, setFilters, hideBoat, regions }) {
           options={window.SD.SPECIES}
           value={filters.species}
           onChange={v => update('species', v)}
-          allLabel="All Tuna"/>
+          allLabel={SDA.headlineIsAllSpecies() ? 'All species' : 'All Tuna'}/>
       </div>
       <div className="filter-divider"></div>
       <div className="filter" style={{minWidth: 100}}>
@@ -363,7 +363,7 @@ function AnalyticsFilterBar({ filters, setFilters, fields, regions }) {
                 <div className="afb-field">
                   <label className="afb-label">Species</label>
                   <MultiSelect options={window.SD.SPECIES} value={cur.species}
-                    onChange={v => upd('species', v)} allLabel="All Tuna"/>
+                    onChange={v => upd('species', v)} allLabel={SDA.headlineIsAllSpecies() ? 'All species' : 'All Tuna'}/>
                 </div>
               )}
               {fld('minTrips') && (

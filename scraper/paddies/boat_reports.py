@@ -1002,6 +1002,17 @@ def make_headline(top_spots: list[str], items: list[dict]) -> str | None:
     return _shorten(" · ".join(parts), HEADLINE_MAX)
 
 
+def _src(r) -> str:
+    return r["source"] if "source" in r.keys() else "forum"
+
+
+def _landing_ww_rows(conn, oldest: str) -> list[dict]:
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='landing_notes'").fetchone():
+        return []
+    from .landing_reports import ww_rows
+    return ww_rows(conn, oldest)
+
+
 def _report_day(r) -> str:
     return r["trip_date"] or (r["published_at"] or "")[:10]
 
@@ -1015,14 +1026,16 @@ def build_whats_working(conn, now: datetime | None = None) -> dict:
         "JOIN paddy_sources s ON s.id = f.source_id "
         "WHERE COALESCE(f.trip_date, substr(s.published_at, 1, 10)) >= ? "
         "ORDER BY COALESCE(f.trip_date, substr(s.published_at, 1, 10)) DESC", (oldest,)).fetchall()
+    rows = list(rows) + _landing_ww_rows(conn, oldest)
+    rows.sort(key=_report_day, reverse=True)
     gaz = _gazetteer()
-    region_of = {r["id"]: _row_region(r, gaz) for r in rows}
+    region_of = {r["id"]: (r["region"] if _src(r) == "landing" else _row_region(r, gaz)) for r in rows}
     by_region = {reg: _ww_classes([r for r in rows if regions_mod.in_region(region_of[r["id"]], reg)],
                                   now, region_of)
                  for reg in (regions_mod.SD, regions_mod.OCLA)}
     return {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "label": "What's working, from BloodyDecks trip reports",
+        "label": "What's working, from BloodyDecks trip reports and the landings' reports",
         "note": "Automatic summaries of recent public forum posts; follow the links for details.",
         "classes": _ww_classes(rows, now, region_of),
         "by_region": by_region,
@@ -1055,6 +1068,7 @@ def _ww_classes(rows, now, region_of) -> dict:
             "tackle": json.loads(r["tackle"] or "[]")[:4],
             "bait": r["bait"], "conditions": r["conditions"],
             "region": region_of.get(r["id"]),
+            "source": _src(r),          # forum (BloodyDecks) | landing (landing / skipper post)
         } for r in recent[:WW_MAX_ITEMS]]
         top_spots = [spot_names[k] for k, _ in
                      sorted(spot_counts.items(), key=lambda x: (-x[1], x[0]))][:5]

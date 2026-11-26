@@ -1,7 +1,28 @@
 {
-  "build": "c45bbb2",
-  "generated_at": "2026-11-25T17:15:44Z",
+  "build": "4aa4b00",
+  "generated_at": "2026-11-26T04:00:25Z",
   "window_days": 14,
-  "banks": {},
-  "unresolved": 0
+  "banks": {
+    "double-rigs-reef": {
+      "name": "Double Rigs Reef",
+      "region": "oc_la",
+      "mentions_14d": 1,
+      "paddies_reported_14d": 1,
+      "holding_ratio_14d": 1.0,
+      "last_report": "2026-11-22",
+      "recent": [
+        {
+          "trip_date": "2026-11-22",
+          "paddy_count": 1,
+          "holding": true,
+          "species": [
+            "yellowfin"
+          ],
+          "quote": "As we got close there was a small kelp paddy.",
+          "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/"
+        }
+      ]
+    }
+  },
+  "unresolved": 1
 }

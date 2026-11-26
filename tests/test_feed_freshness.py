@@ -49,10 +49,14 @@ def _fresh_db(tmp_path) -> sqlite3.Connection:
         conn.execute("INSERT INTO scrape_log VALUES (?,?,'ok')", (ts, ln))
     for src in SCHED_SOURCES:
         conn.execute("INSERT INTO scheduled_trips VALUES (?,?)", (src.name, ts))
+    for ln in C.REGIONAL_LANDINGS:
+        conn.execute("INSERT INTO scrape_log VALUES (?,?,'ok')", (ts, ln))
     for i in range(1, 31):
         d = (TODAY - timedelta(days=i)).isoformat()
         conn.execute("INSERT INTO trips VALUES (?,?,'san_diego')", (d, C.CORE_LANDINGS[0]))
-        conn.execute("INSERT INTO trips VALUES (?,?,'oc_la')", (d, "Davey's Locker"))
+        # OC/LA: two landings per day, rotating — the others are quiet (no-trip) days.
+        for k in (i, i + 5):
+            conn.execute("INSERT INTO trips VALUES (?,?,'oc_la')", (d, C.OCLA_LANDINGS[k % len(C.OCLA_LANDINGS)]))
         conn.execute("INSERT INTO ocla_conditions VALUES (?,?,15.0)", (d, "Catalina Channel"))
         for loc in C.SST_LOCATIONS:
             conn.execute("INSERT INTO ocean_temps VALUES (?,?)", (d, loc))
@@ -81,6 +85,9 @@ def test_fresh_synthetic_db_passes(tmp_path):
     ("UPDATE scheduled_trips SET scraped_at='2026-11-20T00:00:00+00:00' WHERE landing='Redondo Beach Sportfishing'",
      "schedule:Redondo Beach Sportfishing"),
     ("DELETE FROM ocla_conditions WHERE date > '2026-11-10'", "ocla_conditions:Catalina Channel"),
+    ("UPDATE scrape_log SET started_at='2026-11-22T00:00:00+00:00' WHERE landing='Pierpoint Landing'",
+     "scrape:Pierpoint Landing"),
+    ("DELETE FROM trips WHERE date = '2026-11-20' AND landing != 'H&M Landing'", "trips:gap:oc_la"),
 ])
 def test_each_stale_feed_is_flagged(tmp_path, sql, key):
     conn = _fresh_db(tmp_path)
@@ -95,6 +102,13 @@ def test_schedule_refresh_with_no_trips_counts_as_fresh(tmp_path):
     assert "schedule:Redondo Beach Sportfishing" in {p.key for p in C.check(conn, today=TODAY, now=NOW)}
     C.mark_schedule_refresh(conn, "Redondo Beach Sportfishing")
     assert C.last_schedule_refresh(conn, "Redondo Beach Sportfishing") is not None
+def test_quiet_ocla_landing_is_not_flagged(tmp_path):
+    """A small OC/LA landing with no trips for two weeks is a no-trip stretch,
+    not an outage, as long as its scrapes succeed and other OC/LA landings report."""
+    conn = _fresh_db(tmp_path)
+    conn.execute("DELETE FROM trips WHERE landing='Pierpoint Landing'")
+    keys = {p.key for p in C.check(conn, today=TODAY, now=NOW)}
+    assert not any("Pierpoint" in k or k == "trips:gap:oc_la" for k in keys)
 
 
 def test_missed_or_failed_job_is_flagged(tmp_path):

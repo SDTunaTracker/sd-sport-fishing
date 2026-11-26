@@ -912,6 +912,29 @@ function TripPlanner({ navigate, regions }) {
   ), [wrTimeWindow, wrMatchupWindow, wrMinMatchups]);
   const tpRates  = useMemo(() => SDA.boatTopPerformerRates ? SDA.boatTopPerformerRates() : {}, []);
 
+  // Region scoping: only show trips from the selected region's landings.
+  // null = all regions (SD + OC/LA). Some OC/LA landings have no schedule
+  // feed (FareHarbor / Rezdy / own sites), so we link out to them instead.
+  const regionLandings = useMemo(() => {
+    if (!regions || !window.getEffectiveRegion || !window.getLandingsForRegion) return null;
+    return window.getLandingsForRegion(window.getEffectiveRegion(regions));
+  }, [regions]);
+  // Region landings with a known booking site but no trips in SCHEDULE.
+  const unscheduledLandings = useMemo(() => {
+    const sites = window.OCLA_LANDING_SITES || {};
+    const withSched = new Set((window.SD.SCHEDULE || []).map(s => s.landing));
+    return Object.keys(sites).filter(l => !withSched.has(l) && (!regionLandings || regionLandings.includes(l)));
+  }, [regionLandings]);
+  const landingLinks = (list) => (
+    <ul className="tp-landing-links">
+      {list.map(l => (
+        <li key={l}><a href={window.OCLA_LANDING_SITES[l]} target="_blank" rel="noopener">{l} <i className="fa-solid fa-arrow-up-right-from-square"></i></a></li>
+      ))}
+    </ul>
+  );
+  const regionHasSchedule = useMemo(() => (window.SD.SCHEDULE || [])
+    .some(s => !regionLandings || regionLandings.includes(s.landing)), [regionLandings]);
+
   // Capacity percentile thresholds derived from actual upcoming-trip data
   const capThresholds = useMemo(() => {
     const now = new Date();
@@ -991,6 +1014,7 @@ function TripPlanner({ navigate, regions }) {
     return (window.SD.SCHEDULE || []).filter(s => {
       const dep = new Date(s.departureAt);
       if (dep < now) return false;
+      if (regionLandings && !regionLandings.includes(s.landing)) return false;
 
       // Month filter
       if (selMonth) {
@@ -1026,7 +1050,7 @@ function TripPlanner({ navigate, regions }) {
       }
       return true;
     });
-  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, capThresholds, winRates]);
+  }, [selMonth, refineStart, refineEnd, selLandings, selLengths, moonPhases, minWinRate, minPrice, maxPrice, boatSize, capThresholds, winRates, regionLandings]);
 
   const displayed = useMemo(() => {
     const enriched = filtered.map(s => {
@@ -1214,7 +1238,21 @@ function TripPlanner({ navigate, regions }) {
             </div>
           )}
 
-          {displayed.length === 0 ? (
+          {regionHasSchedule && unscheduledLandings.length > 0 && (
+            <div className="tp-landing-strip">
+              <span>Not on the Trip Planner yet. Book directly with:</span>
+              {landingLinks(unscheduledLandings)}
+            </div>
+          )}
+
+          {!regionHasSchedule ? (
+            <div className="tp-empty tp-empty-region">
+              <i className="fa-solid fa-calendar-xmark" style={{fontSize:24, opacity:0.3}}></i>
+              <div><strong>Trip schedules for OC / LA landings aren't on Tunatracker yet.</strong></div>
+              <div>Book directly with the landing. Recent catches for every OC / LA boat are on the <a onClick={() => navigate('today')}>daily report</a> and <a onClick={() => navigate('boats')}>boat pages</a>.</div>
+              {landingLinks(unscheduledLandings)}
+            </div>
+          ) : displayed.length === 0 ? (
             <div className="tp-empty">
               <i className="fa-solid fa-fish" style={{fontSize:24, opacity:0.3}}></i>
               <div>No trips match your filters.</div>

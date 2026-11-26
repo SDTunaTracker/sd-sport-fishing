@@ -40,7 +40,7 @@ function HeadToHead({ filters, setFilters, navigate, regions }) {
   const bestDay = matchups[0];  // matchups already sorted desc by date
 
   const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel = speciesActive ? filters.species : 'Tuna';
+  const speciesLabel = speciesActive ? filters.species : SDA.headlineLabel();
 
   return (
     <React.Fragment>
