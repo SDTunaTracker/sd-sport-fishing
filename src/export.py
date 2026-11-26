@@ -1029,6 +1029,8 @@ def _write_sitemap(data_js_path: Path, pages: list[dict], latest: str) -> None:
     generated = {p["url"] for p in pages}
     entries = [(path, latest) for path in (
         "/", "/sd/today", "/sd/boats", "/sd/analytics/overview", "/sd/tripplanner",
+        # SF Bay Area (web/sfbay.jsx), public since 2026-11-26 (SFBAY_PUBLIC).
+        "/sfbay/today", "/sfbay/boats", "/sfbay/landings",
     ) if path not in generated]
     entries += [(p["url"], p["lastmod"] or latest) for p in pages if p.get("index")]
 

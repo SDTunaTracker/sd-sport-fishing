@@ -11,7 +11,7 @@
   window.FEATURES = {
     OCLA_PUBLIC:  true,    // OC/LA launched 2026-11-25 (owner OK). Rollback: set false.
     _previewOcla: params.get('preview_ocla') === 'true',
-    SFBAY_PUBLIC: false,   // flip to true when the owner approves the SF Bay launch
+    SFBAY_PUBLIC: true,    // SF Bay launched 2026-11-26 (owner OK, no preview week). Rollback: set false.
     _previewSfbay: previewSfbay,
 
     // Google reviews panel on boat and landing pages (web/google-reviews.jsx).

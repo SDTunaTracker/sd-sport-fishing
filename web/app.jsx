@@ -413,7 +413,8 @@ function App() {
   // routing is migrated to path-based routes (see links/routing spec).
   useE(() => {
     if (window.__updateMetaTags) window.__updateMetaTags(route.view, route.params || {});
-  }, [route.view, route.params?.boat, route.params?.subtab, regionDataTick]);
+    // regions: switching region on the same view (SD Today -> SF Bay Today) changes the URL and title.
+  }, [route.view, route.params?.boat, route.params?.subtab, regionDataTick, regions.join(',')]);
 
   // Lock the document scroll context when the full-bleed Charts map is active.
   useE(() => {
