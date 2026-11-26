@@ -16,6 +16,7 @@
 | YouTube videos | This branch: `src/youtube.py`, `web/boat-videos.jsx` | Built, flag off; needs a key and a privacy-page line (§C) |
 | ENSO/ONI | This branch: `src/enso.py`, Co-Captain context | Built; runs weekly, no key |
 | User catch reports | `USER_CATCH_REPORTS_SPEC.md` | Spec only, awaiting the owner's decision |
+| Barge bait (Everingham) | `src/bait.py`, `web/bait-now.jsx` (trip cards + landing pages) | Built 2026-11-26, dormant: workflow step needs repo variable `BAIT_REPORT_ENABLED=true`, UI flag `BAIT_NOW`. Waiting on the owner's email to Everingham (`BAIT_SOURCES.md` §6). No key |
 
 ## TL;DR
 

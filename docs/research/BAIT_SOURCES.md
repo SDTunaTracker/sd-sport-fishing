@@ -145,3 +145,9 @@ Trip length adds the second and third rigs from T1 (sinker rig 50–80 lb with 6
    > Thanks, [Owner name], Tunatracker, [contact]
 
 **Effort:** ingest + JSON in about 1 day; reference table + trip-card UI in 2–3 days. Owner: one email.
+
+**Built 2026-11-26 (dormant).** Step 1 and the trip-card line are done:
+- `src/bait.py` writes `bait_receiver_status` (a row only when the bait or "As of" changes) and `web/api/v1/bait_now.json`. Tests: `tests/test_bait.py`.
+- `web/bait-now.jsx`: a "Barge bait" line on upcoming trip cards and a panel on landing pages. Both credit and link Everingham, show the "As of" time and their note, and hide after 24 h.
+- **To turn it on, after Everingham says yes:** set the GitHub repo variable `BAIT_REPORT_ENABLED` to `true` (Settings → Secrets and variables → Actions → Variables), wait for one hourly run, then set `BAIT_NOW: true` in `web/feature-flags.js`. Preview before that with `?preview_bait=true`.
+- Not built yet: the packing-list reference table (step 3) and boat-side bait signals (step 2).
