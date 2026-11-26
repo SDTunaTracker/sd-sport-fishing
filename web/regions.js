@@ -60,14 +60,26 @@
     { id: 'oc_la',     label: 'OC / LA',   short: 'OC / LA',   landings: OCLA_LANDINGS, comingSoon: false },
   ];
 
+  // SF Bay Area (NorCal): its own data file (data-region-sfbay.js) and pages
+  // (sfbay.jsx). Never combined with the SoCal regions. Landings are filled in
+  // from the data file when it loads. Only registered behind SHOW_SFBAY.
+  var SHOW_SFBAY = !!(window.FEATURES && window.FEATURES.SHOW_SFBAY);
+  if (SHOW_SFBAY) {
+    window.REGIONS.push({ id: 'sf_bay', label: 'SF Bay Area', short: 'SF Bay', landings: [], comingSoon: false, group: 'norcal' });
+  }
+
   // URL hash prefix ↔ regions array mapping
   window.REGION_HASH_TO_IDS = {
     'sd':      ['san_diego'],
     'ocla':    ['oc_la'],
-    'sd+ocla': ['san_diego', 'oc_la'],
+    // "All SoCal" (sd+ocla) was removed 2026-11-26 (owner: one region at a
+    // time). Old /sd+ocla/... links open San Diego; _redirects 301s them.
+    'sd+ocla': ['san_diego'],
   };
+  if (SHOW_SFBAY) window.REGION_HASH_TO_IDS['sfbay'] = ['sf_bay'];
 
   window.regionsToHashPrefix = function (regionIds) {
+    if (regionIds.indexOf('sf_bay') !== -1) return 'sfbay';
     var hasSd   = regionIds.indexOf('san_diego') !== -1;
     var hasOcla = regionIds.indexOf('oc_la')     !== -1;
     if (hasSd && hasOcla) return 'sd+ocla';
@@ -75,8 +87,18 @@
     return 'sd';
   };
 
+  // The site shows exactly one region at a time. Any saved / linked
+  // combination (the retired "All SoCal" = San Diego + OC/LA) becomes San Diego.
+  window.normalizeRegions = function (regionIds) {
+    var ids = Array.isArray(regionIds) ? regionIds.filter(Boolean) : [];
+    if (ids.length === 1) return ids;
+    if (ids.indexOf('sf_bay') !== -1) return ['sf_bay'];
+    return ['san_diego'];
+  };
+
   // Effective single-region string for analytics.js filterTrips
   window.getEffectiveRegion = function (regionIds) {
+    if (regionIds.indexOf('sf_bay') !== -1) return 'sf_bay';
     var hasSd   = regionIds.indexOf('san_diego') !== -1;
     var hasOcla = regionIds.indexOf('oc_la')     !== -1;
     if (hasSd && hasOcla) return 'all_socal';
@@ -95,6 +117,7 @@
   window.getRegionSubtitle = function (regionIds) {
     var eff = window.getEffectiveRegion(regionIds);
     if (eff === 'all_socal') return 'All SoCal';
+    if (eff === 'sf_bay')    return 'SF Bay Area';
     if (eff === 'oc_la')     return 'OC / LA';
     return 'San Diego';
   };

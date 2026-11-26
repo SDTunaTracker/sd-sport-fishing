@@ -219,14 +219,17 @@ def extract_extended_species(
       other_fish  – sum of counts for truly unrecognized species
       unknowns    – [(raw_name, count)] for unrecognized species (for logging)
 
-    Released variants of the 7 core TRACKED_SPECIES appear in 'other' under
-    their raw names (e.g. "Bluefin Released") — they are silently skipped here
-    since they're already handled by the tracked columns.
+    Every "... Released" entry is skipped: released fish are not landed, so
+    they count toward no column, not other_fish and not unknowns.
     """
     col_counts = {col: 0 for col in EXTENDED_SPECIES_COLUMNS.values()}
     other_fish = 0
     unknowns: list[tuple[str, int]] = []
     for raw, count in other.items():
+        # Only landed fish count. normalize_species strips "Released", so
+        # without this "40 Calico Bass Released" was stored as 40 landed.
+        if re.search(r"\bReleased\b", raw, re.I):
+            continue
         canon = normalize_species(raw)
         if canon in EXTENDED_SPECIES_COLUMNS:
             col_counts[EXTENDED_SPECIES_COLUMNS[canon]] += count

@@ -166,3 +166,58 @@ def test_alert_lifecycle_new_digest_recovered(tmp_path):
 def test_deliver_without_config_is_a_noop():
     cfg = alerts.Config(None, None, None, 465, None, None, None)
     assert alerts.deliver("s", "b", "t", cfg) == []
+
+
+def test_released_fish_are_not_counted_as_landed():
+    from src import parse as P
+    cols, other_fish, unknowns = P.extract_extended_species(
+        {"Calico Bass": 5, "Calico Bass Released": 40, "Sand Bass Released": 3,
+         "Spiny Lobster Released": 7, "Blue Perch": 2})
+    assert cols["calico_bass"] == 5
+    assert cols["sand_bass"] == 0
+    assert other_fish == 2
+    assert unknowns == [("Blue Perch", 2)]
+
+
+def test_ocla_schedule_sources_are_capped():
+    from src.schedule import SOURCES
+    oc = [s for s in SOURCES if s.region == "oc_la"]
+    assert {s.name for s in oc} >= {"22nd Street Landing", "Pierpoint Landing",
+                                     "Channel Islands Sportfishing"}
+    assert all(s.max_pages and s.max_pages <= 10 for s in oc)
+
+
+def test_polite_spacing_and_honest_ua():
+    from src import polite
+    polite._last.clear()
+    t = [100.0]
+    slept = []
+    clock = lambda: t[0]
+    sleep = lambda s: slept.append(s)
+    assert polite.wait_turn("https://www.socalfishreports.com/a", sleep, clock) == 0
+    assert polite.wait_turn("https://socalfishreports.com/b", sleep, clock) == polite.MIN_INTERVAL
+    assert polite.wait_turn("https://www.fishcounts.com/x", sleep, clock) == 0
+    assert polite.headers("https://www.socalfishreports.com/x", {"User-Agent": "Mozilla"})["User-Agent"] == polite.BOT_UA
+    assert polite.headers("https://www.fishcounts.com/x", {"User-Agent": "Mozilla"})["User-Agent"] == "Mozilla"
+    assert polite.MIN_INTERVAL >= 3
+
+
+def test_archive_recovery_stops_on_block(tmp_path, monkeypatch):
+    import sqlite3
+    from datetime import date
+    from src import deep_backfill as DB
+    calls = []
+
+    def fake_fetch(session, base, d, **kw):
+        calls.append(d)
+        raise DB.ArchiveBlockedError("bot check")
+
+    monkeypatch.setattr(DB, "fetch_archive_day", fake_fetch)
+    conn = sqlite3.connect(tmp_path / "t.db")
+    conn.execute("CREATE TABLE trips (date TEXT, boat TEXT, landing TEXT, trip_length TEXT,"
+                 " anglers INTEGER, source TEXT)")
+    rep = DB.recover_range(conn, date(2026, 11, 1), date(2026, 11, 5))
+    assert rep.get("blocked") and len(calls) == 1
+    # a second run inside the cooldown makes no request at all
+    rep2 = DB.recover_range(conn, date(2026, 11, 1), date(2026, 11, 5))
+    assert rep2.get("blocked") and len(calls) == 1
