@@ -692,9 +692,6 @@
 
     return (
       <React.Fragment>
-        {/* Answers first: best overnight, best full day, what's biting, water temp, this week's numbers. */}
-        {window.HomeAnswers && <HomeAnswers regions={regions} navigate={navigate}/>}
-
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
         <section className="ch-hero">
           <div className="ch-hero-in">
@@ -708,6 +705,10 @@
         </section>
 
         <CountsSection navigate={navigate} settings={settings} regions={regions}/>
+
+        {/* Below the hero and today's counts (owner, 2026-11-26): this week's
+            answers (best boats, what's biting, water temp, numbers). */}
+        {window.HomeAnswers && <HomeAnswers regions={regions} navigate={navigate}/>}
 
         {/* Pick my trip: below the at-a-glance info (owner, 2026-11-26). */}
         {window.HomePicker && <HomePicker regions={regions} navigate={navigate}/>}

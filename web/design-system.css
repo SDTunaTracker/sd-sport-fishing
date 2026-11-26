@@ -830,3 +830,18 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   /* Tabs wrap instead of clipping "1.5 to 3.5 day" at the edge */
   .ww-tabs { flex-wrap: wrap; overflow: visible; }
 }
+
+/* Header logo: mark + wordmark are one link home; region button sits under
+   the wordmark and stays its own tap target. Bigger wordmark on phones. */
+.logo { display: grid; grid-template-columns: auto; grid-template-rows: auto auto; align-content: center; row-gap: 0; }
+.logo-home { display: inline-flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; min-height: 32px; border-radius: 8px; }
+.logo-home:focus-visible { outline: none; box-shadow: var(--focus); }
+.logo .logo-text { padding-left: 39px; margin-top: -6px; }
+.logo-region-btn { min-height: 24px; }
+@media (max-width: 768px) {
+  /* 40px link + 24px region row - 10px overlap = fits the 54px header */
+  .logo-home { min-height: 40px; gap: 8px; }
+  .logo .logo-wordmark { font-size: 21px; letter-spacing: -0.02em; }
+  .logo .logo-text { padding-left: 38px; margin-top: -10px; }
+  .logo-region-btn { min-height: 24px; padding-right: 8px; }
+}

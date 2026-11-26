@@ -290,7 +290,8 @@ function thCatch(t, allSpecies) {
 function thRate(x) { return x >= 10 ? String(Math.round(x)) : x.toFixed(1); }
 function TripHistory({ trips, boat }) {
   const [shown, setShown] = React.useState(TH_STEP);
-  const noun = (window.SD_METRIC && window.SD_METRIC.noun) || 'trophy fish';
+  // Owner wording (#13): "fish". On San Diego the count is the four headline species.
+  const noun = 'fish';
   const allSpecies = !!(window.SD_METRIC && window.SD_METRIC.allSpecies);
   const visible = trips.slice(0, shown);
   // Month groups over the visible rows; totals cover the whole month.

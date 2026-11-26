@@ -36,7 +36,7 @@ test('consistent boat beats a one-trip wonder', () => {
   assert.equal(r.alternates.length, 2);
   assert.ok(r.alternates.some((a) => a.boat === 'Lucky'));
   assert.equal(r.best.bookingUrl, 'https://book/Steady-3');
-  assert.match(r.best.reason, /Steady averaged 3\.0 trophy fish per angler on 4 overnights in the last 14 days \(fleet: 2\.8\)/);
+  assert.match(r.best.reason, /Steady averaged 3\.0 fish per angler on 4 overnights in the last 14 days \(fleet: 2\.8\)/);
   assert.match(r.alternates.find((a) => a.boat === 'Lucky').reason, /treat it as a lean/);
 });
 

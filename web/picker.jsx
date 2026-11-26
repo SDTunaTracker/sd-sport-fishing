@@ -449,10 +449,10 @@
     );
   }
 
-  // Home, top of the page: the at-a-glance answers (best boats, what's
-  // biting, water temp) and this week's numbers, in every region with a trip
-  // schedule (SD, OC/LA). Observed counts only, no forecast. Pick my trip
-  // sits lower on Home (HomePicker, after the counts), per owner 2026-11-26.
+  // Home, after the hero and today's counts: the week's answers (best
+  // boats, what's biting, water temp) and this week's numbers, in every
+  // region with a trip schedule (SD, OC/LA). Observed counts only, no
+  // forecast. Pick my trip (HomePicker) follows it.
   function HomeAnswers({ regions, navigate }) {
     const region = regionOf(regions);
     const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';

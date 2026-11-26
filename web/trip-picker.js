@@ -142,7 +142,7 @@
   function nounFor(species, region, metric) {
     if (metric === 'limitRate') return 'of limits';
     if (species) return species.toLowerCase();
-    return ALL_SPECIES_REGIONS[region] ? 'fish' : 'trophy fish';
+    return 'fish';   // owner wording (#13): "fish", not "trophy fish"
   }
 
   function defaults(data) {
