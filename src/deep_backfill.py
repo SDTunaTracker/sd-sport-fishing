@@ -195,13 +195,36 @@ def parse_sdfr_day(html: str, report_date: str) -> list[dict]:
 def fetch_archive_day(session: requests.Session, base_url: str, d: date,
                       timeout: float = 30.0, attempts: int = 3) -> str:
     """GET one archive day with retry/backoff on network errors and 5xx."""
+    from . import polite
     from .net import get_with_retry
-    r = get_with_retry(f"{base_url}?date={d.isoformat()}", session=session,
-                       headers={"User-Agent": UA}, timeout=timeout, attempts=attempts)
+    url = f"{base_url}?date={d.isoformat()}"
+    polite.wait_turn(url)
+    r = get_with_retry(url, session=session, headers=polite.headers(url, {"User-Agent": UA}),
+                       timeout=timeout, attempts=attempts, backoff=30.0)
+    if not _looks_like_archive(r.text):
+        raise ArchiveBlockedError(f"{base_url}: date page has no boat table (likely a bot check)")
     return r.text
 
 
-def recover_range(conn, start: date, end: date, *, throttle: float = 0.5,
+class ArchiveBlockedError(RuntimeError):
+    """The archive answered, but not with a dock-totals page (CAPTCHA / block)."""
+
+
+def _looks_like_archive(html: str) -> bool:
+    return "/landings/" in html or "dock_totals" in html
+
+
+ARCHIVE_SOURCE = "fish-report archive"  # source_blocks key for the date archives
+
+
+def _is_block(e: Exception) -> bool:
+    if isinstance(e, ArchiveBlockedError):
+        return True
+    resp = getattr(e, "response", None)
+    return resp is not None and resp.status_code in (401, 403, 429)
+
+
+def recover_range(conn, start: date, end: date, *, throttle: float = 0.0,
                   archives: tuple[tuple[str, str], ...] = ARCHIVES,
                   session: requests.Session | None = None) -> dict:
     """Fill missing trips for [start, end] from the date archives.
@@ -216,6 +239,11 @@ def recover_range(conn, start: date, end: date, *, throttle: float = 0.5,
     """
     session = session or requests.Session()
     report: dict = {"inserted": 0, "seen": 0, "by_day": {}, "errors": []}
+    from . import completeness
+    blk = completeness.active_block(conn, ARCHIVE_SOURCE)
+    if blk:
+        report["blocked"] = f"archive blocked at {blk}; cooling down"
+        return report
     d = start
     while d <= end:
         ds = d.isoformat()
@@ -231,6 +259,13 @@ def recover_range(conn, start: date, end: date, *, throttle: float = 0.5,
                 html = fetch_archive_day(session, base, d)
             except Exception as e:  # noqa: BLE001 — report and keep going
                 report["errors"].append(f"{ds} {base}: {type(e).__name__}: {e}")
+                if _is_block(e):
+                    # Owner's rule: a block means stop, never work around it.
+                    from . import completeness
+                    completeness.record_block(conn, ARCHIVE_SOURCE, f"{base}: {e}")
+                    conn.commit()
+                    report["blocked"] = f"{type(e).__name__}: {e}"
+                    return report
                 continue
             trips = parse_archive_day(html, ds, base)
             report["seen"] += len(trips)

@@ -1,4 +1,4 @@
-"""One-time scraper for boat profile pages from SD landing websites.
+"""One-time scraper for boat profile pages from SD and OC/LA landing websites.
 
 Scrapes photos, descriptions, captains, and specs from each landing's fleet
 page and stores results in the boat_profiles table.
@@ -40,6 +40,20 @@ FLEET_URLS = {
     "Fisherman's Landing":   "https://www.fishermanslanding.com/boats/",
     "Seaforth Sportfishing": "https://www.seaforthsportfishing.com/fleet/",
     "Point Loma Sportfishing": "https://www.pointlomasportfishing.com/fleet/",
+    # OC/LA
+    "22nd Street Landing": "https://www.22ndstreet.com/fleet.php",
+    "Pierpoint Landing": "https://www.pierpoint.net/fleet.php",
+    "Redondo Beach Sportfishing": "https://www.redondosportfishing.com/fleet.php",
+    "Ventura Harbor Sportfishing": "https://www.venturasportfishing.com/fleet.php",
+    "Dana Wharf Sportfishing": "https://danawharf.com/our-boats/",
+    "Channel Islands Sportfishing": "https://www.channelislandssportfishing.com/charter-boats/",
+    "Marina Del Rey Sportfishing": "http://www.marinadelreysportfishing.com/the-boats/",
+}
+
+OCLA_LANDINGS = {
+    "22nd Street Landing", "Pierpoint Landing", "Redondo Beach Sportfishing",
+    "Ventura Harbor Sportfishing", "Dana Wharf Sportfishing",
+    "Channel Islands Sportfishing", "Marina Del Rey Sportfishing",
 }
 
 LANDING_BASES = {
@@ -47,6 +61,14 @@ LANDING_BASES = {
     "Fisherman's Landing":   "https://www.fishermanslanding.com",
     "Seaforth Sportfishing": "https://www.seaforthsportfishing.com",
     "Point Loma Sportfishing": "https://www.pointlomasportfishing.com",
+    # OC/LA
+    "22nd Street Landing": "https://www.22ndstreet.com",
+    "Pierpoint Landing": "https://www.pierpoint.net",
+    "Redondo Beach Sportfishing": "https://www.redondosportfishing.com",
+    "Ventura Harbor Sportfishing": "https://www.venturasportfishing.com",
+    "Dana Wharf Sportfishing": "https://danawharf.com",
+    "Channel Islands Sportfishing": "https://www.channelislandssportfishing.com",
+    "Marina Del Rey Sportfishing": "http://www.marinadelreysportfishing.com",
 }
 
 
@@ -232,6 +254,9 @@ def _scrape_landing(landing: str, known_boats: list[str]) -> list[dict]:
     """Scrape boat profiles for one landing. Returns list of profile dicts."""
     base = LANDING_BASES[landing]
     fleet_url = FLEET_URLS[landing]
+    # OC/LA fleet pages link to every page on the site; only follow boat
+    # pages and only save names that match a boat in the fish counts.
+    strict = landing in OCLA_LANDINGS
     profiles: list[dict] = []
     seen_urls: set[str] = set()
     matched_boats: set[str] = set()
@@ -239,7 +264,10 @@ def _scrape_landing(landing: str, known_boats: list[str]) -> list[dict]:
     fleet_soup = _fetch(fleet_url)
     if fleet_soup:
         # Find all intra-site links that look like individual boat pages
-        link_pattern = re.compile(r"/(boat|fleet|vessel)/|/boats?/[^/]+/?$", re.I)
+        # SD sites use /boats/<slug>/; OC/LA sites on the fishingreservations
+        # CMS use boat.php?b=<slug>, Dana Wharf /our-boats/<slug>/.
+        link_pattern = re.compile(
+            r"/(boat|fleet|vessel)/|/boats?/[^/]+/?$|boat\.php\?b=|/(our|the|charter)-boats/[^/]+/?$", re.I)
         candidate_links = []
         for a in fleet_soup.find_all("a", href=True):
             href = a["href"]
@@ -252,6 +280,8 @@ def _scrape_landing(landing: str, known_boats: list[str]) -> list[dict]:
                 continue
             if abs_href in seen_urls:
                 continue
+            if strict and not link_pattern.search(abs_href):
+                continue
             seen_urls.add(abs_href)
             candidate_links.append(abs_href)
 
@@ -263,6 +293,15 @@ def _scrape_landing(landing: str, known_boats: list[str]) -> list[dict]:
             name = _text(h1) if h1 else None
             if not name:
                 continue
+            if strict:
+                # Keep only pages that are about a boat this landing runs, and
+                # store it under the name the fish counts use.
+                key = _norm_name(name)
+                hit = next((b for b in known_boats
+                            if _norm_name(b) and (_norm_name(b) == key or _norm_name(b) in key)), None)
+                if hit is None:
+                    continue
+                name = hit
             p = _parse_boat_page(detail, link, name, landing)
             if p:
                 profiles.append(p)
@@ -275,7 +314,7 @@ def _scrape_landing(landing: str, known_boats: list[str]) -> list[dict]:
         lambda b: f"{base}/fleet/{_slug(b)}/",
         lambda b: f"{base}/{_slug(b)}/",
     ]
-    for boat in known_boats:
+    for boat in ([] if strict else known_boats):  # guessed URLs hit catch-all pages on OC/LA sites
         if boat.lower() in matched_boats:
             continue
         for tmpl in slug_templates:
@@ -289,7 +328,20 @@ def _scrape_landing(landing: str, known_boats: list[str]) -> list[dict]:
                 matched_boats.add(boat.lower())
                 break
 
+    if strict and len(profiles) >= 3:
+        # A value shared by every boat came from site chrome, not the boat page
+        # (Dana Wharf: captain "Cruises", capacity 6 on every boat).
+        for field in ("captains", "passenger_capacity", "length_ft", "year_built"):
+            vals = {json.dumps(pr.get(field)) for pr in profiles}
+            if len(vals) == 1:
+                for pr in profiles:
+                    pr[field] = None
     return profiles
+
+
+def _norm_name(name: str) -> str:
+    n = re.sub(r"[^a-z0-9]+", "", name.lower())
+    return re.sub(r"^the", "", n)
 
 
 def _slug(name: str) -> str:
@@ -332,7 +384,8 @@ def scrape_all(
     counts: dict[str, int] = {}
     with connect(DB_PATH) as conn:
         rows = conn.execute(
-            "SELECT DISTINCT boat, landing FROM trips WHERE is_half_day=0 ORDER BY landing, boat"
+            "SELECT DISTINCT boat, landing FROM trips"
+            " WHERE is_half_day=0 OR region='oc_la' ORDER BY landing, boat"
         ).fetchall()
         by_landing: dict[str, list[str]] = {}
         for r in rows:

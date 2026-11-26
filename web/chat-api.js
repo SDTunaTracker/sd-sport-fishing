@@ -355,6 +355,27 @@ function ccFmtAsOf(iso) {
   return p ? `${p.label} PT` : 'unknown';
 }
 
+// ENSO season context (api/v1/enso.json, from src/enso.py / NOAA CPC). Loaded
+// once; background for "why is the water so warm?"-type questions only.
+let ccEnso = null;
+try {
+  fetch('api/v1/enso.json', { cache: 'no-cache' })
+    .then(r => (r.ok ? r.json() : null)).then(d => { ccEnso = d; }).catch(() => {});
+} catch (_) {}
+
+function ccEnsoLine() {
+  const d = ccEnso, l = d && d.latest;
+  if (!l || typeof l.oni !== 'number') return '';
+  const oni = (l.oni >= 0 ? '+' : '') + l.oni.toFixed(2);
+  const phase = l.strength ? `${l.strength} ${l.phase}` : l.phase;
+  const asOfCpc = d.updated ? String(d.updated).slice(0, 10) : 'date unknown';
+  return `
+OCEAN SEASON CONTEXT (NOAA Climate Prediction Center's published ENSO status, retrieved ${asOfCpc}; this is NOAA's statement, not a Tunatracker outlook. When you mention it, attribute it to NOAA CPC and give that date):
+NOAA CPC ENSO alert: ${d.alert || 'n/a'}. Latest ONI (${l.season} ${l.year}): ${oni} °C (${phase} range).${d.synopsis ? ' CPC: ' + d.synopsis : ''}
+Mention this only if the user asks about El Niño, water temperature or why the season is unusual. It is not a catch prediction: hard rule 2 still applies, and you must never say El Niño means a trip will fish well.
+`;
+}
+
 // OC/LA section of the system prompt ('' unless the user's regions include
 // oc_la). Kept out of buildSystemPrompt so prompt restructures rebase cleanly.
 // Landings with rows in SCHEDULE get normal trip cards via UPCOMING TRIPS;
@@ -474,6 +495,7 @@ ${pageContext?.boat ? `The user is viewing the ${pageContext.boat} boat page —
 ${pageContext?.page ? `Current page: ${pageContext.page}.` : ''}
 
 DATA (as of ${asOf}):
+${ccEnsoLine()}
 
 ${hasOcla ? 'SAN DIEGO ' : ''}TODAY'S COUNTS (${today?.date || 'unknown'}): ${today?.trophyCount ?? 0} trophy fish, ${today?.anglers ?? 0} anglers, ${today?.boatCount ?? today?.boats?.length ?? 0} boats reporting.
 

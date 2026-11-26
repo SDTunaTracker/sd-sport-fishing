@@ -47,6 +47,7 @@ LANDINGS = (
     "Dana Wharf Sportfishing",
     # Ventura
     "Channel Islands Sportfishing",
+    "Hooks Landing",
     "Ventura Harbor Sportfishing",
 )
 
@@ -295,6 +296,30 @@ def _sst_payload(conn: sqlite3.Connection) -> dict:
         "history": history,
         "locations": list(SST_LOCATIONS.keys()),
     }
+
+
+def _ocla_conditions_payload(conn: sqlite3.Connection, days: int = 60) -> dict:
+    """OC/LA conditions for the OC/LA region file (not data.js, which is SD-only):
+    daily SST + wind at the OC/LA points. Meant for split_by_region's
+    per-region payload as "CONDITIONS".
+
+    {"points": {name: {"lat", "lng"}}, "landingPoint": {landing: point},
+     "daily": [{"date", "location", "sstF", "windKn", "windDeg"}, ...]}
+    Empty "daily" if the table doesn't exist yet.
+    """
+    from .ocla_conditions import LANDING_POINT, POINTS
+    out = {"points": {n: {"lat": la, "lng": lo} for n, (la, lo) in POINTS.items()},
+           "landingPoint": dict(LANDING_POINT), "daily": []}
+    try:
+        rows = conn.execute(
+            "SELECT date, location, sst_fahrenheit, wind_speed_kn, wind_dir_deg"
+            " FROM ocla_conditions WHERE date >= ? ORDER BY date, location",
+            ((date.today() - timedelta(days=days)).isoformat(),)).fetchall()
+    except sqlite3.OperationalError:
+        return out
+    out["daily"] = [{"date": r[0], "location": r[1], "sstF": _round(r[2], 1),
+                     "windKn": _round(r[3], 1), "windDeg": _round(r[4], 0)} for r in rows]
+    return out
 
 
 def _recent_predictions(conn: sqlite3.Connection, days: int = 14) -> list[dict]:
