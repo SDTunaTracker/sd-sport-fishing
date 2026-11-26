@@ -32,6 +32,7 @@ Files the redesign session currently has uncommitted (don't edit here until it l
 | 17 | App (iOS) | Charts, Today | DM Mono has no bold weight. Web and Android fake the bold, but iPhone shows the lighter 500 weight for bold numbers (pin counts, readings, wind kt). | Keep DM Mono 500 on iOS, or move the key figures to Inter 700. Charts UX agent agrees the web/Android result is right. | decide |
 | 18 | Web phone | Trip Planner (and every page with the chat button) | The floating Co-Captain chat button sits over content in the bottom-right corner and covers numbers, e.g. the Dorado limit in an open trip card. | Pad the page bottom by the button height + gap, or tuck the button into the bottom nav on phones. | todo |
 | 19 | Web both | Today | On a one-species day the strip repeats itself: "441 total fish" next to "441 yellowfin". | Hide the species stats when only one species was caught (the lede already names it). | todo |
+| 20 | Web both | Landing page | /sd/landing/hm-landing/ shows the URL slug "hm-landing" as the page heading (reported by the SEO session; flagged as app-dev's). | Map slug → landing display name ("H&M Landing") before rendering the heading. | todo |
 
 | 3b | Web both | Today | User: "could use some help so it doesn't look so cheesy". | Today v2 built per approved mockup (docs/ux/mockups): date as title, one-sentence summary, quiet species strip (zero species hidden), ranked boat list with "vs usual", no season leaderboard. | branch |
 
