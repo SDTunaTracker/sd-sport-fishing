@@ -1822,12 +1822,13 @@ body.compact .dt td { padding: 7px 12px; }
     border-right: none; border-bottom: 1px solid #E2E8F0;
     display: grid;
     grid-template-columns: 1fr auto;
-    grid-template-areas: "boat meta" "landing landing";
+    grid-template-areas: "boat meta" "landing landing" "bait bait";
     column-gap: 8px; row-gap: 2px;
     align-items: start;
   }
   .tp-card-boat         { grid-area: boat; }
   .tp-card-landing      { grid-area: landing; }
+  .tp-card-left .bn-line { grid-area: bait; }
   .tp-card-left-meta    { grid-area: meta; flex-direction: row; align-items: center; gap: 6px; }
   .tp-card-left-meta .tp-length-badge { font-size: 10px; padding: 1px 6px; }
   .tp-card-left-meta .tp-card-moon    { font-size: 11px; color: var(--tb-gray-3) !important; }
@@ -7068,6 +7069,11 @@ button.btn-save-boat[data-saved="true"],
 .ww-link { margin-top: auto; padding-top: 4px; align-self: flex-start; min-height: 32px; display: inline-flex; align-items: center; font: 500 13px var(--sans); color: var(--accent-ink); text-decoration: none; }
 .ww-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .ww-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+/* BloodyDecks photos: a link to the post, never an embed (full-size originals). */
+.fr-photos-link { display: inline-flex; align-items: center; min-height: 32px; margin-top: 6px; align-self: flex-start; font: 500 13px var(--sans); color: var(--muted); text-decoration: none; }
+.fr-photos-link:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+.fr-photos-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+@media (max-width: 900px) { .fr-photos-link { min-height: 44px; } }
 .ww-card .fr-attrib { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 
 @media (max-width: 900px) {
@@ -7192,3 +7198,18 @@ a.bv-title:hover { text-decoration: underline; text-underline-offset: 3px; }
 .chat-trip-card.cc-card.cc-compact { padding-top: 10px; padding-bottom: 10px; }
 .cc-compact .cc-why { margin: 4px 0 6px; }
 .cc-compact .cc-asof { display: none; }
+
+/* ── Barge bait (web/bait-now.jsx) ─────────────────────────────────────── */
+.bn-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; margin-top: 4px; font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-3); }
+.bn-line b { color: var(--tb-ink); font-weight: 600; }
+.bn-ico { font-size: 11px; }
+.bn-credit { margin-left: 2px; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.bn-asof { color: var(--tb-gray-3); }
+.bn-panel { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line-2, #E2E8F0); border-radius: 10px; background: var(--card, #fff); }
+.bn-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px; }
+.bn-head h3 { margin: 0; font: 600 15px/20px var(--ss-font-sans); }
+.bn-head .bn-asof { font: 400 12px/16px var(--ss-font-sans); }
+.bn-bait { margin: 8px 0 4px; font: 700 20px/26px var(--ss-font-sans); color: var(--tb-ink); }
+.bn-note { margin: 0 0 6px; font: 400 13px/18px var(--ss-font-sans); color: var(--tb-gray-3); }
+.bn-src { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-3); }
+.bn-src a { color: inherit; text-decoration: underline; }

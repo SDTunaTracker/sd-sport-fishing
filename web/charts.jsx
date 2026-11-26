@@ -1527,7 +1527,8 @@ function _fsSectionHtml(p) {
     if (!/^https:\/\//.test(src.url || '')) return '';
     return '<a href="' + _escHtml(src.url) + '" target="_blank" rel="noopener">' +
       '<span>Read on BloodyDecks ↗</span><small>' + _escHtml(src.title || 'Forum thread') +
-      (src.date ? ' · ' + _escHtml(_fsDate(src.date)) : '') + '</small></a>';
+      (src.date ? ' · ' + _escHtml(_fsDate(src.date)) : '') +
+      (src.photos > 0 ? ' · 📷 ' + _escHtml(src.photos) : '') + '</small></a>';
   }).filter(Boolean).join('');
   var foot = p.position === 'posted' ? 'Position as posted.'
     : p.position === 'estimate' ? 'Approximate (±' + _escHtml(p.precision_nm) + ' nm).' : 'Spot centre.';

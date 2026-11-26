@@ -407,7 +407,8 @@ def pending_rows(conn: sqlite3.Connection, limit: int | None = None,
          f"WHERE s.feed_id IN ({','.join('?' * len(ids))}) "
          f"AND s.truncated = 0 "
          f"AND (r.source_id IS NULL OR (r.status = 'failed' AND r.attempts < ?)) "
-         f"ORDER BY s.published_at DESC")
+         # Under the --limit cap, first posts go ahead of thread replies.
+         f"ORDER BY s.reply_to IS NOT NULL, s.published_at DESC")
     rows = [r for r in conn.execute(q, (*ids, MAX_ATTEMPTS)) if not _is_stale_bump(r)]
     return rows[:limit] if limit else rows
 
@@ -904,7 +905,7 @@ def build_export(conn, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     cutoff = (now - timedelta(days=EXPORT_WINDOW_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = conn.execute(
-        "SELECT f.*, s.url, s.title, s.published_at FROM forum_boat_reports f "
+        "SELECT f.*, s.url, s.title, s.published_at, s.photos, s.reply_to FROM forum_boat_reports f "
         "JOIN paddy_sources s ON s.id = f.source_id "
         "WHERE f.boat IS NOT NULL AND s.published_at >= ? "
         "AND COALESCE(f.match_confidence, 0) >= ? "
@@ -939,6 +940,8 @@ def build_export(conn, now: datetime | None = None) -> dict:
             "region": _row_region(r, gaz),
             "landing_count": json.loads(r["trip_match"]) if r["trip_match"] else None,
             "match_confidence": r["match_confidence"],
+            "photos": _photo_count(r),
+            "reply": _is_reply(r),
         })
     return {
         "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -1006,6 +1009,20 @@ def _src(r) -> str:
     return r["source"] if "source" in r.keys() else "forum"
 
 
+def _photo_count(r) -> int:
+    """BloodyDecks photos on the post (links only; the site never embeds them)."""
+    if "photos" not in r.keys() or not r["photos"] or _src(r) != "forum":
+        return 0
+    try:
+        return len(json.loads(r["photos"]))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _is_reply(r) -> bool:
+    return "reply_to" in r.keys() and bool(r["reply_to"])
+
+
 def _landing_ww_rows(conn, oldest: str) -> list[dict]:
     if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='landing_notes'").fetchone():
         return []
@@ -1022,7 +1039,7 @@ def build_whats_working(conn, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     oldest = (now - timedelta(days=WW_FALLBACK_DAYS)).date().isoformat()
     rows = conn.execute(
-        "SELECT f.*, s.url, s.title, s.published_at FROM forum_boat_reports f "
+        "SELECT f.*, s.url, s.title, s.published_at, s.photos, s.reply_to FROM forum_boat_reports f "
         "JOIN paddy_sources s ON s.id = f.source_id "
         "WHERE COALESCE(f.trip_date, substr(s.published_at, 1, 10)) >= ? "
         "ORDER BY COALESCE(f.trip_date, substr(s.published_at, 1, 10)) DESC", (oldest,)).fetchall()
@@ -1069,6 +1086,8 @@ def _ww_classes(rows, now, region_of) -> dict:
             "bait": r["bait"], "conditions": r["conditions"],
             "region": region_of.get(r["id"]),
             "source": _src(r),          # forum (BloodyDecks) | landing (landing / skipper post)
+            "photos": _photo_count(r),  # BloodyDecks photos behind the link (forum only)
+            "reply": _is_reply(r),      # a reply inside someone else's thread
         } for r in recent[:WW_MAX_ITEMS]]
         top_spots = [spot_names[k] for k, _ in
                      sorted(spot_counts.items(), key=lambda x: (-x[1], x[0]))][:5]
