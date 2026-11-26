@@ -163,11 +163,11 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
 
   // ── Region ────────────────────────────────────────────────────
   var regionChoice =
-    regions && regions.length >= 2   ? 'all_socal' :
-    regions && regions[0] === 'oc_la' ? 'oc_la'    : 'san_diego';
+    regions && regions[0] === 'sf_bay' ? 'sf_bay' :
+    regions && regions[0] === 'oc_la'  ? 'oc_la'  : 'san_diego';
 
   function setRegion(val) {
-    var map = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    var map = { san_diego: ['san_diego'], oc_la: ['oc_la'], sf_bay: ['sf_bay'] };
     if (onRegionsDirect) onRegionsDirect(map[val] || ['san_diego']);
     if (window.setUserPref) window.setUserPref('region_choice', val);
   }
@@ -396,8 +396,9 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
           >
             <option value="san_diego">San Diego</option>
             <option value="oc_la" disabled={!(window.FEATURES && window.FEATURES.SHOW_OCLA)}>
-              OC / LA (soon)
+              {window.FEATURES && window.FEATURES.SHOW_OCLA ? 'OC / LA' : 'OC / LA (soon)'}
             </option>
+            {window.FEATURES && window.FEATURES.SHOW_SFBAY && <option value="sf_bay">SF Bay Area</option>}
           </select>
         </div>
 

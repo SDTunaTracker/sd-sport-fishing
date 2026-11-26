@@ -157,7 +157,10 @@ function App() {
   // Clerk auth state — hook must be at top level.
   const { user, isSignedIn } = useAuth();
 
-  const [regions, setRegions] = useS(() => {
+  // One region at a time: normalizeRegions (regions.js) turns any combination,
+  // e.g. a saved or linked "All SoCal", into San Diego.
+  const _norm = (ids) => (window.normalizeRegions ? window.normalizeRegions(ids) : ids);
+  const [regions, setRegions] = useS(() => _norm((() => {
     // SF Bay Area (behind SHOW_SFBAY): a /sfbay/... URL or a saved choice wins.
     if (window.FEATURES && window.FEATURES.SHOW_SFBAY) {
       const r0 = routeFromLocation();
@@ -180,9 +183,16 @@ function App() {
     // Migrate old single-region localStorage key
     const old = localStorage.getItem('tt_region');
     if (old === 'oc_la')     return ['oc_la'];
-    if (old === 'all_socal') return ['san_diego', 'oc_la'];
     return ['san_diego'];
-  });
+  })()));
+
+  // Replace a retired combined selection in localStorage so it doesn't come back.
+  useE(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tt_regions'));
+      if (Array.isArray(saved) && saved.length > 1) localStorage.setItem('tt_regions', JSON.stringify(regions));
+    } catch(e) {}
+  }, []);
 
   // Strip any oc_la / sf_bay that leaked in from localStorage/hash when its flag is off.
   useE(() => {
@@ -249,7 +259,7 @@ function App() {
   // When a user signs in, pull their saved region and species from Clerk metadata.
   useE(() => {
     if (!isSignedIn || !window.getUserPref) return;
-    const CHOICE_MAP = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    const CHOICE_MAP = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego'] };
     if (window.FEATURES && window.FEATURES.SHOW_SFBAY) CHOICE_MAP.sf_bay = ['sf_bay'];
     const savedChoice = window.getUserPref('region_choice', null);
     if (savedChoice && CHOICE_MAP[savedChoice]) {
@@ -304,32 +314,15 @@ function App() {
   }, [regions, route]);
 
   function setRegionsDirect(newRegions) {
-    const cleaned = Array.isArray(newRegions) && newRegions.length > 0 ? newRegions : ['san_diego'];
+    const cleaned = _norm(Array.isArray(newRegions) && newRegions.length > 0 ? newRegions : ['san_diego']);
     setRegions(cleaned);
     try { localStorage.setItem('tt_regions', JSON.stringify(cleaned)); } catch(e) {}
     setFilters(f => ({ ...f, landing: 'all', boat: 'all' }));
   }
 
+  // Regions are single-select (no combined "All SoCal" view since 2026-11-26).
   function toggleRegion(regionId) {
-    setRegions(prev => {
-      let next;
-      if (regionId === 'sf_bay' || prev.includes('sf_bay')) {
-        next = [regionId];   // SF Bay is never combined with SoCal regions
-        localStorage.setItem('tt_regions', JSON.stringify(next));
-        return next;
-      }
-      if (prev.includes(regionId)) {
-        if (prev.length === 1) return prev; // at-least-one constraint
-        next = prev.filter(r => r !== regionId);
-      } else {
-        // Keep consistent order matching REGIONS array order
-        const order = (window.REGIONS || []).map(r => r.id);
-        next = [...prev, regionId].sort((a, b) => order.indexOf(a) - order.indexOf(b));
-      }
-      localStorage.setItem('tt_regions', JSON.stringify(next));
-      return next;
-    });
-    setFilters(f => ({ ...f, landing: 'all', boat: 'all' }));
+    setRegionsDirect([regionId]);
   }
 
   // expose tweak setter for inline buttons in dashboard
