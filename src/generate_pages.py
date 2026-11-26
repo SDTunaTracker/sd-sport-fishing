@@ -51,6 +51,17 @@ SD_LANDINGS: dict[str, str] = {
 # get a generated page, so every boat link on a generated page stays inside it.
 _SD_IN = "landing IN (" + ",".join("'" + l.replace("'", "''") + "'" for l in SD_LANDINGS) + ")"
 
+# Best-boat rankings count tuna (bluefin, yellowfin, bigeye, albacore): owner
+# decision 2026-11-26. trips.tuna_count / tuna_per_angler_per_day are generated
+# columns (src/db.py). Species pages rank on that species' own rate.
+TUNA_NOUN = "tuna (bluefin, yellowfin, bigeye, albacore)"
+
+
+def _species_rate_sql(col: str) -> str:
+    """Per-trip {col} per angler per day (same day divisor as the trophy rate)."""
+    return (f"CASE WHEN anglers > 0 THEN {col} * 1.0 / anglers"
+            f" / MAX(1, CAST(COALESCE(trip_length_days, 1) AS INTEGER)) END")
+
 TROPHY_SPECIES: list[tuple[str, str, str]] = [
     # (db_column, display_name, url_slug)
     ("bluefin",    "Bluefin Tuna", "bluefin-tuna"),
@@ -145,7 +156,7 @@ def _parse_index(index_html: str) -> dict:
 def _boat_stats(conn: sqlite3.Connection, boat: str) -> dict | None:
     """Return stats dict or None if no usable trip data."""
     rows = conn.execute("""
-        SELECT trophy_count, trophy_per_angler_per_day,
+        SELECT trophy_count, trophy_per_angler_per_day, tuna_per_angler_per_day,
                bluefin, yellowfin, yellowtail, dorado, date, anglers,
                landing, trip_length, full_catch
         FROM trips WHERE boat = ? AND trophy_count IS NOT NULL
@@ -181,6 +192,8 @@ def _boat_stats(conn: sqlite3.Connection, boat: str) -> dict | None:
         wins=wins,
         win_rate=round(wins / total * 100, 1),
         avg_tpad=round(sum(tpads) / len(tpads), 2) if tpads else 0,
+        # Ranking stat: mean tuna per angler per day over every trip (zeros in).
+        avg_tuna_pad=round(sum(r["tuna_per_angler_per_day"] or 0 for r in rows) / total, 2),
         species=species,
         first_year=min(years, default=""),
         last_year=max(years, default=""),
@@ -219,10 +232,11 @@ def _dedupe_repeats(rows: list[dict]) -> list[dict]:
 def _landing_boats(all_stats: dict[str, dict], landing: str) -> list[dict]:
     """Return boat stats for a landing: ranked boats first, then small samples.
 
-    A boat belongs to the landing it fished from most recently.
+    Ranked on tuna per angler per day. A boat belongs to the landing it fished
+    from most recently.
     """
     result = [{"boat": b, **s} for b, s in sorted(all_stats.items()) if s["landing"] == landing]
-    result.sort(key=lambda x: (x["total"] < MIN_TRIPS_INDEX, -x["win_rate"], -x["avg_tpad"]))
+    result.sort(key=lambda x: (x["total"] < MIN_TRIPS_INDEX, -x["avg_tuna_pad"], -x["win_rate"]))
     return result
 
 
@@ -262,10 +276,9 @@ def _species_stats(conn: sqlite3.Connection, col: str) -> dict:
     """Return stats dict for a trophy species column."""
     top = conn.execute(f"""
         SELECT boat, landing, COUNT(*) as trips,
-               ROUND(AVG(CASE WHEN trophy_per_angler_per_day>0
-                               THEN trophy_per_angler_per_day END), 2) as avg_tpad
+               ROUND(AVG({_species_rate_sql(col)}), 2) as avg_tpad
         FROM trips
-        WHERE {col}>0 AND trophy_per_angler_per_day IS NOT NULL AND {_SD_IN}
+        WHERE {col}>0 AND anglers>0 AND {_SD_IN}
         GROUP BY boat, landing
         HAVING trips>=5
         ORDER BY avg_tpad DESC
@@ -817,6 +830,7 @@ def _landing_page_html(landing: str, slug: str, boats: list[dict],
         rows_html += (
             f"<tr>"
             f"<td><a href=\"{page_url('boat', b['boat'])}\">{_esc(b['boat'])}</a></td>"
+            f"<td>{_f2(b['avg_tuna_pad'])}</td>"
             f"<td>{b['win_rate']}%</td>"
             f"<td>{b['avg_tpad']}</td>"
             f"<td>{b['total']}</td>"
@@ -827,8 +841,8 @@ def _landing_page_html(landing: str, slug: str, boats: list[dict],
 {_breadcrumb(crumbs)}
 <h1>{_esc(landing)}</h1>
 <p>Fish counts and boat stats for {_esc(landing)} in San Diego, CA.
-   Boats with at least {MIN_TRIPS_INDEX} trips are ranked by how often they land
-   trophy fish; boats with fewer trips are listed after them.</p>
+   Boats with at least {MIN_TRIPS_INDEX} trips are ranked by average {TUNA_NOUN}
+   per angler per day; boats with fewer trips are listed after them.</p>
 {recent_section}
 <h2>Fleet performance</h2>
 <table>
@@ -836,6 +850,7 @@ def _landing_page_html(landing: str, slug: str, boats: list[dict],
   <thead>
     <tr>
       <th>Boat</th>
+      <th>Tuna/Angler/Day</th>
       <th>Win Rate</th>
       <th>Avg Fish/Angler/Day</th>
       <th>Trips in DB</th>
@@ -1122,12 +1137,14 @@ def _trip_stats(conn: sqlite3.Connection, tl: str) -> dict | None:
     # Mean over all trips (zeros included) so the numbers aren't inflated.
     boats = [dict(r) for r in conn.execute(f"""
         SELECT boat, COUNT(*) AS trips,
+               ROUND(AVG(CASE WHEN anglers > 0 THEN tuna_count * 1.0 / anglers ELSE 0 END), 2)
+                 AS tuna_per_angler,
                ROUND(AVG(trophy_per_angler), 2) AS per_angler,
                ROUND(100.0 * SUM(trophy_count > 0) / COUNT(*), 1) AS win_rate
         FROM trips
         WHERE {_SD_IN} AND trip_length=? AND date>=? AND trophy_per_angler IS NOT NULL
         GROUP BY boat HAVING trips>=?
-        ORDER BY per_angler DESC LIMIT 15
+        ORDER BY tuna_per_angler DESC, per_angler DESC LIMIT 15
     """, (tl, since, TRIP_BOAT_MIN))]
     cutoff = str(date.fromisoformat(last[:10]).year - 5)
     monthly = [dict(r) for r in conn.execute(f"""
@@ -1193,15 +1210,16 @@ def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
     if st["boats"]:
         rows = "".join(
             f"<tr><td><a href=\"{page_url('boat', b['boat'])}\">{_esc(b['boat'])}</a></td>"
-            f"<td>{b['trips']}</td><td>{_f2(b['per_angler'])}</td><td>{b['win_rate']:.1f}%</td></tr>\n"
+            f"<td>{b['trips']}</td><td>{_f2(b['tuna_per_angler'])}</td>"
+            f"<td>{_f2(b['per_angler'])}</td><td>{b['win_rate']:.1f}%</td></tr>\n"
             for b in st["boats"])
         boats_section = f"""<section>
 <h2>Boats that run {_esc(lower)} trips</h2>
 <table>
   <caption>Last {TRIP_BOAT_YEARS} years, boats with at least {TRIP_BOAT_MIN} {_esc(lower)} trips,
-    by average trophy fish (bluefin, yellowfin, yellowtail, dorado) per angler per trip.
-    Trophy % is the share of trips that landed at least one.</caption>
-  <thead><tr><th>Boat</th><th>Trips</th><th>Per angler</th><th>Trophy %</th></tr></thead>
+    ranked by average {TUNA_NOUN} per angler per trip. Trophy fish counts bluefin,
+    yellowfin, yellowtail and dorado; Trophy % is the share of trips that landed at least one.</caption>
+  <thead><tr><th>Boat</th><th>Trips</th><th>Tuna per angler</th><th>Trophy fish per angler</th><th>Trophy %</th></tr></thead>
   <tbody>
 {rows}  </tbody>
 </table>

@@ -141,16 +141,17 @@ function computeWinRates(allTrips, opts = WR_DEFAULTS) {
   const mStats = {};
   for (const group of Object.values(byBucketLen)) {
     if (group.length < 2) continue;
+    // Ranked on tuna (SDA.rankRate). A day when no boat caught any has no winner.
     let top = 0;
     for (const t of group) {
-      const v = t.trophyPerAnglerPerDay || 0;
+      const v = SDA.rankRate(t);
       if (v > top) top = v;
     }
     for (const t of group) {
       const k = `${t.boat}|${t.tripLength}`;
       const r = mStats[k] = mStats[k] || { wins: 0, matchupCount: 0 };
       r.matchupCount++;
-      if ((t.trophyPerAnglerPerDay || 0) >= top - 1e-9) r.wins++;
+      if (top > 0 && SDA.rankRate(t) >= top - 1e-9) r.wins++;
     }
   }
 
@@ -158,7 +159,7 @@ function computeWinRates(allTrips, opts = WR_DEFAULTS) {
   for (const t of trips) {
     const k = `${t.boat}|${t.tripLength}`;
     const r = tStats[k] = tStats[k] || { tpaSum: 0, total: 0 };
-    r.tpaSum += t.trophyPerAnglerPerDay || 0;
+    r.tpaSum += SDA.rankRate(t);
     r.total++;
   }
 
@@ -1107,14 +1108,14 @@ function TripPlanner({ navigate, regions }) {
     return s;
   }, []);
 
-  // Avg TPA per boat+length key
+  // Avg TPA (tuna, SDA.rankRate) per boat+length key
   const avgTpaByKey = useMemo(() => {
     const acc = {};
     (window.SD.TRIPS || []).forEach(t => {
-      if (t.trophyPerAnglerPerDay == null) return;
+      if (!(t.anglers > 0)) return;
       const k = `${t.boat}|${t.tripLength}`;
       acc[k] = acc[k] || { sum: 0, n: 0 };
-      acc[k].sum += t.trophyPerAnglerPerDay;
+      acc[k].sum += SDA.rankRate(t);
       acc[k].n++;
     });
     const out = {};
@@ -1124,14 +1125,14 @@ function TripPlanner({ navigate, regions }) {
     return out;
   }, []);
 
-  // Median TPA per boat for the current year (used by "Fish Count" sort)
+  // Median TPA (tuna) per boat for the current year (used by "Fish Count" sort)
   const medianTpaByBoat = useMemo(() => {
     const yearStr = String(_now.getFullYear());
     const acc = {};
     (window.SD.TRIPS || []).forEach(t => {
-      if (t.trophyPerAnglerPerDay == null) return;
+      if (!(t.anglers > 0)) return;
       if (!t.date || t.date.slice(0, 4) !== yearStr) return;
-      (acc[t.boat] = acc[t.boat] || []).push(t.trophyPerAnglerPerDay);
+      (acc[t.boat] = acc[t.boat] || []).push(SDA.rankRate(t));
     });
     const out = {};
     for (const [boat, vals] of Object.entries(acc)) {
