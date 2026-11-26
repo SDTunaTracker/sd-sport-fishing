@@ -162,7 +162,7 @@ function track(name, payload) {
   try { if (window.TTTrack && TTTrack[name]) TTTrack[name](payload); } catch (e) {}
 }
 
-function ChatTripCard({ trip, position, msgIndex, onAsk }) {
+function ChatTripCard({ trip, position, msgIndex, onAsk, compact }) {
   const { useState: useS } = React;
   const [stage, setStage] = useS('card');        // card → summary (booking hand-off)
   const [live, setLive] = useS(null);            // null | 'checking' | {open, checkedAt} | 'unknown'
@@ -223,20 +223,24 @@ function ChatTripCard({ trip, position, msgIndex, onAsk }) {
     ? (trip.landing === 'H&M Landing'
         ? `Opens H&M Landing's booking checkout (Xola) with this departure already selected. You'll choose guests, then finish booking and pay there.`
         : `Opens ${landingName}'s reservation page for this exact trip. You'll finish booking and pay there.`)
+    : trip.bookingKind === 'trip_list'
+      ? `Opens ${landingName}'s list of upcoming trips. Find the ${trip.boat} on ${trip.departLabel.split(' ').slice(0, 2).join(' ')}, then finish booking and pay there.`
     : trip.bookingKind === 'trip_type_calendar'
       ? `Opens ${landingName}'s booking calendar for the ${trip.boat} ${trip.tripLength}. Tap ${trip.departLabel.split(' ').slice(0, 2).join(' ')} on the calendar, then finish booking and pay there.`
       : `This trip can't be booked online from here. Call ${landingName} to book.`;
 
   return (
-    <div className="chat-trip-card cc-card" role="group" aria-label={`${trip.boat} ${trip.tripLength}, ${trip.departLabel}`}>
+    <div className={`chat-trip-card cc-card${compact ? ' cc-compact' : ''}`} role="group" aria-label={`${trip.boat} ${trip.tripLength}, ${trip.departLabel}`}>
       <div className="cc-card-top">
         <div>
           <div className="cc-boat">{trip.boat}</div>
           <div className="cc-sub">{landingName} · {trip.tripLength}</div>
         </div>
-        <button className={`cc-icon-btn${saved ? ' on' : ''}`} onClick={toggleSave}
-                aria-pressed={saved} aria-label={saved ? `Unsave ${trip.boat} trip` : `Save ${trip.boat} trip`}
-                title={saved ? 'Saved' : 'Save'}>{saved ? '★' : '☆'}</button>
+        {!compact && (
+          <button className={`cc-icon-btn${saved ? ' on' : ''}`} onClick={toggleSave}
+                  aria-pressed={saved} aria-label={saved ? `Unsave ${trip.boat} trip` : `Save ${trip.boat} trip`}
+                  title={saved ? 'Saved' : 'Save'}>{saved ? '★' : '☆'}</button>
+        )}
       </div>
 
       <div className="cc-when">{trip.departLabel}{trip.returnLabel ? ` → ${trip.returnLabel}` : ''}</div>
@@ -260,11 +264,13 @@ function ChatTripCard({ trip, position, msgIndex, onAsk }) {
       {stage === 'card' ? (
         <div className="cc-actions">
           {trip.bookingUrl || trip.landingPhone ? (
-            <button className="cc-btn primary" onClick={openSummary}>Book this trip</button>
+            <button className="cc-btn primary" onClick={openSummary}>{compact ? 'Book' : 'Book this trip'}</button>
           ) : null}
-          <button className="cc-btn" onClick={share}>Share</button>
-          <a className="cc-btn ghost" href={trip.boatPageUrl}
-             onClick={() => track('chatBoatClick', ctx)}>Boat stats</a>
+          {!compact && <button className="cc-btn" onClick={share}>Share</button>}
+          {!compact && (
+            <a className="cc-btn ghost" href={trip.boatPageUrl}
+               onClick={() => track('chatBoatClick', ctx)}>Boat stats</a>
+          )}
         </div>
       ) : (
         <div className="cc-summary" role="region" aria-label="Booking summary">
@@ -302,12 +308,41 @@ function ChatTripCard({ trip, position, msgIndex, onAsk }) {
   );
 }
 
+// Fallback starters if the quick-pick list isn't loaded.
 const SUGGESTED_QUESTIONS = [
-  "What's the best trip this weekend?",
-  "Which boat is hottest right now?",
-  "Find me an overnight trip under $500",
-  "Best boat for bluefin this month?",
+  "Best overnight this week",
+  "Best trip under $300",
+  "Where are the yellowtail?",
+  "Best full day this weekend",
 ];
+
+// One-tap answer: best bet + up to 2 alternates, from the website's ranking.
+function QuickPickBlock({ pick, msgIndex, onAsk }) {
+  const { best, alternates, reason, asOf } = pick.result || {};
+  if (!best) {
+    return (
+      <div className="cc-qp">
+        <div className="cc-qp-empty">{reason || 'Nothing matches right now.'}</div>
+        <div className="cc-qp-actions">
+          <button className="cc-btn" onClick={() => onAsk(`${pick.label} — nothing matched. What are the closest real options?`)}>
+            Show closest options
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="cc-qp">
+      <div className="cc-qp-label">Best bet</div>
+      <ChatTripCard trip={best} position={1} msgIndex={msgIndex} onAsk={onAsk}/>
+      {alternates.length > 0 && <div className="cc-qp-label">Also good</div>}
+      {alternates.map((t, i) => (
+        <ChatTripCard key={t.tripId} trip={t} position={i + 2} msgIndex={msgIndex} onAsk={onAsk} compact/>
+      ))}
+      <div className="cc-qp-foot">Ranked from recent catch history, open seats and price{asOf ? `, as of ${asOfLabel(asOf)}` : ''}. Not a forecast.</div>
+    </div>
+  );
+}
 
 function ChatBot({ pageContext }) {
   const [open, setOpen]                     = useState(false);
@@ -443,6 +478,28 @@ function ChatBot({ pageContext }) {
     setLoading(false);
   }
 
+  // One-tap starter: answered locally from the shared site ranking (no model
+  // call). Falls back to asking the model if the ranking module isn't loaded.
+  function handleQuickPick(qp) {
+    if (loading) return;
+    const result = window.ccRunQuickPick ? window.ccRunQuickPick(qp.intent, pageContext?.regions) : null;
+    if (!result) { handleSend(qp.label); return; }
+    setShowSuggestions(false);
+    const idx = messages.length + 1;
+    const historyText = window.ccQuickPickHistoryText ? window.ccQuickPickHistoryText(qp.label, result) : qp.label;
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', text: qp.label },
+      { role: 'assistant', text: historyText, quickpick: { intent: qp.intent, label: qp.label, result },
+        followups: ['Show cheaper options', 'Anything with more open seats?', 'Compare the top two'] },
+    ]);
+    const ids = [result.best, ...(result.alternates || [])].filter(Boolean);
+    if (window.TTTrack?.chatQuickPick) TTTrack.chatQuickPick({ intent: qp.intent, msgIndex: idx, tripIds: ids.map(t => t.tripId), empty: !result.best });
+    if (ids.length && window.TTTrack?.chatRecommend) {
+      TTTrack.chatRecommend({ msgIndex: idx, tripIds: ids.map(t => t.tripId), landings: ids.map(t => t.landing) });
+    }
+  }
+
   function handleFeedback(idx, type) {
     setMessages(prev => prev.map((m, i) => i === idx ? { ...m, feedback: type } : m));
   }
@@ -541,10 +598,11 @@ function ChatBot({ pageContext }) {
             )}
 
             {showSuggestions && (
-              <div className="chat-suggestions">
-                {SUGGESTED_QUESTIONS.map((q, i) => (
-                  <button key={i} className="chat-suggestion-chip" onClick={() => handleSend(q)}>
-                    {q}
+              <div className="chat-suggestions" role="group" aria-label="Quick picks">
+                {((window.ccQuickPickList && window.ccQuickPickList()) || SUGGESTED_QUESTIONS.map(q => ({ label: q }))).map((qp, i) => (
+                  <button key={i} className="chat-suggestion-chip"
+                          onClick={() => qp.intent ? handleQuickPick(qp) : handleSend(qp.label)}>
+                    {qp.label}
                   </button>
                 ))}
               </div>
@@ -562,7 +620,9 @@ function ChatBot({ pageContext }) {
                 ) : (
                   <Fragment>
                     <div className={`chat-bubble ${msg.role}`}>
-                      {msg.streaming && !msg.text ? (
+                      {msg.quickpick ? (
+                        <QuickPickBlock pick={msg.quickpick} msgIndex={i} onAsk={handleSend}/>
+                      ) : msg.streaming && !msg.text ? (
                         <div className="chat-status">
                           <div className="chat-status-dots">
                             <span className="typing-dot">●</span>
