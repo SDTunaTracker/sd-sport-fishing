@@ -122,6 +122,27 @@ function pathFromRoute(view, params = {}, regions = ['san_diego']) {
 }
 window.ttPathFromRoute = pathFromRoute;
 
+// Shown while a region's data file (web/region-data.js) loads on first use.
+function RegionLoading({ regions, error, onRetry }) {
+  const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'this region';
+  if (error) {
+    return (
+      <div className="region-loading" role="alert">
+        <div className="region-loading-title">Couldn't load {label} fish counts.</div>
+        <div className="region-loading-sub">Check your connection and try again.</div>
+        <button className="btn primary" onClick={onRetry}>Try again</button>
+      </div>
+    );
+  }
+  return (
+    <div className="region-loading" role="status" aria-live="polite" aria-busy="true">
+      <div className="region-loading-title"><span className="region-loading-spinner" aria-hidden="true"></span>Loading {label} fish counts…</div>
+      <div className="region-loading-sub">One-time download for this region.</div>
+      {window.SkeletonRows && <SkeletonRows count={6}/>}
+    </div>
+  );
+}
+
 function App() {
   const [route, setRoute] = useS(() => routeFromLocation());
   const [navBusy, setNavBusy] = useS(false);
@@ -173,6 +194,32 @@ function App() {
     SDA.preprocessHalfDayTrips(s);
     return s;
   });
+  // Non-base regions (OC/LA, ...) ship in their own data file, loaded the first
+  // time the visitor selects them. Until it's merged into window.SD, the page
+  // shows RegionLoading instead of rendering with that region missing.
+  const [regionDataTick, setRegionDataTick] = useS(0);
+  const [regionLoadError, setRegionLoadError] = useS(null);
+  const regionDataReady = !window.ttRegionData || window.ttRegionData.isLoaded(regions);
+  // The headline metric depends on the region (OC/LA counts all species, see
+  // SDA.metricFor), so re-derive SD_PROC_TRIPS synchronously, before this
+  // render's children read it, whenever the effective region changes.
+  const metricRegion = window.getEffectiveRegion ? window.getEffectiveRegion(regions) : 'san_diego';
+  if (window.SD_METRIC_REGION !== metricRegion) {
+    SDA.preprocessTrips(settings, metricRegion);
+    SDA.preprocessHalfDayTrips(settings, metricRegion);
+  }
+  useE(() => {
+    if (regionDataReady) return;
+    setRegionLoadError(null);
+    window.ttRegionData.ensure(regions).then(() => {
+      // Re-derive SD_PROC_TRIPS with the merged rows (current saved settings).
+      const s = loadSettings();
+      SDA.preprocessTrips(s);
+      SDA.preprocessHalfDayTrips(s);
+      setRegionDataTick(t => t + 1);
+    }).catch(e => setRegionLoadError((e && e.message) || String(e)));
+  }, [regions, regionDataReady, regionDataTick]);
+
   function onSettingsChange(next) {
     saveSettings(next);
     SDA.preprocessTrips(next);
@@ -348,7 +395,7 @@ function App() {
   // routing is migrated to path-based routes (see links/routing spec).
   useE(() => {
     if (window.__updateMetaTags) window.__updateMetaTags(route.view, route.params || {});
-  }, [route.view, route.params?.boat, route.params?.subtab]);
+  }, [route.view, route.params?.boat, route.params?.subtab, regionDataTick]);
 
   // Lock the document scroll context when the full-bleed Charts map is active.
   useE(() => {
@@ -431,15 +478,20 @@ function App() {
       try { window.history.replaceState(null, '', '#charts'); } catch (e) {}
     }
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings}/>
+      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'charts') {
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings}/>
+      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
                               regions={regions} onRegionsDirect={setRegionsDirect} navigate={navigate}/>;
+  }
+
+  if (!regionDataReady && route.view !== 'account') {
+    content = <RegionLoading regions={regions} error={regionLoadError}
+                             onRetry={() => setRegionDataTick(t => t + 1)}/>;
   }
 
   const headerActive = route.view === 'boat' ? 'boats'
@@ -453,9 +505,9 @@ function App() {
                  hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
-      <AppFooter/>
+      <AppFooter regions={regions}/>
 
-      {route.view === 'tripplanner' && <ChatBot pageContext={pageContext}/>}
+      {route.view === 'tripplanner' && regionDataReady && <ChatBot pageContext={pageContext}/>}
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">
@@ -481,7 +533,7 @@ function App() {
                        options={[{value:'all',label:'All'}, ...[...new Set(window.SD.TRIPS.map(t => t.year))].sort((a,b) => b-a).map(y => ({value:String(y),label:String(y)}))]}
                        onChange={v => setFilters({ ...filters, year: v })}/>
           <TweakSelect label="Species focus" value={filters.species}
-                       options={[{value:'all',label:'All Tuna'},{value:'Bluefin',label:'Bluefin'},{value:'Yellowfin',label:'Yellowfin'},{value:'Yellowtail',label:'Yellowtail'},{value:'Dorado',label:'Dorado'},{value:'Skipjack',label:'Skipjack'},{value:'Bigeye',label:'Bigeye'},{value:'Albacore',label:'Albacore'}]}
+                       options={[{value:'all',label:SDA.headlineIsAllSpecies() ? 'All species' : 'All Tuna'},{value:'Bluefin',label:'Bluefin'},{value:'Yellowfin',label:'Yellowfin'},{value:'Yellowtail',label:'Yellowtail'},{value:'Dorado',label:'Dorado'},{value:'Skipjack',label:'Skipjack'},{value:'Bigeye',label:'Bigeye'},{value:'Albacore',label:'Albacore'}]}
                        onChange={v => setFilters({ ...filters, species: v })}/>
         </TweakSection>
       </TweaksPanel>

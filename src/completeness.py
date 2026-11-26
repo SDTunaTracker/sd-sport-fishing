@@ -33,6 +33,22 @@ CORE_LANDINGS = (
     "Point Loma Sportfishing",
 )
 
+# Oceanside + OC/LA landings (socalfishreports.com). Warning-only: these feed
+# the OC/LA region (behind web/feature-flags.js) and Oceanside, not the SD core.
+# Per-landing day gaps are NOT checked: small OC/LA landings skip many days
+# (Pierpoint ran 56 of 177 days Jun-Nov 2026, confirmed on pierpoint.net), so a
+# per-landing gap rule would alert on no-trip days. Instead: scrape health per
+# landing, plus a region-wide "no OC/LA trips at all" day check.
+REGIONAL_LANDINGS = (
+    "Oceanside Sea Center",
+    "22nd Street Landing", "Long Beach Sportfishing", "LA Waterfront Sportfishing",
+    "Marina Del Rey Sportfishing", "Redondo Beach Sportfishing", "Pierpoint Landing",
+    "Channel Islands Sportfishing", "Ventura Harbor Sportfishing",
+    "Newport Landing", "Davey's Locker", "Dana Wharf Sportfishing",
+)
+OCLA_LANDINGS = REGIONAL_LANDINGS[1:]
+REGIONAL_SCRAPE_MAX_AGE = timedelta(hours=30)
+
 SST_LOCATIONS = {"Nearshore": 2, "9-Mile Bank": 7, "60-Mile Bank": 7, "Cortez Bank": 7}
 
 # table -> (date column, max age in days)
@@ -139,6 +155,27 @@ def check(conn: sqlite3.Connection, today: date | None = None,
     if missing:
         probs.append(Problem("trips:gap", "trips", "warning",
                              f"no San Diego trips stored for {', '.join(sorted(missing))}"))
+
+    # 2b. OC/LA + Oceanside: scrape health per landing (a failed fetch, not a
+    #     quiet day) and a region-wide gap (every OC/LA landing silent that day).
+    for ln in REGIONAL_LANDINGS:
+        row = conn.execute(
+            "SELECT MAX(started_at) FROM scrape_log WHERE landing=? AND status='ok'", (ln,)
+        ).fetchone()
+        last = datetime.fromisoformat(row[0]) if row and row[0] else None
+        if last is None or now - last > REGIONAL_SCRAPE_MAX_AGE:
+            probs.append(Problem(f"scrape:{ln}", "trips", "warning",
+                                 f"{ln}: no successful scrape since {last or 'ever'}"))
+    oc = ",".join("?" * len(OCLA_LANDINGS))
+    oc_days = {r[0] for r in conn.execute(
+        f"SELECT DISTINCT date FROM trips WHERE landing IN ({oc}) AND date >= ?",
+        (*OCLA_LANDINGS, (today - timedelta(days=14)).isoformat()),
+    )}
+    oc_missing = [(today - timedelta(days=i)).isoformat() for i in range(2, 15)
+                  if (today - timedelta(days=i)).isoformat() not in oc_days]
+    if oc_missing:
+        probs.append(Problem("trips:gap:oc_la", "trips", "warning",
+                             f"no OC/LA trips stored (any landing) for {', '.join(sorted(oc_missing))}"))
 
     # 3. SST per location.
     for loc, max_age in SST_LOCATIONS.items():

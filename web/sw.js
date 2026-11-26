@@ -8,7 +8,7 @@ var CACHE = 'tt-shell-v4';
 // ?v= query in index.html (only full deploys via build-prod.py do that),
 // so cache-first-by-URL leaves mobile users looking at hours-old counts.
 // These files must be network-first with cache as an offline fallback.
-var _MUTABLE_DATA = /\/(data\.js|ais_positions\.json|sst_grid\.json)(\?|$)/;
+var _MUTABLE_DATA = /\/(data\.js|data-region-[a-z0-9_]+\.js|ais_positions\.json|sst_grid\.json)(\?|$)/;
 
 // Resources to pre-cache on install (app shell)
 var SHELL = [
