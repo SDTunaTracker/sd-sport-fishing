@@ -7098,3 +7098,9 @@ button.btn-save-boat[data-saved="true"],
 .region-loading-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); display: inline-block; animation: region-spin .8s linear infinite; }
 @keyframes region-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .region-loading-spinner { animation: none; } }
+
+/* Landing / skipper reports on the boat page (forum-reports.jsx) */
+.ln-photos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.ln-photo { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 6px; background: var(--surface); }
+.ln-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 480px) { .ln-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

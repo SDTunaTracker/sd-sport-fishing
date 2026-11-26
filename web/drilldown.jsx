@@ -261,6 +261,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
         <>
           <ReviewsSection boat={boat} landing={meta.landing} openSignal={reviewOpenSignal}/>
           {window.ForumReportsSection && <ForumReportsSection boat={boat}/>}
+          {window.LandingNotesSection && <LandingNotesSection boat={boat}/>}
         </>
       )}
 
