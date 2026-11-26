@@ -281,6 +281,12 @@ def _extract_rows(html: str) -> tuple[list[dict], date | None]:
 
             if not _row_is_data(cell_texts):
                 continue
+            # Daily totals row under each date's boats ("1 Boat | 1 Trip |
+            # 30 Anglers | <same fish>", or "3 Boats | 4 Trips | ..."). It
+            # repeats the boat rows above it, so it's not a trip; skipping it
+            # here also keeps it out of the "unparsable trip length" warnings.
+            if _is_totals_row(cell_texts):
+                continue
 
             rows_out.append({
                 "date": current_date,
@@ -290,6 +296,17 @@ def _extract_rows(html: str) -> tuple[list[dict], date | None]:
                 "fish_count_text": cell_texts[3].strip(),
             })
     return rows_out, page_date
+
+
+_TOTALS_BOATS = re.compile(r"^\d+\s+boats?$", re.I)
+_TOTALS_TRIPS = re.compile(r"^\d+\s+trips?$", re.I)
+
+
+def _is_totals_row(cell_texts: list[str]) -> bool:
+    """True for a fish-count table's per-date totals row ("2 Boats", "3 Trips")."""
+    return (len(cell_texts) >= 2
+            and bool(_TOTALS_BOATS.match(cell_texts[0].strip()))
+            and bool(_TOTALS_TRIPS.match(cell_texts[1].strip())))
 
 
 def parse_page(html: str, landing: str, source_url: str,
