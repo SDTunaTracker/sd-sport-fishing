@@ -11,6 +11,8 @@
 - **Gate 1, daily public per-trip counts:** ✅ It uses the same fish-report network and the same Boat | Trip | Anglers | Counts table we already parse. The per-boat daily page is `norcalfishreports.com/dock_totals/boats.php?date=`, with an archive back to 2019 or earlier.
 - **Gate 2, multiple landings and a real boat choice:** ✅ In the July 12–18, 2026 sample week, **18 landings** posted **133 trips** from **35 boats**, of which **25 were open-party rather than six-packs**, carrying **1,681 anglers**. **16 landings ran Full Day trips on all 7 days.** An Emeryville angler really is choosing among 13 boats at one dock, with 9 more in Berkeley 10 minutes away.
 
+**Update 2026-11-26 (§8):** a September sample week confirms the SF Bay pick: 11 landings, 18 open-party boats, and Full Day trips at 2+ landings on all 7 days. Official CDFW logbooks put the Bay Area at **~75k angler-days a year in normal years** (45k in 2023, a closure year), roughly **$12–21M a year in ticket spend (est.)**. The only partial competitor is norcalfishreports' own Fish-per-Angler Top 10, which leaves out rockfish. Winter is very thin (0–1 boats a day in January), and Morro Bay/Avila **fails** the gate in September.
+
 **Do this quick win first: Santa Barbara Channel.** The cluster with the strongest boat choice of all is **Santa Barbara / Ventura / Oxnard**: 4 landings, 18 boats and 1,623 anglers in the same week, with yellowtail, white seabass and halibut, and 2+ landings running the same trip type **every day**. But 2 of its 4 landings (Channel Islands Sportfishing and Ventura Harbor) are **already in our OC/LA region**, so it isn't really a new market. The two missing landings, **Santa Barbara Landing and Hooks Landing (Oxnard)**, are on the same socalfishreports page we already scrape. Adding them is a few days of work, and it completes the most competitive boat-choice cluster north of San Diego.
 
 **What fails the gate:**
@@ -218,6 +220,86 @@ The socal and norcal terms pages are "Under Construction" placeholders, and fish
 
 ---
 
+## 8. Addendum (2026-11-26): open items closed
+
+This addendum closes the gaps flagged in rev. 2: a second sample week, official market size, competitors, and ticket prices. The SF Bay launch decisions (core 5 ports, six-packs excluded, limit-rate metric, `/sfbay`) were made on 2026-11-25 and are not revisited here.
+
+### 8a. Second sample week (Sep 14–20, 2025) and winter days
+
+| Cluster | Week | Landings posted | Boats (open-party) | Trips | Anglers | 2+ landings on the same trip type | Gate 2 |
+|---|---|---:|---:|---:|---:|---|:---:|
+| **SF Bay core** | Jul 12–18, 2026 | 18 | 35 (25) | 133 | 1,681 | Full Day 7/7 days | ✅ |
+| **SF Bay core** | **Sep 14–20, 2025** | **11** | **22 (18)** | **52** | **824** | **Full Day 7/7 days**; 1/2 Day AM 2/7 | ✅ |
+| SB / Ventura / Oxnard | Jul 12–18, 2026 | 4 | 18 (17) | 82 | 1,623 | every day | ✅ |
+| SB / Ventura / Oxnard | **Sep 14–20, 2025** | 4 | 14 (14) | 43 | 851 | 3/4 Day 4/7, Full Day 2/7, 1/2 AM 1/7 | ⚠️ weaker off-peak |
+| Morro Bay / Avila | Jul 12–18, 2026 | 3 | 7 (6) | 33 | 686 | 3/7 | ⚠️ |
+| Morro Bay / Avila | **Sep 14–20, 2025** | **2** | 5 (5) | 20 | 324 | at most 2/7 per trip type | ❌ |
+
+**SF Bay targets in September, inferred from the top species on each trip:**
+- 41 rockfish/lingcod trips across 9 landings.
+- 10 striped bass trips across 4 landings.
+- 1 bluefin trip (Scallywag, Fish Emeryville, 9/20).
+- No salmon or crab trips.
+
+So the head-to-head that matters most in fall is **rockfish/lingcod limit rate across ~9 landings**. Striper is a real secondary category.
+
+**Winter (Jan 18, 21 and 24, 2026):** the core cluster posted **0–1 boats a day**, and only Fish Emeryville's *Pacific Pearl* ran (crab combo, 180 Dungeness for 18 anglers). The boat-choice decision effectively disappears from about December to March. Plan winter UI states ("off-season: last season's rankings") instead of empty leaderboards.
+
+**Weekday vs weekend:** September weekdays had 2–7 trips a day, against 14–18 on weekends. In shoulder season, boat choice is mostly a **weekend** decision.
+
+### 8b. Official market size: CDFW CPFV logbooks
+
+From CDFW's *Annual Report of Statewide Fish Landings by the CPFV Fleet*, by port. "Fishers" may include crew, so treat these as angler-days, not unique anglers.
+
+| Port area (CDFW grouping) | 2018 | 2019 | 2023 | 2023 reporting CPFVs |
+|---|---:|---:|---:|---:|
+| San Francisco / SF Bay–Delta | 54,621 | 54,909 | 40,420 | 92 |
+| Princeton (HMB) – Bodega Bay | 23,281 | 19,546 | 4,785 | 18 |
+| **Bay Area subtotal** | **77,902** | **74,455** | **45,205** | 110 |
+| Monterey – Moss Landing – Santa Cruz | 18,602 | 20,025 | 14,687 | 22 |
+| Avila Beach – Morro Bay | 28,176 | 26,005 | 20,759 | 11 |
+| Port Hueneme – Oxnard – Ventura – Santa Barbara | 62,737 | 53,967 | 39,884 | 37 |
+| LA (San Pedro / Long Beach + Redondo / MdR) | 123,226 | 111,058 | 86,348 | 85 |
+| Newport Beach | 48,784 | 43,258 | 40,162 | 35 |
+| Oceanside – Dana Harbor | 55,107 | 46,727 | 34,449 | 35 |
+| San Diego – Mission Bay | 94,551 | 87,164 | 109,850 | 140 |
+| **Statewide** | 521,952 | 475,874 | 401,337 | 515 |
+
+What the table shows:
+- In a normal year (2018–19), the Bay Area is **the third-largest CPFV market in California**, behind LA and San Diego, with roughly 75k angler-days.
+- The 2023 dip (45k) matches the 2023 salmon closure and the August 2023 groundfish restrictions. It shows how sensitive the region is to regulations.
+- The SB Channel runs 40–63k a year. Morro Bay/Avila runs 21–28k a year but comes from only 11 CPFVs.
+- No 2024 or 2025 port report was found, so ask CDFW MFSU for newer data.
+
+**Ticket spend (est.):**
+- Bay Area open-party tickets cost about **$250–$290** for rockfish or crab combos and **$330–$400** for salmon. Emeryville crab combo: $275 cash. Happy Hooker crab/rockcod: $250. HMB salmon: $330.
+- All-in per angler-day is about **$290–$420** with a one-day license ($21.09), tackle and rental.
+- 45k–78k angler-days × ~$275 ≈ **$12–21M a year** in Bay Area party-boat ticket spend (est.). That is the booking-intent pool our deep links point into.
+
+### 8c. Competitors in the SF Bay
+
+| Competitor | What it offers | Pricing | Gap we fill |
+|---|---|---|---|
+| **norcalfishreports.com** (closest) | Daily per-boat scores; per-boat pages with a Book Now link; a **"Top 10 Charter Boats" YTD table with Fish per Angler**, limited to albacore, halibut, crab, king salmon, lingcod, Pacific halibut and striper. **Rockfish is not offered**, and the table was nearly empty when fetched | Free, ad/sponsor supported | No rockfish ranking (the bulk of Bay CPFV catch), no limit rate, no ranking across landings by target, no trends or conditions |
+| sportfishingreport.com (same company) | Landing pages with daily counts and annual species totals (e.g. Fish Emeryville rockfish 57,305 in 2026 vs 83,891 in 2025) | Free | No per-angler stats or rankings |
+| Fish Emeryville site | Counts embedded from NCFR; booking | Free | One landing only |
+| FishingBooker | 28 Berkeley rockfish listings at $225–$1,770, with reviews; mostly private or six-pack boats | Captains pay 10–30% commission | No catch data; few true open-party boats |
+| Captain Experiences | Private-charter marketplace (Sausalito trips from $500 to $4,400) | Fees not disclosed | Doesn't serve walk-on party-boat buyers |
+| Fishbrain | Crowd-logged catches (17,100 SF catches); Pro adds stats and forecasts | Pro ~$9.99/mo or $74.99/yr (2026 price unverified) | Shore and private anglers; nothing on CPFVs or boat choice |
+| BD Outdoors NorCal forum, Fish Sniffer | Narrative trip reports, mostly private boats | Free (Fish Sniffer membership price not visible) | Anecdotal, no ranking |
+| SF Chronicle outdoors | No current weekly count column found | Paywalled | — |
+| Reddit / Facebook groups | Not verifiable (Reddit refused automated fetches) | — | — |
+
+**The gap:** nobody ranks Bay Area open-party boats by **limit rate across all targets, including rockfish and crab combos**, with conditions and booking deep links. Pricing headroom: the only paid consumer tool nearby (Fishbrain Pro, ~$75/yr) isn't party-boat specific. A free, ad- or affiliate-supported model like NCFR's is the norm. Subscription pricing is unproven for this audience.
+
+### 8d. What's next after SF Bay (fourth-market view)
+
+1. **The SB Channel completion** (Santa Barbara Landing + Hooks Landing) is still the cheapest boat-choice win. It is strong in summer and weaker in September.
+2. **Morro Bay/Avila** stays an optional tab, not a region, because it fails the gate in September with 2 landings.
+3. **East Coast (Central NJ, South Shore LI)** waits for a "captains submit counts" flow. Nothing scrapeable exists there.
+
+---
+
 ## Sources
 
 **Boat-choice measurement (peak week 2026-07-12 → 18, all HTTP 200):**
@@ -241,10 +323,17 @@ The socal and norcal terms pages are "Under Construction" placeholders, and fish
 - [Frances Fleet](https://www.francesfleet.com/), [Morning Star (OC MD)](https://www.morningstarfishing.com/fishing-report)
 - [Boynton Inlet drift boats (2014)](https://thecoastalstar.com/profiles/blogs/on-the-water-boynton-inlet-drift-boats), [Fishing Headquarters drift reports](https://www.fishheadquarters.com/blog/category/drift-fishing-reports/)
 
+**Addendum sources (2026-11-26):**
+- NorCal per-boat pages, Sep 14–20, 2025: [09-14](https://www.norcalfishreports.com/dock_totals/boats.php?date=2025-09-14) … [09-20](https://www.norcalfishreports.com/dock_totals/boats.php?date=2025-09-20); winter: [2026-01-18](https://www.norcalfishreports.com/dock_totals/boats.php?date=2026-01-18), [01-21](https://www.norcalfishreports.com/dock_totals/boats.php?date=2026-01-21), [01-24](https://www.norcalfishreports.com/dock_totals/boats.php?date=2026-01-24)
+- SoCal per-boat pages, Sep 14–20, 2025: [09-14](https://www.socalfishreports.com/dock_totals/boats.php?date=2025-09-14) … [09-20](https://www.socalfishreports.com/dock_totals/boats.php?date=2025-09-20)
+- CDFW CPFV landings by port: [2023](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=218591), [2019](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=178003), [2018](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=171088); statewide [2022](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=211365), [2020–21](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=197136); [2024 By the Numbers](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=229396&inline); [2023 By the Numbers](https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=220034&inline)
+- Competitors: [NCFR year-to-date](https://www.norcalfishreports.com/year-to-date.php), [NCFR New Huck Finn](https://www.norcalfishreports.com/charter_boats/newhuckfinn.php), [NCFR about](https://www.norcalfishreports.com/about.php), [SFR Fish Emeryville](https://sportfishingreport.com/landings/fish-emeryville.php), [FishingBooker Berkeley rockfish](https://fishingbooker.com/fish/rockfish/us/CA/berkeley), [FishingBooker commission](https://fishingbooker.com/blog/choosing-commission/), [Captain Experiences Sausalito](https://captainexperiences.com/locations/california/sausalito), [Fishbrain SF](https://fishbrain.com/fishing-waters/3tlEBiQL/sf), [Fishbrain Pro](https://fishbrain.helpshift.com/hc/en/3-fishbrain---social-fishing-forecast-app/faq/230-what-is-included-in-fishbrain-pro), [BD NorCal forum](https://www.bdoutdoors.com/forums/forum/northern-california-fishing-reports/), [Fish Sniffer report](https://fishsniffer.com/report/benmechling/sf-bay-crab-and-rockfish-action-remains-strong-12-14-2025)
+- Ticket prices: [Emeryville sales](https://emeryville.fishingreservations.net/sales/), [Happy Hooker sales](https://happyhooker.fishingreservations.net/sales/), [Fish Reapers HMB](https://fishreaperssportfishing.schedulista.com/), [Riptide HMB](https://fishingbooker.com/charters/view/1228), [Fish Emeryville extras](https://www.fishemeryville.com/)
+
 **Other:**
 - [Blue Eyes Sportfishing, Westport](https://sportfishingreport.com/landings/blue-eyes-sportfishing.php), [Sea Breeze, Ilwaco](https://sportfishingreport.com/landings/sea-breeze-charters.php), [WDFW ocean salmon update](https://wdfw.wa.gov/node/105708)
 - [NOAA Southeast Region Headboat Survey](https://www.fisheries.noaa.gov/inport/item/2503), [SAFMC headboat report](https://safmc.net/documents/fc1_a6a_sa-headboats-report_202506-pdf), [NOAA For-Hire Survey](https://www.fisheries.noaa.gov/recreational-fishing-data/hire-survey-glance)
 - [CDFW MFSU (CPFV logbooks)](https://wildlife.ca.gov/Conservation/Marine/MFSU), [South Coast CPFV baseline (CA Sea Grant)](https://caseagrant.ucsd.edu/sites/default/files/SCMPA-29-CPFV-Final-Report.pdf), [North Central Coast CPFV report](https://caseagrant.ucsd.edu/sites/default/files/RMPA-16_Ecotrust_FinalReport3_CPFV.pdf)
 - [FishingBooker Destin reports](https://fishingbooker.com/reports/destination/us/FL/destin)
 
-*Not measured: Google search volume, social follower counts, MRIP state-level for-hire effort. East Coast fleet lists are partly from older guides and should be treated as estimates. Facebook-hosted reports could not be read. The California boat-choice numbers come from a single peak week. A second sample week (e.g. September) would firm them up.*
+*Not measured: Google search volume, social follower counts, MRIP state-level for-hire effort (CDFW CPFV logbook totals were added in §8b). East Coast fleet lists are partly from older guides and should be treated as estimates. Facebook-hosted reports could not be read. The California boat-choice numbers come from a single peak week. A second sample week (e.g. September) would firm them up.*
