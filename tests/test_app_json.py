@@ -109,3 +109,10 @@ def test_stale_app_json_is_flagged(tmp_path):
     assert "export:app.json" in keys()                      # 2.5 days old
     f.write_text(json.dumps({"generatedAt": "2026-11-24T06:00:00Z"}))
     assert "export:app.json" not in keys()
+
+
+def test_boat_profiles_are_san_diego_only(built):
+    p, _ = built
+    sd = {m["name"] for m in E.LANDINGS_META if m.get("region") == "san_diego"}
+    assert p["BOAT_PROFILES"], "expected some SD boat profiles"
+    assert all(v["landing"] in sd for v in p["BOAT_PROFILES"].values())
