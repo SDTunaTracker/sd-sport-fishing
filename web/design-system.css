@@ -659,6 +659,11 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .ha-title { font: 700 34px/1.1 var(--serif); letter-spacing: -.01em; color: var(--ink); margin: 0 0 18px; }
 .ha .pk { margin-bottom: 24px; }
 .ha .pk-title { font-size: 20px; margin-bottom: 14px; }
+.ha .sn { margin-bottom: 8px; }
+.ha-pick { padding: 8px 0 16px; }
+.ta-link { align-self: flex-start; margin-top: auto; padding: 6px 0 0; min-height: 36px; border: 0; background: none; color: var(--accent-ink); font: 500 14px var(--sans); cursor: pointer; }
+.ta-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ta-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
 .pk-more { display: inline-flex; align-items: center; min-height: 44px; margin: -8px 0 4px; color: var(--accent-ink); font: 500 14px var(--sans); text-decoration: none; }
 .pk-more:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pk-more:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
@@ -667,10 +672,7 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .ha-in { padding: 0 16px; }
   .ha-title { font-size: 28px; margin-bottom: 14px; }
   .ha .pk { padding: 18px 16px; }
-  /* Phones: quick picks right under the title, answer cards after */
-  .ha-in { display: flex; flex-direction: column; }
-  .ha-in > .pk { order: 1; }
-  .ha-in > .ta { order: 2; }
+  .ha-pick { padding: 4px 0 8px; }
 }
 
 /* ── Charts on phones (375 audit) ─────────────────────────────────────────

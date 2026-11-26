@@ -692,7 +692,7 @@
 
     return (
       <React.Fragment>
-        {/* Answers first: best overnight, best full day, what's biting, quick picks. */}
+        {/* Answers first: best overnight, best full day, what's biting, water temp, this week's numbers. */}
         {window.HomeAnswers && <HomeAnswers regions={regions} navigate={navigate}/>}
 
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
@@ -708,6 +708,9 @@
         </section>
 
         <CountsSection navigate={navigate} settings={settings} regions={regions}/>
+
+        {/* Pick my trip: below the at-a-glance info (owner, 2026-11-26). */}
+        {window.HomePicker && <HomePicker regions={regions} navigate={navigate}/>}
 
         {/* The extra brand band that sat here repeated the site footer directly below it. */}
       </React.Fragment>
