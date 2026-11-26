@@ -1,0 +1,52 @@
+{
+  "case": {
+    "id": "r01-bluefin-limit",
+    "persona": "Regs: simple limit",
+    "turns": [
+      "How many bluefin can I keep per day?"
+    ],
+    "expect": "2 per day (CA + federal), last-checked date, check the official page with a CDFW/NOAA link.",
+    "checks": [
+      {
+        "maxCards": 0,
+        "mustSay": [
+          "\\b2\\b|two",
+          "check|confirm",
+          "2026|last checked|as of"
+        ],
+        "mustNotSay": [
+          "\\b(3|4|5|6|10) bluefin per (day|angler)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "How many bluefin can I keep per day?",
+      "text": "California's limit is **2 bluefin tuna per angler per day**, and that's in addition to the 20-fish general finfish limit. The federal rule (50 CFR §660.721) is also 2.\n\nOn multi-day trips, you can keep up to 3 daily limits total — but only if the boat filed a CDFW Multi-Day Fishing Trip declaration, and still only one daily limit per calendar day.\n\nIf you're fishing Mexican waters, the rules are different: Mexico's overall limit is 10 fish per angler with no more than 5 of one species, so effectively up to 5 bluefin there. Confirm with your landing which waters your trip fishes.\n\nThis is a summary last checked 11/25/2026 — rules change, so verify before you go: [CDFW bag & size limits](https://wildlife.ca.gov/Regions/Marine/FAQ/general-commercial-and-recreational-recreational-what-are-the-sport-regulations-for-the-fish-species-i-am-taking) and [NOAA 50 CFR §660.721](https://www.ecfr.gov/current/title-50/chapter-VI/part-660/subpart-K/section-660.721).\n\n<followups>[\"What about yellowfin limits?\", \"Do I need a Mexican permit?\", \"Show me bluefin trips\"]</followups>",
+      "ms": 6182,
+      "usage": {
+        "input_tokens": 22998,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 434,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 43754,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

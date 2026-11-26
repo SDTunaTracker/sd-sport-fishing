@@ -1,0 +1,137 @@
+{
+  "case": {
+    "id": "c05-cheapest-tomorrow",
+    "persona": "Wants the cheapest trip leaving tomorrow",
+    "turns": [
+      "What's the cheapest trip leaving tomorrow?"
+    ],
+    "expect": "Tomorrow = Wed 11/25: nothing scheduled. Say so; offer the soonest real alternatives.",
+    "checks": [
+      {
+        "mustSay": [
+          "no trips|nothing|none|don('|’)t (have|see) any|aren('|’)t any"
+        ],
+        "mustNotSay": [
+          "tomorrow \\(?(fri|nov(ember)? 27|11/27)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "What's the cheapest trip leaving tomorrow?",
+      "text": "Tomorrow is Thursday 11/26, and I don't see any trips departing that day in the data. The next departures are Friday 11/27 — here are the cheapest options:\n\n- **$360** overnight on the Producer (Fri 8:00 PM), the lowest-priced trip on the board\n- **$555** 1.5-day on the Tribute (Fri 5:00 PM) if you want more fishing time\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"Cheapest upcoming trip at $360\", \"12 of 29 spots open as of last update\", \"Marked Definite Go\", \"Recent form: 3.81 yellowfin per angler over last 10 trips\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1086116\", \"why\": [\"$555, next-cheapest overnight-class option Friday\", \"Only 3 of 30 spots open as of last update\", \"WR 25%, TPA 1.55 on 1.5-days\"]}</trip-card>\n\nConfirm price and availability on the landing's site before you commit.\n\n<followups>[\"Show weekend trips instead\", \"Any full days under $200?\", \"What's biting on the Producer lately?\"]</followups>",
+      "ms": 6957,
+      "usage": {
+        "input_tokens": 19787,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 397,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35943,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-28T18:00:00-08:00",
+            "returnLabel": "Sat 11/28 6:00 PM",
+            "price": 360,
+            "openSpots": 12,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.91,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "Cheapest upcoming trip at $360",
+            "12 of 29 spots open as of last update",
+            "Marked Definite Go",
+            "Recent form: 3.81 yellowfin per angler over last 10 trips"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 12,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1086116",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086116",
+            "sourceId": "1086116",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-27T17:00:00-08:00",
+            "departLabel": "Fri 11/27 5:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 555,
+            "openSpots": 3,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "$555, next-cheapest overnight-class option Friday",
+            "Only 3 of 30 spots open as of last update",
+            "WR 25%, TPA 1.55 on 1.5-days"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 3,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

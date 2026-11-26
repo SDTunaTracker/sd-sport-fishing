@@ -1,0 +1,212 @@
+{
+  "case": {
+    "id": "c07-sold-out-followup",
+    "persona": "Asks about a nearly full trip",
+    "turns": [
+      "Is there room on the Tribute 1.5 day this Friday?",
+      "OK what are my alternatives if that fills up?"
+    ],
+    "expect": "Tribute 1.5 Day Fri 11/27 5 PM, 4 spots as of last update. Alternatives near the same dates.",
+    "checks": [
+      {
+        "minCards": 1,
+        "boat": "Tribute",
+        "mustSay": [
+          "as of|last update"
+        ]
+      },
+      {
+        "minCards": 2
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Is there room on the Tribute 1.5 day this Friday?",
+      "text": "Yes, as of last update the **Tribute** 1.5 Day on **Fri 11/27** (5:00 PM) shows **3 of 30 spots open** at **$555**. That's cutting it close, so I'd confirm with Seaforth before you commit.\n\n<trip-card>{\"tripId\": \"1086116\", \"why\": [\"Only 3 of 30 spots open as of last update\", \"Tribute 1.5 Day WR 25%, TPA 1.55 (Win Rate = % of same-day same-length matchups where the boat had best catch per angler; TPA/day = trophy fish per angler per day)\", \"Targets Tuna and Yellowtail\"]}</trip-card>\n\nWant me to line up a backup in case it fills?\n\n<followups>[\"Show backup 1.5 day options Friday\",\"What's the Tribute been catching lately?\",\"Any cheaper overnight Friday?\"]</followups>",
+      "ms": 5732,
+      "usage": {
+        "input_tokens": 19790,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 297,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35943,
+      "cards": [
+        {
+          "tripId": "1086116",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086116",
+            "sourceId": "1086116",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-27T17:00:00-08:00",
+            "departLabel": "Fri 11/27 5:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 555,
+            "openSpots": 3,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "Only 3 of 30 spots open as of last update",
+            "Tribute 1.5 Day WR 25%, TPA 1.55 (Win Rate = % of same-day same-length matchups where the boat had best catch per angler; TPA/day = trophy fish per angler per day)",
+            "Targets Tuna and Yellowtail"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 3,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    },
+    {
+      "user": "OK what are my alternatives if that fills up?",
+      "text": "Here are the closest Friday 11/27 overnight-ish alternatives still showing open spots as of last update.\n\n- **Old Glory** isn't running Fri 11/27, so the best like-for-like swaps are a shorter overnight or the longer 2 Day.\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"12 of 29 spots open as of last update\", \"Marked Definite Go\", \"Producer Overnight WR 22%, TPA 1.91; last 10 trips 3.81 yellowfin per angler\", \"$360 — cheapest Friday night option\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1030269\", \"why\": [\"21 of 21 spots open as of last update\", \"2 Day with meals, Mexican permits, bait & bunk included\", \"Constitution 2 Day WR 19%, TPA 1.39\", \"$849 — step up in length and price\"]}</trip-card>\n\nConfirm availability on the landing's site before you commit.\n\n<followups>[\"Compare Producer vs Tribute\",\"Any 1.5 day leaving Saturday instead?\",\"What's the cheapest weekend trip?\"]</followups>",
+      "ms": 7225,
+      "usage": {
+        "input_tokens": 20108,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 389,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35943,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-28T18:00:00-08:00",
+            "returnLabel": "Sat 11/28 6:00 PM",
+            "price": 360,
+            "openSpots": 12,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "winRate": 22,
+            "avgTPA": 1.91,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "12 of 29 spots open as of last update",
+            "Marked Definite Go",
+            "Producer Overnight WR 22%, TPA 1.91; last 10 trips 3.81 yellowfin per angler",
+            "$360 — cheapest Friday night option"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 12,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1030269",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1030269",
+            "sourceId": "1030269",
+            "boat": "Constitution",
+            "landing": "Fisherman's Landing",
+            "tripLength": "2 Day",
+            "departLocal": "2026-11-27T11:00:00-08:00",
+            "departLabel": "Fri 11/27 11:00 AM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 849,
+            "openSpots": 21,
+            "capacity": 21,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1030269",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 221-8500",
+            "targetSpecies": "Tuna, Yellowtail and more",
+            "included": "Meals, Mexican Permits, Bait & Bunk",
+            "tripStatus": null,
+            "winRate": 19,
+            "avgTPA": 1.39,
+            "boatPageUrl": "#boat/Constitution"
+          },
+          "why": [
+            "21 of 21 spots open as of last update",
+            "2 Day with meals, Mexican permits, bait & bunk included",
+            "Constitution 2 Day WR 19%, TPA 1.39",
+            "$849 — step up in length and price"
+          ],
+          "boat": "Constitution",
+          "date": "2026-11-27",
+          "tripLength": "2 Day",
+          "price": 849,
+          "openSpots": 21,
+          "landing": "Fisherman's Landing",
+          "url": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1030269",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

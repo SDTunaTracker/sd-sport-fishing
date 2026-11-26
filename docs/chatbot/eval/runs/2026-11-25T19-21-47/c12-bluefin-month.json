@@ -1,0 +1,182 @@
+{
+  "case": {
+    "id": "c12-bluefin-month",
+    "persona": "App opener",
+    "turns": [
+      "Best boat for bluefin this month?"
+    ],
+    "expect": "Grounded in recent bluefin per angler; honest if bluefin counts are near zero.",
+    "checks": [
+      {
+        "mustSay": [
+          "bluefin"
+        ],
+        "mustNotSay": [
+          "612"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Best boat for bluefin this month?",
+      "text": "Short answer: recent catch history doesn't show any San Diego boat landing bluefin in meaningful numbers right now — the last 10 trips for almost every boat show **0 bluefin per angler**. The only boats with any recent bluefin on the board are Tribute (0.13/angler) and Constitution and Pacific Voyager (0.07/angler each), all very low.\n\nIf you still want the best shot based on what's actually been caught, here are the closest options:\n\n<trip-card>{\"tripId\": \"1086116\", \"why\": [\"Tribute's last 10 trips show 0.13 bluefin per angler — highest of any boat right now\", \"Only 3 of 30 spots open as of last update\", \"Targets tuna and yellowtail, $555\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1091063\", \"why\": [\"Constitution's last 10 trips show 0.07 bluefin per angler\", \"1.5 day at $543, meals/bait/bunk included\", \"Season TPA 2.87 — strong overall trophy numbers\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1022056\", \"why\": [\"Pacific Voyager specifically targets bluefin tuna and yellowtail\", \"Recent form: 0.07 bluefin, 5.95 yellowfin, 0.93 yellowtail per angler\", \"5-day Dec 26, 6 of 12 spots open — passport required\"]}</trip-card>\n\nYellowfin is the species actually biting this month — happy to pivot if you'd rather chase what's hot.\n\n<followups>[\"What's hot right now instead?\", \"Show longer-range bluefin trips\", \"Compare Tribute vs Constitution\"]</followups>",
+      "ms": 9755,
+      "usage": {
+        "input_tokens": 23295,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 560,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44160,
+      "cards": [
+        {
+          "tripId": "1086116",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086116",
+            "sourceId": "1086116",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-27T17:00:00-08:00",
+            "departLabel": "Fri 11/27 5:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 555,
+            "openSpots": 3,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "docs": "MX permit extra",
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "Tribute's last 10 trips show 0.13 bluefin per angler — highest of any boat right now",
+            "Only 3 of 30 spots open as of last update",
+            "Targets tuna and yellowtail, $555"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 3,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1091063",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1091063",
+            "sourceId": "1091063",
+            "boat": "Constitution",
+            "landing": "Fisherman's Landing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-12-04T18:00:00-08:00",
+            "departLabel": "Fri 12/4 6:00 PM",
+            "departDate": "2026-12-04",
+            "returnLocal": "2026-12-06T06:00:00-08:00",
+            "returnLabel": "Sun 12/6 6:00 AM",
+            "price": 543,
+            "openSpots": 5,
+            "capacity": 21,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1091063",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 221-8500",
+            "targetSpecies": "Tuna, Yellowtail and more",
+            "included": "Meals, Bait & Bunk",
+            "tripStatus": null,
+            "docs": "passport not req; MX permit extra",
+            "winRate": 29,
+            "avgTPA": 2.87,
+            "boatPageUrl": "#boat/Constitution"
+          },
+          "why": [
+            "Constitution's last 10 trips show 0.07 bluefin per angler",
+            "1.5 day at $543, meals/bait/bunk included",
+            "Season TPA 2.87 — strong overall trophy numbers"
+          ],
+          "boat": "Constitution",
+          "date": "2026-12-04",
+          "tripLength": "1.5 Day",
+          "price": 543,
+          "openSpots": 5,
+          "landing": "Fisherman's Landing",
+          "url": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1091063",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1022056",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1022056",
+            "sourceId": "1022056",
+            "boat": "Pacific Voyager",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "5 Day",
+            "departLocal": "2026-12-26T09:00:00-08:00",
+            "departLabel": "Sat 12/26 9:00 AM",
+            "departDate": "2026-12-26",
+            "returnLocal": "2026-12-31T06:00:00-08:00",
+            "returnLabel": "Thu 12/31 6:00 AM",
+            "price": 2500,
+            "openSpots": 6,
+            "capacity": 12,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1022056",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Bluefin Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "docs": "passport req; MX permit extra",
+            "winRate": 0,
+            "avgTPA": 2.52,
+            "boatPageUrl": "#boat/Pacific%20Voyager"
+          },
+          "why": [
+            "Pacific Voyager specifically targets bluefin tuna and yellowtail",
+            "Recent form: 0.07 bluefin, 5.95 yellowfin, 0.93 yellowtail per angler",
+            "5-day Dec 26, 6 of 12 spots open — passport required"
+          ],
+          "boat": "Pacific Voyager",
+          "date": "2026-12-26",
+          "tripLength": "5 Day",
+          "price": 2500,
+          "openSpots": 6,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1022056",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

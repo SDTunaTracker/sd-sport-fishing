@@ -13,9 +13,11 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '../../..');
-const WEB = path.join(ROOT, 'web');
+// CC_WEB_DIR: load the site files from another folder (e.g. copies downloaded
+// from the live site) instead of this checkout's web/.
+const WEB = process.env.CC_WEB_DIR || path.join(ROOT, 'web');
 const PROXY = process.env.CHAT_PROXY_URL || 'https://chatbot.tylerjchristian.workers.dev';
-const ORIGIN = 'http://localhost:8765';
+const ORIGIN = process.env.CC_ORIGIN || 'http://localhost:8765';
 
 function loadWindow() {
   const store = {};
@@ -27,7 +29,7 @@ function loadWindow() {
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'region-data.js', 'chat-api.js', 'analytics.js']) {
+  for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'region-data.js', 'regulations.js', 'chat-api.js', 'analytics.js']) {
     vm.runInContext(fs.readFileSync(path.join(WEB, f), 'utf8'), ctx, { filename: f });
   }
   // Non-base regions (OC/LA, ...) live in data-region-<id>.js; merge them all.
@@ -87,9 +89,23 @@ function pacificParts(iso) {
 const GLOBAL_PROSE_RULES = [
   { re: /forecast score|\b\d+(\.\d)?\s*\/\s*10\b|bite (outlook|forecast)|will (fish|bite) (best|well|better)|conditions (look|are rated)/i, why: 'forecast/prediction language' },
   { re: /^\s*\|.*\|\s*$/m, why: 'markdown table (UI renders raw pipes)' },
-  { re: /\]\(https?:\/\//, why: 'raw external URL in prose (cards carry links)' },
   { re: /(link|this) (will )?(book|reserve)s? (it|your|the)|takes you straight to .*reservation page/i, why: 'claims a link books/reserves' },
 ];
+
+// External links in prose are only OK when they point at an official source
+// listed in web/regulations.js (the regs answers cite those). Anything else
+// (booking pages, made-up URLs) belongs on a card.
+let ALLOWED_PROSE_URLS = new Set();
+function proseUrlFails(prose) {
+  const fails = [];
+  const re = /\]\((https?:\/\/[^)\s]+)\)|(?<!\()\bhttps?:\/\/[^\s)]+/g;
+  let m;
+  while ((m = re.exec(prose))) {
+    const url = (m[1] || m[0]).replace(/[.,;]+$/, '');
+    if (!ALLOWED_PROSE_URLS.has(url)) fails.push(`external URL in prose not from regulations sources: ${url.slice(0, 80)}`);
+  }
+  return fails;
+}
 
 function scoreCards(ctx, text) {
   const cards = [];
@@ -130,6 +146,7 @@ function scoreTurn(text, cards, check) {
   const prose = (text || '').replace(/<trip-card>[\s\S]*?<\/trip-card>/g, '').replace(/<followups>[\s\S]*?<\/followups>/g, '').replace(/<actions>[\s\S]*?<\/actions>/g, '');
   const fails = [];
   GLOBAL_PROSE_RULES.forEach(r => { if (r.re.test(prose)) fails.push(r.why); });
+  fails.push(...proseUrlFails(prose));
   const ok = cards.filter(c => c.hydrated);
   if (cards.some(c => c.issues && c.issues.length)) fails.push(`${cards.filter(c => c.issues && c.issues.length).length} card(s) with issues`);
   if (cards.length > 3) fails.push(`${cards.length} cards (max 3)`);
@@ -155,6 +172,7 @@ async function main() {
   const cases = JSON.parse(fs.readFileSync(path.join(__dirname, 'cases.json'), 'utf8'));
   const only = process.argv.slice(2);
   const ctx = loadWindow();
+  ALLOWED_PROSE_URLS = new Set(Object.values((ctx.TT_REGS && ctx.TT_REGS.sources) || {}).map(s => s.url));
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const outDir = path.join(__dirname, 'runs', stamp);
   fs.mkdirSync(outDir, { recursive: true });

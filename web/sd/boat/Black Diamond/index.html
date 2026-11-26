@@ -52,11 +52,19 @@
   ]
 }
 </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6QDTY73V37"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6QDTY73V37');
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20261125-11">
-<link rel="stylesheet" href="design-system.css?v=20261125-10">
+<link rel="stylesheet" href="styles.css?v=20261125-62">
+<link rel="stylesheet" href="design-system.css?v=20261125-13">
 <script>window.VESSEL_WORKER_URL = '';</script>
 <script
   async
@@ -79,18 +87,18 @@
 <section>
 <h2>Latest Black Diamond fish counts</h2>
 <table>
-  <caption>Last 10 reported trips (trophy species landed)</caption>
+  <caption>Last 10 reported trips (fish landed; released fish not counted)</caption>
   <thead><tr><th>Date</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
   <tbody>
-<tr><td>Aug 6, 2018</td><td>2 Day</td><td>6</td><td>6 dorado</td></tr>
+<tr><td>Aug 6, 2018</td><td>2 Day</td><td>6</td><td>6 dorado, 1 calico bass, 1 lingcod, 1 rockfish</td></tr>
 <tr><td>Jul 27, 2018</td><td>Full Day</td><td>6</td><td>2 yellowtail, 1 dorado</td></tr>
 <tr><td>Jul 22, 2018</td><td>Full Day</td><td>5</td><td>2 bluefin</td></tr>
-<tr><td>Jul 14, 2018</td><td>Full Day</td><td>5</td><td>1 yellowfin, 11 yellowtail</td></tr>
-<tr><td>Jun 9, 2018</td><td>Full Day</td><td>6</td><td>11 yellowtail</td></tr>
-<tr><td>Apr 28, 2018</td><td>Full Day</td><td>5</td><td>2 yellowtail</td></tr>
-<tr><td>Apr 14, 2018</td><td>Full Day</td><td>5</td><td>no trophy fish</td></tr>
-<tr><td>Apr 7, 2018</td><td>Full Day</td><td>5</td><td>no trophy fish</td></tr>
-<tr><td>Feb 24, 2018</td><td>Full Day</td><td>4</td><td>20 yellowtail</td></tr>
+<tr><td>Jul 14, 2018</td><td>Full Day</td><td>5</td><td>1 yellowfin, 11 yellowtail, 3 bonito</td></tr>
+<tr><td>Jun 9, 2018</td><td>Full Day</td><td>6</td><td>11 yellowtail, 6 barracuda, 14 calico bass, 1 bonito</td></tr>
+<tr><td>Apr 28, 2018</td><td>Full Day</td><td>5</td><td>2 yellowtail, 11 bonito</td></tr>
+<tr><td>Apr 14, 2018</td><td>Full Day</td><td>5</td><td>45 rockfish</td></tr>
+<tr><td>Apr 7, 2018</td><td>Full Day</td><td>5</td><td>3 bonito</td></tr>
+<tr><td>Feb 24, 2018</td><td>Full Day</td><td>4</td><td>20 yellowtail, 1 sheephead, 5 lingcod</td></tr>
 <tr><td>Feb 6, 2018</td><td>Overnight</td><td>4</td><td>20 yellowtail</td></tr>
   </tbody>
 </table>
@@ -105,8 +113,9 @@
   </tbody>
 </table>
 <section><h2>Species Breakdown</h2><ul><li>Bluefin: 2 landed</li><li>Yellowfin: 1 landed</li><li>Yellowtail: 66 landed</li><li>Dorado: 7 landed</li></ul></section>
-<section><h2>Trips run</h2><ul><li>Full Day: 8 trips</li><li>2 Day: 1 trips</li><li>Overnight: 1 trips</li></ul></section>
+<section><h2>Trips run</h2><ul><li><a href="/sd/trips/full-day/">Full Day</a>: 8 trips</li><li><a href="/sd/trips/2-day/">2 Day</a>: 1 trips</li><li><a href="/sd/trips/overnight/">Overnight</a>: 1 trips</li></ul></section>
 
+<section><h2>Other boats at Fisherman's Landing</h2><ul><li><a href="/sd/boat/Dolphin/">Dolphin</a></li><li><a href="/sd/boat/Pacific%20Queen/">Pacific Queen</a></li><li><a href="/sd/boat/Constitution/">Constitution</a></li><li><a href="/sd/boat/Tomahawk/">Tomahawk</a></li><li><a href="/sd/boat/Liberty/">Liberty</a></li><li><a href="/sd/boat/Pegasus/">Pegasus</a></li><li><a href="/sd/boat/Freeman%2034/">Freeman 34</a></li><li><a href="/sd/boat/Islander/">Islander</a></li><li><a href="/sd/boat/Pacific%20Dawn/">Pacific Dawn</a></li><li><a href="/sd/boat/Fortune/">Fortune</a></li><li><a href="/sd/boat/Poseidon/">Poseidon</a></li><li><a href="/sd/boat/Lucky%20B%20Sportfishing/">Lucky B Sportfishing</a></li></ul></section>
 <p><a href="/sd/landing/fishermans-landing/">More boats at Fisherman's Landing →</a></p>
 </article>
 </div>
@@ -117,12 +126,13 @@
 <script type="text/javascript-deferred" id="tt-leaflet-js" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin="anonymous"></script>
 
 <script src="dates.js?v=20261124-1"></script>
-<script src="feature-flags.js?v=20261124-1"></script>
-<script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261125-1"></script>
+<script src="feature-flags.js?v=20261125-4"></script>
+<script src="regions.js?v=20261125-54"></script>
+<script src="data.js?v=20261125-3"></script>
 <script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
-<script src="chat-api.js?v=20261125-7"></script>
-<script src="analytics.js?v=20261125-3"></script>
+<script src="region-data.js?v=20261125-4"></script>
+<script src="chat-api.js?v=20261125-53"></script>
+<script src="analytics.js?v=20261125-55"></script>
 <script src="analytics-events.js?v=20261125-8"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
@@ -131,28 +141,29 @@
 
 <script src="dist/tweaks-panel.js?v=20261125-3"></script>
 <script src="dist/metric-label.js?v=20261125-3"></script>
-<script src="dist/ui.js?v=20261125-10"></script>
-<script src="dist/components.js?v=20261125-3"></script>
-<script src="dist/filterbar.js?v=20261125-9"></script>
-<script src="dist/dashboard.js?v=20261125-11"></script>
-<script src="dist/home.js?v=20261125-11"></script>
-<script src="dist/boats.js?v=20261125-3"></script>
-<script src="dist/drilldown.js?v=20261125-9"></script>
-<script src="dist/boat-reviews.js?v=20261125-8"></script>
-<script src="dist/forum-reports.js?v=20261125-10"></script>
+<script src="dist/ui.js?v=20261125-56"></script>
+<script src="dist/components.js?v=20261125-4"></script>
+<script src="dist/filterbar.js?v=20261125-14"></script>
+<script src="dist/dashboard.js?v=20261125-16"></script>
+<script src="dist/home.js?v=20261125-58"></script>
+<script src="dist/boats.js?v=20261125-9"></script>
+<script src="dist/drilldown.js?v=20261125-56"></script>
+<script src="dist/boat-reviews.js?v=20261125-11"></script>
+<script src="dist/forum-reports.js?v=20261125-25"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261125-8"></script>
-<script src="dist/tripplanner.js?v=20261125-9"></script>
-<script src="dist/headtohead.js?v=20261125-3"></script>
+<script src="dist/charts.js?v=20261125-15"></script>
+<script src="dist/tripplanner.js?v=20261125-53"></script>
+<script src="dist/headtohead.js?v=20261125-8"></script>
 <script src="dist/seasonality.js?v=20261125-3"></script>
-<script src="dist/moon.js?v=20261125-3"></script>
+<script src="dist/moon.js?v=20261125-7"></script>
 <script src="dist/settings.js?v=20261125-3"></script>
-<script src="dist/account.js?v=20261125-3"></script>
-<script src="dist/analytics.js?v=20261125-3"></script>
+<script src="dist/account.js?v=20261125-8"></script>
+<script src="dist/analytics.js?v=20261125-54"></script>
 <script src="dist/forecast.js?v=20261125-3"></script>
-<script src="dist/chatbot.js?v=20261125-11"></script>
-<script src="dist/app.js?v=20261125-7"></script>
-<script src="seo.js?v=20261125-2"></script>
+<script src="dist/chatbot.js?v=20261125-13"></script>
+<script src="dist/sfbay.js?v=20261125-18"></script>
+<script src="dist/app.js?v=20261125-60"></script>
+<script src="seo.js?v=20261125-54"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

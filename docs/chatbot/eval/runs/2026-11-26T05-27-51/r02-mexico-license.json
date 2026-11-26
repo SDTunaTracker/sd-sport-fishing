@@ -1,0 +1,54 @@
+{
+  "case": {
+    "id": "r02-mexico-license",
+    "persona": "Regs: Mexico paperwork",
+    "turns": [
+      "Do I need a Mexican fishing license for a 1.5 day trip?"
+    ],
+    "expect": "Mexican permit (CONAPESCA) if fishing Mexican waters, FMM/passport via INM list, ask the landing, official link; no invented price.",
+    "checks": [
+      {
+        "mustSay": [
+          "CONAPESCA|Mexican (sport[- ]fishing )?(permit|licen[cs]e)",
+          "landing",
+          "check|confirm"
+        ],
+        "mustNotSay": [
+          "(permit|licen[cs]e)[^.]{0,30}\\$\\s?\\d+|\\$\\s?\\d+[^.]{0,30}(permit|licen[cs]e)",
+          "you (do not|don.t) need (a|any) (mexican )?(permit|license)",
+          "(most|many|usually|typically)\\b.{0,50}?\\b(cross|fish|go)\\b.{0,30}mexic",
+          "(sell|sold)[^.]{0,30}(at|on) (check-?in|the dock|the landing)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Do I need a Mexican fishing license for a 1.5 day trip?",
+      "text": "Short answer: if the trip fishes in Mexican waters, yes — you'll need a Mexican sport-fishing permit (CONAPESCA) and to be on the boat's FMM passenger list, with your passport. If it stays in US waters, no.\n\nFrom the regulations summary (last checked 2026-11-25):\n- **Mexican sport-fishing permit** (CONAPESCA) is required to fish from a boat in Mexican waters. Sold by day/week/month/year/excursion. [CONAPESCA](https://www.gob.mx/conapesca/documentos/conapesca-01-016-pesca-deportivo-recreativa)\n- Foreigners entering Mexican waters by boat must be on the boat's **INM passenger list (FMM)** with the immigration fee paid. **Carry your passport.** [INM](https://www.gob.mx/inm/acciones-y-programas/sport-fishing-and-nautical-tourism)\n\nThe data doesn't tell me which specific 1.5-day trips cross into Mexican waters, so confirm with the landing. Most 1.5-day listings I have note \"MX permit extra\" — for example, the **Tribute** (Seaforth), **Constitution** (Fisherman's, \"passport not required\"), and **Old Glory** (H&M) list it. Always confirm the exact docs on the landing's site before booking.\n\n<followups>[\"Show me 1.5 day trips this weekend\", \"Which trips don't need a passport?\", \"What's the Mexico bag limit?\"]</followups>",
+      "ms": 8088,
+      "usage": {
+        "input_tokens": 23009,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 504,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 43754,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

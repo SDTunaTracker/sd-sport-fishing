@@ -1,0 +1,179 @@
+{
+  "case": {
+    "id": "c12-bluefin-month",
+    "persona": "App opener",
+    "turns": [
+      "Best boat for bluefin this month?"
+    ],
+    "expect": "Grounded in recent bluefin per angler; honest if bluefin counts are near zero.",
+    "checks": [
+      {
+        "mustSay": [
+          "bluefin"
+        ],
+        "mustNotSay": [
+          "612"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Best boat for bluefin this month?",
+      "text": "Honestly, bluefin have been scarce in recent catch data — most boats are showing **0 per angler** on their last 10 trips. The only boats with any bluefin in RECENT FORM are Tribute (0.13/angler), Constitution (0.07), and Pacific Voyager (0.07), and yellowfin is what's actually biting right now.\n\nHere are the closest matches with upcoming trips:\n\n- **Tribute** has the most recent bluefin on the board and runs 1.5-days almost every week.\n- **Constitution** runs long-range style 1.5s and 2-days with the best TPA/day in its length class (**2.87**).\n\n<trip-card>{\"tripId\": \"1086116\", \"why\": [\"Only boat with recent bluefin on last 10 trips (0.13/angler)\", \"1.5 Day leaves Fri 11/27 — fishes the weekend\", \"3 of 30 spots open as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1091063\", \"why\": [\"Recent form shows 0.07 bluefin/angler\", \"Highest TPA 2.87 among 1.5-days in the data\", \"5 of 21 spots open as of last update\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1030269\", \"why\": [\"2 Day on Constitution, Fri 11/27 — most time on the water this week\", \"Recent bluefin 0.07/angler\", \"21/21 open as of last update\"]}</trip-card>\n\nConfirm availability on the landing's site before you commit — I can't hold spots.\n\n<followups>[\"Show overnight options this weekend\", \"What are boats actually catching right now?\", \"Cheaper bluefin-capable trips\"]</followups>",
+      "ms": 11240,
+      "usage": {
+        "input_tokens": 19781,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 561,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 35943,
+      "cards": [
+        {
+          "tripId": "1086116",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086116",
+            "sourceId": "1086116",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-27T17:00:00-08:00",
+            "departLabel": "Fri 11/27 5:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 555,
+            "openSpots": 3,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "Only boat with recent bluefin on last 10 trips (0.13/angler)",
+            "1.5 Day leaves Fri 11/27 — fishes the weekend",
+            "3 of 30 spots open as of last update"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 3,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1091063",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1091063",
+            "sourceId": "1091063",
+            "boat": "Constitution",
+            "landing": "Fisherman's Landing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-12-04T18:00:00-08:00",
+            "departLabel": "Fri 12/4 6:00 PM",
+            "departDate": "2026-12-04",
+            "returnLocal": "2026-12-06T06:00:00-08:00",
+            "returnLabel": "Sun 12/6 6:00 AM",
+            "price": 543,
+            "openSpots": 5,
+            "capacity": 21,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1091063",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 221-8500",
+            "targetSpecies": "Tuna, Yellowtail and more",
+            "included": "Meals, Bait & Bunk",
+            "tripStatus": null,
+            "winRate": 29,
+            "avgTPA": 2.87,
+            "boatPageUrl": "#boat/Constitution"
+          },
+          "why": [
+            "Recent form shows 0.07 bluefin/angler",
+            "Highest TPA 2.87 among 1.5-days in the data",
+            "5 of 21 spots open as of last update"
+          ],
+          "boat": "Constitution",
+          "date": "2026-12-04",
+          "tripLength": "1.5 Day",
+          "price": 543,
+          "openSpots": 5,
+          "landing": "Fisherman's Landing",
+          "url": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1091063",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1030269",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1030269",
+            "sourceId": "1030269",
+            "boat": "Constitution",
+            "landing": "Fisherman's Landing",
+            "tripLength": "2 Day",
+            "departLocal": "2026-11-27T11:00:00-08:00",
+            "departLabel": "Fri 11/27 11:00 AM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 849,
+            "openSpots": 21,
+            "capacity": 21,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1030269",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 221-8500",
+            "targetSpecies": "Tuna, Yellowtail and more",
+            "included": "Meals, Mexican Permits, Bait & Bunk",
+            "tripStatus": null,
+            "winRate": 19,
+            "avgTPA": 1.39,
+            "boatPageUrl": "#boat/Constitution"
+          },
+          "why": [
+            "2 Day on Constitution, Fri 11/27 — most time on the water this week",
+            "Recent bluefin 0.07/angler",
+            "21/21 open as of last update"
+          ],
+          "boat": "Constitution",
+          "date": "2026-11-27",
+          "tripLength": "2 Day",
+          "price": 849,
+          "openSpots": 21,
+          "landing": "Fisherman's Landing",
+          "url": "https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=1030269",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

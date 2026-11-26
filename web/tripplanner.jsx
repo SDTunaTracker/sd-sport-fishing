@@ -267,6 +267,91 @@ function HighlightedNote({ text }) {
   return <>{parts}</>;
 }
 
+// ── Regulations section (data: web/regulations.js → window.TT_REGS) ─────────
+// Static, hand-curated summary with sources and a "last checked" date.
+// Never computes or guesses a limit: everything shown comes from TT_REGS.
+function _regsDate(iso) {
+  const [y, m, d] = String(iso || '').split('-').map(Number);
+  if (!y) return '';
+  return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+function RegsSources({ ids }) {
+  const R = window.TT_REGS;
+  const list = (ids || []).map(id => R.sources[id]).filter(Boolean);
+  if (!list.length) return null;
+  return (
+    <span className="tp-regs-src">
+      {list.map((src, i) => (
+        <a key={src.url} href={src.url} target="_blank" rel="noopener noreferrer" title={src.name}
+           onClick={() => window.TTTrack && TTTrack.regsSourceClick && TTTrack.regsSourceClick(src.name)}>
+          {src.short || src.name}
+        </a>
+      ))}
+    </span>
+  );
+}
+function RegsSection({ trip }) {
+  const R = window.TT_REGS;
+  const info = window.ttRegsForTrip ? window.ttRegsForTrip(trip) : null;
+  if (!R || !info) return null;
+  const mx = R.mexico;
+  // Seasons in the summary are dated; flag it if nobody re-checked in 120 days.
+  const ageDays = (Date.now() - Date.parse(R.lastChecked + 'T12:00:00Z')) / 864e5;
+  return (
+    <section className="tp-regs" aria-label="Fishing regulations summary">
+      <div className="tp-regs-eyebrow">Regulations</div>
+      {ageDays > 120 && (
+        <p className="tp-regs-stale">This summary may be out of date. Use the official links below.</p>
+      )}
+
+      <p className="tp-regs-lede">California daily limits, per angler</p>
+      <dl className="tp-regs-grid">
+        {info.species.map(sp => {
+          const note = sp.card !== undefined ? sp.card : sp.note;
+          return (
+            <div key={sp.key} className="tp-regs-item">
+              <dt className="tp-regs-sp">{sp.name}</dt>
+              <dd className="tp-regs-limit">{sp.limit}</dd>
+              {note && <dd className="tp-regs-note">{note}</dd>}
+            </div>
+          );
+        })}
+      </dl>
+      {info.multiDay && <p className="tp-regs-p">{R.california.multiDay}</p>}
+
+      <div className="tp-regs-mx">
+        <div className="tp-regs-sub">Fishing Mexican waters?</div>
+        {info.listing && (
+          <p className="tp-regs-listing">
+            <q>{info.listing}</q> <span className="tp-regs-attr">From the trip listing</span>
+          </p>
+        )}
+        {(mx.card || [mx.permit, mx.fmm, mx.limits]).map(line => <p key={line} className="tp-regs-p">{line}</p>)}
+        <a className="tp-regs-morelink" href={R.sources.conapesca.url} target="_blank" rel="noopener noreferrer"
+           onClick={() => window.TTTrack && TTTrack.regsSourceClick && TTTrack.regsSourceClick('conapesca_more')}>
+          More on Mexican rules ↗
+        </a>
+      </div>
+
+      {info.region && (
+        <details className="tp-regs-more">
+          <summary>Seasons &amp; closures: {info.region.name}</summary>
+          <ul>
+            {info.region.closures.map(c => <li key={c}>{c}</li>)}
+            {(info.region.otherLimits || []).map(c => <li key={c}>{c}</li>)}
+            <li>{R.california.license}</li>
+          </ul>
+        </details>
+      )}
+
+      <div className="tp-regs-foot">
+        <span>Last checked {_regsDate(R.lastChecked)} · {R.disclaimer.replace(/^Summary only\.\s*/, '')}</span>
+        <RegsSources ids={['cdfw_fish_table', 'noaa_660_721', 'conapesca', 'inm']}/>
+      </div>
+    </section>
+  );
+}
+
 // ── Trip card ─────────────────────────────────────────────────────────────────
 const NOTE_LINES = 2; // lines visible when collapsed
 
@@ -300,7 +385,9 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
 
   const capPct      = s.capacity ? Math.round((s.openSpots / s.capacity) * 100) : null;
   const capBarColor = capPct >= 30 ? '#34D399' : capPct >= 15 ? '#FBBF24' : '#F87171';
-  const hasNote     = !!(s.note || s.tripStatus || s.targetSpecies || s.whatsIncluded);
+  const showRegs    = !!window.TT_REGS && !isPast;
+  const docsTag     = showRegs && window.ttTripDocsTag ? window.ttTripDocsTag(s) : null;
+  const hasNote     = !!(s.note || s.tripStatus || s.targetSpecies || s.whatsIncluded) || showRegs;
 
   const boatEl = navigate ? (
     <a href={`/sd/boat/${encodeURIComponent(s.boat)}`}
@@ -346,6 +433,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
         <div className="tp-card-left-meta">
           <LengthBadge label={s.tripLength}/>
+          {docsTag && <span className="tp-docs-tag" title="From the trip listing. Open Trip details for permits and limits.">{docsTag}</span>}
           <div className="tp-card-moon" style={{color: moonC}}>
             <span className="tp-moon-long">{moon.emoji} {moonDisplayName(moon.phase)}</span>
             <span className="tp-moon-short">{moon.emoji} {moon.phase.split(' ')[0]}</span>
@@ -417,7 +505,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
         <div className={`tp-card-notes-strip${noteOpen ? ' open' : ''}`}>
           <button className="tp-card-notes-toggle" onClick={() => setNoteOpen(o => !o)}>
             <i className={`fa-solid fa-chevron-${noteOpen ? 'up' : 'down'} tp-card-notes-chevron`}/>
-            {noteOpen ? 'Hide details' : 'Trip details'}
+            {noteOpen ? 'Hide details' : (showRegs ? 'Trip details & limits' : 'Trip details')}
           </button>
           {noteOpen && (
             <div className="tp-card-notes-body">
@@ -441,6 +529,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
                   <HighlightedNote text={s.note}/>
                 </div>
               )}
+              {showRegs && <RegsSection trip={s}/>}
             </div>
           )}
         </div>
@@ -454,6 +543,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
           <SpotsBadge spots={s.openSpots} capacity={s.capacity}/>
           {price && <span className="tp-card-price-mobile">{price}</span>}
           {hasMeals(s) && <div className="tp-meals-badge">🍽️ Meals</div>}
+          {docsTag && <span className="tp-docs-tag tp-docs-tag-m">{docsTag}</span>}
         </div>
         {isPast ? (
           <button className="tp-card-review-btn tp-card-book-full" onClick={() => onReview && onReview(s)}>

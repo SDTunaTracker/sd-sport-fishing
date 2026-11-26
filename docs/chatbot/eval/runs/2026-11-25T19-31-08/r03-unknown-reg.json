@@ -1,0 +1,54 @@
+{
+  "case": {
+    "id": "r03-unknown-reg",
+    "persona": "Regs: not in the summary (must not invent)",
+    "turns": [
+      "What is the bag limit for wahoo in California?"
+    ],
+    "expect": "Says it is not in its summary and points to CDFW; does not make up a wahoo limit.",
+    "checks": [
+      {
+        "maxCards": 0,
+        "mustSay": [
+          "don.t have|not (in|covered)|isn.t (in|listed|covered)|not listed",
+          "CDFW|wildlife\\.ca\\.gov"
+        ],
+        "mustNotSay": [
+          "wahoo[^.]{0,40}\\b\\d+ (per|fish)",
+          "wahoo (bag )?limit is \\d|limit for wahoo is \\d",
+          "(most likely|probably|likely) (fall|falls|counts?|covered)",
+          "(most|many)[^.]{0,30}wahoo[^.]{0,40}mexic"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "What is the bag limit for wahoo in California?",
+      "text": "I don't have a wahoo bag limit in my regulations data — it's not listed in the species I have on file. I don't want to guess which general rule applies.\n\nYour best bet is to check the official CDFW page directly: [CDFW: bag & size limits by species](https://wildlife.ca.gov/Regions/Marine/FAQ/general-commercial-and-recreational-recreational-what-are-the-sport-regulations-for-the-fish-species-i-am-taking). If the trip fishes Mexican waters, Mexico's general rule is 10 fish per angler with no more than 5 of one species — confirm with the landing and see [CONAPESCA](https://www.gob.mx/conapesca/documentos/conapesca-01-016-pesca-deportivo-recreativa).\n\nThis is a summary last checked 2026-11-25 — rules change, so verify before you go.\n\n<followups>[\"What's the bluefin limit?\", \"Do I need a Mexican permit?\", \"Find me a trip this weekend\"]</followups>",
+      "ms": 5030,
+      "usage": {
+        "input_tokens": 23407,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 335,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44511,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "case": {
+    "id": "c07-sold-out-followup",
+    "persona": "Asks about a nearly full trip",
+    "turns": [
+      "Is there room on the Tribute 1.5 day this Friday?",
+      "OK what are my alternatives if that fills up?"
+    ],
+    "expect": "Tribute 1.5 Day Fri 11/27 5 PM, 4 spots as of last update. Alternatives near the same dates.",
+    "checks": [
+      {
+        "minCards": 1,
+        "boat": "Tribute",
+        "mustSay": [
+          "as of|last update"
+        ]
+      },
+      {
+        "minCards": 2
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Is there room on the Tribute 1.5 day this Friday?",
+      "text": "Yes — as of last update the Tribute's 1.5 day Friday 11/27 at 5:00 PM shows **3 of 30 spots open** at **$555**. That's tight, so confirm with Seaforth before you commit.\n\n<trip-card>{\"tripId\": \"1086116\", \"why\": [\"3 of 30 spots open as of last update\", \"Last 10 1.5-days: TPA 1.55 trophy fish/angler/day\", \"Targets tuna and yellowtail\"]}</trip-card>\n\nHeads up: the listing notes Mexican permit is extra, so ask the landing about that when you book.\n\n<followups>[\"Any other 1.5 days this weekend?\", \"What has the Tribute been catching?\", \"Cheaper weekend options?\"]</followups>",
+      "ms": 5109,
+      "usage": {
+        "input_tokens": 23304,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 253,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44160,
+      "cards": [
+        {
+          "tripId": "1086116",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086116",
+            "sourceId": "1086116",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-27T17:00:00-08:00",
+            "departLabel": "Fri 11/27 5:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-29T06:00:00-08:00",
+            "returnLabel": "Sun 11/29 6:00 AM",
+            "price": 555,
+            "openSpots": 3,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "docs": "MX permit extra",
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "3 of 30 spots open as of last update",
+            "Last 10 1.5-days: TPA 1.55 trophy fish/angler/day",
+            "Targets tuna and yellowtail"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-27",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 3,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086116",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    },
+    {
+      "user": "OK what are my alternatives if that fills up?",
+      "text": "Here are the other 1.5-day options leaving Friday evening 11/27 — actually, the data only shows the Tribute that night. Your closest alternatives are an overnight Friday or a 1.5 day Sunday:\n\n- **Producer overnight Fri 11/27** at $360 is the cheapest and marked Definite Go, with **12 of 29 open**.\n- **Tribute 1.5 day Sun 11/29** at $555 is the same boat/trip shifted two days, wide open.\n\n<trip-card>{\"tripId\": \"hm-8b4572-11272000\", \"why\": [\"$360, cheapest Friday overnight\", \"12 of 29 open as of last update\", \"Last 10 trips: 3.81 yellowfin per angler, TPA 4.91 — strongest recent form\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"1086119\", \"why\": [\"Same Tribute 1.5 day, Sunday 11/29\", \"30 of 30 open as of last update\", \"Last 10 1.5-days: TPA 1.55\"]}</trip-card>\n\nConfirm prices and spots on Seaforth's or H&M's site before booking.\n\n<followups>[\"What about Saturday overnight?\", \"Any Friday full days?\", \"Compare Producer vs Tribute\"]</followups>",
+      "ms": 7385,
+      "usage": {
+        "input_tokens": 23578,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 429,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44160,
+      "cards": [
+        {
+          "tripId": "hm-8b4572-11272000",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4572-11272000",
+            "sourceId": "54329a2f85523e2c438b4572@2026-11-28T04:00:00+00:00",
+            "boat": "Producer",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-11-27T20:00:00-08:00",
+            "departLabel": "Fri 11/27 8:00 PM",
+            "departDate": "2026-11-27",
+            "returnLocal": "2026-11-28T18:00:00-08:00",
+            "returnLabel": "Sat 11/28 6:00 PM",
+            "price": 360,
+            "openSpots": 12,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": "Definite Go",
+            "docs": null,
+            "winRate": 22,
+            "avgTPA": 1.91,
+            "boatPageUrl": "#boat/Producer"
+          },
+          "why": [
+            "$360, cheapest Friday overnight",
+            "12 of 29 open as of last update",
+            "Last 10 trips: 3.81 yellowfin per angler, TPA 4.91 — strongest recent form"
+          ],
+          "boat": "Producer",
+          "date": "2026-11-27",
+          "tripLength": "Overnight",
+          "price": 360,
+          "openSpots": 12,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/54329a2f85523e2c438b4572/2026-11-27/2000?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "1086119",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "1086119",
+            "sourceId": "1086119",
+            "boat": "Tribute",
+            "landing": "Seaforth Sportfishing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-11-29T17:00:00-08:00",
+            "departLabel": "Sun 11/29 5:00 PM",
+            "departDate": "2026-11-29",
+            "returnLocal": "2026-12-01T06:00:00-08:00",
+            "returnLabel": "Tue 12/1 6:00 AM",
+            "price": 555,
+            "openSpots": 30,
+            "capacity": 30,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086119",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 224-3383",
+            "targetSpecies": "Tuna and Yellowtail",
+            "included": null,
+            "tripStatus": null,
+            "docs": "MX permit extra",
+            "winRate": 25,
+            "avgTPA": 1.55,
+            "boatPageUrl": "#boat/Tribute"
+          },
+          "why": [
+            "Same Tribute 1.5 day, Sunday 11/29",
+            "30 of 30 open as of last update",
+            "Last 10 1.5-days: TPA 1.55"
+          ],
+          "boat": "Tribute",
+          "date": "2026-11-29",
+          "tripLength": "1.5 Day",
+          "price": 555,
+          "openSpots": 30,
+          "landing": "Seaforth Sportfishing",
+          "url": "https://seaforth.fishingreservations.net/sales/user.php?trip_id=1086119",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}
