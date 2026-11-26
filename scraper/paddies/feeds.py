@@ -106,6 +106,30 @@ FEEDS: list[Feed] = [
         "kind":      "paddies",
         "initial_backfill_days": 120,
     },
+    {
+        # "Southern CA Fishing Trip Planning": ~3 threads a week, 10 of 25
+        # sampled were OC/LA (survey 2026-11-26). Private-charter open
+        # spots, ramp status, small-craft warnings, and some trip reports.
+        "id":        "bd-socal-trip-planning",
+        "name":      "BD Southern CA Fishing Trip Planning",
+        "forum_url": "https://www.bdoutdoors.com/forums/forum/california-inshore-trip-planning/",
+        "rss_url":   "https://www.bdoutdoors.com/forums/forum/california-inshore-trip-planning/index.rss",
+        "enabled":   True,
+        "kind":      "paddies",
+        "initial_backfill_days": 60,
+    },
+    {
+        # Kayak Fishing: ~1 thread a week, mostly SoCal inshore (La Jolla
+        # kelp, yellowtail, halibut, some Catalina); a few freshwater posts
+        # that the extractor finds no SoCal places in.
+        "id":        "bd-kayak",
+        "name":      "BD Kayak Fishing",
+        "forum_url": "https://www.bdoutdoors.com/forums/forum/kayak-fishing-reports/",
+        "rss_url":   "https://www.bdoutdoors.com/forums/forum/kayak-fishing-reports/index.rss",
+        "enabled":   True,
+        "kind":      "paddies",
+        "initial_backfill_days": 90,
+    },
 ]
 
 

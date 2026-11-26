@@ -1164,10 +1164,10 @@ function WaypointModal({ latlng, onSave, onClose }) {
 
 // ── WaypointsSidebar ──────────────────────────────────────────────────────────
 
-function WaypointsSidebar({ waypoints, onSelect, onDelete, onExport, isOpen, onToggle }) {
+function WaypointsSidebar({ waypoints, onSelect, onDelete, onExport, isOpen, onToggle, inSheet }) {
   const [exportOpen, setExportOpen] = React.useState(false);
   return (
-    <div className={'wp-sidebar' + (isOpen ? ' open' : '')}>
+    <div className={'wp-sidebar' + (isOpen ? ' open' : '') + (inSheet ? ' wp-in-sheet' : ' wp-floating')}>
       <div className="wp-sidebar-header" onClick={onToggle}>
         <span className="wp-sidebar-title">
           📍 My Waypoints{waypoints.length > 0 ? ' (' + waypoints.length + ')' : ''}
@@ -1193,7 +1193,7 @@ function WaypointsSidebar({ waypoints, onSelect, onDelete, onExport, isOpen, onT
       {isOpen && (
         <div className="wp-sidebar-list">
           {waypoints.length === 0 ? (
-            <div className="wp-empty">Click anywhere on the map to save a waypoint.</div>
+            <div className="wp-empty">Tap anywhere on the map, then Save, to keep a waypoint.</div>
           ) : (
             waypoints.map(function(wp) {
               return (
@@ -1527,7 +1527,8 @@ function _fsSectionHtml(p) {
     if (!/^https:\/\//.test(src.url || '')) return '';
     return '<a href="' + _escHtml(src.url) + '" target="_blank" rel="noopener">' +
       '<span>Read on BloodyDecks ↗</span><small>' + _escHtml(src.title || 'Forum thread') +
-      (src.date ? ' · ' + _escHtml(_fsDate(src.date)) : '') + '</small></a>';
+      (src.date ? ' · ' + _escHtml(_fsDate(src.date)) : '') +
+      (src.photos > 0 ? ' · 📷 ' + _escHtml(src.photos) : '') + '</small></a>';
   }).filter(Boolean).join('');
   var foot = p.position === 'posted' ? 'Position as posted.'
     : p.position === 'estimate' ? 'Approximate (±' + _escHtml(p.precision_nm) + ' nm).' : 'Spot centre.';
@@ -2915,6 +2916,14 @@ function ChartsView({ navigate, settings, regions }) {
               onSstMode={setSstMode} onDirMode={setDirMode}
               spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
               spotWindow={spotWindow} onSpotWindow={setSpotWindow}
+            />
+            {/* Phones: waypoints live here, not floating over the map controls. */}
+            <div className="layer-group-label wp-sheet-label">Your map</div>
+            <WaypointsSidebar inSheet
+              waypoints={waypoints}
+              onSelect={function(wp) { setSheetOpen(false); handleSelect(wp); }}
+              onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
+              isOpen={sidebarOpen} onToggle={function() { setSidebarOpen(!sidebarOpen); }}
             />
             <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
           </div>

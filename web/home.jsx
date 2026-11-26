@@ -692,6 +692,9 @@
 
     return (
       <React.Fragment>
+        {/* Answers first: best overnight, best full day, what's biting, quick picks. */}
+        {window.HomeAnswers && <HomeAnswers regions={regions} navigate={navigate}/>}
+
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
         <section className="ch-hero">
           <div className="ch-hero-in">

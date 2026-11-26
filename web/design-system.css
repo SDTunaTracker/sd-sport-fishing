@@ -553,6 +553,7 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .pk-selects { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .pk-answer { margin-top: 20px; }
+.pk-answer:empty { margin-top: 0; }
 .pk-best { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; background: var(--band); border-radius: 14px; padding: 22px 24px; }
 .pk-kicker { font: 500 10.5px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 8px; }
 .pk-boat-link { padding: 0; border: 0; background: none; font: 700 32px/1.1 var(--serif); color: var(--ink); cursor: pointer; text-align: left; }
@@ -650,4 +651,106 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .pk-fab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(207,106,60,.45), 0 6px 20px rgba(23,51,44,.28); }
   .pk-fab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
   body { padding-bottom: 76px; }
+}
+
+/* Home: answers + quick picks above the hero */
+.ha { background: var(--bg); padding: 28px 0 4px; }
+.ha-in { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+.ha-title { font: 700 34px/1.1 var(--serif); letter-spacing: -.01em; color: var(--ink); margin: 0 0 18px; }
+.ha .pk { margin-bottom: 24px; }
+.ha .pk-title { font-size: 20px; margin-bottom: 14px; }
+.pk-more { display: inline-flex; align-items: center; min-height: 44px; margin: -8px 0 4px; color: var(--accent-ink); font: 500 14px var(--sans); text-decoration: none; }
+.pk-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pk-more:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
+@media (max-width: 760px) {
+  .ha { padding: 20px 0 0; }
+  .ha-in { padding: 0 16px; }
+  .ha-title { font-size: 28px; margin-bottom: 14px; }
+  .ha .pk { padding: 18px 16px; }
+  /* Phones: quick picks right under the title, answer cards after */
+  .ha-in { display: flex; flex-direction: column; }
+  .ha-in > .pk { order: 1; }
+  .ha-in > .ta { order: 2; }
+}
+
+/* ── Charts on phones (375 audit) ─────────────────────────────────────────
+   Nothing floats over the layer sheet or the map controls:
+   - waypoints move into the layer sheet ("Your map"), not over Recenter/Locate
+   - Leaflet controls start below the full-width Map Layers bar
+   - the sheet sits above the colour scale
+   - 40px+ targets for zoom, Recenter/Locate, SST modes and the scale toggle */
+.wp-in-sheet { display: none; }
+.wp-sheet-label { display: none; }
+@media (max-width: 768px) {
+  .charts-immersive .wp-floating { display: none; }
+  .wp-sheet-label { display: block; margin-top: 8px; }
+  .layers-sheet .wp-in-sheet { display: block; position: static; width: 100%; max-height: none; margin: 0;
+    background: var(--band, #F2EFE6); border: 1px solid var(--line, #E5E0D4); border-radius: 12px;
+    box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; overflow: visible; }
+  .wp-in-sheet .wp-sidebar-header { height: 48px; background: none; border-bottom: 1px solid transparent; }
+  .wp-in-sheet.open .wp-sidebar-header { border-bottom-color: var(--line, #E5E0D4); }
+  .wp-in-sheet .wp-sidebar-title { font: 600 14px var(--sans, system-ui); color: var(--ink, #17332C); }
+  .wp-in-sheet .wp-sidebar-chevron { font-size: 11px; color: var(--muted, #6B7A74); }
+  .wp-in-sheet .wp-export-btn { min-height: 36px; padding: 0 12px; font-size: 12.5px; background: var(--surface, #fff); border-color: var(--line-2, #D6D0C2); color: var(--ink-2, #33463F); border-radius: 8px; }
+  .wp-in-sheet .wp-export-dropdown { background: var(--surface, #fff); border-color: var(--line, #E5E0D4); box-shadow: 0 6px 18px rgba(23,51,44,.16); }
+  .wp-in-sheet .wp-export-dropdown button { min-height: 44px; color: var(--ink, #17332C); font-size: 14px; }
+  .wp-in-sheet .wp-export-dropdown button:hover { background: var(--band, #F2EFE6); }
+  .wp-in-sheet .wp-sidebar-list { max-height: 240px; }
+  .wp-in-sheet .wp-empty { color: var(--muted, #6B7A74); font-size: 13.5px; }
+  .wp-in-sheet .wp-item { border-bottom-color: var(--line, #E5E0D4); padding: 12px; }
+  .wp-in-sheet .wp-item-name { color: var(--ink, #17332C); font-size: 14px; }
+  .wp-in-sheet .wp-item-coords, .wp-in-sheet .wp-item-notes { color: var(--muted, #6B7A74); }
+  .wp-in-sheet .wp-item-delete { min-width: 40px; min-height: 40px; color: var(--muted, #6B7A74); }
+
+  .charts-immersive .leaflet-top { top: 60px; }
+  .charts-immersive .leaflet-touch .leaflet-bar a, .charts-immersive .leaflet-bar a { width: 40px; height: 40px; line-height: 40px; }
+  .recenter-control a, .locate-control a { height: 40px; line-height: 40px; padding-top: 0 !important; padding-bottom: 0 !important; display: flex; align-items: center; }
+  .chart-scalebar { top: 172px; }
+  .chart-scalebar-toggle { min-width: 32px; min-height: 32px; padding: 6px; }
+  .layers-sheet-overlay { z-index: 1300; }
+  .layers-sheet .layer-sst-btn { min-height: 36px; padding: 0 12px; font-size: 12.5px; }
+  .chart-readout-close { min-width: 40px; min-height: 40px; }
+  .chart-readout-save { min-height: 40px; padding-left: 14px; padding-right: 14px; }
+}
+/* Desktop: zoom sat under the layer panel; an open waypoints list sat under the scale. */
+@media (min-width: 769px) {
+  .charts-immersive .leaflet-top.leaflet-left { left: 244px; }
+  .wp-floating.open { z-index: 1150; }
+}
+
+/* ── Locked header + Analytics section bar ────────────────────────────────
+   Owner: "the nav bar at the top moves around… it should be locked".
+   The header was un-pinned on phones when it held a tall tab strip; it is a
+   54px row now, so it stays put everywhere. .main-content clipped overflow
+   with `hidden`, which made it a scroll box and stopped anything inside it
+   from sticking; `clip` trims the same overflow without that side effect. */
+@supports (overflow: clip) { .main-content { overflow-x: clip; } }
+.analytics-subtabbar { position: sticky; top: 48px; z-index: 40; }
+@media (max-width: 768px) {
+  .app-header { position: sticky; top: 0; z-index: 50; }
+  .analytics-subtabbar { top: 54px; }
+  .analytics-subtabbar a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px; font-size: 13px; }
+  .analytics-subtabbar { scroll-padding-inline: 16px; }
+}
+
+/* Pick my trip → Pick dates: multi-select days (three weeks, Sun–Sat columns) */
+.pk-days { grid-column: 2; width: 100%; max-width: 420px; margin-top: 4px; }
+.pk-days-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.pk-days-hint { font: 500 13px var(--sans); color: var(--muted); }
+.pk-days-acts { display: flex; gap: 6px; }
+.pk-days-acts button { min-height: 36px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); color: var(--ink-2); font: 500 13px var(--sans); cursor: pointer; }
+.pk-days-acts button:hover { border-color: var(--ink-2); }
+.pk-days-acts button:focus-visible, .pk-day:focus-visible { outline: none; box-shadow: var(--focus); }
+.pk-days-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.pk-days-wd { text-align: center; font: 500 11px/1 var(--mono); color: var(--faint); padding: 2px 0 4px; }
+.pk-day { position: relative; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 2px 0; }
+.pk-day:hover { border-color: var(--ink-2); }
+.pk-day.on { background: var(--pine); border-color: var(--pine); color: #fff; }
+.pk-day-n { font: 600 15px/1 var(--sans); }
+.pk-day-mon { font: 500 9.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
+.pk-day.on .pk-day-mon { color: #F2C7A6; }
+@media (max-width: 760px) {
+  .pk-days { grid-column: 1 / -1; max-width: none; }
+  .pk-day { min-height: 46px; }
 }

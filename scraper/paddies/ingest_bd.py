@@ -90,7 +90,9 @@ CREATE TABLE IF NOT EXISTS paddy_sources (
     raw_text      TEXT NOT NULL,         -- HTML-stripped post body
     extracted     INTEGER NOT NULL DEFAULT 0,
     truncated     INTEGER NOT NULL DEFAULT 0,
-    repair_attempts INTEGER NOT NULL DEFAULT 0  -- thread-page fetch tries
+    repair_attempts INTEGER NOT NULL DEFAULT 0, -- thread-page fetch tries
+    photos        TEXT,                  -- JSON list of attachment URLs (links only)
+    reply_to      TEXT                   -- thread URL when this row is a reply, else NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_paddy_sources_extracted
@@ -140,6 +142,10 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         conn.execute(
             "ALTER TABLE paddy_sources ADD COLUMN repair_attempts INTEGER NOT NULL DEFAULT 0"
         )
+    # Migration: photo links and reply rows (scraper/paddies/replies.py).
+    for col in ("photos", "reply_to"):
+        if col not in cols:
+            conn.execute(f"ALTER TABLE paddy_sources ADD COLUMN {col} TEXT")
     # Always ensure the feed index exists (safe once feed_id is present).
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_paddy_sources_feed "
@@ -186,6 +192,25 @@ def strip_html(html: str) -> str:
     s = re.sub(r"[ \t]+", " ", s)
     s = re.sub(r"\n{3,}", "\n\n", s)
     return s.strip()
+
+
+ATTACHMENT_RE = re.compile(
+    r"(?:https?://(?:www\.)?bdoutdoors\.com)?(/forums/attachments/[A-Za-z0-9_.%-]+\.\d+)/?")
+MAX_PHOTOS = 12
+
+
+def extract_photos(html: str | None) -> list[str]:
+    """BloodyDecks attachment links in a post's HTML, absolute and de-duplicated.
+
+    These are full-size originals (no public thumbnail), so the site links to
+    them via the thread and never embeds them.
+    """
+    out: list[str] = []
+    for m in ATTACHMENT_RE.finditer(html or ""):
+        u = f"https://www.bdoutdoors.com{m.group(1)}/"
+        if u not in out:
+            out.append(u)
+    return out[:MAX_PHOTOS]
 
 
 def _fetch_once(url: str, accept: str) -> bytes:
@@ -313,6 +338,7 @@ def parse_feed(xml_bytes: bytes):
             "author": author,
             "published_at": pub_dt,
             "raw_text": text,
+            "photos": extract_photos(html),
         }
 
 
@@ -330,14 +356,16 @@ def upsert_source(conn: sqlite3.Connection, item: dict, fetched_at: datetime,
         "fetched_at":   fetched_at.strftime("%Y-%m-%dT%H:%M:%S+00:00"),
         "raw_text":     item["raw_text"],
         "truncated":    1 if is_truncated(item["raw_text"]) else 0,
+        "photos":       json.dumps(item["photos"]) if item.get("photos") else None,
+        "reply_to":     item.get("reply_to"),
     }
     cur = conn.execute("""
         INSERT INTO paddy_sources
             (id, source, feed_id, url, title, author, published_at, fetched_at,
-             raw_text, extracted, truncated)
+             raw_text, extracted, truncated, photos, reply_to)
         VALUES
             (:id, :source, :feed_id, :url, :title, :author, :published_at, :fetched_at,
-             :raw_text, 0, :truncated)
+             :raw_text, 0, :truncated, :photos, :reply_to)
         ON CONFLICT(id) DO NOTHING
     """, row)
     return cur.rowcount == 1
@@ -427,14 +455,29 @@ def parse_listing(html_bytes: bytes):
         latest = _parse_xf_time(latest_el.get("datetime")) if latest_el else start
         if start is None:
             continue
+        dd = div.select_one(".structItem-cell--meta dd")
         yield {
             "url": canonical_url(urljoin(BD_BASE, a["href"])),
             "title": a.get_text(strip=True) or None,
             "author": div.get("data-author") or None,
             "published_at": start,
             "last_post_at": latest or start,
-            "sticky": "structItem--sticky" in (div.get("class") or []),
+            # Pinned threads sit in a sticky group container rather than
+            # carrying a class of their own on this theme.
+            "sticky": ("structItem--sticky" in (div.get("class") or [])
+                       or div.find_parent(class_="structItemContainer-group--sticky") is not None),
+            "replies": _count_text(dd.get_text() if dd else ""),
         }
+
+
+def _count_text(s: str) -> int:
+    """XenForo counts: '22', '1,204', '1.2K'."""
+    s = (s or "").strip().replace(",", "")
+    m = re.match(r"([\d.]+)\s*([KkMm]?)", s)
+    if not m:
+        return 0
+    n = float(m.group(1))
+    return int(n * {"k": 1000, "m": 1_000_000}.get(m.group(2).lower(), 1))
 
 
 def _listing_url(forum_url: str, page: int) -> str:
@@ -519,7 +562,10 @@ def _iso(dt: datetime) -> str:
 
 def _newest_published(conn: sqlite3.Connection, feed_id: str) -> datetime | None:
     r = conn.execute(
-        "SELECT MAX(published_at) FROM paddy_sources WHERE feed_id = ?", (feed_id,)
+        # First posts only: a stored reply (replies.py) must not make a new
+        # feed look already-seen or hide a gap in the RSS window.
+        "SELECT MAX(published_at) FROM paddy_sources WHERE feed_id = ? AND reply_to IS NULL",
+        (feed_id,)
     ).fetchone()
     if not r or not r[0]:
         return None

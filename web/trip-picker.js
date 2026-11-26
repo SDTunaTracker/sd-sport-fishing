@@ -23,6 +23,8 @@
 //       type    'full' | 'overnight' | '1.5' | 'multi' | 'long', an exact
 //               trip length ('Full Day', '2 Day', ...), or an array of those
 //       from/to 'YYYY-MM-DD' (Pacific dates, inclusive; default next 7 days)
+//       days: optional ['YYYY-MM-DD', ...] — only departures on these days
+//             (multi-select in Pick dates); from/to become its first/last day
 //       species 'Bluefin' | 'Yellowfin' | 'Yellowtail' | 'Dorado' | ... (optional)
 //       maxPrice number, dollars (optional)
 //       region  'san_diego' (default) | 'oc_la' | 'all_socal' | 'sf_bay'
@@ -247,8 +249,11 @@
     var metric = D.metric;
     var match = matcher(query.type || 'full');
     var nowDay = isoDay(now);
-    var from = query.from || nowDay;
-    var to = query.to || addDays(from, 6);
+    var days = Array.isArray(query.days) && query.days.length ? query.days.slice().sort() : null;
+    var daySet = days ? {} : null;
+    if (days) days.forEach(function (d) { daySet[d] = true; });
+    var from = days ? days[0] : (query.from || nowDay);
+    var to = days ? days[days.length - 1] : (query.to || addDays(from, 6));
     var landings = D.landingsFor(region);
     var inRegion = function (t) {
       if (landings) return landings.indexOf(t.landing) >= 0;
@@ -274,7 +279,7 @@
       if (!match(t.tripLength, t.tripLengthDays)) return false;
       if (!(new Date(t.departureAt).getTime() > now)) return false;
       var day = pacificDate(t.departureAt);
-      if (day < from || day > to) return false;
+      if (daySet ? !daySet[day] : (day < from || day > to)) return false;
       var seats = seatsOf(t);
       if (seats != null && seats <= 0) return false;
       if (/full|cancel/i.test(String(t.tripStatus || '')) || t.bookable === false) return false;
@@ -284,7 +289,7 @@
 
     var result = {
       best: null, alternates: [], considered: cands.length, noData: 0, scheduled: scheduled, reason: null,
-      query: { type: query.type || 'full', from: from, to: to, species: query.species || null,
+      query: { type: query.type || 'full', from: from, to: to, days: days, species: query.species || null,
                maxPrice: query.maxPrice != null ? query.maxPrice : null, region: region },
     };
     if (!cands.length) { result.reason = scheduled ? 'no-match' : 'no-schedule'; return result; }

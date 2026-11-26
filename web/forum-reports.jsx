@@ -78,6 +78,19 @@ function ForumAspectRow({ aspects }) {
   );
 }
 
+// BloodyDecks photos are full-size originals with no public thumbnail, so
+// we link to the post rather than embedding them.
+function FrPhotoLink({ n, url, short }) {
+  if (!n || !url) return null;
+  const label = `${n} photo${n === 1 ? '' : 's'}`;
+  return (
+    <a className="fr-photos-link" href={url} target="_blank" rel="noopener noreferrer">
+      <span aria-hidden="true">📷 </span>{short ? label : `${label} on BloodyDecks`}<span aria-hidden="true"> ↗</span>
+      <span className="sr-only">{short ? ' on BloodyDecks (new tab)' : ' (new tab)'}</span>
+    </a>
+  );
+}
+
 function ForumReportCard({ r }) {
   const quotes = Object.entries(r.quotes || {})
     .filter(([k]) => k !== 'fish_finding')
@@ -116,6 +129,7 @@ function ForumReportCard({ r }) {
           {r.tackle.slice(0, 3).map((t, i) => <span key={i} className="fr-chip">{t}</span>)}
         </div>
       )}
+      <FrPhotoLink n={r.photos} url={r.url}/>
     </li>
   );
 }
@@ -267,6 +281,7 @@ function WhatsWorkingCard({ lengths, regions }) {
               {it.source === 'landing' ? 'Landing report' : 'Read the report'}<span aria-hidden="true"> ↗</span>
               <span className="sr-only">{it.source === 'landing' ? " on the landing's site (new tab)" : ' on BloodyDecks (new tab)'}</span>
             </a>
+            {it.source !== 'landing' && <FrPhotoLink n={it.photos} url={it.url} short/>}
           </li>
         ))}
       </ul>
@@ -301,6 +316,18 @@ function _lnSize(size) {
   }).join(' · ');
 }
 
+// A quote that mostly repeats the title or our summary adds nothing; skip it.
+function _lnWords(t) { return new Set(String(t || '').toLowerCase().match(/[a-z0-9]+/g) || []); }
+function _lnRepeats(quote, ...others) {
+  const q = _lnWords(quote);
+  if (!q.size) return true;
+  return others.some(o => {
+    const w = _lnWords(o);
+    let hit = 0; q.forEach(x => { if (w.has(x)) hit++; });
+    return hit / q.size >= 0.6;
+  });
+}
+
 function LandingNotesSection({ boat }) {
   const [notes, setNotes] = _frUseState(null);
   _frUseEffect(() => {
@@ -313,7 +340,7 @@ function LandingNotesSection({ boat }) {
     <section className="fr-section ln-section" aria-labelledby="ln-title">
       <div className="fr-eyebrow">From the landing</div>
       <h2 className="fr-title" id="ln-title">Skipper and landing reports</h2>
-      <p className="fr-sub">Summaries of {boat}'s recent posts on the landing's report page. Photos and full reports are on the landing's site.</p>
+      <p className="fr-sub">Short summaries of {boat}'s recent posts on the landing's report page. Open a title or photo for the full report.</p>
       <ul className="fr-list">
         {notes.slice(0, LN_SHOW).map(n => (
           <li key={n.url} className="fr-card">
@@ -324,21 +351,32 @@ function LandingNotesSection({ boat }) {
             </a>
             {n.skipper_note && <p className="fr-card-catch">{n.skipper_note}</p>}
             {n.size?.length > 0 && <div className="fr-card-confirm"><span aria-hidden="true">⚖</span> {_lnSize(n.size)}</div>}
-            {n.quote && <div className="fr-quotes"><blockquote>“{n.quote}”</blockquote></div>}
-            {(n.tackle?.length > 0 || n.bait) && (
+            {n.quote && !_lnRepeats(n.quote, n.title, n.skipper_note) && <div className="fr-quotes"><blockquote>“{n.quote}”</blockquote></div>}
+            {n.bait && (
               <div className="fr-card-tackle">
-                <span className="fr-k">{n.tackle?.length ? 'Tackle' : 'Bait'}</span>
-                {n.bait && <span className="fr-chip">{n.bait}{n.bait_on_board ? ' on board' : ''}</span>}
-                {(n.tackle || []).slice(0, 3).map((t, i) => <span key={i} className="fr-chip">{t}</span>)}
+                <span className="fr-k">Bait</span>
+                <span className="fr-chip">{n.bait}{n.bait_on_board ? ' on board' : ''}</span>
+              </div>
+            )}
+            {n.tackle?.length > 0 && (
+              <div className="fr-card-tackle">
+                <span className="fr-k">Tackle</span>
+                {n.tackle.slice(0, 3).map((t, i) => <span key={i} className="fr-chip">{t}</span>)}
               </div>
             )}
             {n.photos?.length > 0 && (
               <div className="ln-photos">
-                {n.photos.slice(0, 4).map(src => (
-                  <a key={src} href={n.url} target="_blank" rel="noopener noreferrer" className="ln-photo">
-                    <img src={src} alt={`Photo from ${boat}'s report`} loading="lazy" referrerPolicy="no-referrer"/>
-                  </a>
-                ))}
+                {n.photos.slice(0, 4).map((src, i, shown) => {
+                  const more = i === shown.length - 1 ? n.photos.length - shown.length : 0;
+                  return (
+                    <a key={src} href={n.url} target="_blank" rel="noopener noreferrer" className="ln-photo"
+                      aria-label={`Photo ${i + 1} of ${n.photos.length} from "${n.title}"${more ? `, ${more} more in the report` : ''} (opens the landing's report in a new tab)`}>
+                      <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer"
+                        onError={e => { e.currentTarget.parentNode.style.display = 'none'; }}/>
+                      {more > 0 && <span className="ln-more" aria-hidden="true">+{more}</span>}
+                    </a>
+                  );
+                })}
               </div>
             )}
           </li>

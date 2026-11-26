@@ -252,6 +252,18 @@ Recommendation:
 
 Rehosting thumbnails of user photos would need the owner's call; the users hold the copyright.
 
+**Built (2026-11-26, owner: "Build them"):**
+- **Replies.** The new `scraper/paddies/replies.py` step runs after ingest. It:
+  - reads page 1 of each forum's listing;
+  - picks non-pinned threads with new replies in the last 14 days;
+  - reads the newest page, at most 3 pages per thread and 40 per run, 2.5 s apart, stopping on 403/429;
+  - keeps replies that read like reports, with quotes stripped and "nice report!" dropped;
+  - stores each as its own `paddy_sources` row (`reply_to` = thread URL), so both extractors read it.
+
+  First live test: 403 replies read, 69 kept.
+- **New feeds.** `bd-socal-trip-planning` (60-day first pull, 30 threads) and `bd-kayak` (90-day, 25 threads), both read by the paddy extractor.
+- **Photos.** Attachment links are stored on posts and replies (`paddy_sources.photos`). They're shown as "📷 N photos on BloodyDecks" links on boat-page reports, What's working and Charts spot popups. Never embedded.
+
 ## 4. Risks
 
 - **Extraction accuracy.** Sentiment from narrative text is subjective. Sarcasm and humour are common ("you know the drill", "Brave Pilgrims"), and multi-boat posts mix boats.
