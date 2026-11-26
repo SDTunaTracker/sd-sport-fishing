@@ -82,7 +82,8 @@ def main(argv: list[str] | None = None) -> int:
                  " species_name TEXT NOT NULL, count INTEGER NOT NULL, date TEXT NOT NULL,"
                  " boat TEXT NOT NULL, landing TEXT NOT NULL)")
     if args.skip_logged:
-        done = {r[0] for r in conn.execute("SELECT date FROM norcal_fetch_log WHERE status = 200")}
+        done = {r[0] for r in conn.execute("SELECT date FROM norcal_fetch_log WHERE status = 200"
+                                                " AND COALESCE(error, '') != 'not_posted'")}
         days = [d for d in days if d.isoformat() not in done]
     fetcher = S.Fetcher(offline=args.offline)
     totals = {"days": 0, "rows": 0, "inserted": 0, "no_count_days": 0, "cached": 0, "errors": 0}

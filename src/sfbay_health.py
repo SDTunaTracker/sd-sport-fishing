@@ -48,7 +48,8 @@ def check(conn: sqlite3.Connection, today: date | None = None,
                              f"SF Bay: no successful fetch since {last_ok or 'ever'}"))
 
     since = (today - timedelta(days=3)).isoformat()
-    empty = [r[0] for r in ok if r[0] >= since and not r[3] and not r[4]]
+    # A day fetched before its counts were up (error='not_posted') isn't a parse failure.
+    empty = [r[0] for r in ok if r[0] >= since and not r[3] and not r[4] and r[5] != "not_posted"]
     if empty:
         probs.append(Problem("sfbay:parse", "norcal_trips", "warning",
                              f"SF Bay page parsed to 0 rows without a no-counts marker on "
