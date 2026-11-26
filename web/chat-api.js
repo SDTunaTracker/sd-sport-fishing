@@ -580,15 +580,22 @@ async function streamChatMessage(userMessage, history, pageContext, onUpdate) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-opus-4-7',
-      max_tokens: 1500,
+      // The worker picks the model and enforces these caps; sent for clarity.
+      model: 'claude-haiku-4-5',
+      max_tokens: 1000,
       stream: true,
       system: buildSystemPrompt(pageContext),
-      messages: [...history, { role: 'user', content: userMessage }]
+      // Last 3 exchanges are plenty of context and keep each message cheap.
+      messages: [...history.slice(-6), { role: 'user', content: userMessage }]
     })
   });
 
   if (!response.ok) {
+    if (response.status === 429) {
+      let msg = 'Co-Captain needs a short break. Please try again in a bit.';
+      try { msg = (await response.json()).error || msg; } catch (e) {}
+      throw new Error(msg);
+    }
     throw new Error(`HTTP ${response.status} from worker`);
   }
 

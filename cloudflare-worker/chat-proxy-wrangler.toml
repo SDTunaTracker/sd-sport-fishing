@@ -1,0 +1,25 @@
+# Co-Captain chat relay (chatbot.tylerjchristian.workers.dev).
+# Deploy: npx wrangler deploy --config cloudflare-worker/chat-proxy-wrangler.toml
+name               = "chatbot"
+main               = "chat-proxy.js"
+compatibility_date = "2024-09-23"
+workers_dev        = true
+# Keep any variables already set in the Cloudflare dashboard.
+keep_vars          = true
+
+[vars]
+# Model for every chat reply. Haiku is about 5x cheaper than Opus.
+CHAT_MODEL = "claude-haiku-4-5"
+# Messages per day across all visitors. Only enforced once CHAT_KV is bound below.
+DAILY_CAP  = "300"
+
+# ── Optional hard daily cap ───────────────────────────────────────────────────
+# Create a KV namespace named CHAT_KV (Workers & Pages → KV), paste its id, and
+# uncomment. Without it, the per-visitor hourly limit and the Anthropic Console
+# monthly spend limit are the caps.
+# [[kv_namespaces]]
+# binding = "CHAT_KV"
+# id      = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# ── Secret (never in this file; already set on the deployed worker) ───────────
+# npx wrangler secret put ANTHROPIC_API_KEY --config cloudflare-worker/chat-proxy-wrangler.toml

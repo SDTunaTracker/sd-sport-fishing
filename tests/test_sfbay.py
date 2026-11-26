@@ -154,6 +154,12 @@ def test_export_survives_boat_changing_landing():
     assert {b["landing"] for b in p["BOATS"] if b["name"] == "Test Wolf"} == {"New Home"}
 
 
+def test_owner_pinned_boats_stay_ranked():
+    trips = [{"boat_slug": s, "anglers": 6} for s in ("argo", "scallywag", "small") for _ in range(5)]
+    six = N.classify_sixpacks(trips)
+    assert six["argo"] is False and six["scallywag"] is False and six["small"] is True
+
+
 def test_recent_day_updates_counts_in_place():
     conn = _db()
     trips, _ = S.parse_day(PAGE, DAY)

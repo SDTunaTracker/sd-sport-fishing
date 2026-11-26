@@ -51,7 +51,9 @@ from .feeds import feed_ids as _feed_ids
 # not here; their posts would only produce noise paddy/bite mentions.
 PADDY_FEED_IDS = _feed_ids("paddies")
 
-MODEL = "claude-sonnet-4-6"  # matches src/reddit_insights.py
+# Sonnet: a Haiku test on 8 posts matched only 26 of 35 mentions (banks often
+# differed), so the paddy map stays on Sonnet. PADDIES_MODEL overrides it.
+MODEL = os.environ.get("PADDIES_MODEL") or "claude-sonnet-4-6"
 MAX_TOKENS = 3000            # wider v2 schema can yield more mentions per post
 REQUEST_SLEEP = 0.5          # polite gap between successful calls (seconds)
 RETRY_BACKOFF = 2.0          # single retry after this many seconds
@@ -814,7 +816,7 @@ def run(limit: int | None = None, dry_run: bool = False, only_id: str | None = N
              f"{trunc_col}, {feed_col} "
              "FROM paddy_sources WHERE extracted = 0 "
              f"AND {feed_col.split(' AS ')[0]} IN ({','.join('?' * len(PADDY_FEED_IDS))}) "
-             "ORDER BY published_at ASC")
+             "ORDER BY published_at DESC")
         params = tuple(PADDY_FEED_IDS)
         if only_id:
             q = (f"SELECT id, url, title, author, published_at, raw_text, "
