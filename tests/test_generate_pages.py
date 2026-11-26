@@ -161,6 +161,12 @@ def test_trip_length_pages(tmp_path):
     # is static only, with the GA tag and a site nav
     assert 'id="root"' not in html and "unpkg.com/react" not in html
     assert "gtag/js?id=G-TEST" in html and 'href="/sd/boats">Boats</a>' in html
+    # short dates with the year in the caption (all rows in one year), short
+    # landing names for phones, captions outside the scroll box, 2 decimals
+    assert "<td>Aug 2</td>" in html and "from San Diego landings, 2026</p>" in html
+    assert '<span class="ls">H&amp;M</span>' in html
+    assert '<p class="cap">' in html and "<caption>" not in html
+    assert '<td class="num">1.75</td>' in html            # 35 fish / 20 anglers
     # Full Day page lists Tiny's trip but not the Newport boat
     full = (web / "sd" / "trips" / "full-day" / "index.html").read_text(encoding="utf-8")
     assert ">Tiny</a>" in full and "Far Boat" not in full

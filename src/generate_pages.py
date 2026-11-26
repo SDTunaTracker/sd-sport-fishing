@@ -356,8 +356,7 @@ _STATIC_CSS = """<style>
   p { margin: 0 0 12px; }
   .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 16px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  caption { caption-side: top; text-align: left; font-size: 14px; color: var(--muted);
-            padding: 0 0 8px; }
+  .cap { font-size: 14px; line-height: 1.5; color: var(--muted); margin: 6px 0 2px; }
   th { text-align: left; font: 500 10.5px/1.2 'DM Mono', ui-monospace, monospace; letter-spacing: .1em;
        text-transform: uppercase; color: var(--faint); padding: 10px 12px 10px 0;
        border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -374,6 +373,15 @@ _STATIC_CSS = """<style>
   .foot-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; font-size: 14px; color: var(--muted);
                 display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
   .foot-inner nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .ls { display: none; }
+  @media (max-width: 480px) {
+    .lf, .lc { display: none; }
+    .ls { display: inline; }
+    th, td { padding-right: 8px; }
+    th { letter-spacing: .05em; }
+    td.num { font-size: 13.5px; }
+    td:not(.num):not(:first-child) { overflow-wrap: anywhere; }
+  }
   @media (max-width: 760px) {
     .nav { display: none; }
     h1 { font-size: 28px; }
@@ -430,12 +438,18 @@ def _style_static(html: str) -> str:
         # Right-align a header cell when its column holds numbers in the first row.
         first = re.search(r"<tbody>\s*<tr>(.*?)</tr>", t, re.S)
         if first:
-            cells = re.findall(r"<td( class=\"num\")?>", first.group(1))
-            heads = list(re.finditer(r"<th>", t))
+            cells = re.findall(r'<td(?: class="([^"]*)")?>', first.group(1))
+            heads = list(re.finditer(r'<th(?: class="([^"]*)")?>', t))
             for i in reversed(range(min(len(cells), len(heads)))):
-                if cells[i]:
+                if "num" in cells[i].split():
                     h = heads[i]
-                    t = t[:h.start()] + '<th class="num">' + t[h.end():]
+                    cls = " ".join(filter(None, ["num", h.group(1)]))
+                    t = t[:h.start()] + f'<th class="{cls}">' + t[h.end():]
+        # Caption above the scroll box, so it doesn't scroll sideways with the table.
+        cap = re.search(r"\s*<caption>(.*?)</caption>", t, re.S)
+        if cap:
+            t = t[:cap.start()] + t[cap.end():]
+            return f'<p class="cap">{cap.group(1).strip()}</p><div class="tw">{t}</div>'
         return f'<div class="tw">{t}</div>'
     html = re.sub(r"<table>.*?</table>", one_table, html, flags=re.S)
     return re.sub(r"(</h1>\s*)<p>", r'\1<p class="lede">', html, count=1)
@@ -560,6 +574,36 @@ def _breadcrumb_ld(items: list[tuple[str, str]]) -> dict:
             for i, (label, href) in enumerate(items, 1)
         ],
     }
+
+
+_LANDING_SHORT = {
+    "H&M Landing": "H&M", "Fisherman's Landing": "Fisherman's",
+    "Seaforth Sportfishing": "Seaforth", "Point Loma Sportfishing": "Point Loma",
+    "Oceanside Sea Center": "Oceanside",
+}
+
+
+def _landing_cell(landing: str) -> str:
+    """Full landing name, swapped for a short one on phones (static pages' CSS)."""
+    short = _LANDING_SHORT.get(landing)
+    if not short:
+        return _esc(landing)
+    return f'<span class="lf">{_esc(landing)}</span><span class="ls">{_esc(short)}</span>'
+
+
+def _f2(x) -> str:
+    """Two decimals, so DM Mono number columns line up."""
+    return f"{x:.2f}" if isinstance(x, (int, float)) else ""
+
+
+def _dates_in_one_year(rows: list[dict]) -> str | None:
+    years = {r["date"][:4] for r in rows}
+    return years.pop() if len(years) == 1 else None
+
+
+def _table_date(iso: str, short: bool) -> str:
+    d = date.fromisoformat(iso[:10])
+    return f"{_MONTH_NAMES[d.month]} {d.day}" if short else _fmt_date(iso)
 
 
 def _fmt_date(iso: str) -> str:
@@ -823,8 +867,8 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
             f"<tr>"
             f"<td>{i}</td>"
             f"<td><a href=\"{page_url('boat', b['boat'])}\">{_esc(b['boat'])}</a></td>"
-            f"<td>{_esc(b.get('landing', ''))}</td>"
-            f"<td>{b.get('avg_tpad', '')}</td>"
+            f"<td class=\"lc\">{_landing_cell(b.get('landing', ''))}</td>"
+            f"<td>{_f2(b.get('avg_tpad'))}</td>"
             f"<td>{b.get('trips', '')}</td>"
             f"</tr>\n"
         )
@@ -836,7 +880,7 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
 <table>
   <caption>Top 10 boats by average {_esc(name)} per angler per day (min 5 trips)</caption>
   <thead>
-    <tr><th>#</th><th>Boat</th><th>Landing</th><th>Avg Fish/Angler/Day</th><th>Trips</th></tr>
+    <tr><th>#</th><th>Boat</th><th class="lc">Landing</th><th>Per angler/day</th><th>Trips</th></tr>
   </thead>
   <tbody>
 {top_rows}  </tbody>
@@ -851,7 +895,7 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
         monthly_rows += (
             f"<tr>"
             f"<td>{mname}</td>"
-            f"<td>{m.get('avg_tpad', '')}</td>"
+            f"<td>{_f2(m.get('avg_tpad'))}</td>"
             f"<td>{m.get('trips', '')}</td>"
             f"</tr>\n"
         )
@@ -863,7 +907,7 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
 <table>
   <caption>Average {_esc(name)} per angler per day by month (last 5 years)</caption>
   <thead>
-    <tr><th>Month</th><th>Avg Fish/Angler/Day</th><th>Trips</th></tr>
+    <tr><th>Month</th><th>Per angler/day</th><th>Trips</th></tr>
   </thead>
   <tbody>
 {monthly_rows}  </tbody>
@@ -874,10 +918,11 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
     recent_section = ""
     if recent:
         shown = recent[:25]
+        year = _dates_in_one_year(shown)
         rows = "".join(
-            f"<tr><td>{_fmt_date(r['date'])}</td>"
+            f"<tr><td>{_table_date(r['date'], bool(year))}</td>"
             f"<td><a href=\"{page_url('boat', r['boat'])}\">{_esc(r['boat'])}</a></td>"
-            f"<td>{_esc(r['landing'])}</td><td>{_esc(r['trip_length'] or '')}</td>"
+            f"<td class=\"lc\">{_landing_cell(r['landing'])}</td><td>{_esc(r['trip_length'] or '')}</td>"
             f"<td>{r['anglers'] or ''}</td><td>{r[col]}</td></tr>\n"
             for r in shown
         )
@@ -885,8 +930,8 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
 <h2>{_esc(name)} caught in San Diego: last {SPECIES_RECENT_DAYS} days</h2>
 <p>{stats['recent_fish']:,} {_esc(name.lower())} landed on {len(recent)} trips.</p>
 <table>
-  <caption>{len(shown)} most recent trips with {_esc(name.lower())}</caption>
-  <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th>Trip</th><th>Anglers</th><th>{_esc(name)}</th></tr></thead>
+  <caption>{len(shown)} most recent trips with {_esc(name.lower())}{", " + year if year else ""}</caption>
+  <thead><tr><th>Date</th><th>Boat</th><th class="lc">Landing</th><th>Trip</th><th>Anglers</th><th>Landed</th></tr></thead>
   <tbody>
 {rows}  </tbody>
 </table>
@@ -921,9 +966,10 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
 _LANDING_ORDER = list(SD_LANDINGS)
 
 
-def _landing_link(landing: str) -> str:
+def _landing_link(landing: str, short: bool = False) -> str:
     slug = SD_LANDINGS.get(landing)
-    return f'<a href="/sd/landing/{slug}/">{_esc(landing)}</a>' if slug else _esc(landing)
+    text = _landing_cell(landing) if short else _esc(landing)
+    return f'<a href="/sd/landing/{slug}/">{text}</a>' if slug else text
 
 
 def _landing_rank(landing: str) -> int:
@@ -1108,16 +1154,17 @@ def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
     recent = st["recent"]
     if recent:
         shown = recent[:25]
+        year = _dates_in_one_year(shown)
         rows = "".join(
-            f"<tr><td>{_fmt_date(r['date'])}</td>"
+            f"<tr><td>{_table_date(r['date'], bool(year))}</td>"
             f"<td><a href=\"{page_url('boat', r['boat'])}\">{_esc(r['boat'])}</a></td>"
-            f"<td>{_landing_link(r['landing'])}</td><td>{r['anglers'] or ''}</td>"
+            f"<td>{_landing_link(r['landing'], short=True)}</td><td>{r['anglers'] or ''}</td>"
             f"<td>{_esc(_catch_str(r))}</td></tr>\n"
             for r in shown)
         recent_section = f"""<section>
 <h2>{_esc(name)} fish counts: last {TRIP_RECENT_DAYS} days</h2>
 <table>
-  <caption>{len(shown)} most recent {_esc(lower)} trips from San Diego landings</caption>
+  <caption>{len(shown)} most recent {_esc(lower)} trips from San Diego landings{", " + year if year else ""}</caption>
   <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th>Anglers</th><th>Catch</th></tr></thead>
   <tbody>
 {rows}  </tbody>
@@ -1131,14 +1178,15 @@ def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
     if st["boats"]:
         rows = "".join(
             f"<tr><td><a href=\"{page_url('boat', b['boat'])}\">{_esc(b['boat'])}</a></td>"
-            f"<td>{b['trips']}</td><td>{b['per_angler']}</td><td>{b['win_rate']}%</td></tr>\n"
+            f"<td>{b['trips']}</td><td>{_f2(b['per_angler'])}</td><td>{b['win_rate']:.1f}%</td></tr>\n"
             for b in st["boats"])
         boats_section = f"""<section>
 <h2>Boats that run {_esc(lower)} trips</h2>
 <table>
   <caption>Last {TRIP_BOAT_YEARS} years, boats with at least {TRIP_BOAT_MIN} {_esc(lower)} trips,
-    by average trophy fish per angler per trip (bluefin, yellowfin, yellowtail, dorado)</caption>
-  <thead><tr><th>Boat</th><th>Trips</th><th>Trophy fish per angler</th><th>Trips with trophy fish</th></tr></thead>
+    by average trophy fish (bluefin, yellowfin, yellowtail, dorado) per angler per trip.
+    Trophy % is the share of trips that landed at least one.</caption>
+  <thead><tr><th>Boat</th><th>Trips</th><th>Per angler</th><th>Trophy %</th></tr></thead>
   <tbody>
 {rows}  </tbody>
 </table>
@@ -1148,13 +1196,14 @@ def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
     if st["monthly"]:
         rows = "".join(
             f"<tr><td>{_MONTH_NAMES[m['month']]}</td><td>{m['trips']}</td>"
-            f"<td>{m['per_angler']}</td><td>{m['win_rate']}%</td></tr>\n"
+            f"<td>{_f2(m['per_angler'])}</td><td>{m['win_rate']:.1f}%</td></tr>\n"
             for m in st["monthly"] if 1 <= m["month"] <= 12)
         month_section = f"""<section>
 <h2>{_esc(name)} catch by month</h2>
 <table>
-  <caption>All San Diego {_esc(lower)} trips, last 5 years. Past seasons, not a forecast.</caption>
-  <thead><tr><th>Month</th><th>Trips</th><th>Trophy fish per angler</th><th>Trips with trophy fish</th></tr></thead>
+  <caption>All San Diego {_esc(lower)} trips, last 5 years: trophy fish per angler per trip,
+    and the share of trips that landed any. Past seasons, not a forecast.</caption>
+  <thead><tr><th>Month</th><th>Trips</th><th>Per angler</th><th>Trophy %</th></tr></thead>
   <tbody>
 {rows}  </tbody>
 </table>
