@@ -1,6 +1,9 @@
 /data.js
   Cache-Control: no-cache, must-revalidate
 
+/data-region-*
+  Cache-Control: no-cache, must-revalidate
+
 /ais_positions.json
   Cache-Control: no-cache, must-revalidate
 

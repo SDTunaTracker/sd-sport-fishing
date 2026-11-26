@@ -46,9 +46,14 @@ def _fresh_db(tmp_path) -> sqlite3.Connection:
     for ln in C.CORE_LANDINGS:
         conn.execute("INSERT INTO scrape_log VALUES (?,?,'ok')", (ts, ln))
         conn.execute("INSERT INTO scheduled_trips VALUES (?,?)", (ln, ts))
+    for ln in C.REGIONAL_LANDINGS:
+        conn.execute("INSERT INTO scrape_log VALUES (?,?,'ok')", (ts, ln))
     for i in range(1, 31):
         d = (TODAY - timedelta(days=i)).isoformat()
         conn.execute("INSERT INTO trips VALUES (?,?)", (d, C.CORE_LANDINGS[0]))
+        # OC/LA: two landings per day, rotating — the others are quiet (no-trip) days.
+        for k in (i, i + 5):
+            conn.execute("INSERT INTO trips VALUES (?,?)", (d, C.OCLA_LANDINGS[k % len(C.OCLA_LANDINGS)]))
         for loc in C.SST_LOCATIONS:
             conn.execute("INSERT INTO ocean_temps VALUES (?,?)", (d, loc))
         for t in ("historical_conditions", "daily_segment_stats",
@@ -73,12 +78,24 @@ def test_fresh_synthetic_db_passes(tmp_path):
     ("UPDATE scheduled_trips SET scraped_at='2026-11-20T00:00:00+00:00' WHERE landing like 'Seaforth%'",
      "schedule:Seaforth Sportfishing"),
     ("DELETE FROM upwelling_obs", "feed:upwelling_obs"),
+    ("UPDATE scrape_log SET started_at='2026-11-22T00:00:00+00:00' WHERE landing='Pierpoint Landing'",
+     "scrape:Pierpoint Landing"),
+    ("DELETE FROM trips WHERE date = '2026-11-20' AND landing != 'H&M Landing'", "trips:gap:oc_la"),
 ])
 def test_each_stale_feed_is_flagged(tmp_path, sql, key):
     conn = _fresh_db(tmp_path)
     conn.execute(sql)
     keys = {p.key for p in C.check(conn, today=TODAY, now=NOW)}
     assert key in keys
+
+
+def test_quiet_ocla_landing_is_not_flagged(tmp_path):
+    """A small OC/LA landing with no trips for two weeks is a no-trip stretch,
+    not an outage, as long as its scrapes succeed and other OC/LA landings report."""
+    conn = _fresh_db(tmp_path)
+    conn.execute("DELETE FROM trips WHERE landing='Pierpoint Landing'")
+    keys = {p.key for p in C.check(conn, today=TODAY, now=NOW)}
+    assert not any("Pierpoint" in k or k == "trips:gap:oc_la" for k in keys)
 
 
 def test_missed_or_failed_job_is_flagged(tmp_path):

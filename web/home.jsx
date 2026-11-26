@@ -29,11 +29,48 @@
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase();
   }
 
+  // Headline metric for the page being rendered (SDA.metricFor). San Diego:
+  // trophy fish (TH_TROPHY) and the exported trophyPerAnglerPerDay, exactly as
+  // before. OC/LA: every landed species (owner decision D1). Set at the top of
+  // each counts component's render via thUseMetric(regions, settings).
+  let THM = null;
+  function thUseMetric(regions, settings) {
+    const eff = window.getEffectiveRegion ? window.getEffectiveRegion(regions) : 'san_diego';
+    THM = (window.SDA && SDA.metricFor) ? SDA.metricFor(eff, settings) : null;
+    return THM || { allSpecies: false };
+  }
+  const thAll = () => !!(THM && THM.allSpecies);
+  // Target species the visitor picked in Settings (null = the default four).
+  const thCustom = () => (THM && THM.species && THM.noun === 'target fish') ? THM.species : null;
+  const thSpecies = () => thCustom() || TH_TROPHY;
+  const thFish = (t) => thAll() ? SDA.allFish(t) : thSpecies().reduce((s, sp) => s + SDA.speciesCount(t, sp), 0);
+  const thRate = (t) => (thAll() || thCustom()) ? THM.rate(t) : (t.trophyPerAnglerPerDay || 0);
+  // [species, count] pairs with fish, biggest first.
+  function thSpeciesList(t) {
+    if (!thAll()) return thSpecies().map(sp => [sp, SDA.speciesCount(t, sp)]).filter(x => x[1] > 0);
+    const c = SDA.catchBySpecies(t);
+    return Object.keys(c).map(sp => [sp, c[sp]]).sort((a, b) => b[1] - a[1]);
+  }
+  // Totals over a list of trips: {total, trophy, bySp: {species: n}, ranked: [[sp, n]...]}
+  function thTotals(list) {
+    const out = { total: 0, trophy: 0, bySp: {} };
+    list.forEach(b => {
+      thSpeciesList(b).forEach(([sp, n]) => { out.bySp[sp] = (out.bySp[sp] || 0) + n; out.total += n; });
+      out.trophy += TH_TROPHY.reduce((s, sp) => s + (b[sp] || 0), 0);
+    });
+    out.ranked = Object.keys(out.bySp).map(sp => [sp, out.bySp[sp]]).sort((a, b) => b[1] - a[1]);
+    return out;
+  }
+
   // Full species names — no acronyms (BFT/YT read as jargon to casual users).
+  // All-species pages list the top three species and how many more.
   function thCatchLine(t) {
-    const parts = [];
-    TH_TROPHY.forEach(sp => { if ((t[sp] || 0) > 0) parts.push(`${t[sp]} ${sp}`); });
-    return parts.join(' · ') || 'No trophy fish';
+    const list = thSpeciesList(t);
+    if (!list.length) return thAll() ? 'No fish reported' : 'No trophy fish';
+    const shown = thAll() ? list.slice(0, 3) : list;
+    const parts = shown.map(([sp, n]) => `${n} ${sp}`);
+    if (list.length > shown.length) parts.push(`+${list.length - shown.length} more`);
+    return parts.join(' · ');
   }
 
   function regionTrips(regions) {
@@ -51,11 +88,11 @@
     const hist = allTrips.filter(t =>
       t.boat === trip.boat && t.tripLength === trip.tripLength &&
       t.date >= cutoff && t.date < selectedDate
-    ).map(t => t.trophyPerAnglerPerDay || 0);
+    ).map(thRate);
     if (hist.length < 3) return null;
     const avg = hist.reduce((a, b) => a + b, 0) / hist.length;
     if (avg <= 0) return null;
-    return Math.round((((trip.trophyPerAnglerPerDay || 0) - avg) / avg) * 100);
+    return Math.round(((thRate(trip) - avg) / avg) * 100);
   }
 
   // Daily fleet avg trophy/angler/day for the 30 days ending on selectedDate.
@@ -64,7 +101,7 @@
     const cutoff = isoMinus(selectedDate, 29);
     allTrips.forEach(t => {
       if (t.date >= cutoff && t.date <= selectedDate) {
-        (byDate[t.date] || (byDate[t.date] = [])).push(t.trophyPerAnglerPerDay || 0);
+        (byDate[t.date] || (byDate[t.date] = [])).push(thRate(t));
       }
     });
     const days = [];
@@ -87,10 +124,10 @@
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 9)
       .reverse();
-    const bars = past.map(t => ({ val: t.trophyPerAnglerPerDay || 0, today: false, date: t.date }));
-    bars.push({ val: trip.trophyPerAnglerPerDay || 0, today: true, date: selectedDate });
+    const bars = past.map(t => ({ val: thRate(t), today: false, date: t.date }));
+    bars.push({ val: thRate(trip), today: true, date: selectedDate });
     const avg = past.length
-      ? past.reduce((s, t) => s + (t.trophyPerAnglerPerDay || 0), 0) / past.length : null;
+      ? past.reduce((s, t) => s + thRate(t), 0) / past.length : null;
     return { bars, avg, startDate: past[0] ? past[0].date : selectedDate };
   }
 
@@ -136,8 +173,19 @@
   }
 
   // ── Conditions + fleet trend band ─────────────────────────────────────────
-  function ConditionsBand({ trend }) {
-    const fc = window.SD && window.SD.FORECAST && window.SD.FORECAST.today;
+  // San Diego-only inputs: the forecast/conditions model is SD-offshore R&D
+  // (60-Mile Bank, Cortez…) and the schedule feed covers SD landings only.
+  // For an OC/LA-only view we hide them rather than show San Diego numbers.
+  function isOclaOnly(regions) {
+    return !!(regions && window.getEffectiveRegion && window.getEffectiveRegion(regions) === 'oc_la');
+  }
+  function regionLandingList(regions) {
+    if (!regions || !window.getEffectiveRegion || !window.getLandingsForRegion) return null;
+    return window.getLandingsForRegion(window.getEffectiveRegion(regions));
+  }
+
+  function ConditionsBand({ trend, regions }) {
+    const fc = isOclaOnly(regions) ? null : (window.SD && window.SD.FORECAST && window.SD.FORECAST.today);
     const sstRaw = fc && (fc.sst_nearshore != null ? fc.sst_nearshore : fc.sst_offshore);
     const sstF = sstRaw != null ? Math.round(sstRaw) : null;
     const windKt = fc && fc.wind_speed != null ? Math.round(fc.wind_speed) : null;
@@ -149,7 +197,7 @@
 
     return (
       <div className="th-condband">
-        <div className="th-cond-left">
+        {fc && <div className="th-cond-left">
           <div className="th-cond-toprow">
             {label && <span className="th-rating-chip">{label}</span>}
             {summary && <span className="th-cond-summary">{summary}</span>}
@@ -159,7 +207,7 @@
             <span><b>{windKt != null ? `${windKt} kt ${windDir}` : '—'}</b> wind</span>
             <span><b>{moonPct != null ? `${moonPct}%` : '—'}</b> moon{moonName ? ` · ${moonName.toLowerCase()}` : ''}</span>
           </div>
-        </div>
+        </div>}
         <div className="th-cond-trend">
           <div className="th-trend-head">
             <span className="th-lbl">Fleet catch rate · last 30 days</span>
@@ -178,6 +226,7 @@
 
   // ── Expandable counts table ───────────────────────────────────────────────
   function CountsSection({ navigate, settings, regions }) {
+    const metric = thUseMetric(regions, settings);
     const TODAY = getTodayISO();
     const [openBoat, setOpenBoat] = useState(null);
     const [landing, setLanding] = useState('all');
@@ -204,13 +253,9 @@
 
     const visible = returned.filter(b => landing === 'all' || b.landing === landing);
 
-    const totals = useMemo(() => {
-      const out = { total: 0, Bluefin: 0, Yellowfin: 0, Yellowtail: 0, Dorado: 0 };
-      visible.forEach(b => TH_TROPHY.forEach(sp => { out[sp] += b[sp] || 0; out.total += b[sp] || 0; }));
-      return out;
-    }, [visible]);
+    const totals = useMemo(() => thTotals(visible), [visible, metric.allSpecies, settings]);
 
-    const trend = useMemo(() => fleetTrend(allTrips, selectedDate), [allTrips, selectedDate]);
+    const trend = useMemo(() => fleetTrend(allTrips, selectedDate), [allTrips, selectedDate, metric.allSpecies, settings]);
 
     // Season rank map (current year, min 5 trips)
     const rankMap = useMemo(() => {
@@ -228,12 +273,13 @@
       return rows.filter(r => r.tripCount >= 5).slice(0, 4);
     }, [regions, settings]);
 
-    const stillFishing = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [];
-    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook()) || null, [settings]);
+    const stillFishing = (isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [])
+      .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
+    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
 
     return (
       <React.Fragment>
-        <ConditionsBand trend={trend}/>
+        <ConditionsBand trend={trend} regions={regions}/>
 
         <div className="th-wrap">
           {/* Title row: date stepper + landing chips */}
@@ -260,10 +306,16 @@
           {/* Species totals */}
           <div className="th-totals">
             <div className="th-total"><b>{fmt.n(totals.total)}</b><span>total fish</span></div>
-            <div className="th-total"><b>{fmt.n(totals.Bluefin)}</b><span>bluefin</span></div>
-            <div className="th-total"><b>{fmt.n(totals.Yellowtail)}</b><span>yellowtail</span></div>
-            <div className="th-total"><b>{fmt.n(totals.Yellowfin)}</b><span>yellowfin</span></div>
-            <div className="th-total"><b>{fmt.n(totals.Dorado)}</b><span>dorado</span></div>
+            {metric.allSpecies ? (
+              <React.Fragment>
+                <div className="th-total"><b>{fmt.n(totals.trophy)}</b><span>trophy fish</span></div>
+                {totals.ranked.slice(0, 4).map(([sp, n]) => (
+                  <div key={sp} className="th-total"><b>{fmt.n(n)}</b><span>{sp.toLowerCase()}</span></div>
+                ))}
+              </React.Fragment>
+            ) : (thCustom() || ['Bluefin', 'Yellowtail', 'Yellowfin', 'Dorado']).map(sp => (
+              <div key={sp} className="th-total"><b>{fmt.n(totals.bySp[sp] || 0)}</b><span>{sp.toLowerCase()}</span></div>
+            ))}
             <div className="th-spacer"/>
             <div className="th-totals-note">{visible.length} boat{visible.length === 1 ? '' : 's'} reported · Click any boat for its recent history &amp; next departure</div>
           </div>
@@ -280,7 +332,7 @@
                 <div className="th-empty">{isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}</div>
               )}
               {visible.map((b) => {
-                const total = TH_TROPHY.reduce((s, sp) => s + (b[sp] || 0), 0);
+                const total = thFish(b);
                 const fa = b.anglers > 0 ? total / b.anglers : 0;
                 const pct = boatDelta(b, allTrips, selectedDate);
                 const key = `${b.boat}|${b.landing}`;
@@ -401,15 +453,16 @@
   }
 
   function speciesPhrase(totals) {
-    const ranked = TH_TROPHY.filter(sp => totals[sp] > 0).sort((a, b) => totals[b] - totals[a]);
+    const ranked = totals.ranked.map(r => r[0]);
     if (!ranked.length || !totals.total) return '';
     const top = ranked[0].toLowerCase();
-    if (totals[ranked[0]] / totals.total >= 0.9) return `, almost all ${top}`;
+    if (totals.bySp[ranked[0]] / totals.total >= 0.9) return `, almost all ${top}`;
     if (ranked.length === 1) return `, all ${top}`;
     return `, mostly ${top} and ${ranked[1].toLowerCase()}`;
   }
 
   function TodayReport({ navigate, settings, regions }) {
+    const metric = thUseMetric(regions, settings);
     const TODAY = getTodayISO();
     const [openBoat, setOpenBoat] = useState(null);
     const [landing, setLanding] = useState('all');
@@ -430,22 +483,18 @@
       return (window.getLandingsForRegion && window.getLandingsForRegion(eff)) || [];
     }, [regions]);
 
-    // Ranked by fish per angler (trophy fish), highest first.
+    // Ranked by fish per angler (the region's headline fish), highest first.
     const visible = useMemo(() => returned
       .filter(b => landing === 'all' || b.landing === landing)
       .map(b => {
-        const total = TH_TROPHY.reduce((s, sp) => s + (b[sp] || 0), 0);
+        const total = thFish(b);
         return { b, total, fa: b.anglers > 0 ? total / b.anglers : 0 };
       })
-      .sort((x, y) => y.fa - x.fa), [returned, landing]);
+      .sort((x, y) => y.fa - x.fa), [returned, landing, metric.allSpecies, settings]);
 
-    const totals = useMemo(() => {
-      const out = { total: 0, Bluefin: 0, Yellowfin: 0, Yellowtail: 0, Dorado: 0 };
-      visible.forEach(({ b }) => TH_TROPHY.forEach(sp => { out[sp] += b[sp] || 0; out.total += b[sp] || 0; }));
-      return out;
-    }, [visible]);
+    const totals = useMemo(() => thTotals(visible.map(v => v.b)), [visible, metric.allSpecies, settings]);
 
-    const trend = useMemo(() => fleetTrend(allTrips, selectedDate), [allTrips, selectedDate]);
+    const trend = useMemo(() => fleetTrend(allTrips, selectedDate), [allTrips, selectedDate, metric.allSpecies, settings]);
     const rankMap = useMemo(() => {
       const year = String(window.TT_DATES.getPacificYear());
       const { rows } = SDA.boatLeaderboard(allTrips.filter(t => String(t.year) === year), 'all', 5);
@@ -454,10 +503,11 @@
       return m;
     }, [allTrips]);
 
-    const stillFishing = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [];
-    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook()) || null, [settings]);
+    const stillFishing = (isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [])
+      .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
+    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
 
-    const fc = window.SD && window.SD.FORECAST && window.SD.FORECAST.today;
+    const fc = isOclaOnly(regions) ? null : (window.SD && window.SD.FORECAST && window.SD.FORECAST.today);
     // The forecast label can carry an emoji prefix (e.g. "⬆️ Excellent"); keep the words only.
     const condLabel = fc && fc.conditions_label
       ? (String(fc.conditions_label).replace(/[^A-Za-z\s-]/g, '').trim().toLowerCase() || null) : null;
@@ -502,10 +552,13 @@
 
         <div className="td2-strip">
           <div className="td2-stat"><b>{fmt.n(totals.total)}</b><span>total fish</span></div>
-          {TH_TROPHY.filter(sp => totals[sp] > 0).sort((a, b) => totals[b] - totals[a]).map(sp => (
+          {metric.allSpecies && (
+            <div className="td2-stat"><b>{fmt.n(totals.trophy)}</b><span>trophy fish</span></div>
+          )}
+          {totals.ranked.slice(0, metric.allSpecies ? 4 : 99).map(([sp, n]) => (
             <div key={sp} className="td2-stat">
-              <b>{fmt.n(totals[sp])}</b>
-              <span><i className="td2-dot" style={{ background: TD2_SPECIES[sp] }}/>{sp.toLowerCase()}</span>
+              <b>{fmt.n(n)}</b>
+              <span>{TD2_SPECIES[sp] && <i className="td2-dot" style={{ background: TD2_SPECIES[sp] }}/>}{sp.toLowerCase()}</span>
             </div>
           ))}
           {(condLabel || condSummary) && (
@@ -634,7 +687,7 @@
   // ── Redesigned home ───────────────────────────────────────────────────────
   function HomeViewV2({ navigate, settings, regions }) {
     if (!window.SD_PROC_TRIPS) SDA.preprocessTrips(settings);
-    const totalTrips = (window.SD && window.SD.META && window.SD.META.tripCount) || 0;
+    const totalTrips = (window.ttRegionData ? window.ttRegionData.totalTripCount() : ((window.SD && window.SD.META && window.SD.META.tripCount) || 0));
     const tripDisplay = (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+';
 
     return (
@@ -642,7 +695,7 @@
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
         <section className="ch-hero">
           <div className="ch-hero-in">
-            <div className="ch-kick">San Diego sportboat counts, ranked fairly</div>
+            <div className="ch-kick">{isOclaOnly(regions) ? 'Orange County, LA & Ventura' : (regions && regions.length > 1 ? 'Southern California' : 'San Diego')} sportboat counts, ranked fairly</div>
             <h1 className="ch-h1">Stop guessing.<br/>Start catching.</h1>
             <p className="ch-by">
               See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.{' '}

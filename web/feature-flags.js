@@ -9,7 +9,7 @@
     else previewSfbay = sessionStorage.getItem('tt_preview_sfbay') === '1';
   } catch (e) {}
   window.FEATURES = {
-    OCLA_PUBLIC:  false,   // flip to true when OC/LA is ready to launch
+    OCLA_PUBLIC:  true,    // OC/LA launched 2026-11-25 (owner OK). Rollback: set false.
     _previewOcla: params.get('preview_ocla') === 'true',
     SFBAY_PUBLIC: false,   // flip to true when the owner approves the SF Bay launch
     _previewSfbay: previewSfbay,

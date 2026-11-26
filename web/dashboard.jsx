@@ -674,7 +674,7 @@ function HomeTop5({ navigate, settings, regions }) {
 }
 
 function HomeView({ navigate, settings, regions }) {
-  const totalTrips = window.SD?.META?.tripCount || 0;
+  const totalTrips = (window.ttRegionData ? window.ttRegionData.totalTripCount() : ((window.SD && window.SD.META && window.SD.META.tripCount) || 0));
   const tripDisplay = (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+';
 
   // Most-recent date with data for this region

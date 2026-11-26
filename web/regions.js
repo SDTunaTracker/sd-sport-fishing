@@ -21,6 +21,38 @@
     "Dana Wharf Sportfishing",
   ];
 
+  // OC/LA landings' own booking pages (verified 2026-11-25). We have no
+  // schedule feed for these landings yet, so Trip Planner links out instead.
+  // LA Waterfront is omitted: its site could not be confirmed.
+  window.OCLA_LANDING_SITES = {
+    "22nd Street Landing":          "https://22ndstreet.fishingreservations.net/sales/",
+    "Long Beach Sportfishing":      "https://longbeach.fishingreservations.net/sales/",
+    "Marina Del Rey Sportfishing":  "https://mdrsf.com/",
+    "Redondo Beach Sportfishing":   "https://redondo.fishingreservations.com/sales/",
+    "Pierpoint Landing":            "https://pierpoint.fishingreservations.com/sales/",
+    "Channel Islands Sportfishing": "https://ciscos.fishingreservations.net/sales/",
+    "Ventura Harbor Sportfishing":  "https://ventura.fishingreservations.com/sales/",
+    "Newport Landing":              "https://newportlanding.com/reserve-your-trip.html",
+    "Davey's Locker":               "https://daveyslocker.com/deep-sea-fishing-trip-tickets/",
+    "Dana Wharf Sportfishing":      "https://danawharf.com/fishing-trips/",
+  };
+
+  // Approximate harbor positions for the Charts map (LANDINGS_META in data.js
+  // only carries the San Diego landings). Within ~1 km; shown as "approx".
+  window.OCLA_LANDING_COORDS = {
+    "22nd Street Landing":          { lat: 33.7225, lng: -118.2803 },
+    "LA Waterfront Sportfishing":   { lat: 33.7385, lng: -118.2785 },
+    "Long Beach Sportfishing":      { lat: 33.7686, lng: -118.2140 },
+    "Pierpoint Landing":            { lat: 33.7620, lng: -118.1950 },
+    "Marina Del Rey Sportfishing":  { lat: 33.9770, lng: -118.4490 },
+    "Redondo Beach Sportfishing":   { lat: 33.8430, lng: -118.3950 },
+    "Channel Islands Sportfishing": { lat: 34.1620, lng: -119.2240 },
+    "Ventura Harbor Sportfishing":  { lat: 34.2460, lng: -119.2640 },
+    "Newport Landing":              { lat: 33.6020, lng: -117.8880 },
+    "Davey's Locker":               { lat: 33.6040, lng: -117.8920 },
+    "Dana Wharf Sportfishing":      { lat: 33.4610, lng: -117.6990 },
+  };
+
   window.REGIONS = [
     { id: 'san_diego', label: 'San Diego', short: 'San Diego', landings: SD_LANDINGS,   comingSoon: false },
     { id: 'oc_la',     label: 'OC / LA',   short: 'OC / LA',   landings: OCLA_LANDINGS, comingSoon: false },
