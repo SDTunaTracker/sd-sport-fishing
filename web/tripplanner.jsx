@@ -446,6 +446,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
           })()}
         </div>
         <div className="tp-card-landing">{shortLanding(s.landing)}</div>
+        {!isPast && window.BaitNowLine && <BaitNowLine landing={s.landing}/>}
         <div className="tp-card-left-meta">
           <LengthBadge label={s.tripLength}/>
           {docsTag && <span className="tp-docs-tag" title="From the trip listing. Open Trip details for permits and limits.">{docsTag}</span>}
