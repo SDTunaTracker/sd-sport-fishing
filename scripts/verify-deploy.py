@@ -4,7 +4,9 @@ Verify that all JSX files in web/ are referenced in web/index.html,
 that version strings are recent (within 7 days), that no file
 exceeds the Cloudflare Pages 25 MiB per-file limit, that no web
 file still contains git merge-conflict markers, and that every shipped
-script (web/*.js, web/dist/*.js) parses (scripts/check-js-syntax.mjs).
+script (web/*.js, web/dist/*.js) parses (scripts/check-js-syntax.mjs), and
+that the pre-rendered pages use index.html's ?v= tags
+(scripts/sync-page-versions.py --check).
 
 Run before committing or as part of CI pre-flight.
 Exit code 0 = all good. Exit code 1 = problems found.
@@ -92,6 +94,14 @@ else:
     if r.returncode != 0:
         syntax_fail = (r.stderr or r.stdout).rstrip()
 
+# ── 6. Generated pages must use index.html's ?v= tags ────────────────────────
+# Pre-rendered pages copy the tags only when generate_pages.py runs, so after
+# a fix they can keep loading the broken file. bump-versions.py syncs them;
+# this catches anything that slipped past it.
+pv = subprocess.run([sys.executable, os.path.join(here, "sync-page-versions.py"), "--check"],
+                    capture_output=True, text=True, encoding="utf-8", errors="replace")
+page_versions_fail = pv.stdout.rstrip() if pv.returncode != 0 else None
+
 # ── Report ────────────────────────────────────────────────────────────────────
 fail = False
 
@@ -136,7 +146,11 @@ if syntax_fail:
     print(syntax_fail)
     fail = True
 
+if page_versions_fail:
+    print(page_versions_fail)
+    fail = True
+
 if not fail:
-    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits, no conflict markers, all scripts parse.")
+    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits, no conflict markers, all scripts parse, generated pages in sync.")
 
 sys.exit(1 if fail else 0)

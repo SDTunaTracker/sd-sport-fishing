@@ -1,4 +1,4 @@
-name: JS syntax check
+name: Site checks
 
 # Every script the site ships (web/*.js, web/dist/*.js) must parse. One bad
 # character in one file blanks every page that needs it: on 2026-11-26 an
@@ -32,3 +32,10 @@ jobs:
 
       - name: Check that every shipped script parses
         run: node scripts/check-js-syntax.mjs
+
+      # Pre-rendered pages (web/sd/boat/*/index.html, ...) must load the same
+      # file versions as index.html, or they keep serving old (possibly broken)
+      # scripts until the next scrape regenerates them.
+      - name: Check that generated pages use index.html's ?v= tags
+        if: always()
+        run: python3 scripts/sync-page-versions.py --check
