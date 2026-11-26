@@ -167,6 +167,9 @@ def test_trip_length_pages(tmp_path):
     assert '<span class="ls">H&amp;M</span>' in html
     assert '<p class="cap">' in html and "<caption>" not in html
     assert '<td class="num">1.75</td>' in html            # 35 fish / 20 anglers
+    # CTA points at Pick my trip; presets where /sd/pick has one
+    assert 'href="/sd/pick">Find the best 2 day trip</a>' in html
+    assert 'href="/sd/pick?q=fullday-weekend">Find the best full day trip</a>' in full
     # Full Day page lists Tiny's trip but not the Newport boat
     full = (web / "sd" / "trips" / "full-day" / "index.html").read_text(encoding="utf-8")
     assert ">Tiny</a>" in full and "Far Boat" not in full
