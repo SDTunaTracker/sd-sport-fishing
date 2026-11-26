@@ -67,12 +67,13 @@
   // ── Pick my trip ────────────────────────────────────────────────────────────
   // startEmpty (Today): no trip type chosen until the visitor picks one, so the
   // card doesn't repeat the answers already shown above it.
-  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick }) {
+  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick, initialType }) {
     const P = window.TTPicker;
     const tick = useDataTick();
     const region = regionOf(regions);
     const presets = useMemo(() => P ? P.presets() : null, []);
-    const [type, setType] = useState(() => startEmpty ? null : (store(TYPE_KEY) || 'overnight'));
+    const validType = initialType && (P && P.TRIP_TYPES || []).some(t => t.id === initialType) ? initialType : null;
+    const [type, setType] = useState(() => validType || (startEmpty ? null : (store(TYPE_KEY) || 'overnight')));
     const [when, setWhen] = useState('next7');
     const [from, setFrom] = useState(presets ? presets.next7.from : '');
     const [to, setTo] = useState(presets ? P.addDays(presets.next7.from, 13) : '');
@@ -215,7 +216,8 @@
             <div className="pk-empty">
               <p>No open {Array.isArray(type) ? 'trip' : typeNoun(type)}s {when === 'weekend' ? 'this weekend' : 'in those dates'}{budget ? ' in that budget' : ''}.</p>
               <div className="pk-empty-acts">
-                {when !== 'next7' && <button onClick={manual(() => setWhen('next7'))}>Try the next 7 days</button>}
+                {when === 'weekend' && <button onClick={manual(() => setWhen('next7'))}>Try the next 7 days</button>}
+                {when !== 'custom' && <button onClick={manual(() => { setFrom(presets.next7.from); setTo(P.addDays(presets.next7.from, 13)); setWhen('custom'); })}>Try the next 2 weeks</button>}
                 {budget && <button onClick={manual(() => setBudget(''))}>Any price</button>}
                 <button onClick={() => navigate && navigate('tripplanner')}>Browse every trip</button>
               </div>
@@ -370,10 +372,13 @@
 
   // Own route: /sd/pick
   function PickTripView({ regions, navigate }) {
-    const q = useMemo(() => { try { return new URLSearchParams(window.location.search).get('q'); } catch (e) { return null; } }, []);
+    // Deep links: ?q=<quick pick id> or ?type=full|overnight|1.5|multi|long (next 7 days).
+    const params = useMemo(() => { try { return new URLSearchParams(window.location.search); } catch (e) { return null; } }, []);
+    const q = params && params.get('q');
+    const t = params && params.get('type');
     return (
       <div className="pk-view">
-        <PickMyTrip regions={regions} navigate={navigate} variant="page" initialQuick={q}/>
+        <PickMyTrip regions={regions} navigate={navigate} variant="page" initialQuick={q} initialType={t}/>
       </div>
     );
   }
