@@ -297,6 +297,150 @@ def _species_stats(conn: sqlite3.Connection, col: str) -> dict:
     }
 
 
+# ── Static-only page template (species, trip lengths) ─────────────────────────
+# Mirrors web/privacy/index.html (design-system tokens, Fraunces/Inter/DM Mono,
+# header.top brand bar, simple footer). Styling agreed with the UX session.
+
+_STATIC_FONTS = (
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600'
+    '&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700'
+    '&display=swap" rel="stylesheet">\n'
+)
+
+_STATIC_CSS = """<style>
+  /* Tokens mirror web/design-system.css (cream / pine / orange). */
+  :root {
+    --bg: #FBFAF6; --surface: #FFFFFF; --ink: #17332C; --ink-2: #2D4A42;
+    --muted: #5A6E66; --faint: #8C978F; --line: #EAE6DC; --band: #F4F1E9;
+    --pine: #17332C; --accent: #CF6A3C; --accent-ink: #B0542A;
+    --focus: 0 0 0 3px rgba(207,106,60,.22);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink-2);
+         font: 16px/1.6 Inter, system-ui, sans-serif; }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+  .top { background: var(--surface); border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: 1120px; margin: 0 auto; padding: 0 16px; height: 64px;
+               display: flex; align-items: center; gap: 24px; }
+  .brand { display: inline-flex; align-items: center; gap: 8px; font: 700 19px/1 Fraunces, Georgia, serif;
+           color: var(--ink); text-decoration: none; flex-shrink: 0; }
+  .brand svg { color: #CF6A3C; flex-shrink: 0; display: block; }
+  .nav { display: flex; gap: 20px; margin-left: 8px; }
+  .nav a { font: 500 14px/1 Inter, sans-serif; color: var(--ink-2); text-decoration: none;
+           padding: 22px 0 20px; border-bottom: 2px solid transparent; }
+  .nav a:hover { color: var(--ink); }
+  .nav a[aria-current] { color: var(--ink); border-bottom-color: var(--accent); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px;
+         padding: 0 18px; border-radius: 10px; font: 600 15px/1 Inter, sans-serif;
+         text-decoration: none; white-space: nowrap; }
+  .btn-primary { background: var(--pine); color: #fff; }
+  .btn-primary:hover { background: #1F4A3F; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .top .btn { height: 40px; margin-left: auto; font-size: 14px; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  main nav[aria-label="Breadcrumb"] ol { list-style: none; padding: 0; margin: 0 0 16px; display: flex;
+           flex-wrap: wrap; gap: 6px; font: 500 11px/1.4 'DM Mono', ui-monospace, monospace;
+           letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+  main nav[aria-label="Breadcrumb"] li + li::before { content: "›"; margin-right: 6px; }
+  main nav[aria-label="Breadcrumb"] a { color: var(--faint); text-decoration: none; }
+  main nav[aria-label="Breadcrumb"] a:hover { color: var(--ink); }
+  h1 { font: 700 34px/1.1 Fraunces, Georgia, serif; color: var(--ink); margin: 0 0 12px;
+       letter-spacing: -.01em; }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--ink-2); margin: 0 0 28px; }
+  h2 { font: 600 22px/1.25 Fraunces, Georgia, serif; color: var(--ink); margin: 40px 0 10px; }
+  h3 { font: 600 16px/1.3 Inter, sans-serif; color: var(--ink); margin: 24px 0 6px; }
+  p { margin: 0 0 12px; }
+  .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  caption { caption-side: top; text-align: left; font-size: 14px; color: var(--muted);
+            padding: 0 0 8px; }
+  th { text-align: left; font: 500 10.5px/1.2 'DM Mono', ui-monospace, monospace; letter-spacing: .1em;
+       text-transform: uppercase; color: var(--faint); padding: 10px 12px 10px 0;
+       border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th.num, td.num { text-align: right; }
+  td.num { font: 400 14px/1.6 'DM Mono', ui-monospace, monospace; color: var(--ink);
+           white-space: nowrap; }
+  th:last-child, td:last-child { padding-right: 0; }
+  td:first-child { white-space: nowrap; color: var(--ink); }
+  .cta { background: var(--band); border-radius: 14px; padding: 20px; margin: 40px 0 0; }
+  .cta p { font-size: 17px; color: var(--ink); margin: 0 0 14px; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  footer { border-top: 1px solid var(--line); }
+  .foot-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; font-size: 14px; color: var(--muted);
+                display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+  .foot-inner nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  @media (max-width: 760px) {
+    .nav { display: none; }
+    h1 { font-size: 28px; }
+    .lede { font-size: 17px; }
+  }
+</style>
+"""
+
+# Brand mark, same as web/privacy/index.html. Name comes from SITE_NAME.
+_BRAND_SVG = (
+    '<svg width="26" height="26" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">'
+    '<path d="M22 30.6 C28 30.4 32 29.6 35 28.6 C37 19 45 10 59 4 C52 12 47.5 22 47 32 '
+    'C47.5 42 52 52 59 60 C45 54 37 45 35 35.4 C32 34.4 28 33.6 22 33.4 Z"/>'
+    '<rect x="3" y="35" width="4.5" height="7" rx="1.2"/><rect x="9.5" y="30" width="4.5" '
+    'height="12" rx="1.2"/><rect x="16" y="25" width="4.5" height="17" rx="1.2"/></svg>'
+)
+
+_NAV_LINKS = [("Fish Counts", "/sd/today"), ("Boats", "/sd/boats"),
+              ("Analytics", "/sd/analytics/overview"), ("Trip Planner", "/sd/tripplanner")]
+
+
+def _static_header(current: str = "") -> str:
+    cur = ' aria-current="page"'
+    links = "".join(
+        f'<a href="{href}"{cur if label == current else ""}>{label}</a>'
+        for label, href in _NAV_LINKS)
+    return (f'<header class="top"><div class="top-inner">'
+            f'<a class="brand" href="/">{_BRAND_SVG}{SITE_NAME}</a>'
+            f'<nav class="nav" aria-label="Site">{links}</nav>'
+            f'<a class="btn btn-primary" href="/sd/today">Today\'s counts →</a>'
+            f'</div></header>')
+
+
+def _static_footer() -> str:
+    links = "".join(f'<a href="{href}">{label}</a>' for label, href in _NAV_LINKS)
+    return (f'<footer><div class="foot-inner"><span>© {date.today().year} {SITE_NAME}</span>'
+            f'<nav aria-label="Footer">{links}<a href="/privacy/">Privacy</a></nav></div></footer>')
+
+
+def _cta(pitch: str, buttons: list[tuple[str, str]]) -> str:
+    btns = "".join(
+        f'<a class="btn {"btn-primary" if i == 0 else "btn-secondary"}" href="{href}">{_esc(label)}</a>'
+        for i, (label, href) in enumerate(buttons))
+    return f'<aside class="cta"><p>{_esc(pitch)}</p><div class="cta-actions">{btns}</div></aside>'
+
+
+_NUM_CELL = re.compile(r"<td>(-?[\d,]+(?:\.\d+)?%?)</td>")
+
+
+def _style_static(html: str) -> str:
+    """Table wrappers, numeric columns and the lede paragraph for static pages."""
+    def one_table(m: re.Match) -> str:
+        t = _NUM_CELL.sub(r'<td class="num">\1</td>', m.group(0))
+        # Right-align a header cell when its column holds numbers in the first row.
+        first = re.search(r"<tbody>\s*<tr>(.*?)</tr>", t, re.S)
+        if first:
+            cells = re.findall(r"<td( class=\"num\")?>", first.group(1))
+            heads = list(re.finditer(r"<th>", t))
+            for i in reversed(range(min(len(cells), len(heads)))):
+                if cells[i]:
+                    h = heads[i]
+                    t = t[:h.start()] + '<th class="num">' + t[h.end():]
+        return f'<div class="tw">{t}</div>'
+    html = re.sub(r"<table>.*?</table>", one_table, html, flags=re.S)
+    return re.sub(r"(</h1>\s*)<p>", r'\1<p class="lede">', html, count=1)
+
+
 # ── Shared HTML head/body helpers ─────────────────────────────────────────────
 
 def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
@@ -325,6 +469,11 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
         '<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">\n'
     ) if app else ""
     app_scripts = f"{shared['vessel_script']}\n{shared['clerk_sdk']}\n" if app else ""
+    page_css = (
+        f"{shared.get('fonts', '')}\n{app_assets}"
+        f'<link rel="stylesheet" href="styles.css?v={shared["styles_ver"]}">\n'
+        f'<link rel="stylesheet" href="design-system.css?v={shared["ds_ver"]}">\n'
+    ) if app else _STATIC_FONTS + _STATIC_CSS
 
     # data-prerendered tells web/seo.js not to overwrite this head on first load.
     return f"""<!doctype html>
@@ -351,10 +500,7 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 {ld_block}{shared.get('gtag', '')}
-{shared.get('fonts', '')}
-{app_assets}<link rel="stylesheet" href="styles.css?v={shared['styles_ver']}">
-<link rel="stylesheet" href="design-system.css?v={shared['ds_ver']}">
-{app_scripts}</head>"""
+{page_css}{app_scripts}</head>"""
 
 
 def _esc(s: str) -> str:
@@ -362,15 +508,7 @@ def _esc(s: str) -> str:
     return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-_SITE_NAV = " · ".join(
-    f'<a href="{href}">{label}</a>' for label, href in [
-        (f"<strong>{SITE_NAME}</strong>", "/"), ("Fish Counts", "/sd/today"),
-        ("Boats", "/sd/boats"), ("Analytics", "/sd/analytics/overview"),
-        ("Trip Planner", "/sd/tripplanner"),
-    ])
-
-
-def _body_wrap(seo_content: str, shared: dict, app: bool = True) -> str:
+def _body_wrap(seo_content: str, shared: dict, app: bool = True, cta: str = "") -> str:
     """Build the <body> block.
 
     app=False is for routes the SPA has no view for (species, trip lengths):
@@ -380,10 +518,12 @@ def _body_wrap(seo_content: str, shared: dict, app: bool = True) -> str:
     if not app:
         return f"""
 <body>
-<div id="seo-static">
-<header><p>{_SITE_NAV}</p></header>
-{seo_content}
-</div>
+{_static_header()}
+<main id="seo-static">
+{_style_static(seo_content)}
+{cta}
+</main>
+{_static_footer()}
 </body>
 </html>"""
     return f"""
@@ -768,7 +908,9 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
     head = _head(title, desc, canonical,
                  {"title": title, "description": desc},
                  json_ld, shared, app=False)
-    return head + _body_wrap(seo_content, shared, app=False)
+    cta = _cta(f"Who's catching {name.lower()} right now, and where can you go?", [
+        (f"See today's {name.lower()} counts", "/sd/today"), ("Plan a trip", "/sd/tripplanner")])
+    return head + _body_wrap(seo_content, shared, app=False, cta=cta)
 
 
 # ── /sd/today and /sd/boats ───────────────────────────────────────────────────
@@ -1031,7 +1173,10 @@ def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
 <p><a href="/sd/today">Latest San Diego fish counts →</a></p>
 </article>"""
     head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared, app=False)
-    return head + _body_wrap(seo_content, shared, app=False)
+    # The Trip Planner has no URL filters yet, so this links to it unfiltered.
+    cta = _cta(f"Compare upcoming {lower} trips by boat, price and date.", [
+        (f"Find a {lower} trip", "/sd/tripplanner"), ("Today's counts", "/sd/today")])
+    return head + _body_wrap(seo_content, shared, app=False, cta=cta)
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
