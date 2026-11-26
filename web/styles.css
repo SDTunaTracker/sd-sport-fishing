@@ -7145,10 +7145,16 @@ button.btn-save-boat[data-saved="true"],
 @media (prefers-reduced-motion: reduce) { .region-loading-spinner { animation: none; } }
 
 /* Landing / skipper reports on the boat page (forum-reports.jsx) */
-.ln-photos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
-.ln-photo { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 6px; background: var(--surface); }
-.ln-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-@media (max-width: 480px) { .ln-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Thumbnails, not a gallery: a fixed-size strip so three reports stay
+   readable; every photo opens the full report. */
+.ln-photos { display: grid; grid-template-columns: repeat(4, 132px); gap: 8px; margin-top: 6px; }
+.ln-photo { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 8px; background: var(--band); }
+.ln-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s ease; }
+.ln-photo:hover img { transform: scale(1.04); }
+.ln-photo:focus-visible { outline: none; box-shadow: var(--focus); }
+.ln-more { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20, 30, 28, .55); color: #fff; font: 600 15px/1 var(--sans); }
+@media (max-width: 600px) { .ln-photos { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; } .ln-photo { aspect-ratio: 1; } }
+@media (prefers-reduced-motion: reduce) { .ln-photo img { transition: none; } .ln-photo:hover img { transform: none; } }
 
 /* ── Google reviews panel (web/google-reviews.jsx) ──────────────────────── */
 /* Reuses the .fr-* forum panel layout; only author rows and stars are new. */

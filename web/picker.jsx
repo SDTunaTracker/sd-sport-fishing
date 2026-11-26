@@ -25,6 +25,53 @@
     if (n == null) return null;
     return n === 1 ? '1 seat left' : n + ' seats left';
   }
+  // Kicker text for multi-selected days: "Fri, Nov 27 & Sun, Nov 29" or "4 days, Nov 27–Dec 6".
+  function fmtDays(days) {
+    const f = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    if (days.length <= 2) return days.map(f).join(' & ');
+    return days.length + ' days, ' + fmtRange(days[0], days[days.length - 1]);
+  }
+  const DAY_GRID = 21;   // three weeks of tappable days
+
+  // Multi-select calendar for "Pick dates": tap each day you could go.
+  function DayGrid({ start, days, onChange }) {
+    const P = window.TTPicker;
+    const all = Array.from({ length: DAY_GRID }, (_, i) => P.addDays(start, i));
+    const set = new Set(days);
+    const toggle = d => onChange(set.has(d) ? days.filter(x => x !== d) : [...days, d].sort());
+    const weekends = all.filter(d => [0, 5, 6].includes(new Date(d + 'T12:00:00').getDay()));
+    const lead = new Date(start + 'T12:00:00').getDay();   // blank cells so columns run Sun..Sat
+    const mon = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short' });
+    return (
+      <div className="pk-days">
+        <div className="pk-days-head">
+          <span className="pk-days-hint" aria-live="polite">{days.length ? `${days.length} day${days.length === 1 ? '' : 's'} picked` : 'Tap the days you could go'}</span>
+          <span className="pk-days-acts">
+            <button type="button" onClick={() => onChange(weekends)}>Weekends</button>
+            {days.length > 0 && <button type="button" onClick={() => onChange([])}>Clear</button>}
+          </span>
+        </div>
+        <div className="pk-days-grid" role="group" aria-label="Days you could go">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => <span key={'h' + i} className="pk-days-wd" aria-hidden="true">{w}</span>)}
+          {Array.from({ length: lead }, (_, i) => <span key={'b' + i}/>)}
+          {all.map((d, i) => {
+            const dt = new Date(d + 'T12:00:00');
+            const on = set.has(d);
+            const showMon = i === 0 || dt.getDate() === 1;
+            return (
+              <button key={d} type="button" aria-pressed={on} className={'pk-day' + (on ? ' on' : '')}
+                      aria-label={dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      onClick={() => toggle(d)}>
+                {showMon && <span className="pk-day-mon">{mon(d)}</span>}
+                <span className="pk-day-n">{dt.getDate()}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   function fmtRange(from, to) {
     const f = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     return from === to ? f(from) : f(from) + '–' + f(to);
@@ -70,7 +117,7 @@
   // ── Pick my trip ────────────────────────────────────────────────────────────
   // startEmpty (Today): no trip type chosen until the visitor picks one, so the
   // card doesn't repeat the answers already shown above it.
-  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick, initialType }) {
+  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick, initialType, compact }) {
     const P = window.TTPicker;
     const tick = useDataTick();
     const region = regionOf(regions);
@@ -78,8 +125,7 @@
     const validType = initialType && (P && P.TRIP_TYPES || []).some(t => t.id === initialType) ? initialType : null;
     const [type, setType] = useState(() => validType || (startEmpty ? null : (store(TYPE_KEY) || 'overnight')));
     const [when, setWhen] = useState('next7');
-    const [from, setFrom] = useState(presets ? presets.next7.from : '');
-    const [to, setTo] = useState(presets ? P.addDays(presets.next7.from, 13) : '');
+    const [days, setDays] = useState([]);
     const [species, setSpecies] = useState('');
     const [budget, setBudget] = useState('');
     const [quick, setQuick] = useState(null);
@@ -95,11 +141,13 @@
     useEffect(() => { if (initialQuick) applyQuick(initialQuick); }, [initialQuick]);
     const manual = (fn) => (...args) => { setQuick(null); fn(...args); };
 
-    const range = when === 'custom' ? { from, to: to < from ? from : to } : (presets ? presets[when] : {});
-    const res = useMemo(() => (P && type) ? P.pickTrips({
-      type, from: range.from, to: range.to, region,
+    const custom = when === 'custom';
+    const range = custom ? (days.length ? { from: days[0], to: days[days.length - 1] } : {}) : (presets ? presets[when] : {});
+    const needDays = custom && !days.length;
+    const res = useMemo(() => (P && type && !needDays) ? P.pickTrips({
+      type, from: range.from, to: range.to, days: custom ? days : undefined, region,
       species: species || undefined, maxPrice: budget ? +budget : undefined,
-    }) : null, [type, range.from, range.to, region, species, budget, tick]);
+    }) : null, [type, range.from, range.to, days.join(','), custom, region, species, budget, tick]);
 
     if (!P) return null;
     const pickType = manual((id) => { setType(id); store(TYPE_KEY, id); });
@@ -120,7 +168,12 @@
           ))}
         </div>
 
-        <div className="pk-inputs">
+        {compact ? (
+          <a className="pk-more" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
+             onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
+            Choose dates, trip type, species or budget<span aria-hidden="true">{' →'}</span>
+          </a>
+        ) : <div className="pk-inputs">
           <div className="pk-field" role="radiogroup" aria-label="Trip type">
             <span className="pk-label">Trip</span>
             <div className="pk-chips">
@@ -138,12 +191,7 @@
                         className={when === k ? 'on' : ''} onClick={manual(() => setWhen(k))}>{l}</button>
               ))}
             </div>
-            {when === 'custom' && (
-              <div className="pk-dates">
-                <label>From <input type="date" value={from} min={presets.next7.from} onChange={manual(e => setFrom(e.target.value))}/></label>
-                <label>To <input type="date" value={to} min={from} onChange={manual(e => setTo(e.target.value))}/></label>
-              </div>
-            )}
+            {custom && presets && <DayGrid start={presets.next7.from} days={days} onChange={manual(setDays)}/>}
           </div>
           <div className="pk-field pk-opts">
             <span className="pk-label">Options</span>
@@ -157,11 +205,13 @@
               </select>
             </div>
           </div>
-        </div>
+        </div>}
 
         <div className="pk-answer" aria-live="polite">
-          {!type ? (
-            <p className="pk-prompt">Tap a quick pick or choose a trip type, and we'll pick the boat with open seats that has been catching best.</p>
+          {type && needDays ? (
+            <p className="pk-prompt">Tap the days you could go, and we'll pick the best boat with open seats on any of them.</p>
+          ) : !type ? (
+            compact ? null : <p className="pk-prompt">Tap a quick pick or choose a trip type, and we'll pick the boat with open seats that has been catching best.</p>
           ) : noSchedule ? (
             <div className="pk-empty">
               <p>We don't have trip schedules for {regionLabel} yet, so we can't pick a trip here.</p>
@@ -179,7 +229,7 @@
             <React.Fragment>
               <div className="pk-best">
                 <div className="pk-best-main">
-                  <div className="pk-kicker">Best bet · {fmtRange(range.from, range.to)}</div>
+                  <div className="pk-kicker">Best bet · {custom ? fmtDays(days) : fmtRange(range.from, range.to)}</div>
                   <div className="pk-boat">
                     <button className="pk-boat-link" onClick={() => navigate && navigate('boat', { boat: best.boat })}>{best.boat}</button>
                   </div>
@@ -217,10 +267,11 @@
             </React.Fragment>
           ) : (
             <div className="pk-empty">
-              <p>No open {Array.isArray(type) ? 'trip' : typeNoun(type)}s {when === 'weekend' ? 'this weekend' : 'in those dates'}{budget ? ' in that budget' : ''}.</p>
+              <p>No open {Array.isArray(type) ? 'trip' : typeNoun(type)}s {when === 'weekend' ? 'this weekend' : custom ? (days.length === 1 ? 'that day' : 'on those days') : 'in those dates'}{budget ? ' in that budget' : ''}.</p>
               <div className="pk-empty-acts">
                 {when === 'weekend' && <button onClick={manual(() => setWhen('next7'))}>Try the next 7 days</button>}
-                {when !== 'custom' && <button onClick={manual(() => { setFrom(presets.next7.from); setTo(P.addDays(presets.next7.from, 13)); setWhen('custom'); })}>Try the next 2 weeks</button>}
+                {!custom && <button onClick={manual(() => { setDays(Array.from({ length: 14 }, (_, i) => P.addDays(presets.next7.from, i))); setWhen('custom'); })}>Try the next 2 weeks</button>}
+                {custom && days.length < DAY_GRID && <button onClick={manual(() => setDays(Array.from({ length: DAY_GRID }, (_, i) => P.addDays(presets.next7.from, i))))}>Any day in the next 3 weeks</button>}
                 {budget && <button onClick={manual(() => setBudget(''))}>Any price</button>}
                 <button onClick={() => navigate && navigate('tripplanner')}>Browse every trip</button>
               </div>
@@ -373,6 +424,28 @@
     );
   }
 
+  // Home: the same answers and quick picks at the top of the page, above the
+  // hero, in every region that has a trip schedule (SD, OC/LA). Observed
+  // counts only, no forecast. Today keeps its own Simple/Detailed layout.
+  function HomeAnswers({ regions, navigate }) {
+    const region = regionOf(regions);
+    const tick = useDataTick();
+    const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';
+    const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
+      window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
+    if (!window.TTPicker || region === 'sf_bay') return null;
+    return (
+      <section className="ha" aria-labelledby="ha-title">
+        <div className="ha-in">
+          <div className="pk-eyebrow">This week · {label}</div>
+          <h2 className="ha-title" id="ha-title">Where to fish this week</h2>
+          <TodayAnswers regions={regions} navigate={navigate}/>
+          {hasPicker && <PickMyTrip regions={regions} navigate={navigate} startEmpty compact/>}
+        </div>
+      </section>
+    );
+  }
+
   // Own route: /sd/pick
   function PickTripView({ regions, navigate }) {
     // Deep links: ?q=<quick pick id> or ?type=full|overnight|1.5|multi|long (next 7 days).
@@ -397,5 +470,5 @@
     );
   }
 
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, PickTripView, ViewModeSwitch, PickFab });
+  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, PickTripView, ViewModeSwitch, PickFab });
 })();
