@@ -184,3 +184,20 @@ def test_a_stored_reply_does_not_hide_a_new_feeds_first_backfill(conn):
     bd.upsert_source(conn, {"url": YFT, "title": "t", "author": "a", "published_at": NOW,
                             "raw_text": "op"}, NOW, feed_id="bd-kayak")
     assert bd._newest_published(conn, "bd-kayak") == NOW
+
+
+def test_first_posts_go_ahead_of_replies_under_the_cap(tmp_path):
+    p = tmp_path / "paddies.db"
+    c = bd.open_db(p)
+    c.row_factory = sqlite3.Row
+    bd.ensure_schema(c)
+    newer = datetime(2026, 11, 25, tzinfo=timezone.utc)
+    bd.upsert_source(c, {"url": YFT + "post-9", "title": "t", "author": "a", "published_at": newer,
+                         "raw_text": "reply", "reply_to": YFT}, NOW, feed_id="bd-socal-sportboats")
+    bd.upsert_source(c, {"url": CAT, "title": "t", "author": "a", "published_at": NOW.replace(day=20),
+                         "raw_text": "op"}, NOW, feed_id="bd-socal-sportboats")
+    c.commit()
+    c.close()
+    conn = br.open_db(p)
+    assert [r["url"] for r in br.pending_rows(conn, limit=1)] == [CAT]
+    conn.close()

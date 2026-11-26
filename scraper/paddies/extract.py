@@ -816,7 +816,9 @@ def run(limit: int | None = None, dry_run: bool = False, only_id: str | None = N
              f"{trunc_col}, {feed_col} "
              "FROM paddy_sources WHERE extracted = 0 "
              f"AND {feed_col.split(' AS ')[0]} IN ({','.join('?' * len(PADDY_FEED_IDS))}) "
-             "ORDER BY published_at DESC")
+             # Under the --limit cap, first posts go ahead of thread replies
+             # (replies.py), newest first within each.
+             f"ORDER BY {'reply_to IS NOT NULL, ' if 'reply_to' in cols else ''}published_at DESC")
         params = tuple(PADDY_FEED_IDS)
         if only_id:
             q = (f"SELECT id, url, title, author, published_at, raw_text, "

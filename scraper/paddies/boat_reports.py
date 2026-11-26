@@ -407,7 +407,8 @@ def pending_rows(conn: sqlite3.Connection, limit: int | None = None,
          f"WHERE s.feed_id IN ({','.join('?' * len(ids))}) "
          f"AND s.truncated = 0 "
          f"AND (r.source_id IS NULL OR (r.status = 'failed' AND r.attempts < ?)) "
-         f"ORDER BY s.published_at DESC")
+         # Under the --limit cap, first posts go ahead of thread replies.
+         f"ORDER BY s.reply_to IS NOT NULL, s.published_at DESC")
     rows = [r for r in conn.execute(q, (*ids, MAX_ATTEMPTS)) if not _is_stale_bump(r)]
     return rows[:limit] if limit else rows
 
