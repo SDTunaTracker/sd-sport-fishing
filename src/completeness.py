@@ -43,7 +43,7 @@ REGIONAL_LANDINGS = (
     "Oceanside Sea Center",
     "22nd Street Landing", "Long Beach Sportfishing", "LA Waterfront Sportfishing",
     "Marina Del Rey Sportfishing", "Redondo Beach Sportfishing", "Pierpoint Landing",
-    "Channel Islands Sportfishing", "Ventura Harbor Sportfishing",
+    "Channel Islands Sportfishing", "Hooks Landing", "Ventura Harbor Sportfishing",
     "Newport Landing", "Davey's Locker", "Dana Wharf Sportfishing",
 )
 OCLA_LANDINGS = REGIONAL_LANDINGS[1:]
