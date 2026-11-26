@@ -85,8 +85,9 @@ const REGION_OPTIONS = [
   { id: 'san_diego',  label: 'San Diego' },
   { id: 'oc_la',     label: 'OC / LA' },
   { id: 'all_socal', label: 'All SoCal' },
+  { id: 'sf_bay',    label: 'SF Bay Area' },
 ];
-const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'], sf_bay: ['sf_bay'] };
 
 // Returns an onClick that lets real <a> nav links work as SPA navigation while
 // preserving native browser behavior for modified clicks (new tab, etc.).
@@ -104,7 +105,13 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
   const dropdownRef = React.useRef(null);
   const { isSignedIn } = useAuth();
 
-  const NAV = [
+  const isSfbay = !!(regions && regions[0] === 'sf_bay');
+  // SF Bay has its own, smaller page set (web/sfbay.jsx); no forecasts there.
+  const NAV = isSfbay ? [
+    { id: 'today',    label: 'Today',    icon: 'fa-chart-column' },
+    { id: 'boats',    label: 'Boats',    icon: 'fa-sailboat' },
+    { id: 'landings', label: 'Landings', icon: 'fa-anchor' },
+  ] : [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
     // Forecast entry removed 2026-09-06 (soft-retire). See _redirects for /sd/forecast handling.
     { id: 'charts',      label: 'Charts',       icon: 'fa-map' },
@@ -131,6 +138,7 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
   }
 
   const currentChoice =
+    isSfbay ? 'sf_bay' :
     regions && regions.length >= 2 ? 'all_socal' :
     regions && regions[0] === 'oc_la' ? 'oc_la' : 'san_diego';
   const currentLabel = (REGION_OPTIONS.find(o => o.id === currentChoice) || REGION_OPTIONS[0]).label;
@@ -197,6 +205,16 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
                     <span style={{color:'var(--tb-gray-3)'}}>OC / LA</span>
                     <span className="rdrop-cs-badge">Coming Soon</span>
                   </div>
+                )}
+                {window.FEATURES && window.FEATURES.SHOW_SFBAY && (
+                  <React.Fragment>
+                    <div className="region-dropdown-divider" role="separator"><span>NorCal</span></div>
+                    <div className={`region-dropdown-item${currentChoice === 'sf_bay' ? ' sel' : ''}`}
+                         onClick={() => handleRegionSelect('sf_bay')}>
+                      <span className={`rdrop-dot${currentChoice === 'sf_bay' ? ' sel' : ''}`}/>
+                      <span>SF Bay Area</span>
+                    </div>
+                  </React.Fragment>
                 )}
               </div>
             )}

@@ -91,6 +91,7 @@ function parseRoute(raw) {
     return { view: 'analytics', params: { subtab: sub }, hashRegions: regionIds };
   }
   if (seg === 'boats')      return { view: 'boats',     params: {},                        hashRegions: regionIds };
+  if (seg === 'landings' && regionIds && regionIds[0] === 'sf_bay') return { view: 'landings', params: {}, hashRegions: regionIds };
   if (seg === 'landings')   return { view: 'analytics', params: { subtab: 'overview' },    hashRegions: regionIds };
   if (seg === 'headtohead') return { view: 'analytics', params: { subtab: 'headtohead' },  hashRegions: regionIds };
   if (seg === 'moon')       return { view: 'analytics', params: { subtab: 'moon' },        hashRegions: regionIds };
@@ -157,6 +158,17 @@ function App() {
   const { user, isSignedIn } = useAuth();
 
   const [regions, setRegions] = useS(() => {
+    // SF Bay Area (behind SHOW_SFBAY): a /sfbay/... URL or a saved choice wins.
+    if (window.FEATURES && window.FEATURES.SHOW_SFBAY) {
+      const r0 = routeFromLocation();
+      if (r0.hashRegions && r0.hashRegions[0] === 'sf_bay') return ['sf_bay'];
+      if (!r0.hashRegions) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('tt_regions'));
+          if (Array.isArray(saved) && saved[0] === 'sf_bay') return ['sf_bay'];
+        } catch(e) {}
+      }
+    }
     // Feature flag: OC/LA is not public yet — lock to SD-only.
     if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) return ['san_diego'];
     const initial = routeFromLocation();
@@ -172,8 +184,15 @@ function App() {
     return ['san_diego'];
   });
 
-  // Strip any oc_la that leaked in from localStorage/hash when flag is off.
+  // Strip any oc_la / sf_bay that leaked in from localStorage/hash when its flag is off.
   useE(() => {
+    if (regions.includes('sf_bay') && !(window.FEATURES && window.FEATURES.SHOW_SFBAY)) {
+      const next = ['san_diego'];
+      setRegions(next);
+      try { localStorage.setItem('tt_regions', JSON.stringify(next)); } catch(e) {}
+      return;
+    }
+    if (regions.includes('sf_bay')) return;
     if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) {
       if (regions.includes('oc_la')) {
         const next = ['san_diego'];
@@ -231,6 +250,7 @@ function App() {
   useE(() => {
     if (!isSignedIn || !window.getUserPref) return;
     const CHOICE_MAP = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    if (window.FEATURES && window.FEATURES.SHOW_SFBAY) CHOICE_MAP.sf_bay = ['sf_bay'];
     const savedChoice = window.getUserPref('region_choice', null);
     if (savedChoice && CHOICE_MAP[savedChoice]) {
       setRegionsDirect(CHOICE_MAP[savedChoice]);
@@ -293,6 +313,11 @@ function App() {
   function toggleRegion(regionId) {
     setRegions(prev => {
       let next;
+      if (regionId === 'sf_bay' || prev.includes('sf_bay')) {
+        next = [regionId];   // SF Bay is never combined with SoCal regions
+        localStorage.setItem('tt_regions', JSON.stringify(next));
+        return next;
+      }
       if (prev.includes(regionId)) {
         if (prev.length === 1) return prev; // at-least-one constraint
         next = prev.filter(r => r !== regionId);
@@ -453,10 +478,14 @@ function App() {
   const navMap = {
     home: 'home', today: 'today', forecast: 'forecast', analytics: 'analytics',
     tripplanner: 'tripplanner', account: 'account', boats: 'boats', charts: 'charts',
+    landings: 'landings',
   };
 
+  const isSfbay = regions[0] === 'sf_bay';
   let content;
-  if (route.view === 'home') {
+  if (isSfbay && route.view !== 'account') {
+    content = <SFBayView view={route.view} params={route.params || {}} navigate={navigate}/>;
+  } else if (route.view === 'home') {
     content = <HomeView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
@@ -495,7 +524,8 @@ function App() {
   }
 
   const headerActive = route.view === 'boat' ? 'boats'
-    : route.view === 'landing' ? 'analytics'
+    : (isSfbay && route.view === 'home') ? 'today'
+    : route.view === 'landing' ? (isSfbay ? 'landings' : 'analytics')
     : route.view;
 
   return (
@@ -505,9 +535,9 @@ function App() {
                  hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
-      <AppFooter regions={regions}/>
+      {isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
 
-      {route.view === 'tripplanner' && regionDataReady && <ChatBot pageContext={pageContext}/>}
+      {route.view === 'tripplanner' && !isSfbay && regionDataReady && <ChatBot pageContext={pageContext}/>}
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">
