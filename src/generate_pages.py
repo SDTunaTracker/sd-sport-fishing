@@ -399,6 +399,14 @@ _BRAND_SVG = (
     'height="12" rx="1.2"/><rect x="16" y="25" width="4.5" height="17" rx="1.2"/></svg>'
 )
 
+# "Pick my trip" (/sd/pick, web/trip-picker.js). ?q= takes the picker's preset
+# ids; pages without a matching preset link to /sd/pick itself.
+_PICK_URL = {
+    "overnight": "/sd/pick?q=overnight-week",
+    "full-day": "/sd/pick?q=fullday-weekend",
+    "yellowtail": "/sd/pick?q=yellowtail",
+}
+
 _NAV_LINKS = [("Fish Counts", "/sd/today"), ("Boats", "/sd/boats"),
               ("Analytics", "/sd/analytics/overview"), ("Trip Planner", "/sd/tripplanner")]
 
@@ -953,8 +961,10 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
     head = _head(title, desc, canonical,
                  {"title": title, "description": desc},
                  json_ld, shared, app=False)
+    plan = (f"Find a {name.lower()} trip", _PICK_URL[slug]) if slug in _PICK_URL \
+        else ("Plan a trip", "/sd/tripplanner")
     cta = _cta(f"Who's catching {name.lower()} right now, and where can you go?", [
-        (f"See today's {name.lower()} counts", "/sd/today"), ("Plan a trip", "/sd/tripplanner")])
+        (f"See today's {name.lower()} counts", "/sd/today"), plan])
     return head + _body_wrap(seo_content, shared, app=False, cta=cta)
 
 
@@ -1222,9 +1232,9 @@ def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
 <p><a href="/sd/today">Latest San Diego fish counts →</a></p>
 </article>"""
     head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared, app=False)
-    # The Trip Planner has no URL filters yet, so this links to it unfiltered.
-    cta = _cta(f"Compare upcoming {lower} trips by boat, price and date.", [
-        (f"Find a {lower} trip", "/sd/tripplanner"), ("Today's counts", "/sd/today")])
+    cta = _cta(f"Which upcoming {lower} trip looks best? Pick my trip compares them for you.", [
+        (f"Find the best {lower} trip", _PICK_URL.get(slug, "/sd/pick")),
+        ("Today's counts", "/sd/today")])
     return head + _body_wrap(seo_content, shared, app=False, cta=cta)
 
 
