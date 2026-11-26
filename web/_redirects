@@ -37,5 +37,6 @@
 # oc_la and these paths render San Diego); these lines can stay.
 /ocla                /   200
 /ocla/*              /   200
-/sd+ocla             /   200
-/sd+ocla/*           /   200
+# "All SoCal" (/sd+ocla) retired 2026-11-26: one region at a time.
+/sd+ocla             /sd           301
+/sd+ocla/*           /sd/:splat    301

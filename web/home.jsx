@@ -695,7 +695,7 @@
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
         <section className="ch-hero">
           <div className="ch-hero-in">
-            <div className="ch-kick">{isOclaOnly(regions) ? 'Orange County, LA & Ventura' : (regions && regions.length > 1 ? 'Southern California' : 'San Diego')} sportboat counts, ranked fairly</div>
+            <div className="ch-kick">{isOclaOnly(regions) ? 'Orange County, LA & Ventura' : 'San Diego'} sportboat counts, ranked fairly</div>
             <h1 className="ch-h1">Stop guessing.<br/>Start catching.</h1>
             <p className="ch-by">
               See who's catching, compare fish counts, and book your next trip — every sportboat, in one place.{' '}
