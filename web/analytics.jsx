@@ -350,7 +350,7 @@ function HalfDayView({ navigate, regions, settings }) {
   ];
   const METRIC_OPTS = [
     { value: 'fpa',     label: 'Fish / Angler',        desc: 'All landed species' },
-    { value: 'tpad',    label: 'Tuna / Angler / Day',  desc: 'Trophy species only' },
+    { value: 'tpad',    label: `${SDA.headlineLabel()} / Angler / Day`,  desc: SDA.headlineIsAllSpecies() ? 'All species landed' : 'Trophy species only' },
     { value: 'species', label: 'Selected species',     desc: 'Sum of species below / angler' },
   ];
   // Species list mirrors SDA.HD_ALL_SPECIES, dropping tuna species that are ~0
@@ -790,7 +790,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
   const bestMonth = [...monthly].sort((a, b) => b.tpa - a.tpa)[0];
 
   const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel  = speciesActive ? filters.species : 'Tuna';
+  const speciesLabel  = speciesActive ? filters.species : SDA.headlineLabel();
 
   const _defSp = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
   const _selSp = settings && settings.trophySpecies;
@@ -947,7 +947,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
       {/* By Landing */}
       <Panel title="By Landing"
-             meta="Approved San Diego landings"
+             meta={`${(regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego'} landings`}
              >
         {landings.map((l) => {
           const max = Math.max(...landings.map(x => x.tpa));

@@ -307,7 +307,9 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
   const sortArrow = (k) => sortBy === k ? (sortDir === 'asc' ? '▲' : '▼') : '⇅';
 
   const regionLabel  = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
-  const speciesLabel = (filters.species && filters.species !== 'all') ? filters.species : 'Tuna';
+  const speciesLabel = (filters.species && filters.species !== 'all') ? filters.species : SDA.headlineLabel();
+  // OC/LA's headline counts every species; trophy fish get their own column.
+  const showTrophyCol = SDA.headlineIsAllSpecies() && !(filters.species && filters.species !== 'all');
 
   // Which landings have map coords and have boats in filtered set
   const mapLandings = landingsMeta.filter(m => m.lat && m.lng && allByLanding[m.name]);
@@ -442,6 +444,12 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                   <th className={`num ${sortBy === 'avgTPAPerDay' ? 'active' : ''}`} onClick={() => toggleSort('avgTPAPerDay')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     {speciesLabel}/Day <span className="sortarrow">{sortArrow('avgTPAPerDay')}</span>
                   </th>
+                  {showTrophyCol && (
+                    <th className={`num ${sortBy === 'avgTrophyPerDay' ? 'active' : ''}`} onClick={() => toggleSort('avgTrophyPerDay')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        title="Bluefin, yellowfin, yellowtail and dorado per angler per day">
+                      Trophy/Day <span className="sortarrow">{sortArrow('avgTrophyPerDay')}</span>
+                    </th>
+                  )}
                   <th className={`num ${sortBy === 'winRate' ? 'active' : ''}`} onClick={() => toggleSort('winRate')} style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     <MetricLabel {...METRIC_DEFINITIONS.winRate} /> <span className="sortarrow">{sortArrow('winRate')}</span>
                   </th>
@@ -469,6 +477,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
                     <td><button className="sub-landing-link" onClick={e => { e.stopPropagation(); navigate('landing', { landing: b.landing }); }}>{b.landing}</button></td>
                     <td className="num">{fmt.n(b.tripCount)}</td>
                     <td className="num">{fmt.tpa(b.avgTPAPerDay)}</td>
+                    {showTrophyCol && <td className="num">{fmt.tpa(b.avgTrophyPerDay || 0)}</td>}
                     <td className="num">{b.winRate != null ? `${Math.round(b.winRate * 100)}%` : '—'}</td>
                     <td className="num">
                       {b.tpData

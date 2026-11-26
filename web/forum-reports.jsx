@@ -220,12 +220,18 @@ function WhatsWorkingCard({ lengths, regions }) {
     : (preferred && withItems.includes(preferred)) ? preferred
     : withItems.reduce((a, b) => (classes[b].report_count > classes[a].report_count ? b : a));
   const c = classes[key];
+  const shown = c.items.slice(0, WW_SHOW);
+  const hasLanding = shown.some(it => it.source === 'landing');
+  const hasForum = shown.some(it => it.source !== 'landing');
 
   return (
     <section className="ww-card" aria-labelledby="ww-title">
       <div className="ww-top">
         <div>
-          <div className="fr-eyebrow">From BloodyDecks trip reports</div>
+          <div className="fr-eyebrow">
+            {hasLanding && hasForum ? 'From landing reports and BloodyDecks'
+              : hasLanding ? "From the landings' reports" : 'From BloodyDecks trip reports'}
+          </div>
           <h3 className="ww-title" id="ww-title">What's working</h3>
           <p className="ww-sub">
             {c.report_count} report{c.report_count === 1 ? '' : 's'} · last {c.window_days} days
@@ -242,7 +248,7 @@ function WhatsWorkingCard({ lengths, regions }) {
         </div>
       </div>
       <ul className="ww-list" role="tabpanel">
-        {c.items.slice(0, WW_SHOW).map(it => (
+        {shown.map(it => (
           <li key={it.url + (it.boat || '')} className="ww-item">
             <div className="ww-item-meta">
               {[it.trip_length, it.trip_date && _frDate(it.trip_date).replace(/, \d{4}$/, '')].filter(Boolean).join(' · ')}
@@ -258,17 +264,90 @@ function WhatsWorkingCard({ lengths, regions }) {
               </dl>
             )}
             <a className="ww-link" href={it.url} target="_blank" rel="noopener noreferrer">
-              Read the report<span aria-hidden="true"> ↗</span>
-              <span className="sr-only"> on BloodyDecks (new tab)</span>
+              {it.source === 'landing' ? 'Landing report' : 'Read the report'}<span aria-hidden="true"> ↗</span>
+              <span className="sr-only">{it.source === 'landing' ? " on the landing's site (new tab)" : ' on BloodyDecks (new tab)'}</span>
             </a>
           </li>
         ))}
       </ul>
       <p className="fr-attrib">
-        Automatic summaries of public posts on <a href="https://www.bdoutdoors.com/forums/" target="_blank" rel="noopener noreferrer">BloodyDecks</a>.
+        Automatic summaries of {hasForum && <>public posts on <a href="https://www.bdoutdoors.com/forums/" target="_blank" rel="noopener noreferrer">BloodyDecks</a></>}
+        {hasForum && hasLanding && ' and '}{hasLanding && "the landings' own reports"}.
       </p>
     </section>
   );
 }
 
-Object.assign(window, { ForumReportsSection, loadForumReports, WhatsWorkingCard, loadWhatsWorking });
+// ── "From the landing" section (boat page) ───────────────────────────────────
+// Data: api/v1/landing_notes.json, written by scraper/paddies/landing_reports.py
+// from the landing's and skipper's own posts. Our one-line summary, sizes,
+// bait, tackle, one short quote, and the report's photos hot-linked from the
+// landing's photo host (never re-hosted); every note links to its report.
+
+const LN_URL = 'api/v1/landing_notes.json';
+const LN_SHOW = 3;
+let _lnPromise = null;
+function loadLandingNotes() {
+  if (!_lnPromise) {
+    _lnPromise = fetch(LN_URL, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+  }
+  return _lnPromise;
+}
+
+function _lnSize(size) {
+  return (size || []).map(s => {
+    const lb = s.min_lb && s.max_lb ? `${s.min_lb}–${s.max_lb} lb` : s.max_lb ? `to ${s.max_lb} lb` : `${s.min_lb}+ lb`;
+    return `${s.name} ${lb}`;
+  }).join(' · ');
+}
+
+function LandingNotesSection({ boat }) {
+  const [notes, setNotes] = _frUseState(null);
+  _frUseEffect(() => {
+    let live = true;
+    loadLandingNotes().then(d => { if (live) setNotes(d?.boats?.[boat]?.notes || []); });
+    return () => { live = false; };
+  }, [boat]);
+  if (!notes || !notes.length) return null;
+  return (
+    <section className="fr-section ln-section" aria-labelledby="ln-title">
+      <div className="fr-eyebrow">From the landing</div>
+      <h2 className="fr-title" id="ln-title">Skipper and landing reports</h2>
+      <p className="fr-sub">Summaries of {boat}'s recent posts on the landing's report page. Photos and full reports are on the landing's site.</p>
+      <ul className="fr-list">
+        {notes.slice(0, LN_SHOW).map(n => (
+          <li key={n.url} className="fr-card">
+            <div className="fr-card-meta">{[n.trip_length, n.date && _frDate(n.date), n.by && `by ${n.by}`].filter(Boolean).join(' · ')}</div>
+            <a className="fr-card-title" href={n.url} target="_blank" rel="noopener noreferrer">
+              {n.title}<span className="fr-ext" aria-hidden="true"> ↗</span>
+              <span className="sr-only"> (opens the landing's report in a new tab)</span>
+            </a>
+            {n.skipper_note && <p className="fr-card-catch">{n.skipper_note}</p>}
+            {n.size?.length > 0 && <div className="fr-card-confirm"><span aria-hidden="true">⚖</span> {_lnSize(n.size)}</div>}
+            {n.quote && <div className="fr-quotes"><blockquote>“{n.quote}”</blockquote></div>}
+            {(n.tackle?.length > 0 || n.bait) && (
+              <div className="fr-card-tackle">
+                <span className="fr-k">{n.tackle?.length ? 'Tackle' : 'Bait'}</span>
+                {n.bait && <span className="fr-chip">{n.bait}{n.bait_on_board ? ' on board' : ''}</span>}
+                {(n.tackle || []).slice(0, 3).map((t, i) => <span key={i} className="fr-chip">{t}</span>)}
+              </div>
+            )}
+            {n.photos?.length > 0 && (
+              <div className="ln-photos">
+                {n.photos.slice(0, 4).map(src => (
+                  <a key={src} href={n.url} target="_blank" rel="noopener noreferrer" className="ln-photo">
+                    <img src={src} alt={`Photo from ${boat}'s report`} loading="lazy" referrerPolicy="no-referrer"/>
+                  </a>
+                ))}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="fr-attrib">Source: the landing's own reports (SanDiegoFishReports.com / SoCalFishReports.com).</p>
+    </section>
+  );
+}
+
+Object.assign(window, { ForumReportsSection, loadForumReports, WhatsWorkingCard, loadWhatsWorking,
+                        LandingNotesSection, loadLandingNotes });
