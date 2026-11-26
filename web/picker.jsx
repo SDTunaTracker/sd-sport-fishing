@@ -70,7 +70,7 @@
   // ── Pick my trip ────────────────────────────────────────────────────────────
   // startEmpty (Today): no trip type chosen until the visitor picks one, so the
   // card doesn't repeat the answers already shown above it.
-  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick, initialType }) {
+  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick, initialType, compact }) {
     const P = window.TTPicker;
     const tick = useDataTick();
     const region = regionOf(regions);
@@ -120,7 +120,12 @@
           ))}
         </div>
 
-        <div className="pk-inputs">
+        {compact ? (
+          <a className="pk-more" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
+             onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
+            Choose dates, trip type, species or budget<span aria-hidden="true">{' →'}</span>
+          </a>
+        ) : <div className="pk-inputs">
           <div className="pk-field" role="radiogroup" aria-label="Trip type">
             <span className="pk-label">Trip</span>
             <div className="pk-chips">
@@ -157,11 +162,11 @@
               </select>
             </div>
           </div>
-        </div>
+        </div>}
 
         <div className="pk-answer" aria-live="polite">
           {!type ? (
-            <p className="pk-prompt">Tap a quick pick or choose a trip type, and we'll pick the boat with open seats that has been catching best.</p>
+            compact ? null : <p className="pk-prompt">Tap a quick pick or choose a trip type, and we'll pick the boat with open seats that has been catching best.</p>
           ) : noSchedule ? (
             <div className="pk-empty">
               <p>We don't have trip schedules for {regionLabel} yet, so we can't pick a trip here.</p>
@@ -373,6 +378,28 @@
     );
   }
 
+  // Home: the same answers and quick picks at the top of the page, above the
+  // hero, in every region that has a trip schedule (SD, OC/LA). Observed
+  // counts only, no forecast. Today keeps its own Simple/Detailed layout.
+  function HomeAnswers({ regions, navigate }) {
+    const region = regionOf(regions);
+    const tick = useDataTick();
+    const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';
+    const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
+      window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
+    if (!window.TTPicker || region === 'sf_bay') return null;
+    return (
+      <section className="ha" aria-labelledby="ha-title">
+        <div className="ha-in">
+          <div className="pk-eyebrow">This week · {label}</div>
+          <h2 className="ha-title" id="ha-title">Where to fish this week</h2>
+          <TodayAnswers regions={regions} navigate={navigate}/>
+          {hasPicker && <PickMyTrip regions={regions} navigate={navigate} startEmpty compact/>}
+        </div>
+      </section>
+    );
+  }
+
   // Own route: /sd/pick
   function PickTripView({ regions, navigate }) {
     // Deep links: ?q=<quick pick id> or ?type=full|overnight|1.5|multi|long (next 7 days).
@@ -397,5 +424,5 @@
     );
   }
 
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, PickTripView, ViewModeSwitch, PickFab });
+  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, PickTripView, ViewModeSwitch, PickFab });
 })();
