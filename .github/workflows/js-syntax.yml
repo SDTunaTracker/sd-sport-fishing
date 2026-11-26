@@ -1,0 +1,34 @@
+name: JS syntax check
+
+# Every script the site ships (web/*.js, web/dist/*.js) must parse. One bad
+# character in one file blanks every page that needs it: on 2026-11-26 an
+# unescaped apostrophe in web/metric-definitions.js broke all boat pages and
+# no check caught it. Runs on every pull request and on pushes to main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: js-syntax-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check that every shipped script parses
+        run: node scripts/check-js-syntax.mjs
