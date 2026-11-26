@@ -223,6 +223,7 @@ function _wwClassesFor(data, regions) {
 function WhatsWorkingCard({ lengths, regions }) {
   const [data, setData] = _frUseState(null);
   const [pick, setPick] = _frUseState(null);
+  const [open, setOpen] = _frUseState(false);   // collapsed by default (owner, 2026-11-26)
   _frUseEffect(() => { let live = true; loadWhatsWorking().then(d => live && setData(d)); return () => { live = false; }; }, []);
   if (!data?.classes) return null;
   const classes = _wwClassesFor(data, regions);
@@ -238,20 +239,30 @@ function WhatsWorkingCard({ lengths, regions }) {
   const hasLanding = shown.some(it => it.source === 'landing');
   const hasForum = shown.some(it => it.source !== 'landing');
 
+  // One-line headline for the collapsed card: the newest report's boat and
+  // what it was using.
+  const lead = shown[0];
+  const leadUse = lead && [...(lead.tackle || []).slice(0, 2), lead.bait].filter(Boolean).join(', ');
+  const cap = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+  const headline = !lead ? '' : lead.boat ? `${lead.boat}${leadUse ? ': ' + leadUse : ''}` : cap(leadUse);
+  const source = hasLanding && hasForum ? 'Landing reports and BloodyDecks'
+    : hasLanding ? "The landings' reports" : 'BloodyDecks trip reports';
+
   return (
-    <section className="ww-card" aria-labelledby="ww-title">
-      <div className="ww-top">
-        <div>
-          <div className="fr-eyebrow">
-            {hasLanding && hasForum ? 'From landing reports and BloodyDecks'
-              : hasLanding ? "From the landings' reports" : 'From BloodyDecks trip reports'}
-          </div>
-          <h3 className="ww-title" id="ww-title">What's working</h3>
-          <p className="ww-sub">
-            {c.report_count} report{c.report_count === 1 ? '' : 's'} · last {c.window_days} days
+    <section className={`ww-card${open ? ' open' : ''}`} aria-labelledby="ww-title">
+      <button type="button" className="ww-toggle" aria-expanded={open} aria-controls="ww-body" onClick={() => setOpen(o => !o)}>
+        <span className="ww-toggle-text">
+          <span className="fr-eyebrow">What's working · {c.label}</span>
+          <span className="ww-title" id="ww-title">{headline || "What's working"}</span>
+          <span className="ww-sub">
+            {c.report_count} report{c.report_count === 1 ? '' : 's'} · last {c.window_days} days · {source}
             {c.top_spots?.length > 0 && <> · Where: <span className="ww-spots">{c.top_spots.join(', ')}</span></>}
-          </p>
-        </div>
+          </span>
+        </span>
+        <span className="ww-chev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 5.5l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
+      </button>
+      {open && <div id="ww-body">
+      <div className="ww-top">
         <div className="ww-tabs" role="tablist" aria-label="Trip type">
           {withItems.map(k => (
             <button key={k} role="tab" aria-selected={k === key}
@@ -289,6 +300,7 @@ function WhatsWorkingCard({ lengths, regions }) {
         Automatic summaries of {hasForum && <>public posts on <a href="https://www.bdoutdoors.com/forums/" target="_blank" rel="noopener noreferrer">BloodyDecks</a></>}
         {hasForum && hasLanding && ' and '}{hasLanding && "the landings' own reports"}.
       </p>
+      </div>}
     </section>
   );
 }

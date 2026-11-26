@@ -671,7 +671,7 @@ const DAILY_LIMIT = 999; // Set to 999 until Pro auth is built
 window.CC_QUICK_PICKS = [
   { label: 'Best overnight this week' },
   { label: 'Best trip under $300' },
-  { label: 'Where are the yellowtail?' },
+  { label: 'Best boat for tuna this week' },
   { label: 'Best full day this weekend' },
 ];
 function ccQuickPickList() {
