@@ -626,3 +626,28 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .vm button { flex: 1; }
 }
 .pk-prompt { margin: 0; padding: 18px 20px; border-radius: 14px; background: var(--band); font: 400 15px/1.5 var(--sans); color: var(--ink-2); }
+
+/* Quick picks (shared with Co-Captain) + mobile entry point */
+.pk-quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.pk-quick button { min-height: 44px; padding: 0 16px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--band); color: var(--ink); font: 500 14px var(--sans); cursor: pointer; text-align: left; }
+.pk-quick button:hover { border-color: var(--ink-2); }
+.pk-quick button.on { background: var(--pine); border-color: var(--pine); color: #fff; }
+.pk-quick button:focus-visible { outline: none; box-shadow: var(--focus); }
+.pk-fab { display: none; }
+.tsim { display: flex; flex-direction: column; }
+@media (max-width: 760px) {
+  .pk-quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .pk-quick button { min-height: 56px; padding: 8px 12px; line-height: 1.3; }
+  .pk-chips button, .pk-empty-acts button { height: 44px; padding: 0 16px; font-size: 14.5px; }
+  .pk-dates input, .pk-selects select { height: 44px; font-size: 16px; }
+  /* Today on phones: the picker sits right under the title */
+  .tsim-head { order: -2; }
+  .tsim > .pk { order: -1; }
+  .pk-fab { display: inline-flex; align-items: center; gap: 10px; position: fixed; z-index: 900;
+    left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    height: 50px; padding: 0 22px; border-radius: 999px; background: var(--pine); color: #fff;
+    font: 600 15px var(--sans); text-decoration: none; box-shadow: 0 6px 20px rgba(23,51,44,.28); }
+  .pk-fab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(207,106,60,.45), 0 6px 20px rgba(23,51,44,.28); }
+  .pk-fab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  body { padding-bottom: 76px; }
+}

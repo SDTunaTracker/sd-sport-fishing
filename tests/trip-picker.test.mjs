@@ -181,3 +181,34 @@ test('whatsBiting in OC/LA ranks every landed species', () => {
   const w = P.whatsBiting({ now: NOW, region: 'oc_la' }, data([], trips));
   assert.equal(w.items[0].species, 'Rockfish');
 });
+
+test('quick picks build queries and run', () => {
+  assert.deepEqual(P.QUICK_PICKS.map((q) => q.id), ['overnight-week', 'under-300', 'yellowtail', 'fullday-weekend']);
+  const q = P.quickQuery('under-300', { now: NOW, region: 'san_diego' });
+  assert.deepEqual([q.from, q.to, q.maxPrice], ['2026-11-25', '2026-12-01', 300]);
+  assert.equal(P.quickQuery('fullday-weekend', { now: NOW }).from, '2026-11-27');
+  assert.equal(P.quickQuery('yellowtail', { now: NOW }).species, 'Yellowtail');
+  const trips = [trip('A', 2, 40), trip('A', 4, 40), trip('A', 6, 40)];
+  const r = P.pickTrips(P.quickQuery('under-300', { now: NOW }), data([sched('A', 2, { price: 280 }), sched('B', 2, { price: 400 })], trips));
+  assert.equal(r.best.boat, 'A');
+  assert.equal(r.considered, 1);
+  assert.equal(P.quickQuery('nope'), null);
+});
+
+test('species query never offers a boat that is not landing that species', () => {
+  const yt = (b, d, n) => ({ ...trip(b, d, 10), Yellowtail: n });
+  const trips = [yt('YT', 2, 8), yt('YT', 4, 6), yt('YT', 6, 7), yt('None', 2, 0), yt('None', 4, 0), yt('None', 6, 0)];
+  const r = P.pickTrips({ type: 'overnight', species: 'Yellowtail', now: NOW }, data([sched('YT', 2), sched('None', 2)], trips));
+  assert.equal(r.best.boat, 'YT');
+  assert.equal(r.alternates.length, 0);
+  const r2 = P.pickTrips({ type: 'overnight', species: 'Yellowtail', now: NOW }, data([sched('None', 2)], trips));
+  assert.equal(r2.best, null);
+  assert.equal(r2.reason, 'no-species');
+});
+
+test('reason uses the trip label for non-standard lengths', () => {
+  const tl = { tripLength: '3/4 Day', tripLengthDays: 0.75 };
+  const trips = [trip('Q', 2, 20, 20, tl), trip('Q', 4, 20, 20, tl), trip('Q', 6, 20, 20, tl)];
+  const r = P.pickTrips({ type: 'full', now: NOW }, data([sched('Q', 2, tl)], trips));
+  assert.match(r.best.reason, /on 3 3\/4 day trips/);
+});

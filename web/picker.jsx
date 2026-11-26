@@ -67,7 +67,7 @@
   // ── Pick my trip ────────────────────────────────────────────────────────────
   // startEmpty (Today): no trip type chosen until the visitor picks one, so the
   // card doesn't repeat the answers already shown above it.
-  function PickMyTrip({ regions, navigate, variant, startEmpty }) {
+  function PickMyTrip({ regions, navigate, variant, startEmpty, initialQuick }) {
     const P = window.TTPicker;
     const tick = useDataTick();
     const region = regionOf(regions);
@@ -78,6 +78,18 @@
     const [to, setTo] = useState(presets ? P.addDays(presets.next7.from, 13) : '');
     const [species, setSpecies] = useState('');
     const [budget, setBudget] = useState('');
+    const [quick, setQuick] = useState(null);
+
+    // One-tap quick picks (same four as Co-Captain's starter buttons) just set
+    // the inputs below; touching any input clears the highlight.
+    const applyQuick = (id) => {
+      const q = (P && P.QUICK_PICKS || []).find(x => x.id === id);
+      if (!q) return;
+      setQuick(id); setType(q.type); setWhen(q.range === 'weekend' ? 'weekend' : 'next7');
+      setSpecies(q.species || ''); setBudget(q.maxPrice ? String(q.maxPrice) : '');
+    };
+    useEffect(() => { if (initialQuick) applyQuick(initialQuick); }, [initialQuick]);
+    const manual = (fn) => (...args) => { setQuick(null); fn(...args); };
 
     const range = when === 'custom' ? { from, to: to < from ? from : to } : (presets ? presets[when] : {});
     const res = useMemo(() => (P && type) ? P.pickTrips({
@@ -86,7 +98,7 @@
     }) : null, [type, range.from, range.to, region, species, budget, tick]);
 
     if (!P) return null;
-    const pickType = (id) => { setType(id); store(TYPE_KEY, id); };
+    const pickType = manual((id) => { setType(id); store(TYPE_KEY, id); });
     const best = res && res.best;
     const H = variant === 'page' ? 'h1' : 'h2';
     const regionLabel = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'this region';
@@ -95,7 +107,14 @@
     return (
       <section className={`pk${variant === 'page' ? ' pk-page' : ''}`} aria-labelledby="pk-title">
         <div className="pk-eyebrow">Pick my trip</div>
-        <H className="pk-title" id="pk-title">{startEmpty ? 'Different trip or dates?' : "What's the best trip to book?"}</H>
+        <H className="pk-title" id="pk-title">What's the best trip to book?</H>
+
+        <div className="pk-quick" role="group" aria-label="Quick picks">
+          {P.QUICK_PICKS.map(q => (
+            <button key={q.id} aria-pressed={quick === q.id} className={quick === q.id ? 'on' : ''}
+                    onClick={() => applyQuick(q.id)}>{q.label}</button>
+          ))}
+        </div>
 
         <div className="pk-inputs">
           <div className="pk-field" role="radiogroup" aria-label="Trip type">
@@ -112,24 +131,24 @@
             <div className="pk-chips">
               {[['weekend', 'This weekend'], ['next7', 'Next 7 days'], ['custom', 'Pick dates']].map(([k, l]) => (
                 <button key={k} role="radio" aria-checked={when === k}
-                        className={when === k ? 'on' : ''} onClick={() => setWhen(k)}>{l}</button>
+                        className={when === k ? 'on' : ''} onClick={manual(() => setWhen(k))}>{l}</button>
               ))}
             </div>
             {when === 'custom' && (
               <div className="pk-dates">
-                <label>From <input type="date" value={from} min={presets.next7.from} onChange={e => setFrom(e.target.value)}/></label>
-                <label>To <input type="date" value={to} min={from} onChange={e => setTo(e.target.value)}/></label>
+                <label>From <input type="date" value={from} min={presets.next7.from} onChange={manual(e => setFrom(e.target.value))}/></label>
+                <label>To <input type="date" value={to} min={from} onChange={manual(e => setTo(e.target.value))}/></label>
               </div>
             )}
           </div>
           <div className="pk-field pk-opts">
             <span className="pk-label">Options</span>
             <div className="pk-selects">
-              <select aria-label="Target species" value={species} onChange={e => setSpecies(e.target.value)}>
+              <select aria-label="Target species" value={species} onChange={manual(e => setSpecies(e.target.value))}>
                 <option value="">Any fish</option>
                 {SPECIES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <select aria-label="Budget" value={budget} onChange={e => setBudget(e.target.value)}>
+              <select aria-label="Budget" value={budget} onChange={manual(e => setBudget(e.target.value))}>
                 {BUDGETS.map(b => <option key={b.v} value={b.v}>{b.label}</option>)}
               </select>
             </div>
@@ -138,11 +157,19 @@
 
         <div className="pk-answer" aria-live="polite">
           {!type ? (
-            <p className="pk-prompt">Choose a trip type and we'll pick the boat with open seats that has been catching best.</p>
+            <p className="pk-prompt">Tap a quick pick or choose a trip type, and we'll pick the boat with open seats that has been catching best.</p>
           ) : noSchedule ? (
             <div className="pk-empty">
               <p>We don't have trip schedules for {regionLabel} yet, so we can't pick a trip here.</p>
               <div className="pk-empty-acts"><button onClick={() => navigate && navigate('boats')}>See the boats</button></div>
+            </div>
+          ) : res && res.reason === 'no-species' ? (
+            <div className="pk-empty">
+              <p>No boat with open seats has been landing many {species.toLowerCase()} lately.</p>
+              <div className="pk-empty-acts">
+                <button onClick={manual(() => setSpecies(''))}>Any fish</button>
+                <button onClick={() => navigate && navigate('tripplanner')}>Browse every trip</button>
+              </div>
             </div>
           ) : best ? (
             <React.Fragment>
@@ -186,10 +213,10 @@
             </React.Fragment>
           ) : (
             <div className="pk-empty">
-              <p>No open {typeNoun(type)}s {when === 'weekend' ? 'this weekend' : 'in those dates'}{budget ? ' in that budget' : ''}.</p>
+              <p>No open {Array.isArray(type) ? 'trip' : typeNoun(type)}s {when === 'weekend' ? 'this weekend' : 'in those dates'}{budget ? ' in that budget' : ''}.</p>
               <div className="pk-empty-acts">
-                {when !== 'next7' && <button onClick={() => setWhen('next7')}>Try the next 7 days</button>}
-                {budget && <button onClick={() => setBudget('')}>Any price</button>}
+                {when !== 'next7' && <button onClick={manual(() => setWhen('next7'))}>Try the next 7 days</button>}
+                {budget && <button onClick={manual(() => setBudget(''))}>Any price</button>}
                 <button onClick={() => navigate && navigate('tripplanner')}>Browse every trip</button>
               </div>
             </div>
@@ -343,12 +370,24 @@
 
   // Own route: /sd/pick
   function PickTripView({ regions, navigate }) {
+    const q = useMemo(() => { try { return new URLSearchParams(window.location.search).get('q'); } catch (e) { return null; } }, []);
     return (
       <div className="pk-view">
-        <PickMyTrip regions={regions} navigate={navigate} variant="page"/>
+        <PickMyTrip regions={regions} navigate={navigate} variant="page" initialQuick={q}/>
       </div>
     );
   }
 
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, PickTripView, ViewModeSwitch });
+  // Always-reachable entry on phones (no chat on mobile): a sticky button on
+  // every page except the picker itself. Hidden above 760px by CSS.
+  function PickFab({ navigate, regions }) {
+    return (
+      <a className="pk-fab" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
+         onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
+        <span className="pk-fab-dot" aria-hidden="true"/>Pick my trip
+      </a>
+    );
+  }
+
+  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, PickTripView, ViewModeSwitch, PickFab });
 })();

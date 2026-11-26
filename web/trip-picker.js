@@ -14,7 +14,9 @@
 //   - NWS small-craft advisories are returned as a WARNING, never scored.
 //
 // API (also window.TTPicker):
-//   pickTrips(query, data?) -> { best, alternates[], considered, noData, scheduled, query }
+//   pickTrips(query, data?) -> { best, alternates[], considered, noData, scheduled, reason, query }
+//     reason when best is null: 'no-schedule' | 'no-match' | 'no-species'
+//     (a species query drops boats under 0.05 of that species per angler)
 //     (scheduled = future departures in the region of any type; 0 means the
 //      region has no schedule data, which is different from "none match")
 //     query: { type, from, to, species?, maxPrice?, region?, now? }
@@ -35,6 +37,8 @@
 //   whatsBiting(query, data?) -> { region, days, trips, anglers,
 //       items: [{ species, fish, perAngler, tripsWithCatch, change|null }] }
 //   presets(now?) -> { weekend: {from,to,label}, next7: {from,to,label} }
+//   QUICK_PICKS [{ id, label, type, range, maxPrice?, species? }] and
+//   quickQuery(id, { region?, now? }) -> a pickTrips query for that shortcut
 //   TRIP_TYPES, typeOf(tripLength, days)
 (function (root) {
   'use strict';
@@ -58,6 +62,7 @@
   var SHRINK_K = 2;          // pseudo-trips of fleet average blended into each boat
   var TROPHY = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
   var ALL_SPECIES_REGIONS = { oc_la: true };
+  var SPECIES_FLOOR = 0.05;  // fish per angler (per day) below which a boat isn't "landing" a species
 
   function daysOf(len) {
     if (!len) return null;
@@ -210,8 +215,9 @@
     if (!s.hasData) {
       return s.boat + " hasn't reported a trip like this recently, so this is just the next open seat.";
     }
-    var ty = TYPE_BY_ID[typeOf(s.tripLength)];
-    var one = ty ? ty.noun : s.tripLength.toLowerCase(), many = ty ? ty.nounPl : one + 's';
+    var std = { 'Full Day': 'full', 'Overnight': 'overnight', '1.5 Day': '1.5' }[s.tripLength];
+    var ty = std ? TYPE_BY_ID[std] : null;
+    var one = ty ? ty.noun : s.tripLength.toLowerCase() + ' trip', many = ty ? ty.nounPl : one + 's';
     var multiDay = (daysOf(s.tripLength) || 1) > 1;
     var per = metric === 'limitRate' ? '' : ' per angler' + (multiDay ? ' per day' : '');
     var line = s.boat + ' averaged ' + fmtRate(s.rate, metric) + ' ' + noun + per + ' on ' +
@@ -270,11 +276,11 @@
     });
 
     var result = {
-      best: null, alternates: [], considered: cands.length, noData: 0, scheduled: scheduled,
+      best: null, alternates: [], considered: cands.length, noData: 0, scheduled: scheduled, reason: null,
       query: { type: query.type || 'full', from: from, to: to, species: query.species || null,
                maxPrice: query.maxPrice != null ? query.maxPrice : null, region: region },
     };
-    if (!cands.length) return result;
+    if (!cands.length) { result.reason = scheduled ? 'no-match' : 'no-schedule'; return result; }
 
     // 2) Recent observed trips of the same type in this region.
     var types = {};
@@ -353,6 +359,11 @@
     scored.forEach(function (s) { if (!seen[s.boat]) { seen[s.boat] = true; ranked.push(s); } });
     var withData = ranked.filter(function (s) { return s.hasData; });
     var pool = withData.length ? withData : ranked;
+    if (query.species) {
+      // A species question only gets boats that have actually been landing it.
+      pool = withData.filter(function (s) { return s.rate >= SPECIES_FLOOR; });
+      if (!pool.length) result.reason = 'no-species';
+    }
 
     var marine = D.marine || D.marineFor(region);
     var noun = nounFor(query.species, region, metric);
@@ -425,6 +436,29 @@
     return { region: region, days: days, trips: cur.trips, anglers: cur.anglers, items: items };
   }
 
+  // One-tap quick picks, shared by the Pick my trip card and Co-Captain so
+  // mobile visitors (no chat on phones) get the same answers chat users do.
+  //   range: 'weekend' | 'next7' | 'next14'
+  var ALL_TYPES = ['full', 'overnight', '1.5', 'multi', 'long'];
+  // These four match Co-Captain's starter buttons exactly.
+  var QUICK_PICKS = [
+    { id: 'overnight-week', label: 'Best overnight this week', type: 'overnight', range: 'next7' },
+    { id: 'under-300', label: 'Best trip under $300', type: ['full', 'overnight', '1.5'], range: 'next7', maxPrice: 300 },
+    { id: 'yellowtail', label: 'Where are the yellowtail?', type: ['full', 'overnight', '1.5', 'multi'], range: 'next7', species: 'Yellowtail' },
+    { id: 'fullday-weekend', label: 'Best full day this weekend', type: 'full', range: 'weekend' },
+  ];
+  // Query for a quick pick: quickQuery(id, { region, now }) -> pickTrips query.
+  function quickQuery(id, opts) {
+    opts = opts || {};
+    var q = QUICK_PICKS.filter(function (x) { return x.id === id; })[0];
+    if (!q) return null;
+    var pr = presets(opts.now);
+    var r = q.range === 'weekend' ? pr.weekend
+      : { from: pr.next7.from, to: addDays(pr.next7.from, q.range === 'next14' ? 13 : 6) };
+    return { type: q.type, from: r.from, to: r.to, maxPrice: q.maxPrice, species: q.species,
+             region: opts.region, now: opts.now };
+  }
+
   // Date-range presets in Pacific time. "This weekend" is Fri–Sun; on Sat/Sun
   // it's the rest of this weekend.
   function presets(now) {
@@ -440,6 +474,7 @@
   }
 
   var api = { pickTrips: pickTrips, whatsBiting: whatsBiting, presets: presets,
+              QUICK_PICKS: QUICK_PICKS, quickQuery: quickQuery, ALL_TYPES: ALL_TYPES,
               TRIP_TYPES: TRIP_TYPES, typeOf: typeOf, pacificDate: pacificDate, addDays: addDays };
   if (root) root.TTPicker = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
