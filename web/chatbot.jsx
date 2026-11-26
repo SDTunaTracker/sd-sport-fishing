@@ -470,7 +470,7 @@ function ChatBot({ pageContext }) {
     } catch (err) {
       setMessages(prev => prev.map((m, i) =>
         i === placeholderIdx
-          ? { ...m, text: 'Something went wrong — please try again.', streaming: false }
+          ? { ...m, text: (err && err.message && !/^HTTP /.test(err.message) && !/fetch/i.test(err.message)) ? err.message : 'Something went wrong — please try again.', streaming: false }
           : m
       ));
     }
