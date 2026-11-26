@@ -46,9 +46,12 @@
 
   function BookLink({ a, primary }) {
     if (!a.bookingUrl) return null;
+    // ccBookingInfo tags links as Co-Captain traffic; these clicks come from
+    // the Pick my trip card, so report them as such.
+    const href = a.bookingUrl.replace('utm_medium=co_captain', 'utm_medium=pick_my_trip');
     return (
-      <a className={primary ? 'pk-book' : 'pk-alt-book'} href={a.bookingUrl} target="_blank" rel="noopener noreferrer"
-         onClick={() => window.TTTrack?.chatLinkClick?.('PickBook', a.bookingUrl, false)}>
+      <a className={primary ? 'pk-book' : 'pk-alt-book'} href={href} target="_blank" rel="noopener noreferrer"
+         onClick={() => window.TTTrack?.chatLinkClick?.('PickBook', href, false)}>
         {primary ? 'Book this trip' : 'Book'}<span aria-hidden="true">{' ↗'}</span>
         <span className="sr-only"> on the landing's site (new tab)</span>
       </a>
