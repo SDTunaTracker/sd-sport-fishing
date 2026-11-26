@@ -82,6 +82,14 @@ jobs:
             python -m scraper.paddies.ingest_bd
           fi
 
+      # Replies in active threads that read like reports become their own
+      # rows, so the two extractors below read them. Guest pages, 2.5 s apart,
+      # at most 40 thread pages a run; stops on 403/429.
+      - name: Read replies in active BD threads
+        id: replies
+        continue-on-error: true
+        run: python -m scraper.paddies.replies --max-pages 40
+
       - name: Extract mentions with Claude
         id: extract
         # Raw posts are already saved; extraction can lag and catch up later.

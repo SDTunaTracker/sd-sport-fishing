@@ -78,6 +78,19 @@ function ForumAspectRow({ aspects }) {
   );
 }
 
+// BloodyDecks photos are full-size originals with no public thumbnail, so
+// we link to the post rather than embedding them.
+function FrPhotoLink({ n, url, short }) {
+  if (!n || !url) return null;
+  const label = `${n} photo${n === 1 ? '' : 's'}`;
+  return (
+    <a className="fr-photos-link" href={url} target="_blank" rel="noopener noreferrer">
+      <span aria-hidden="true">📷 </span>{short ? label : `${label} on BloodyDecks`}<span aria-hidden="true"> ↗</span>
+      <span className="sr-only">{short ? ' on BloodyDecks (new tab)' : ' (new tab)'}</span>
+    </a>
+  );
+}
+
 function ForumReportCard({ r }) {
   const quotes = Object.entries(r.quotes || {})
     .filter(([k]) => k !== 'fish_finding')
@@ -116,6 +129,7 @@ function ForumReportCard({ r }) {
           {r.tackle.slice(0, 3).map((t, i) => <span key={i} className="fr-chip">{t}</span>)}
         </div>
       )}
+      <FrPhotoLink n={r.photos} url={r.url}/>
     </li>
   );
 }
@@ -267,6 +281,7 @@ function WhatsWorkingCard({ lengths, regions }) {
               {it.source === 'landing' ? 'Landing report' : 'Read the report'}<span aria-hidden="true"> ↗</span>
               <span className="sr-only">{it.source === 'landing' ? " on the landing's site (new tab)" : ' on BloodyDecks (new tab)'}</span>
             </a>
+            {it.source !== 'landing' && <FrPhotoLink n={it.photos} url={it.url} short/>}
           </li>
         ))}
       </ul>
