@@ -732,3 +732,25 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .analytics-subtabbar a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px; font-size: 13px; }
   .analytics-subtabbar { scroll-padding-inline: 16px; }
 }
+
+/* Pick my trip → Pick dates: multi-select days (three weeks, Sun–Sat columns) */
+.pk-days { grid-column: 2; width: 100%; max-width: 420px; margin-top: 4px; }
+.pk-days-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.pk-days-hint { font: 500 13px var(--sans); color: var(--muted); }
+.pk-days-acts { display: flex; gap: 6px; }
+.pk-days-acts button { min-height: 36px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); color: var(--ink-2); font: 500 13px var(--sans); cursor: pointer; }
+.pk-days-acts button:hover { border-color: var(--ink-2); }
+.pk-days-acts button:focus-visible, .pk-day:focus-visible { outline: none; box-shadow: var(--focus); }
+.pk-days-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.pk-days-wd { text-align: center; font: 500 11px/1 var(--mono); color: var(--faint); padding: 2px 0 4px; }
+.pk-day { position: relative; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 2px 0; }
+.pk-day:hover { border-color: var(--ink-2); }
+.pk-day.on { background: var(--pine); border-color: var(--pine); color: #fff; }
+.pk-day-n { font: 600 15px/1 var(--sans); }
+.pk-day-mon { font: 500 9.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
+.pk-day.on .pk-day-mon { color: #F2C7A6; }
+@media (max-width: 760px) {
+  .pk-days { grid-column: 1 / -1; max-width: none; }
+  .pk-day { min-height: 46px; }
+}

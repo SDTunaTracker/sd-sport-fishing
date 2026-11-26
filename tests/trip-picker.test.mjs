@@ -225,3 +225,19 @@ test('a region with no landing list never borrows San Diego rows', () => {
   assert.equal(P.whatsBiting({ region: 'sf_bay', now: NOW }, data([], trips)).trips, 0);
   assert.equal(P.pickTrips({ type: 'overnight', region: 'san_diego', now: NOW }, data([sdRow], trips)).best.boat, 'SD');
 });
+
+test('days: only departures on the chosen days count', () => {
+  const trips = ['A', 'B', 'C'].flatMap((b, i) => [trip(b, 2, 40 + i * 10), trip(b, 4, 40 + i * 10), trip(b, 6, 40 + i * 10)]);
+  const s = [sched('A', 1), sched('B', 3), sched('C', 5)];
+  const r = P.pickTrips({ type: 'overnight', days: [day(5), day(1)], now: NOW }, data(s, trips));
+  assert.equal(r.considered, 2);
+  assert.equal(r.best.boat, 'C');
+  assert.deepEqual(r.query.days, [day(1), day(5)]);
+  assert.equal(r.query.from, day(1));
+  assert.equal(r.query.to, day(5));
+  const none = P.pickTrips({ type: 'overnight', days: [day(2)], now: NOW }, data(s, trips));
+  assert.equal(none.best, null);
+  assert.equal(none.reason, 'no-match');
+  const empty = P.pickTrips({ type: 'overnight', days: [], now: NOW }, data(s, trips));
+  assert.equal(empty.considered, 3);
+});

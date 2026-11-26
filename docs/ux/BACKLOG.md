@@ -44,6 +44,7 @@ Files the redesign session currently has uncommitted (don't edit here until it l
 | 29 | Web phone | Analytics → Find My Boat | 11,000px of cards in an older style (blue links, yellow star buttons); every card repeats a 10-dot form strip. | Match the site style, show 10 then "Show more", star/View as one row. | todo |
 | 30 | Web phone | Analytics (all) | "Filters" button floats alone above the breadcrumb with a blank band above it; the filters it opens are not summarised anywhere. | Put Filters on the page-title row with a count of active filters. | todo |
 | 31 | Web phone | Analytics → Overview | Monthly Catch Pattern and By Trip Length charts use desktop-size type, unreadable at 375. | Same fix as #26. | todo |
+| 32 | Web both | Pick my trip → Pick dates | Owner: let users multi-select the days they could go (was a From/To range). | Three-week calendar (Sun–Sat columns, 41–57px cells): tap any days, Weekends and Clear shortcuts; ranking only uses departures on picked days; empty state offers "Any day in the next 3 weeks". | branch claude/ux-next |
 
 | 3b | Web both | Today | User: "could use some help so it doesn't look so cheesy". | Today v2 built per approved mockup (docs/ux/mockups): date as title, one-sentence summary, quiet species strip (zero species hidden), ranked boat list with "vs usual", no season leaderboard. | branch |
 
