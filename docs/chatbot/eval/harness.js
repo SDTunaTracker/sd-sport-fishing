@@ -29,8 +29,14 @@ function loadWindow() {
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'regulations.js', 'chat-api.js', 'analytics.js']) {
+  for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'region-data.js', 'regulations.js', 'chat-api.js', 'analytics.js']) {
     vm.runInContext(fs.readFileSync(path.join(WEB, f), 'utf8'), ctx, { filename: f });
+  }
+  // Non-base regions (OC/LA, ...) live in data-region-<id>.js; merge them all.
+  const regionFiles = (ctx.SD.META && ctx.SD.META.REGION_FILES) || {};
+  for (const [id, f] of Object.entries(regionFiles)) {
+    vm.runInContext(fs.readFileSync(path.join(WEB, f.file), 'utf8'), ctx, { filename: f.file });
+    ctx.ttRegionData.adopt(id);
   }
   ctx.DEFAULT_FILTERS = {
     year: String(ctx.TT_DATES.getPacificYear()), month: 'all', landing: 'all', boat: 'all',
@@ -41,11 +47,11 @@ function loadWindow() {
   return ctx;
 }
 
-async function callBot(ctx, userMessage, history) {
+async function callBot(ctx, userMessage, history, regions) {
   // Mirror streamChatMessage() exactly, but with an Origin header (node has none).
   const body = {
     model: 'claude-opus-4-7', max_tokens: 1500, stream: true,
-    system: ctx.buildSystemPrompt({ page: 'tripplanner', regions: ['san_diego'] }),
+    system: ctx.buildSystemPrompt({ page: 'tripplanner', regions: regions || ['san_diego'] }),
     messages: [...history, { role: 'user', content: userMessage }],
   };
   const t0 = Date.now();
@@ -175,7 +181,7 @@ async function main() {
     const history = [];
     const turns = [];
     for (const [ti, u] of c.turns.entries()) {
-      const r = await callBot(ctx, u, history);
+      const r = await callBot(ctx, u, history, c.regions);
       const cards = r.text ? scoreCards(ctx, r.text) : [];
       const verdict = r.error ? { pass: false, fails: [r.error] } : scoreTurn(r.text, cards, (c.checks || [])[ti]);
       turns.push({ user: u, ...r, cards, verdict });

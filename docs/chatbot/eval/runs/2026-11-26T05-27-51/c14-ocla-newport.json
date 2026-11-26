@@ -1,0 +1,56 @@
+{
+  "case": {
+    "id": "c14-ocla-newport",
+    "persona": "OC/LA region: no schedules for most landings, mostly non-trophy species",
+    "regions": [
+      "oc_la"
+    ],
+    "turns": [
+      "Best boats out of Newport lately?"
+    ],
+    "expect": "Names Newport Landing / Davey's Locker boats from OC/LA RECENT CATCH with all-species fish per angler, points to the landing's site to book. No trip cards, no invented trips or prices, no forecast language.",
+    "checks": [
+      {
+        "maxCards": 0,
+        "mustSay": [
+          "newport"
+        ],
+        "mustNotSay": [
+          "forecast",
+          "will (fish|bite)",
+          "bite outlook",
+          "best day to go"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Best boats out of Newport lately?",
+      "text": "Out of Newport Landing, two boats have reported recently (last 30 days, landed fish only):\n\n- **Patriot (Newport)** — Full Day, 10 trips, last out 11/24. **3.3 fish/angler** all species (Whitefish 1.2, Rockfish 0.6, Calico Bass 0.6, Yellowfin 0.3 per angler).\n- **Aggressor** — Full Day, 6 trips, last out 11/20. **6.8 fish/angler** all species (Whitefish 5.5, Calico Bass 0.6, Skipjack 0.2 per angler).\n\nI don't have Newport Landing's upcoming schedule or open spots in my data — check Newport Landing's own site to see what's running and book.\n\n<followups>[\"What about Davey's Locker boats?\", \"Any OC boats still catching yellowfin?\", \"Best full-day boat OC-wide lately\"]</followups>",
+      "ms": 5345,
+      "usage": {
+        "input_tokens": 9787,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 306,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 20887,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

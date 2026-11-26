@@ -21,7 +21,10 @@
    "confidence": 0.7,
    "aliases": [
     "cabo colonet",
-    "punta colonet"
+    "punta colonet",
+    "colnett",
+    "colonet zone",
+    "colnett zone"
    ]
   },
   {
@@ -96,7 +99,9 @@
    "confidence": 0.85,
    "aliases": [
     "alijos",
-    "rocas alijos"
+    "rocas alijos",
+    "alejos",
+    "alejos rocks"
    ]
   },
   {
@@ -172,7 +177,9 @@
    "lon": -119.03,
    "radius_nm": 4,
    "confidence": 0.8,
-   "aliases": []
+   "aliases": [
+    "sbi"
+   ]
   },
   {
    "id": "san-nicolas-island",
@@ -422,6 +429,24 @@
    "radius_nm": 3,
    "confidence": 0.6,
    "aliases": []
+  },
+  {
+   "id": "ensenada",
+   "name": "Ensenada",
+   "lat": 31.85,
+   "lon": -116.65,
+   "radius_nm": 6,
+   "confidence": 0.7,
+   "aliases": []
+  },
+  {
+   "id": "del-mar",
+   "name": "Del Mar",
+   "lat": 32.96,
+   "lon": -117.28,
+   "radius_nm": 3,
+   "confidence": 0.7,
+   "aliases": []
   }
  ],
  "aliases_to_bank": {
@@ -449,6 +474,9 @@
   "point vicente": "vicente-outside-rock-80ft",
   "pt vicente": "vicente-outside-rock-80ft",
   "mission bay": "mission-bay-jetty",
-  "newport pier": "newport-reef-1"
+  "newport pier": "newport-reef-1",
+  "osborne bank": "osborn-bank",
+  "osbourne bank": "osborn-bank",
+  "osborne": "osborn-bank"
  }
 }

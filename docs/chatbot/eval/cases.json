@@ -266,6 +266,31 @@
     ]
   },
   {
+    "id": "c14-ocla-newport",
+    "persona": "OC/LA region: no schedules for most landings, mostly non-trophy species",
+    "regions": [
+      "oc_la"
+    ],
+    "turns": [
+      "Best boats out of Newport lately?"
+    ],
+    "expect": "Names Newport Landing / Davey's Locker boats from OC/LA RECENT CATCH with all-species fish per angler, points to the landing's site to book. No trip cards, no invented trips or prices, no forecast language.",
+    "checks": [
+      {
+        "maxCards": 0,
+        "mustSay": [
+          "newport"
+        ],
+        "mustNotSay": [
+          "forecast",
+          "will (fish|bite)",
+          "bite outlook",
+          "best day to go"
+        ]
+      }
+    ]
+  },
+  {
     "id": "r01-bluefin-limit",
     "persona": "Regs: simple limit",
     "turns": [

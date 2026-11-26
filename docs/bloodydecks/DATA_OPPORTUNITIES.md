@@ -18,6 +18,7 @@ Health alerts cover the new feeds: `bd:feed-errors:<feed>`, `bd:no-new-posts:<fe
 | 5 | **Positions as posted** (owner's decision, 2026-11-25: "if they posted it online then its fair game"). Coordinates printed in a thread are published as written, with `precision_nm` 0.1. "N miles off X" estimates get max(1 nm, N/4), and named spots get the spot's radius. Every point has `position` (posted / estimate / spot), a date and a thread link. `reports.json` pins gain `precision_nm`. | `spots._exact_fields`, `spots.offset_precision` |
 | 6 | **Back-catalogue for boat reviews**: the trip-report extractor now accepts threads up to 365 days old (was 120, which silently skipped any listing backfill), runs 80 posts per run (was 40), and the workflow takes `backfill_feeds` so a one-off year walk touches only Sportboats + Long Range. | `boat_reports.MAX_POST_AGE_DAYS`; `paddies.yml` |
 | 7 | **Region tags for OC/LA** (`san_diego` / `oc_la` / `both` / null, the site's region ids). Each item takes the union of its boat's landing region (parsed from `web/regions.js`), the regions of the spots it names, title keywords (Catalina, PV, Horseshoe, Point Loma…) and, as a fallback, the forum (Long Range / Baja → SD). An SD boat at Catalina is `both`; 4+ day trips use the landing only. Every output carries it: boat entries and reports, `whats_working.by_region`, spot features, `banks.json`, `paddies.json` banks, and `reports.json` banks and pins. The gazetteer gains OC/LA coast and Channel Islands places. A new `bd-california` feed (California Sport Fishing Reports) brings in Catalina, SCI and inshore reports. | `scraper/paddies/regions.py`; `data/forum_places.json` |
+| 8 | **The landings' own reports** (data-sources Brief 2, owner-approved 2026-11-25). These are read from the report feeds of sandiegofishreports.com and socalfishreports.com, which carry the landings' daily updates, "called in with …" posts and skipper reports, including longrangesportfishing.net for the long-range boats. Each run fetches 2 listing pages, then one page per new report at 2.5 s intervals; robots.txt allows all three sites. Claude records per boat: size grade, bait (type, on board), tackle, a skipper note, conditions, one quote and the open spots a post advertises. Size, bait and tackle values each need a verbatim quote found in the post. Photos are hot-linked from media.fishreports.com and never re-hosted. | `scraper/paddies/landing_reports.py` → `landing_notes.json` (boat page "From the landing"; `by_region`; `open_spots`), merged into What's working with `source: landing`; `--research-csv` for forecast H2 |
 
 ## TL;DR
 
@@ -196,6 +197,60 @@ On the current DB: 342 place mentions, 171 placed. The rest are paddy-forum bite
 2. **Show the forum panel from 1 report** on boats with a landing-count match. Today it needs 2 reports, so only 2 of 120 active boats show it. One matched report is still a useful, honest signal with the "not a verified review" label. UX call for the design sessions.
 3. **Tackle and bait by month and species** from `forum_boat_reports.tackle`/`bait` (already extracted): a "what people used last October for YFT" view. Low effort once a season of rows exists.
 4. **Long-range season narrative** (per-trip one-liners for 8–16 day trips). Medium effort, niche audience.
+
+## 3d. Full-site forum survey (2026-11-26)
+
+**Method.** I listed every forum on the BloodyDecks index (about 90 across 6 categories). From the latest 25 RSS items of each of the 17 forums that could hold SoCal or Baja catch data, I measured:
+- the rate of new threads;
+- how often posts name a species, a SoCal place, or an image;
+- the region tags.
+
+I also read 5 full threads from the main forums to measure replies and photos. robots.txt blocks only cron, admin and wp-import paths. Everything was fetched as a guest, with 2–3 s between requests.
+
+**Already read (6 feeds):** SoCal Offshore, Sportboats, Long Range, Baja, Spearfishing, California Sport Fishing Reports.
+
+**Biggest gap: replies.** `ingest_bd` stores only each thread's first post. Busy threads run 10–35 replies, and about 15–20% of those are reports in their own right: "we were there too", a second count, water temperature, what bit. Sampled threads:
+
+| Thread | Replies | Useful replies |
+|---|---|---|
+| Yellowfin-November 24th | 22 | 4 |
+| Cat East End Yellowfin | 11 | 2 |
+| Searcher 8 day | 36 | 4 on page 1 |
+| Boring Fish Report | 20 | 1 |
+
+Reading replies would roughly double the useful posts. Each useful reply costs one Claude call, so pre-filter with the species/place regex.
+
+**Forums worth adding**
+
+| Forum | New threads/wk | SoCal signal | Use |
+|---|---|---|---|
+| Southern CA Fishing Trip Planning | 3.3 | 16/25 SoCal, **10 OC/LA** | Open spots on private charters, NOAA and small-craft forecasts, ramp status. Best OC/LA add. |
+| Kayak Fishing | 0.9 | 15/25 SoCal | La Jolla kelp, yellowtail, halibut. Inshore SD signal. |
+| Surf Fishing | 0.7 | 9/25 | Surf and inshore. Low value for tuna. |
+| Jet Ski Anglers | 0.2 | 9/25 SD | La Jolla and SD Bay runs. Tiny volume. |
+| Open Seat | ~0 | open loads | Superseded by the Sportboats "help get it off the dock" threads. |
+| Northern CA Reports | 0.8 | Half Moon Bay bluefin, salmon | **For the SF Bay page**, not SD/OC-LA. |
+| Central CA Reports | 0.5 | Morro Bay bluefin | Same: SF Bay or a future Central Coast page. |
+| Mexico Fishing Reports (parent) | 0.9 | Bay of LA, Abreojos | Mostly mainland and Sea of Cortez. Skip; Baja is already read. |
+
+**Skipped, with reasons**
+- Chit Chat (25/wk, mostly gear and off-topic).
+- Fishing Tips, Jigging, Reels, Rod Building, Brand forums (gear, no catches).
+- Boating and Electronics.
+- CA DFW Q&A (regulation questions, about 0.2/wk).
+- Yellowtail Shootout (tournament promotion).
+- Fly, Paddle Board, Saltwater Fly (under 0.2/wk).
+- Hunting, Camping, Sports, Classifieds, and every out-of-state forum.
+- The pinned "Updated Bait Reports" thread, about 1 post a month.
+
+**Photos.** Forum photos are XenForo attachments (`/forums/attachments/<name>.<id>/`), linked from posts as "View attachment". They are full-size originals (a 2.5 MB JPEG in the sample), guests can fetch them, and they open with any referer. There is no public thumbnail. Embedding them on our pages would load BloodyDecks' full originals on every view, which is not polite.
+
+Recommendation:
+- store each post's attachment count and URLs;
+- show "📷 3 photos on BloodyDecks" linking to the thread;
+- keep embedded photo strips for the landings' own media.fishreports.com images (already built).
+
+Rehosting thumbnails of user photos would need the owner's call; the users hold the copyright.
 
 ## 4. Risks
 
