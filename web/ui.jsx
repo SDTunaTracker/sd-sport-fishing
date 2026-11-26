@@ -168,11 +168,14 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
         <div className="header-top">
           {/* Logo: fish icon + wordmark + region dropdown */}
           <div className="logo-wrap" ref={dropdownRef}>
-            <div className="logo" onClick={() => handleNavItem('home')} style={{cursor:'pointer'}}>
-              <BrandMark size={30} className="brand-mark logo-mark"/>
-              <div className="logo-text">
+            <div className="logo">
+              <a className="logo-home" href={hrefFor ? hrefFor('home') : '/'} aria-label={`${BRAND_NAME} home`}
+                 onClick={spaLinkHandler(() => handleNavItem('home'))}>
+                <BrandMark size={30} className="brand-mark logo-mark"/>
                 <span className="logo-wordmark">{BRAND_NAME}</span>
-                <button className="logo-region-btn" onClick={e => { e.stopPropagation(); setRegionOpen(o => !o); }}>
+              </a>
+              <div className="logo-text">
+                <button className="logo-region-btn" aria-expanded={regionOpen} aria-label={`Region: ${currentLabel}. Change region`} onClick={e => { e.stopPropagation(); setRegionOpen(o => !o); }}>
                   <span>{currentLabel}</span>
                   <i className={`fa-solid fa-chevron-${regionOpen ? 'up' : 'down'}`} style={{fontSize:7}}/>
                 </button>

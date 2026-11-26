@@ -198,6 +198,7 @@
             <div className="pk-selects">
               <select aria-label="Target species" value={species} onChange={manual(e => setSpecies(e.target.value))}>
                 <option value="">Any fish</option>
+                <option value="Tuna">Any tuna</option>
                 {SPECIES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               <select aria-label="Budget" value={budget} onChange={manual(e => setBudget(e.target.value))}>
@@ -219,7 +220,7 @@
             </div>
           ) : res && res.reason === 'no-species' ? (
             <div className="pk-empty">
-              <p>No boat with open seats has been landing many {species.toLowerCase()} lately.</p>
+              <p>No boat with open seats has been landing many {species === 'Tuna' ? 'tuna' : species.toLowerCase()} lately.</p>
               <div className="pk-empty-acts">
                 <button onClick={manual(() => setSpecies(''))}>Any fish</button>
                 <button onClick={() => navigate && navigate('tripplanner')}>Browse every trip</button>
@@ -292,6 +293,24 @@
     return `${rate(a.rate)} ${a.noun} per angler${multi ? ' per day' : ''} lately, fleet ${rate(a.fleetRate)}`;
   }
 
+  // Latest San Diego offshore water temps (window.SD.SST, ocean_temps table).
+  // These spots are all off San Diego, so only the SD view shows them.
+  const SST_SPOTS = [['Nearshore', 'Nearshore'], ['9-Mile Bank', '9-Mile'], ['60-Mile Bank', '60-Mile'], ['Cortez Bank', 'Cortez']];
+  function waterTemps() {
+    const h = window.SD && window.SD.SST && window.SD.SST.history;
+    if (!Array.isArray(h) || !h.length) return null;
+    const last = {};
+    h.forEach(r => { if (r && r.sst != null && (!last[r.location] || r.date > last[r.location].date)) last[r.location] = r; });
+    const spots = SST_SPOTS.filter(([k]) => last[k]).map(([k, l]) => ({ label: l, ...last[k] }));
+    if (!spots.length) return null;
+    const lead = spots[0];
+    const today = window.TTPicker ? window.TTPicker.presets().next7.from : null;
+    const stale = today && (Date.parse(today) - Date.parse(lead.date)) / 864e5 > 2;
+    return { lead, rest: spots.slice(1), stale };
+  }
+  const fmtF = x => Math.round(x * 10) / 10 + '°F';
+  const shortDate = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
   function TodayAnswers({ regions, navigate }) {
     const P = window.TTPicker;
     const tick = useDataTick();
@@ -306,6 +325,7 @@
     if (!data) return null;
     const { answers, biting } = data;
     const top = biting.items.filter(x => x.perAngler >= 0.05).slice(0, 3);
+    const temps = region === 'san_diego' ? waterTemps() : null;
 
     return (
       <section className="ta" aria-label="Quick answers">
@@ -335,6 +355,20 @@
                 {top.length > 1 ? 'Then ' + top.slice(1).map(x => `${x.species.toLowerCase()} ${x.perAngler.toFixed(1)}`).join(', ') + '. ' : ''}
                 From {biting.trips} trips, {biting.anglers.toLocaleString()} anglers.
               </div>
+            </li>
+          )}
+          {temps && (
+            <li className="ta-item ta-temp">
+              <div className="ta-q">Water temperature</div>
+              <div className="ta-a">
+                <span className="ta-species">{fmtF(temps.lead.sst)}</span>
+                <span className="ta-meta">{temps.lead.label}{temps.lead.anomaly != null ? ` · ${Math.abs(Math.round(temps.lead.anomaly * 10) / 10)}° ${temps.lead.anomaly >= 0 ? 'above' : 'below'} normal` : ''}{temps.stale ? ` · ${shortDate(temps.lead.date)}` : ''}</span>
+              </div>
+              <div className="ta-why">
+                {temps.rest.length ? temps.rest.map(s => `${s.label} ${fmtF(s.sst)}${s.date !== temps.lead.date ? ` (${shortDate(s.date)})` : ''}`).join(', ') + '. ' : ''}
+                Satellite readings, not a forecast.
+              </div>
+              <button className="ta-link" onClick={() => navigate('charts')}>See the temperature map<span aria-hidden="true">{' →'}</span></button>
             </li>
           )}
         </ul>
@@ -376,17 +410,14 @@
     );
   }
 
-  // Today: answers first, then (Simple) the picker + big numbers with the full
-  // report behind "See the details", or (Detailed) the full report.
+  // Today: answers first, then (Simple) big numbers with the full report
+  // behind "See the details", or (Detailed) the full report. Pick my trip
+  // lives only on Home and the Trip Planner (owner, 2026-11-26).
   function TodaySimple({ regions, navigate, settings, Report }) {
     const [mode, setMode] = useViewMode();
     const [open, setOpen] = useState(false);
     const region = regionOf(regions);
     const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';
-    const tick = useDataTick();
-    // No picker where the region has no trip schedule (it could only say "none").
-    const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
-      window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
     const hasAnswers = !!window.TTPicker && region !== 'sf_bay';
     return (
       <div className={`tsim tsim-${mode}`}>
@@ -402,7 +433,6 @@
         {hasAnswers && <TodayAnswers regions={regions} navigate={navigate}/>}
         {mode === 'simple' ? (
           <React.Fragment>
-            {hasPicker && <PickMyTrip regions={regions} navigate={navigate} startEmpty/>}
             <SimpleNumbers regions={regions}/>
             <div className="tsim-details">
               <button className="tsim-more" aria-expanded={open} onClick={() => setOpen(o => !o)}>
@@ -413,26 +443,19 @@
             {open && <Report navigate={navigate} settings={settings} regions={regions}/>}
           </React.Fragment>
         ) : (
-          <React.Fragment>
-            {hasPicker && (
-              <button className="tsim-pick" onClick={() => navigate('pick')}>Pick my trip: choose dates, type and budget<span aria-hidden="true">{' →'}</span></button>
-            )}
-            <Report navigate={navigate} settings={settings} regions={regions}/>
-          </React.Fragment>
+          <Report navigate={navigate} settings={settings} regions={regions}/>
         )}
       </div>
     );
   }
 
-  // Home: the same answers and quick picks at the top of the page, above the
-  // hero, in every region that has a trip schedule (SD, OC/LA). Observed
-  // counts only, no forecast. Today keeps its own Simple/Detailed layout.
+  // Home, after the hero and today's counts: the week's answers (best
+  // boats, what's biting, water temp) and this week's numbers, in every
+  // region with a trip schedule (SD, OC/LA). Observed counts only, no
+  // forecast. Pick my trip (HomePicker) follows it.
   function HomeAnswers({ regions, navigate }) {
     const region = regionOf(regions);
-    const tick = useDataTick();
     const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';
-    const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
-      window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
     if (!window.TTPicker || region === 'sf_bay') return null;
     return (
       <section className="ha" aria-labelledby="ha-title">
@@ -440,9 +463,39 @@
           <div className="pk-eyebrow">This week · {label}</div>
           <h2 className="ha-title" id="ha-title">Where to fish this week</h2>
           <TodayAnswers regions={regions} navigate={navigate}/>
-          {hasPicker && <PickMyTrip regions={regions} navigate={navigate} startEmpty compact/>}
+          <SimpleNumbers regions={regions}/>
         </div>
       </section>
+    );
+  }
+
+  // Pick my trip block (quick picks + link to /pick). Shown only on Home
+  // (lower down, after the counts) and on the Trip Planner (bare: no Home
+  // section wrapper). Owner, 2026-11-26: not on every page.
+  function HomePicker({ regions, navigate, bare }) {
+    const region = regionOf(regions);
+    const tick = useDataTick();
+    const hasPicker = useMemo(() => !!window.TTPicker && region !== 'sf_bay' &&
+      window.TTPicker.pickTrips({ type: 'full', region }).scheduled > 0, [region, tick]);
+    if (!hasPicker) return null;
+    if (bare) return <div className="tp-pick"><PickMyTrip regions={regions} navigate={navigate} startEmpty compact/></div>;
+    return (
+      <section className="ha ha-pick" aria-label="Pick my trip">
+        <div className="ha-in">
+          <PickMyTrip regions={regions} navigate={navigate} startEmpty compact/>
+        </div>
+      </section>
+    );
+  }
+
+  // Floating "Pick my trip" pill on phones: Trip Planner only (owner,
+  // 2026-11-26). Hidden above 760px by CSS. Goes to /pick.
+  function PickFab({ navigate, regions }) {
+    return (
+      <a className="pk-fab" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
+         onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
+        <span className="pk-fab-dot" aria-hidden="true"/>Pick my trip
+      </a>
     );
   }
 
@@ -459,16 +512,5 @@
     );
   }
 
-  // Always-reachable entry on phones (no chat on mobile): a sticky button on
-  // every page except the picker itself. Hidden above 760px by CSS.
-  function PickFab({ navigate, regions }) {
-    return (
-      <a className="pk-fab" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
-         onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
-        <span className="pk-fab-dot" aria-hidden="true"/>Pick my trip
-      </a>
-    );
-  }
-
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, PickTripView, ViewModeSwitch, PickFab });
+  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, HomePicker, PickTripView, ViewModeSwitch, PickFab });
 })();

@@ -267,84 +267,106 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
         </>
       )}
 
-      {detailTab === 'overview' && <Panel title="Trip History" meta={`All ${sortedTrips.length} past trips for ${boat} · newest first`} padding={false}>
-        {(() => {
-          // 4 trophy-species columns replace the single Trophy total.
-          // Grid: Date | Trip Length | Anglers | BF | YF | YT | D | T/A | Moon
-          // The old "Species Mix" bar repeated the four species columns and
-          // collapsed to nothing on phones, so it is gone. Rows keep a minimum
-          // width and the list scrolls sideways on narrow screens.
-          const gridCols = '108px minmax(84px,1fr) 64px 76px 80px 88px 70px 60px 72px';
-          const TABLE_MIN = 720;
-          const headerStyle = {
-            padding:'8px 12px', borderBottom:'1px solid var(--ss-border-2)',
-            display:'grid', gridTemplateColumns: gridCols, gap:8,
-            font:'700 10px/12px var(--ss-font-sans)', textTransform:'uppercase', letterSpacing:'.06em',
-            color:'var(--ss-slate)', background:'var(--ss-clay)',
-            position:'sticky', top:0, zIndex:1, minWidth: TABLE_MIN,
-          };
-          const numStyle = { textAlign:'right' };
-          const speciesHeaderStyle = () => numStyle;
-          const spHead = (sp) => (
-            <span style={speciesHeaderStyle(sp)}>
-              <i style={{display:'inline-block', width:7, height:7, borderRadius:7, background: SPECIES_COLORS[sp], marginRight:5, verticalAlign:'middle'}}></i>{sp}
-            </span>
-          );
-          return (
-            <React.Fragment>
-              <div style={{maxHeight: 480, overflow: 'auto'}} className="dd-trip-scroll">
-                <div style={headerStyle}>
-                  <span>Date</span>
-                  <span>Trip Length</span>
-                  <span style={numStyle}>Anglers</span>
-                  {spHead('Bluefin')}
-                  {spHead('Yellowfin')}
-                  {spHead('Yellowtail')}
-                  {spHead('Dorado')}
-                  <span style={numStyle}>T/A</span>
-                  <span>Moon</span>
-                </div>
-                {sortedTrips.length === 0 && (
-                  <div className="muted-block" style={{padding:'12px'}}>No trips logged yet.</div>
-                )}
-                {sortedTrips.map(t => {
-                  const rowStyle = {
-                    padding:'8px 12px', borderBottom:'1px solid var(--ss-border-2)',
-                    display:'grid', gridTemplateColumns: gridCols, gap:8, alignItems:'center',
-                    font:'400 13px/16px var(--ss-font-sans)', minWidth: TABLE_MIN,
-                  };
-                  const cell = (v, sp) => (
-                    <span className="num" style={{
-                      textAlign:'right', fontVariantNumeric:'tabular-nums',
-                      fontWeight: v > 0 ? 600 : 400,
-                      color: v > 0 ? 'var(--ink)' : 'var(--ss-gray-2)',
-                    }}>{v > 0 ? v : '—'}</span>
-                  );
-                  return (
-                    <div key={t.id} style={rowStyle}>
-                      <span>{fmt.date(t.date)}</span>
-                      <span style={{font:'400 11px/14px var(--ss-font-sans)', color:'var(--ss-slate)'}}>{t.tripLength}</span>
-                      <span className="num" style={{textAlign:'right', fontVariantNumeric:'tabular-nums'}}>{t.anglers}</span>
-                      {cell(t.Bluefin, 'Bluefin')}
-                      {cell(t.Yellowfin, 'Yellowfin')}
-                      {cell(t.Yellowtail, 'Yellowtail')}
-                      {cell(t.Dorado, 'Dorado')}
-                      <span className="num" style={{textAlign:'right', fontVariantNumeric:'tabular-nums', color:'var(--ss-darkseagreen-500)', fontWeight:700}}>{fmt.tpa(t.totalTuna/Math.max(1,t.anglers))}</span>
-                      <span style={{display:'flex', alignItems:'center', gap:6, font:'400 11px/14px var(--ss-font-sans)', color:'var(--ss-slate)'}}>
-                        <span style={{transform:'scale(0.5)', transformOrigin:'left center', display:'inline-block'}}>
-                          <MoonGlyph phase={t.moonPhase}/>
-                        </span>
-                        {t.moonIllum}%
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </React.Fragment>
-          );
-        })()}
-      </Panel>}
+      {detailTab === 'overview' && <TripHistory trips={sortedTrips} boat={boat}/>}
     </React.Fragment>
+  );
+}
+
+// ── Trip history (boat page) ─────────────────────────────────────────────────
+// A compact list, newest first, grouped by month, 10 trips at a time. Each row
+// reads as a sentence: date, trip, anglers, moon; then everything landed
+// (headline species first) and the boat's fish per angler for that trip. Was a
+// 9-column, 720px-min table in a 480px scroll box that scrolled both ways
+// on phones and showed only the four trophy columns (OC/LA rockfish trips read
+// as all dashes next to a non-zero rate).
+const TH_STEP = 10;
+const TH_HEAD = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
+function thCatch(t, allSpecies) {
+  const by = (SDA.catchBySpecies ? SDA.catchBySpecies(t) : null) ||
+    TH_HEAD.reduce((o, sp) => { if (t[sp] > 0) o[sp] = t[sp]; return o; }, {});
+  return Object.keys(by).map(sp => ({ sp, n: by[sp], head: TH_HEAD.indexOf(sp) >= 0 }))
+    .sort((a, b) => (allSpecies ? 0 : b.head - a.head) || (b.n - a.n));
+}
+function thRate(x) { return x >= 10 ? String(Math.round(x)) : x.toFixed(1); }
+function TripHistory({ trips, boat }) {
+  const [shown, setShown] = React.useState(TH_STEP);
+  // Owner wording (#13): "fish". On San Diego the count is the four headline species.
+  const noun = 'fish';
+  const allSpecies = !!(window.SD_METRIC && window.SD_METRIC.allSpecies);
+  const visible = trips.slice(0, shown);
+  // Month groups over the visible rows; totals cover the whole month.
+  const monthStats = {};
+  trips.forEach(t => {
+    const k = t.date.slice(0, 7);
+    const m = monthStats[k] || (monthStats[k] = { n: 0, fish: 0, anglers: 0 });
+    m.n++; m.fish += t.totalTuna || 0; m.anglers += t.anglers || 0;
+  });
+  const groups = [];
+  visible.forEach(t => {
+    const k = t.date.slice(0, 7);
+    if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, trips: [] });
+    groups[groups.length - 1].trips.push(t);
+  });
+  const monthLabel = k => new Date(k + '-15T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const dayLabel = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const left = trips.length - shown;
+  return (
+    <section className="tph" aria-labelledby="tph-title">
+      <div className="tph-head">
+        <h3 className="tph-title" id="tph-title">Trip history</h3>
+        <div className="tph-sub">{trips.length.toLocaleString()} trip{trips.length === 1 ? '' : 's'} for {boat}, newest first. The number on the right is {noun} per angler.</div>
+      </div>
+      {trips.length === 0 && <p className="tph-empty">No trips logged yet.</p>}
+      {groups.map(g => {
+        const m = monthStats[g.k];
+        return (
+          <div key={g.k} className="tph-month">
+            <div className="tph-month-h">
+              <span className="tph-month-name">{monthLabel(g.k)}</span>
+              <span className="tph-month-meta">{m.n} trip{m.n === 1 ? '' : 's'} · {m.anglers ? thRate(m.fish / m.anglers) : '—'} per angler</span>
+            </div>
+            <ol className="tph-list">
+              {g.trips.map(t => {
+                const c = thCatch(t, allSpecies);
+                const rate = t.anglers ? (t.totalTuna || 0) / t.anglers : 0;
+                const more = c.length > 4 ? c.length - 4 : 0;
+                return (
+                  <li key={t.id} className="tph-row">
+                    <div className="tph-when">
+                      <span className="tph-date">{dayLabel(t.date)}</span>
+                      <span className="tph-meta">{[t.tripLength, t.anglers ? `${t.anglers} anglers` : null, t.moonPhase ? `${t.moonPhase.toLowerCase()} moon` : null].filter(Boolean).join(' · ')}</span>
+                    </div>
+                    <div className="tph-catch">
+                      {c.length === 0 ? <span className="tph-none">No fish reported</span> : (
+                        <React.Fragment>
+                          {c.slice(0, 4).map(x => (
+                            <span key={x.sp} className={'tph-sp' + (x.head || allSpecies ? '' : ' tph-sp-minor')}>
+                              {x.head && <i style={{ background: SPECIES_COLORS[x.sp] }} aria-hidden="true"/>}
+                              <b>{x.n.toLocaleString()}</b> {x.sp.toLowerCase()}
+                            </span>
+                          ))}
+                          {more > 0 && <span className="tph-sp tph-sp-minor" title={c.slice(4).map(x => `${x.n} ${x.sp.toLowerCase()}`).join(', ')}>+{more} more</span>}
+                        </React.Fragment>
+                      )}
+                    </div>
+                    <div className={'tph-rate' + (rate > 0 ? '' : ' zero')} aria-label={`${thRate(rate)} ${noun} per angler`}>
+                      <b>{thRate(rate)}</b><span>per angler</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        );
+      })}
+      {left > 0 && (
+        <div className="tph-more">
+          <button type="button" onClick={() => setShown(n => n + 25)}>Show {Math.min(25, left)} more</button>
+          <span className="tph-count">Showing {shown.toLocaleString()} of {trips.length.toLocaleString()}</span>
+          {left > 25 && <button type="button" className="tph-all" onClick={() => setShown(trips.length)}>Show all</button>}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -393,7 +415,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
             <table className="dt">
               <thead><tr>
                 <th style={{width: 36}}>#</th><th>Boat</th><th className="num">Trips</th>
-                <th className="num">{SDA.headlineLabel()}/Angler</th><th>Label</th>
+                <th className="num">{SDA.rankLabel()}/Angler</th><th>Label</th>
               </tr></thead>
               <tbody>
                 {boats.map((b, i) => (

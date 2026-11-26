@@ -307,7 +307,8 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
   const sortArrow = (k) => sortBy === k ? (sortDir === 'asc' ? '▲' : '▼') : '⇅';
 
   const regionLabel  = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
-  const speciesLabel = (filters.species && filters.species !== 'all') ? filters.species : SDA.headlineLabel();
+  // The ranked column is tuna (SDA.rankField) unless a species filter is set.
+  const speciesLabel = (filters.species && filters.species !== 'all') ? filters.species : SDA.rankLabel();
   // OC/LA's headline counts every species; trophy fish get their own column.
   const showTrophyCol = SDA.headlineIsAllSpecies() && !(filters.species && filters.species !== 'all');
 

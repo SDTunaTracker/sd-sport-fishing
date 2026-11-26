@@ -251,7 +251,10 @@
       return (window.getLandingsForRegion && window.getLandingsForRegion(eff)) || [];
     }, [regions]);
 
-    const visible = returned.filter(b => landing === 'all' || b.landing === landing);
+    // The day's counts table lists boats by the catch it shows (fish per
+    // angler); fishingRating's own order is the tuna ranking.
+    const visible = returned.filter(b => landing === 'all' || b.landing === landing)
+      .sort((x, y) => thFish(y) / Math.max(1, y.anglers) - thFish(x) / Math.max(1, x.anglers));
 
     const totals = useMemo(() => thTotals(visible), [visible, metric.allSpecies, settings]);
 
@@ -395,7 +398,7 @@
 
             <div className="th-rail">
               <div className="th-card">
-                <div className="th-card-head"><span className="th-lbl">Season leaders</span><span className="th-lbl-soft">fish per angler, per day</span></div>
+                <div className="th-card-head"><span className="th-lbl">Season leaders</span><span className="th-lbl-soft">tuna per angler, per day</span></div>
                 {seasonLeaders.map((b, i) => (
                   <div key={b.boat} className="th-leader" onClick={() => navigate('boat', { boat: b.boat })}>
                     <span className="th-leader-rank">{i + 1}</span>
@@ -692,9 +695,6 @@
 
     return (
       <React.Fragment>
-        {/* Answers first: best overnight, best full day, what's biting, quick picks. */}
-        {window.HomeAnswers && <HomeAnswers regions={regions} navigate={navigate}/>}
-
         {/* Hero — unchanged markup/classes so existing ch-hero CSS + image apply */}
         <section className="ch-hero">
           <div className="ch-hero-in">
@@ -708,6 +708,13 @@
         </section>
 
         <CountsSection navigate={navigate} settings={settings} regions={regions}/>
+
+        {/* Below the hero and today's counts (owner, 2026-11-26): this week's
+            answers (best boats, what's biting, water temp, numbers). */}
+        {window.HomeAnswers && <HomeAnswers regions={regions} navigate={navigate}/>}
+
+        {/* Pick my trip: below the at-a-glance info (owner, 2026-11-26). */}
+        {window.HomePicker && <HomePicker regions={regions} navigate={navigate}/>}
 
         {/* The extra brand band that sat here repeated the site footer directly below it. */}
       </React.Fragment>

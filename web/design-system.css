@@ -601,10 +601,8 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .tsim-details { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
 .tsim-more { height: 44px; padding: 0 18px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--ink); font: 500 14px var(--sans); cursor: pointer; }
 .tsim-more:hover { border-color: var(--ink); }
-.tsim-more:focus-visible, .tsim-pick:focus-visible { outline: none; box-shadow: var(--focus); }
+.tsim-more:focus-visible { outline: none; box-shadow: var(--focus); }
 .tsim-more-sub { font-size: 13px; color: var(--muted); }
-.tsim-pick { display: flex; align-items: center; width: 100%; min-height: 48px; margin: 0 0 24px; padding: 0 18px; border: 1px dashed var(--line-2); border-radius: 12px; background: var(--surface); color: var(--accent-ink); font: 500 14px var(--sans); text-align: left; cursor: pointer; }
-.tsim-pick:hover { border-style: solid; }
 
 @media (max-width: 900px) {
   .ta-list { grid-template-columns: minmax(0, 1fr); gap: 10px; }
@@ -628,29 +626,19 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 }
 .pk-prompt { margin: 0; padding: 18px 20px; border-radius: 14px; background: var(--band); font: 400 15px/1.5 var(--sans); color: var(--ink-2); }
 
-/* Quick picks (shared with Co-Captain) + mobile entry point */
+/* Quick picks (shared with Co-Captain) */
 .pk-quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
 .pk-quick button { min-height: 44px; padding: 0 16px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--band); color: var(--ink); font: 500 14px var(--sans); cursor: pointer; text-align: left; }
 .pk-quick button:hover { border-color: var(--ink-2); }
 .pk-quick button.on { background: var(--pine); border-color: var(--pine); color: #fff; }
 .pk-quick button:focus-visible { outline: none; box-shadow: var(--focus); }
-.pk-fab { display: none; }
 .tsim { display: flex; flex-direction: column; }
 @media (max-width: 760px) {
   .pk-quick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .pk-quick button { min-height: 56px; padding: 8px 12px; line-height: 1.3; }
   .pk-chips button, .pk-empty-acts button { height: 44px; padding: 0 16px; font-size: 14.5px; }
   .pk-dates input, .pk-selects select { height: 44px; font-size: 16px; }
-  /* Today on phones: the picker sits right under the title */
   .tsim-head { order: -2; }
-  .tsim > .pk { order: -1; }
-  .pk-fab { display: inline-flex; align-items: center; gap: 10px; position: fixed; z-index: 900;
-    left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    height: 50px; padding: 0 22px; border-radius: 999px; background: var(--pine); color: #fff;
-    font: 600 15px var(--sans); text-decoration: none; box-shadow: 0 6px 20px rgba(23,51,44,.28); }
-  .pk-fab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(207,106,60,.45), 0 6px 20px rgba(23,51,44,.28); }
-  .pk-fab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
-  body { padding-bottom: 76px; }
 }
 
 /* Home: answers + quick picks above the hero */
@@ -659,6 +647,11 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .ha-title { font: 700 34px/1.1 var(--serif); letter-spacing: -.01em; color: var(--ink); margin: 0 0 18px; }
 .ha .pk { margin-bottom: 24px; }
 .ha .pk-title { font-size: 20px; margin-bottom: 14px; }
+.ha .sn { margin-bottom: 8px; }
+.ha-pick { padding: 8px 0 16px; }
+.ta-link { align-self: flex-start; margin-top: auto; padding: 6px 0 0; min-height: 36px; border: 0; background: none; color: var(--accent-ink); font: 500 14px var(--sans); cursor: pointer; }
+.ta-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ta-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
 .pk-more { display: inline-flex; align-items: center; min-height: 44px; margin: -8px 0 4px; color: var(--accent-ink); font: 500 14px var(--sans); text-decoration: none; }
 .pk-more:hover { text-decoration: underline; text-underline-offset: 3px; }
 .pk-more:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
@@ -667,10 +660,7 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .ha-in { padding: 0 16px; }
   .ha-title { font-size: 28px; margin-bottom: 14px; }
   .ha .pk { padding: 18px 16px; }
-  /* Phones: quick picks right under the title, answer cards after */
-  .ha-in { display: flex; flex-direction: column; }
-  .ha-in > .pk { order: 1; }
-  .ha-in > .ta { order: 2; }
+  .ha-pick { padding: 4px 0 8px; }
 }
 
 /* ── Charts on phones (375 audit) ─────────────────────────────────────────
@@ -753,4 +743,105 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 @media (max-width: 760px) {
   .pk-days { grid-column: 1 / -1; max-width: none; }
   .pk-day { min-height: 46px; }
+}
+
+/* ── Boat page: Trip history (compact list, month groups, show more) ── */
+.tph { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px 8px; margin: 0 0 24px; }
+.tph-head { margin-bottom: 6px; }
+.tph-title { font: 700 20px/1.2 var(--serif); color: var(--ink); margin: 0 0 4px; }
+.tph-sub { font: 400 13px/1.45 var(--sans); color: var(--muted); }
+.tph-empty { margin: 12px 0; color: var(--muted); }
+.tph-month { margin-top: 14px; }
+.tph-month-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line-2); }
+.tph-month-name { font: 600 13px/1.2 var(--sans); color: var(--ink); }
+.tph-month-meta { font: 500 12px/1.2 var(--mono); color: var(--muted); }
+.tph-list { list-style: none; margin: 0; padding: 0; }
+.tph-row { display: grid; grid-template-columns: 260px minmax(0, 1fr) 88px; gap: 4px 16px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.tph-row:last-child { border-bottom: 0; }
+.tph-when { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tph-date { font: 600 14px/1.25 var(--sans); color: var(--ink); }
+.tph-meta { font: 400 12px/1.35 var(--sans); color: var(--muted); }
+.tph-catch { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 13.5px/1.4 var(--sans); color: var(--ink-2); min-width: 0; }
+.tph-sp { white-space: nowrap; }
+.tph-sp b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tph-sp i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+.tph-sp-minor, .tph-sp-minor b { color: var(--muted); font-weight: 400; }
+.tph-none { color: var(--faint); }
+.tph-rate { text-align: right; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
+.tph-rate b { font: 600 18px/1.1 var(--mono); color: var(--pine); font-variant-numeric: tabular-nums; }
+.tph-rate span { font: 400 11px/1.3 var(--sans); color: var(--muted); }
+.tph-rate.zero b { color: var(--faint); }
+.tph-more { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; padding: 14px 0 10px; border-top: 1px solid var(--line-2); }
+.tph-more button { min-height: 44px; padding: 0 18px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--ink); font: 500 14px var(--sans); cursor: pointer; }
+.tph-more button:hover { border-color: var(--ink-2); }
+.tph-more button:focus-visible { outline: none; box-shadow: var(--focus); }
+.tph-more .tph-all { border: 0; color: var(--accent-ink); padding: 0 6px; }
+.tph-count { font: 400 13px var(--sans); color: var(--muted); }
+@media (max-width: 760px) {
+  .tph { padding: 16px 14px 6px; border-radius: 12px; }
+  .tph-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "when rate" "catch rate"; gap: 6px 12px; align-items: start; padding: 12px 0; }
+  .tph-when { grid-area: when; }
+  .tph-catch { grid-area: catch; gap: 2px 12px; }
+  .tph-rate { grid-area: rate; align-self: center; min-width: 56px; }
+  .tph-more button:first-child { flex: 1; }
+}
+
+/* Trip Planner: Pick my trip between the title and the search bar */
+.tp-pick { margin: 0 0 20px; }
+.tp-pick .pk-title { font-size: 20px; margin-bottom: 14px; }
+
+/* Floating Pick my trip pill: Trip Planner on phones only */
+.pk-fab { display: none; }
+@media (max-width: 760px) {
+  .pk-fab { display: inline-flex; align-items: center; gap: 10px; position: fixed; z-index: 900;
+    left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    height: 50px; padding: 0 22px; border-radius: 999px; background: var(--pine); color: #fff;
+    font: 600 15px var(--sans); text-decoration: none; box-shadow: 0 6px 20px rgba(23,51,44,.28); }
+  .pk-fab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(207,106,60,.45), 0 6px 20px rgba(23,51,44,.28); }
+  .pk-fab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  /* Room under the last card so the pill and chat bubble never cover it (50 + 16 + 16). */
+  .main-content[data-screen-label="tripplanner"] { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Trip Planner search bar: three fields fit at 375 (Trip Length was cut off) */
+.tp-search-field-wrap { min-width: 0; }
+.tp-search-field { min-width: 0; width: 100%; }
+.tp-short { display: none; }
+@media (max-width: 600px) {
+  .tp-search-icon { display: none; }
+  .tp-search-field { padding: 0 10px; }
+  .tp-long { display: none; }
+  .tp-short { display: inline; }
+}
+
+/* What's working: collapsed by default; tap the header to open */
+.ww-toggle { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; color: inherit; font: inherit; min-height: 44px; }
+.ww-toggle:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 8px; }
+.ww-toggle-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ww-toggle .ww-title { display: block; font: 600 18px/1.3 var(--serif); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0; }
+.ww-toggle .ww-sub { display: block; margin-top: 2px; }
+.ww-chev { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2); font-size: 14px; }
+.ww-toggle:hover .ww-chev { border-color: var(--ink-2); }
+.ww-chev svg { transition: transform .15s ease; }
+.ww-card.open .ww-chev svg { transform: rotate(180deg); }
+.ww-card:not(.open) { padding-bottom: 16px; }
+.ww-card.open .ww-top { margin-top: 14px; }
+@media (max-width: 600px) {
+  /* Tabs wrap instead of clipping "1.5 to 3.5 day" at the edge */
+  .ww-tabs { flex-wrap: wrap; overflow: visible; }
+}
+
+/* Header logo: mark + wordmark are one link home; region button sits under
+   the wordmark and stays its own tap target. Bigger wordmark on phones. */
+.logo { display: grid; grid-template-columns: auto; grid-template-rows: auto auto; align-content: center; row-gap: 0; }
+.logo-home { display: inline-flex; align-items: center; gap: 9px; color: inherit; text-decoration: none; min-height: 32px; border-radius: 8px; }
+.logo-home:focus-visible { outline: none; box-shadow: var(--focus); }
+.logo .logo-text { padding-left: 39px; margin-top: -6px; }
+.logo-region-btn { min-height: 24px; }
+@media (max-width: 768px) {
+  /* 40px link + 24px region row - 10px overlap = fits the 54px header */
+  .logo-home { min-height: 40px; gap: 8px; }
+  .logo .logo-wordmark { font-size: 21px; letter-spacing: -0.02em; }
+  .logo .logo-text { padding-left: 38px; margin-top: -10px; }
+  .logo-region-btn { min-height: 24px; padding-right: 8px; }
 }

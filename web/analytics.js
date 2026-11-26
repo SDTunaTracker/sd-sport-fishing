@@ -38,6 +38,11 @@
   var DEFAULT_TROPHY = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
   var CORE_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Skipjack', 'Bigeye', 'Albacore'];
   var ALL_SPECIES_REGIONS = { oc_la: true };
+  // Best-boat rankings use TUNA only, in every region (owner decision
+  // 2026-11-26: "use tuna for calculating the best boat"; same set as the
+  // mobile app). Totals and the daily counts keep the headline fish above.
+  // Mirrors src/parse.py TUNA_SPECIES and the trips.tuna_count column.
+  var TUNA_SPECIES = ['Bluefin', 'Yellowfin', 'Bigeye', 'Albacore'];
 
   function _isDefaultTrophy(sp) {
     return !sp || (sp.length === DEFAULT_TROPHY.length && DEFAULT_TROPHY.every(function (s) { return sp.indexOf(s) >= 0; }));
@@ -72,7 +77,13 @@
   function trophyFish(t) {
     return DEFAULT_TROPHY.reduce(function (s, sp) { return s + (t[sp] || 0); }, 0);
   }
-  // metricFor(region, settings) -> { allSpecies, species, fish(t), rate(t), noun }
+  function tunaFish(t) {
+    return TUNA_SPECIES.reduce(function (s, sp) { return s + (t[sp] || 0); }, 0);
+  }
+  // metricFor(region, settings) -> { allSpecies, species, fish(t), rate(t), noun,
+  //                                   custom, rankFish(t), rankNoun }
+  //   rankFish is what best-boat rankings count: tuna, unless the visitor
+  //   picked their own target species in Settings (then their species).
   //   region: effective region id ('san_diego' | 'oc_la' | 'all_socal').
   function metricFor(region, settings) {
     var sp = settings && settings.trophySpecies;
@@ -92,7 +103,14 @@
         return fish(t) / a / d;
       },
       noun: all ? 'fish' : (_isDefaultTrophy(species) ? 'trophy fish' : 'target fish'),
+      custom: !all && !_isDefaultTrophy(species),
+      rankFish: (!all && !_isDefaultTrophy(species)) ? fish : tunaFish,
+      rankNoun: (!all && !_isDefaultTrophy(species)) ? 'target fish' : 'tuna',
     };
+  }
+  // Word for ranking labels ("Tuna/Day"); 'Target' with custom species.
+  function rankLabel() {
+    return (window.SD_METRIC && window.SD_METRIC.custom) ? 'Target' : 'Tuna';
   }
 
   // Word for the headline fish in labels ("Tuna/Day", "Fish/Day"): 'Fish'
@@ -129,7 +147,18 @@
       var totalTuna = metric.fish(t);
       var rawDays   = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
       var calcDays  = method === 'rounded' ? Math.max(1, Math.floor(rawDays)) : rawDays;
-      var row = { totalTuna: totalTuna, trophyFish: trophyFish(t), calcDays: calcDays };
+      var tuna      = tunaFish(t);
+      var rankCount = metric.rankFish(t);
+      var row = {
+        totalTuna: totalTuna, trophyFish: trophyFish(t), calcDays: calcDays,
+        // Tuna-only count and rate (rate uses calcDays, like the exported
+        // trophyPerAnglerPerDay with the default 'rounded' method).
+        tunaCount: tuna,
+        tunaPerAnglerPerDay: tuna / t.anglers / calcDays,
+        // What best-boat rankings compare: tuna, or the visitor's species.
+        rankCount: rankCount,
+        rankPerAnglerPerDay: rankCount / t.anglers / calcDays,
+      };
       // Win rate, top-performer rate, streaks and form compare trips on
       // trophyPerAnglerPerDay. On all-species regions that comparison must use
       // the region's headline fish too; the exported trophy-only value stays
@@ -214,9 +243,28 @@
     return species;
   }
 
+  // Field best-boat rankings count: a species the filter picked, else
+  // rankCount (tuna, or the visitor's custom species; see metricFor).
+  function rankField(species) {
+    const sf = speciesField(species);
+    return sf === 'totalTuna' ? 'rankCount' : sf;
+  }
+  // Per-trip ranking rate (fish per angler per day on rankField).
+  // Works on raw SD.TRIPS rows too (computes tuna from the species columns).
+  function rankRate(t) {
+    if (t.rankPerAnglerPerDay != null) return t.rankPerAnglerPerDay;
+    if (!(t.anglers > 0)) return 0;
+    var d = t.calcDays || Math.max(1, Math.floor(t.tripLengthDays > 0 ? t.tripLengthDays : 1));
+    return tunaFish(t) / t.anglers / d;
+  }
+
+  // Ranked on rankField: tuna by default. totalTuna on each row is that same
+  // ranked count (so avgTPA = totalTuna / totalAnglers stays consistent);
+  // totalHeadline is the region's headline fish (trophy / all species).
   function boatLeaderboard(trips, species, minTrips) {
     const byBoat = {};
-    const sf = speciesField(species);
+    const hf = speciesField(species);
+    const sf = rankField(species);
     trips.forEach((t) => {
       if (!byBoat[t.boat]) {
         byBoat[t.boat] = {
@@ -249,6 +297,7 @@
         return ((t[sf] || 0) / Math.max(1, t.anglers)) / days;
       });
       const totalTuna = b.trips.reduce((s, t) => s + (t[sf] || 0), 0);
+      const totalHeadline = b.trips.reduce((s, t) => s + (t[hf] || 0), 0);
       const totalAnglers = b.trips.reduce((s, t) => s + t.anglers, 0);
       const totalAnglerDays = b.trips.reduce((s, t) => s + (t.anglers * (t.calcDays || 1)), 0);
       const totalTrophy = b.trips.reduce((s, t) => s + (t.trophyFish || 0), 0);
@@ -279,6 +328,7 @@
         landing: b.landing,
         tripCount: b.trips.length,
         totalTuna,
+        totalHeadline,
         totalAnglers,
         avgTPA,
         avgTPAPerDay,
@@ -497,7 +547,7 @@
   // Group trips by (date, tripLength) and return only groups with ≥ 2 boats.
   // Returns: [{ date, tripLength, trips: [...] }]
   function peerMatchups(trips, species) {
-    const sf = speciesField(species);
+    const sf = rankField(species);
     const groups = {};
     trips.forEach((t) => {
       const k = `${t.date}|${t.tripLength}`;
@@ -537,7 +587,8 @@
           deltas: [], myTPAPerDays: [], peerMedians: [],
         });
         r.matchupCount++;
-        if (t._tpapd >= top - 1e-9) r.wins++;
+        // A day when no boat caught any tuna has no winner.
+        if (top > 0 && t._tpapd >= top - 1e-9) r.wins++;
         r.deltas.push(t._tpapd - m.peerMedianTPAPerDay);
         r.myTPAPerDays.push(t._tpapd);
         r.peerMedians.push(m.peerMedianTPAPerDay);
@@ -591,12 +642,13 @@
     const mStats = {};
     Object.values(byDayLen).forEach(group => {
       if (group.length < 2) return;
-      const top = Math.max(...group.map(t => t.trophyPerAnglerPerDay || 0));
+      // Ranked on tuna (rankRate). A day when no boat caught any has no winner.
+      const top = Math.max(...group.map(rankRate));
       group.forEach(t => {
         const k = `${t.boat}|${t.tripLength}`;
         const r = mStats[k] || (mStats[k] = { wins: 0, matchupCount: 0 });
         r.matchupCount++;
-        if ((t.trophyPerAnglerPerDay || 0) >= top - 1e-9) r.wins++;
+        if (top > 0 && rankRate(t) >= top - 1e-9) r.wins++;
       });
     });
 
@@ -605,7 +657,7 @@
     allTrips.forEach(t => {
       const k = `${t.boat}|${t.tripLength}`;
       const r = tStats[k] || (tStats[k] = { tpaSum: 0, total: 0 });
-      r.tpaSum += t.trophyPerAnglerPerDay || 0;
+      r.tpaSum += rankRate(t);
       r.total++;
     });
 
@@ -636,7 +688,7 @@
     allTrips.forEach(t => {
       if (t.date >= cutoff && t.date < selectedDate) {
         const vals = histByLength[t.tripLength] || (histByLength[t.tripLength] = []);
-        vals.push(t.trophyPerAnglerPerDay || 0);
+        vals.push(rankRate(t));
       }
     });
 
@@ -645,11 +697,11 @@
       .map(t => {
         const hist = histByLength[t.tripLength] || [];
         if (hist.length < 3) return Object.assign({}, t, { ratingKey: 'new', ratingPct: null });
-        const myVal = t.trophyPerAnglerPerDay || 0;
+        const myVal = rankRate(t);
         const pct = (hist.filter(v => v <= myVal).length / hist.length) * 100;
         return Object.assign({}, t, { ratingKey: _pctToRatingKey(pct), ratingPct: pct });
       })
-      .sort((a, b) => (b.trophyPerAnglerPerDay || 0) - (a.trophyPerAnglerPerDay || 0));
+      .sort((a, b) => rankRate(b) - rankRate(a));   // best boat first, on tuna
 
     const valid = todayBoats.filter(b => b.ratingPct != null);
     let fleetRatingKey = null;
@@ -667,11 +719,11 @@
   // For each boat, compute "recent form" from its last 10 trips vs fleet median.
   // Uses the full unfiltered trip dataset so "last 10" is always chronological.
   function boatStreaks(allTrips) {
-    // Fleet median trophyPerAnglerPerDay per trip length (all-time) — used as a
+    // Ranked on tuna (rankRate). Fleet median per trip length (all-time) — used as a
     // fallback benchmark on days with too few peers to form a same-day median.
     const byLen = {};
     allTrips.forEach(t => {
-      (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(t.trophyPerAnglerPerDay || 0);
+      (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(rankRate(t));
     });
     const fleetMed = {};
     Object.entries(byLen).forEach(([len, vals]) => { fleetMed[len] = median(vals); });
@@ -683,7 +735,7 @@
     const byDayLen = {};
     allTrips.forEach(t => {
       const k = t.date + '|' + t.tripLength;
-      (byDayLen[k] || (byDayLen[k] = [])).push(t.trophyPerAnglerPerDay || 0);
+      (byDayLen[k] || (byDayLen[k] = [])).push(rankRate(t));
     });
     const dayLenMed = {};
     Object.entries(byDayLen).forEach(([k, vals]) => { dayLenMed[k] = median(vals); });
@@ -707,9 +759,9 @@
       const sorted = [...d.trips].sort((a, b) => b.date.localeCompare(a.date));
       const last10 = sorted.slice(0, 10);
       const dots = last10.map(t => ({
-        good: (t.trophyPerAnglerPerDay || 0) > benchmarkFor(t),
+        good: rankRate(t) > benchmarkFor(t),
         date: t.date,
-        tpa: t.trophyPerAnglerPerDay || 0,
+        tpa: rankRate(t),
       }));
       const goodCount = dots.filter(x => x.good).length;
 
@@ -754,11 +806,11 @@
     // settings change, so a stale result can't be served.
     const input = tripsOverride || window.SD_PROC_TRIPS || window.SD.TRIPS;
     if (_tprCache.input === input) return _tprCache.out;
-    const source = input.filter(t => t.trophyPerAnglerPerDay != null);
+    const source = input;
 
     const byLen = {};
     for (const t of source) {
-      const e = { boat: t.boat, v: t.trophyPerAnglerPerDay, ms: Date.parse(t.date + 'T00:00:00Z') };
+      const e = { boat: t.boat, v: rankRate(t), ms: Date.parse(t.date + 'T00:00:00Z') };
       (byLen[t.tripLength] || (byLen[t.tripLength] = [])).push(e);
     }
 
@@ -784,7 +836,8 @@
         // Top-25% threshold across this trip + all comparable trips
         vals.sort((a, b) => b - a);
         const threshold = vals[Math.floor(vals.length * 0.25)] ?? 0;
-        if (trip.v >= threshold) r.wins++;
+        // Zero tuna is never a top-25% trip, even when the whole window is zero.
+        if (trip.v > 0 && trip.v >= threshold) r.wins++;
       }
     }
 
@@ -862,7 +915,7 @@
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 10);
     const recentTpa = boatTrips.length
-      ? boatTrips.reduce((s, t) => s + ((t.totalTuna || 0) / Math.max(1, t.anglers) / (t.calcDays || 1)), 0) / boatTrips.length
+      ? boatTrips.reduce((s, t) => s + rankRate(t), 0) / boatTrips.length
       : best.avgTPAPerDay;
 
     const winRates = boatWinRates();
@@ -1246,6 +1299,11 @@
   window.SDA = {
     metricFor,
     headlineLabel,
+    rankLabel,
+    rankRate,
+    rankField,
+    tunaFish,
+    TUNA_SPECIES,
     headlineIsAllSpecies,
     catchBySpecies,
     speciesCount,

@@ -115,6 +115,11 @@ _POLARIS_BLOCK = (
     "so stay tuned."
 )
 
+_POLARIS_RETURN_BLOCK = (
+    "The Polaris Supreme returned from their 3 Day with 38 Yellowfin Tuna, "
+    "70 Skipjack and 5 Yellowtail."
+)
+
 _SAN_DIEGO_BLOCK = (
     "The San Diego back down to the Coronado Islands found the yellowtail and "
     "connected with 25 Yellowtail along with 5 Barracuda, 18 Rockfish, and "
@@ -132,9 +137,13 @@ _DATE_6_2  = date(2026, 6, 2)
 
 
 def _fake_html(blocks: list[str]) -> str:
-    """Wrap text blocks in minimal HTML so _extract_text_blocks can parse them."""
+    """Wrap text blocks in minimal HTML under a "June 2, 2026" heading.
+
+    The harvest skips undated blocks (date gate, e102e42c) and reads the date
+    from the nearest heading, like the landings' own report pages.
+    """
     paras = "".join(f"<p>{b}</p>" for b in blocks)
-    return f"<html><body>{paras}</body></html>"
+    return f"<html><body><h3>June 2, 2026</h3>{paras}</body></html>"
 
 
 def _run_harvest(blocks: list[str], today_trips: list[dict] | None = None) -> list[dict]:
@@ -198,9 +207,16 @@ def test_chatter_produces_no_counts():
     assert new == [], f"chatter should produce nothing, got: {new}"
 
 
+def test_harvest_polaris_checkin_is_not_a_trip():
+    """A mid-trip check-in ("checked in … switching gears to Bluefin today")
+    with no angler count is not a finished trip: no new row (FIX 2, 7cec41a2)."""
+    assert _run_harvest([_POLARIS_BLOCK]) == []
+
+
 def test_harvest_polaris_new_trip():
-    """Polaris Supreme (not in today's structured table) → new provisional trip."""
-    new = _run_harvest([_POLARIS_BLOCK])
+    """Polaris Supreme returned (not in today's structured table) → new
+    text_fallback trip with anglers unknown (sentinel 0)."""
+    new = _run_harvest([_POLARIS_RETURN_BLOCK])
     assert len(new) == 1, f"expected 1 new trip, got {len(new)}"
     t = new[0]
     assert t["boat"]          == "Polaris Supreme"
@@ -209,7 +225,7 @@ def test_harvest_polaris_new_trip():
     assert t["yellowtail"]    ==  5
     assert t["trip_length"]   == "3 Day"
     assert t["anglers"]       ==  0,  "anglers unknown → sentinel 0"
-    assert t["is_preliminary"] == 1,  "always preliminary when anglers unknown"
+    assert t["is_preliminary"] == 0,  "'returned' is a final report"
     assert t["source"]        == "text_fallback"
 
 

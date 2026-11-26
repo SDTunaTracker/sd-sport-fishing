@@ -274,12 +274,15 @@ function getBoatFormForChat(boats, lastN) {
       sp[s] = +(c / anglers).toFixed(2);
     });
     const tpad = recent.reduce((s, t) => s + (t.trophyPerAnglerPerDay || 0), 0) / recent.length;
+    // Boats are ranked on tuna (SDA.rankRate), like every best-boat list on the site.
+    const tunad = recent.reduce((s, t) => s + SDA.rankRate(t), 0) / recent.length;
     out[boat] = {
       trips: recent.length,
       from: recent[recent.length - 1].date,
       to: recent[0].date,
       perAngler: sp,
       trophyPerAnglerPerDay: +tpad.toFixed(2),
+      tunaPerAnglerPerDay: +tunad.toFixed(2),
       lengths: [...new Set(recent.map(t => t.tripLength))],
     };
   });
@@ -458,11 +461,11 @@ function buildSystemPrompt(pageContext) {
     : 'No upcoming trips with open spots in the next 120 days.';
 
   const formRows = Object.entries(form)
-    .sort((a, b) => b[1].trophyPerAnglerPerDay - a[1].trophyPerAnglerPerDay)
+    .sort((a, b) => b[1].tunaPerAnglerPerDay - a[1].tunaPerAnglerPerDay)
     .map(([boat, f]) =>
       `${boat}: last ${f.trips} trips (${f.from} to ${f.to}, ${f.lengths.join('/')}) — per angler: ` +
       CC_TROPHY.map(s => `${s} ${f.perAngler[s]}`).join(', ') +
-      ` | trophy/angler/day ${f.trophyPerAnglerPerDay}`
+      ` | tuna/angler/day ${f.tunaPerAnglerPerDay} | trophy/angler/day ${f.trophyPerAnglerPerDay}`
     ).join('\n') || 'No recent catch history.';
 
   const regsBlock = ccRegsPromptBlock();
@@ -507,7 +510,7 @@ Use ids exactly as written in UPCOMING TRIPS. Never make up an id. Do not write 
 
 FORMAT:
 - 1–2 short sentences before the cards, 1 sentence after. Plain text, **bold** for key numbers, and simple "- " bullet lines only. No tables, no headings.
-- Explain a metric the first time you use it: Win Rate = % of same-day, same-length matchups where the boat had the best catch per angler. TPA/day = trophy fish (bluefin, yellowfin, yellowtail, dorado) per angler per day.
+- Explain a metric the first time you use it: Win Rate = % of same-day, same-length matchups where the boat had the most tuna per angler. TPA/day = tuna (bluefin, yellowfin, bigeye, albacore) per angler per day. Boats are ranked on tuna.
 - Internal links you may use: [boat name](#boat/Boat%20Name), [Trip Planner](#tripplanner), [Today's Report](#today), [Boat Leaderboard](#analytics/boats).
 - When asked for something to share with a group, write plain text (no ** or markdown) and include for each trip: boat, day, departure time, price, and "book: <the boat's landing site>" — the cards above already carry the links; tell the user to use the Share button on each card.
 
@@ -525,10 +528,10 @@ ${hasOcla ? 'SAN DIEGO ' : ''}TODAY'S COUNTS (${today?.date || 'unknown'}): ${to
 UPCOMING TRIPS (next 120 days, open spots only; id | boat | landing | length | departs (PT) | price/person | open/capacity | season win rate & TPA for that boat+length | notes | how to book):
 ${tripRows}
 
-RECENT FORM (last 10 reported trips per boat; landed fish per angler by species):
+RECENT FORM (last 10 reported trips per boat, best tuna rate first; landed fish per angler by species):
 ${formRows}
 
-SEASON LEADERBOARD (${window.TT_DATES.getPacificYear()}, boats with 10+ trips, by trophy fish per angler per day):
+SEASON LEADERBOARD (${window.TT_DATES.getPacificYear()}, boats with 10+ trips, by tuna per angler per day):
 ${seasonRows}${ccRegionBlock(regions, trips)}
 
 ${regsBlock}`;
@@ -668,7 +671,7 @@ const DAILY_LIMIT = 999; // Set to 999 until Pro auth is built
 window.CC_QUICK_PICKS = [
   { label: 'Best overnight this week' },
   { label: 'Best trip under $300' },
-  { label: 'Where are the yellowtail?' },
+  { label: 'Best boat for tuna this week' },
   { label: 'Best full day this weekend' },
 ];
 function ccQuickPickList() {
