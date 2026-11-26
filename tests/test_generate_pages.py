@@ -169,3 +169,30 @@ def test_trip_length_pages(tmp_path):
     assert '<li><a href="/sd/trips/2-day/">2 Day</a>: 6 trips</li>' in big
     assert '<a href="/sd/trips/overnight/">Overnight</a>' in (web / "sd" / "today.html").read_text(
         encoding="utf-8")
+
+
+def test_stale_pages_pruned(tmp_path):
+    web = tmp_path / "web"
+    web.mkdir()
+    (web / "index.html").write_text(INDEX_HTML, encoding="utf-8")
+    ghost = web / "sd" / "boat" / "Ghost Boat"
+    ghost.mkdir(parents=True)
+    (ghost / "index.html").write_text("old", encoding="utf-8")
+    keep = web / "sd" / "boat" / "not-a-page"           # no index.html: left alone
+    keep.mkdir()
+    generate_all_pages(_db(tmp_path), web, web / "index.html")
+    assert not ghost.exists()
+    assert keep.is_dir()
+    assert (web / "sd" / "boat" / "Big Boat (SD)" / "index.html").is_file()
+
+
+def test_prune_refuses_mass_delete(tmp_path):
+    from src.generate_pages import _prune_stale
+    boats = tmp_path / "sd" / "boat"
+    for i in range(10):
+        (boats / f"B{i}").mkdir(parents=True)
+        (boats / f"B{i}" / "index.html").write_text("x", encoding="utf-8")
+    # A run that only wrote 2 boat pages must not delete the other 8
+    pages = [{"url": "/sd/boat/B0/"}, {"url": "/sd/boat/B1/"}]
+    assert _prune_stale(tmp_path, pages) == []
+    assert len(list(boats.iterdir())) == 10
