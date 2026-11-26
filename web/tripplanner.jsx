@@ -49,7 +49,18 @@ function bookingUrl(s) {
     }
     default: break;
   }
-  if (!base) return null;
+  if (!base) {
+    // Other landings (OC/LA and any added later): reuse Co-Captain's booking
+    // map in chat-api.js so the planner and chat link to the same page, tagged
+    // as trip-planner traffic.
+    if (typeof window.ccBookingInfo === 'function') {
+      try {
+        const u = window.ccBookingInfo(s).url;
+        return u ? u.replace('utm_medium=co_captain', 'utm_medium=trip_planner') : null;
+      } catch (e) { return null; }
+    }
+    return null;
+  }
   if (window.TTTrack?.buildUrl) {
     const dep = s.departureAt ? s.departureAt.slice(0, 10) : '';
     return TTTrack.buildUrl(base, s.boat, s.landing, dep);
