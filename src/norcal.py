@@ -351,7 +351,11 @@ SIXPACK_MAX_ANGLERS = 6
 SIXPACK_MIN_TRIPS = 3
 
 # Human-verified overrides (boat slug -> True six-pack / False open-party).
-SIXPACK_OVERRIDES: dict[str, bool] = {}
+SIXPACK_OVERRIDES: dict[str, bool] = {
+    # Owner decision 2026-11-26: these small boats (peak 8 anglers) stay ranked.
+    "argo": False,
+    "scallywag": False,
+}
 
 
 def classify_sixpacks(trips: Iterable[dict]) -> dict[str, bool]:

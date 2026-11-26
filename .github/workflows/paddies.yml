@@ -19,10 +19,11 @@ name: BloodyDecks Paddies
 
 on:
   schedule:
-    # Every 3 hours at an off-peak minute. GitHub often drops or delays
-    # scheduled runs by hours; with an ~8-day RSS window even one run a day
-    # loses nothing, so 8 attempts a day is plenty of margin.
-    - cron: '23 */3 * * *'
+    # Twice a day at an off-peak minute. Each run makes at most 30 Claude calls
+    # (10 per step below), so the API bill is capped at ~60 calls/day (~$2/day
+    # worst case on Sonnet, far less once the backlog is gone). GitHub often
+    # drops or delays runs, but with an ~8-day RSS window one run a day loses nothing.
+    - cron: '23 3,15 * * *'
   workflow_dispatch:
     inputs:
       backfill_since:
@@ -101,17 +102,17 @@ jobs:
           fi
           # Capped so a big backlog cannot run the job past its timeout (and lose
           # the commit); the rest drains on later runs.
-          python -m scraper.paddies.extract --limit 80
+          python -m scraper.paddies.extract --limit 10
 
       - name: Summarise party-boat trip reports with Claude
         id: boat_reports
         # Sportboats + Long Range forums -> per-boat sentiment, quotes, links.
         # Also records every place each trip fished (forum_locations, research).
-        # Capped at 80 posts per run, so a backlog drains over a few runs.
+        # Capped at 10 posts per run (newest first), so the year-old backlog drains slowly and cheaply.
         continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python -m scraper.paddies.boat_reports --limit 80
+        run: python -m scraper.paddies.boat_reports --limit 10
 
       - name: Read the landings' own reports with Claude
         id: landing_reports
@@ -121,7 +122,7 @@ jobs:
         continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python -m scraper.paddies.landing_reports --limit 80
+        run: python -m scraper.paddies.landing_reports --limit 10
 
       - name: Write /api/v1/*.json
         if: always() && steps.ingest.outcome != 'cancelled'

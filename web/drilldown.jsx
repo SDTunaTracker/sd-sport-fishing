@@ -448,6 +448,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
           data={monthly.map((m,i) => ({ label: MONTH_NAMES[i], value: m.tuna, color: m === bestMonth ? '#FF7705' : '#008566' }))}
           formatY={v => fmt.n(Math.round(v))}/>
       </Panel>
+      {window.BaitNowPanel && <BaitNowPanel landing={landing}/>}
       {window.GoogleReviewsSection && <GoogleReviewsSection boat={null} landing={landing}/>}
     </React.Fragment>
   );
