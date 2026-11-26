@@ -53,11 +53,19 @@
   ]
 }
 </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6QDTY73V37"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6QDTY73V37');
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20261125-11">
-<link rel="stylesheet" href="design-system.css?v=20261125-10">
+<link rel="stylesheet" href="styles.css?v=20261125-62">
+<link rel="stylesheet" href="design-system.css?v=20261125-13">
 <script>window.VESSEL_WORKER_URL = '';</script>
 <script
   async
@@ -80,7 +88,7 @@
 <section>
 <h2>Latest Red Rooster III fish counts</h2>
 <table>
-  <caption>Last 1 reported trips (trophy species landed)</caption>
+  <caption>Last 1 reported trips (fish landed; released fish not counted)</caption>
   <thead><tr><th>Date</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
   <tbody>
 <tr><td>May 9, 2021</td><td>1.5 Day</td><td>30</td><td>60 bluefin</td></tr>
@@ -97,8 +105,9 @@
   </tbody>
 </table>
 <section><h2>Species Breakdown</h2><ul><li>Bluefin: 60 landed</li></ul></section>
-<section><h2>Trips run</h2><ul><li>1.5 Day: 1 trips</li></ul></section>
+<section><h2>Trips run</h2><ul><li><a href="/sd/trips/1-5-day/">1.5 Day</a>: 1 trips</li></ul></section>
 
+<section><h2>Other boats at H&amp;M Landing</h2><ul><li><a href="/sd/boat/Nautilus/">Nautilus</a></li><li><a href="/sd/boat/Premier/">Premier</a></li><li><a href="/sd/boat/Tradition/">Tradition</a></li><li><a href="/sd/boat/Little%20G/">Little G</a></li><li><a href="/sd/boat/Patriot%20%28SD%29/">Patriot (SD)</a></li><li><a href="/sd/boat/Producer/">Producer</a></li><li><a href="/sd/boat/Electra/">Electra</a></li><li><a href="/sd/boat/Malihini/">Malihini</a></li><li><a href="/sd/boat/Old%20Glory/">Old Glory</a></li><li><a href="/sd/boat/Spirit%20of%20Adventure/">Spirit of Adventure</a></li><li><a href="/sd/boat/Sea%20Adventure%2080/">Sea Adventure 80</a></li><li><a href="/sd/boat/Daiwa%20Pacific/">Daiwa Pacific</a></li></ul></section>
 <p><a href="/sd/landing/hm-landing/">More boats at H&amp;M Landing →</a></p>
 </article>
 </div>
@@ -109,12 +118,13 @@
 <script type="text/javascript-deferred" id="tt-leaflet-js" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin="anonymous"></script>
 
 <script src="dates.js?v=20261124-1"></script>
-<script src="feature-flags.js?v=20261124-1"></script>
-<script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261125-1"></script>
+<script src="feature-flags.js?v=20261125-4"></script>
+<script src="regions.js?v=20261125-54"></script>
+<script src="data.js?v=20261125-3"></script>
 <script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
-<script src="chat-api.js?v=20261125-7"></script>
-<script src="analytics.js?v=20261125-3"></script>
+<script src="region-data.js?v=20261125-4"></script>
+<script src="chat-api.js?v=20261125-53"></script>
+<script src="analytics.js?v=20261125-55"></script>
 <script src="analytics-events.js?v=20261125-8"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
@@ -123,28 +133,29 @@
 
 <script src="dist/tweaks-panel.js?v=20261125-3"></script>
 <script src="dist/metric-label.js?v=20261125-3"></script>
-<script src="dist/ui.js?v=20261125-10"></script>
-<script src="dist/components.js?v=20261125-3"></script>
-<script src="dist/filterbar.js?v=20261125-9"></script>
-<script src="dist/dashboard.js?v=20261125-11"></script>
-<script src="dist/home.js?v=20261125-11"></script>
-<script src="dist/boats.js?v=20261125-3"></script>
-<script src="dist/drilldown.js?v=20261125-9"></script>
-<script src="dist/boat-reviews.js?v=20261125-8"></script>
-<script src="dist/forum-reports.js?v=20261125-10"></script>
+<script src="dist/ui.js?v=20261125-56"></script>
+<script src="dist/components.js?v=20261125-4"></script>
+<script src="dist/filterbar.js?v=20261125-14"></script>
+<script src="dist/dashboard.js?v=20261125-16"></script>
+<script src="dist/home.js?v=20261125-58"></script>
+<script src="dist/boats.js?v=20261125-9"></script>
+<script src="dist/drilldown.js?v=20261125-56"></script>
+<script src="dist/boat-reviews.js?v=20261125-11"></script>
+<script src="dist/forum-reports.js?v=20261125-25"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261125-8"></script>
-<script src="dist/tripplanner.js?v=20261125-9"></script>
-<script src="dist/headtohead.js?v=20261125-3"></script>
+<script src="dist/charts.js?v=20261125-15"></script>
+<script src="dist/tripplanner.js?v=20261125-53"></script>
+<script src="dist/headtohead.js?v=20261125-8"></script>
 <script src="dist/seasonality.js?v=20261125-3"></script>
-<script src="dist/moon.js?v=20261125-3"></script>
+<script src="dist/moon.js?v=20261125-7"></script>
 <script src="dist/settings.js?v=20261125-3"></script>
-<script src="dist/account.js?v=20261125-3"></script>
-<script src="dist/analytics.js?v=20261125-3"></script>
+<script src="dist/account.js?v=20261125-8"></script>
+<script src="dist/analytics.js?v=20261125-54"></script>
 <script src="dist/forecast.js?v=20261125-3"></script>
-<script src="dist/chatbot.js?v=20261125-11"></script>
-<script src="dist/app.js?v=20261125-7"></script>
-<script src="seo.js?v=20261125-2"></script>
+<script src="dist/chatbot.js?v=20261125-13"></script>
+<script src="dist/sfbay.js?v=20261125-18"></script>
+<script src="dist/app.js?v=20261125-60"></script>
+<script src="seo.js?v=20261125-54"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

@@ -52,11 +52,19 @@
   ]
 }
 </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6QDTY73V37"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6QDTY73V37');
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20261125-11">
-<link rel="stylesheet" href="design-system.css?v=20261125-10">
+<link rel="stylesheet" href="styles.css?v=20261125-62">
+<link rel="stylesheet" href="design-system.css?v=20261125-13">
 <script>window.VESSEL_WORKER_URL = '';</script>
 <script
   async
@@ -79,19 +87,19 @@
 <section>
 <h2>Latest Dominator fish counts</h2>
 <table>
-  <caption>Last 10 reported trips (trophy species landed)</caption>
+  <caption>Last 10 reported trips (fish landed; released fish not counted)</caption>
   <thead><tr><th>Date</th><th>Trip</th><th>Anglers</th><th>Catch</th></tr></thead>
   <tbody>
 <tr><td>Nov 5, 2018</td><td>1.5 Day</td><td>13</td><td>1 bluefin, 65 yellowfin</td></tr>
-<tr><td>Oct 21, 2018</td><td>1.5 Day</td><td>15</td><td>75 yellowfin, 30 yellowtail, 20 dorado</td></tr>
-<tr><td>Oct 7, 2018</td><td>1.5 Day</td><td>23</td><td>22 yellowfin, 28 yellowtail</td></tr>
-<tr><td>Sep 30, 2018</td><td>Overnight</td><td>28</td><td>75 yellowfin</td></tr>
-<tr><td>Sep 29, 2018</td><td>Overnight</td><td>28</td><td>6 yellowfin, 1 yellowtail</td></tr>
-<tr><td>Sep 23, 2018</td><td>Overnight</td><td>28</td><td>45 yellowfin</td></tr>
-<tr><td>Sep 22, 2018</td><td>1.5 Day</td><td>21</td><td>91 yellowfin, 1 yellowtail</td></tr>
-<tr><td>Sep 16, 2018</td><td>Overnight</td><td>28</td><td>110 yellowfin, 1 yellowtail, 2 dorado</td></tr>
-<tr><td>Sep 14, 2018</td><td>Overnight</td><td>22</td><td>3 yellowtail</td></tr>
-<tr><td>Sep 11, 2018</td><td>2 Day</td><td>23</td><td>9 yellowfin, 7 dorado</td></tr>
+<tr><td>Oct 21, 2018</td><td>1.5 Day</td><td>15</td><td>75 yellowfin, 30 yellowtail, 20 dorado, 3 bigeye</td></tr>
+<tr><td>Oct 7, 2018</td><td>1.5 Day</td><td>23</td><td>22 yellowfin, 28 yellowtail, 41 skipjack</td></tr>
+<tr><td>Sep 30, 2018</td><td>Overnight</td><td>28</td><td>75 yellowfin, 140 skipjack</td></tr>
+<tr><td>Sep 29, 2018</td><td>Overnight</td><td>28</td><td>6 yellowfin, 1 yellowtail, 140 skipjack</td></tr>
+<tr><td>Sep 23, 2018</td><td>Overnight</td><td>28</td><td>45 yellowfin, 80 skipjack</td></tr>
+<tr><td>Sep 22, 2018</td><td>1.5 Day</td><td>21</td><td>91 yellowfin, 1 yellowtail, 105 skipjack</td></tr>
+<tr><td>Sep 16, 2018</td><td>Overnight</td><td>28</td><td>110 yellowfin, 1 yellowtail, 2 dorado, 140 skipjack</td></tr>
+<tr><td>Sep 14, 2018</td><td>Overnight</td><td>22</td><td>3 yellowtail, 1 sheephead, 30 calico bass</td></tr>
+<tr><td>Sep 11, 2018</td><td>2 Day</td><td>23</td><td>9 yellowfin, 7 dorado, 35 skipjack</td></tr>
   </tbody>
 </table>
 </section>
@@ -105,8 +113,9 @@
   </tbody>
 </table>
 <section><h2>Species Breakdown</h2><ul><li>Bluefin: 404 landed</li><li>Yellowfin: 3,821 landed</li><li>Yellowtail: 2,757 landed</li><li>Dorado: 1,095 landed</li></ul></section>
-<section><h2>Trips run</h2><ul><li>Overnight: 107 trips</li><li>1.5 Day: 43 trips</li><li>Full Day: 16 trips</li><li>2 Day: 11 trips</li><li>2.5 Day: 5 trips</li><li>3 Day: 1 trips</li></ul></section>
+<section><h2>Trips run</h2><ul><li><a href="/sd/trips/overnight/">Overnight</a>: 107 trips</li><li><a href="/sd/trips/1-5-day/">1.5 Day</a>: 43 trips</li><li><a href="/sd/trips/full-day/">Full Day</a>: 16 trips</li><li><a href="/sd/trips/2-day/">2 Day</a>: 11 trips</li><li><a href="/sd/trips/2-5-day/">2.5 Day</a>: 5 trips</li><li><a href="/sd/trips/3-day/">3 Day</a>: 1 trips</li></ul></section>
 <section><h2>Best months</h2><p>Highest average trophy fish per angler per day, all years combined:</p><ul><li>Oct: 3.80 (15 trips)</li><li>Aug: 2.54 (55 trips)</li><li>Jul: 2.22 (30 trips)</li></ul></section>
+<section><h2>Other boats at Point Loma Sportfishing</h2><ul><li><a href="/sd/boat/Daily%20Double/">Daily Double</a></li><li><a href="/sd/boat/Point%20Loma/">Point Loma</a></li><li><a href="/sd/boat/Got%20Bait/">Got Bait</a></li><li><a href="/sd/boat/Mission%20Belle/">Mission Belle</a></li><li><a href="/sd/boat/New%20Lo-An/">New Lo-An</a></li><li><a href="/sd/boat/Sauerfish/">Sauerfish</a></li><li><a href="/sd/boat/Success/">Success</a></li><li><a href="/sd/boat/Oceanside%2095/">Oceanside 95</a></li><li><a href="/sd/boat/El%20Capitan/">El Capitan</a></li><li><a href="/sd/boat/T-Bird/">T-Bird</a></li><li><a href="/sd/boat/Primetime/">Primetime</a></li><li><a href="/sd/boat/Vagabond/">Vagabond</a></li></ul></section>
 <p><a href="/sd/landing/point-loma/">More boats at Point Loma Sportfishing →</a></p>
 </article>
 </div>
@@ -117,12 +126,13 @@
 <script type="text/javascript-deferred" id="tt-leaflet-js" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin="anonymous"></script>
 
 <script src="dates.js?v=20261124-1"></script>
-<script src="feature-flags.js?v=20261124-1"></script>
-<script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261125-1"></script>
+<script src="feature-flags.js?v=20261125-4"></script>
+<script src="regions.js?v=20261125-54"></script>
+<script src="data.js?v=20261125-3"></script>
 <script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
-<script src="chat-api.js?v=20261125-7"></script>
-<script src="analytics.js?v=20261125-3"></script>
+<script src="region-data.js?v=20261125-4"></script>
+<script src="chat-api.js?v=20261125-53"></script>
+<script src="analytics.js?v=20261125-55"></script>
 <script src="analytics-events.js?v=20261125-8"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
@@ -131,28 +141,29 @@
 
 <script src="dist/tweaks-panel.js?v=20261125-3"></script>
 <script src="dist/metric-label.js?v=20261125-3"></script>
-<script src="dist/ui.js?v=20261125-10"></script>
-<script src="dist/components.js?v=20261125-3"></script>
-<script src="dist/filterbar.js?v=20261125-9"></script>
-<script src="dist/dashboard.js?v=20261125-11"></script>
-<script src="dist/home.js?v=20261125-11"></script>
-<script src="dist/boats.js?v=20261125-3"></script>
-<script src="dist/drilldown.js?v=20261125-9"></script>
-<script src="dist/boat-reviews.js?v=20261125-8"></script>
-<script src="dist/forum-reports.js?v=20261125-10"></script>
+<script src="dist/ui.js?v=20261125-56"></script>
+<script src="dist/components.js?v=20261125-4"></script>
+<script src="dist/filterbar.js?v=20261125-14"></script>
+<script src="dist/dashboard.js?v=20261125-16"></script>
+<script src="dist/home.js?v=20261125-58"></script>
+<script src="dist/boats.js?v=20261125-9"></script>
+<script src="dist/drilldown.js?v=20261125-56"></script>
+<script src="dist/boat-reviews.js?v=20261125-11"></script>
+<script src="dist/forum-reports.js?v=20261125-25"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261125-8"></script>
-<script src="dist/tripplanner.js?v=20261125-9"></script>
-<script src="dist/headtohead.js?v=20261125-3"></script>
+<script src="dist/charts.js?v=20261125-15"></script>
+<script src="dist/tripplanner.js?v=20261125-53"></script>
+<script src="dist/headtohead.js?v=20261125-8"></script>
 <script src="dist/seasonality.js?v=20261125-3"></script>
-<script src="dist/moon.js?v=20261125-3"></script>
+<script src="dist/moon.js?v=20261125-7"></script>
 <script src="dist/settings.js?v=20261125-3"></script>
-<script src="dist/account.js?v=20261125-3"></script>
-<script src="dist/analytics.js?v=20261125-3"></script>
+<script src="dist/account.js?v=20261125-8"></script>
+<script src="dist/analytics.js?v=20261125-54"></script>
 <script src="dist/forecast.js?v=20261125-3"></script>
-<script src="dist/chatbot.js?v=20261125-11"></script>
-<script src="dist/app.js?v=20261125-7"></script>
-<script src="seo.js?v=20261125-2"></script>
+<script src="dist/chatbot.js?v=20261125-13"></script>
+<script src="dist/sfbay.js?v=20261125-18"></script>
+<script src="dist/app.js?v=20261125-60"></script>
+<script src="seo.js?v=20261125-54"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

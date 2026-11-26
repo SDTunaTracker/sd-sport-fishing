@@ -49,122 +49,155 @@
   "url": "https://thetunatracker.com/sd/species/bluefin-tuna/"
 }
 </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
-<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v=20261125-11">
-<link rel="stylesheet" href="design-system.css?v=20261125-10">
-<script>window.VESSEL_WORKER_URL = '';</script>
-<script
-  async
-  crossorigin="anonymous"
-  data-clerk-publishable-key="pk_test_Z3VpZGVkLWdhbm5ldC05OC5jbGVyay5hY2NvdW50cy5kZXYk"
-  src="https://guided-gannet-98.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
-  type="text/javascript">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6QDTY73V37"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6QDTY73V37');
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+  /* Tokens mirror web/design-system.css (cream / pine / orange). */
+  :root {
+    --bg: #FBFAF6; --surface: #FFFFFF; --ink: #17332C; --ink-2: #2D4A42;
+    --muted: #5A6E66; --faint: #8C978F; --line: #EAE6DC; --band: #F4F1E9;
+    --pine: #17332C; --accent: #CF6A3C; --accent-ink: #B0542A;
+    --focus: 0 0 0 3px rgba(207,106,60,.22);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink-2);
+         font: 16px/1.6 Inter, system-ui, sans-serif; }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+  .top { background: var(--surface); border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: 1120px; margin: 0 auto; padding: 0 16px; height: 64px;
+               display: flex; align-items: center; gap: 24px; }
+  .brand { display: inline-flex; align-items: center; gap: 8px; font: 700 19px/1 Fraunces, Georgia, serif;
+           color: var(--ink); text-decoration: none; flex-shrink: 0; }
+  .brand svg { color: #CF6A3C; flex-shrink: 0; display: block; }
+  .nav { display: flex; gap: 20px; margin-left: 8px; }
+  .nav a { font: 500 14px/1 Inter, sans-serif; color: var(--ink-2); text-decoration: none;
+           padding: 22px 0 20px; border-bottom: 2px solid transparent; }
+  .nav a:hover { color: var(--ink); }
+  .nav a[aria-current] { color: var(--ink); border-bottom-color: var(--accent); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px;
+         padding: 0 18px; border-radius: 10px; font: 600 15px/1 Inter, sans-serif;
+         text-decoration: none; white-space: nowrap; }
+  .btn-primary { background: var(--pine); color: #fff; }
+  .btn-primary:hover { background: #1F4A3F; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .top .btn { height: 40px; margin-left: auto; font-size: 14px; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  main nav[aria-label="Breadcrumb"] ol { list-style: none; padding: 0; margin: 0 0 16px; display: flex;
+           flex-wrap: wrap; gap: 6px; font: 500 11px/1.4 'DM Mono', ui-monospace, monospace;
+           letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+  main nav[aria-label="Breadcrumb"] li + li::before { content: "›"; margin-right: 6px; }
+  main nav[aria-label="Breadcrumb"] a { color: var(--faint); text-decoration: none; }
+  main nav[aria-label="Breadcrumb"] a:hover { color: var(--ink); }
+  h1 { font: 700 34px/1.1 Fraunces, Georgia, serif; color: var(--ink); margin: 0 0 12px;
+       letter-spacing: -.01em; }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--ink-2); margin: 0 0 28px; }
+  h2 { font: 600 22px/1.25 Fraunces, Georgia, serif; color: var(--ink); margin: 40px 0 10px; }
+  h3 { font: 600 16px/1.3 Inter, sans-serif; color: var(--ink); margin: 24px 0 6px; }
+  p { margin: 0 0 12px; }
+  .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  caption { caption-side: top; text-align: left; font-size: 14px; color: var(--muted);
+            padding: 0 0 8px; }
+  th { text-align: left; font: 500 10.5px/1.2 'DM Mono', ui-monospace, monospace; letter-spacing: .1em;
+       text-transform: uppercase; color: var(--faint); padding: 10px 12px 10px 0;
+       border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th.num, td.num { text-align: right; }
+  td.num { font: 400 14px/1.6 'DM Mono', ui-monospace, monospace; color: var(--ink);
+           white-space: nowrap; }
+  th:last-child, td:last-child { padding-right: 0; }
+  td:first-child { white-space: nowrap; color: var(--ink); }
+  .cta { background: var(--band); border-radius: 14px; padding: 20px; margin: 40px 0 0; }
+  .cta p { font-size: 17px; color: var(--ink); margin: 0 0 14px; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  footer { border-top: 1px solid var(--line); }
+  .foot-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; font-size: 14px; color: var(--muted);
+                display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+  .foot-inner nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  @media (max-width: 760px) {
+    .nav { display: none; }
+    h1 { font-size: 28px; }
+    .lede { font-size: 17px; }
+  }
+</style>
 </head>
 <body>
-<div id="seo-static">
+<header class="top"><div class="top-inner"><a class="brand" href="/"><svg width="26" height="26" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true"><path d="M22 30.6 C28 30.4 32 29.6 35 28.6 C37 19 45 10 59 4 C52 12 47.5 22 47 32 C47.5 42 52 52 59 60 C45 54 37 45 35 35.4 C32 34.4 28 33.6 22 33.4 Z"/><rect x="3" y="35" width="4.5" height="7" rx="1.2"/><rect x="9.5" y="30" width="4.5" height="12" rx="1.2"/><rect x="16" y="25" width="4.5" height="17" rx="1.2"/></svg>Tunatracker</a><nav class="nav" aria-label="Site"><a href="/sd/today">Fish Counts</a><a href="/sd/boats">Boats</a><a href="/sd/analytics/overview">Analytics</a><a href="/sd/tripplanner">Trip Planner</a></nav><a class="btn btn-primary" href="/sd/today">Today's counts →</a></div></header>
+<main id="seo-static">
 <article>
 <nav aria-label="Breadcrumb"><ol><li><a href="/">Tunatracker</a></li><li>Bluefin Tuna Fishing</li></ol></nav>
 <h1>San Diego Bluefin Tuna Fishing</h1>
-<p>Analysis of Bluefin Tuna catches across all San Diego sportfishing landings.
-   Based on 14,369 recorded trips with bluefin tuna in the catch.</p>
+<p class="lede">Analysis of Bluefin Tuna catches across all San Diego sportfishing landings.
+   Based on 13,903 recorded trips with bluefin tuna in the catch.</p>
+<section>
+<h2>Bluefin Tuna caught in San Diego: last 14 days</h2>
+<p>38 bluefin tuna landed on 2 trips.</p>
+<div class="tw"><table>
+  <caption>2 most recent trips with bluefin tuna</caption>
+  <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th>Trip</th><th class="num">Anglers</th><th class="num">Bluefin Tuna</th></tr></thead>
+  <tbody>
+<tr><td>Nov 13, 2026</td><td><a href="/sd/boat/Tribute/">Tribute</a></td><td>Seaforth Sportfishing</td><td>1.5 Day</td><td class="num">27</td><td class="num">29</td></tr>
+<tr><td>Nov 13, 2026</td><td><a href="/sd/boat/Cortez/">Cortez</a></td><td>Seaforth Sportfishing</td><td>2.5 Day</td><td class="num">14</td><td class="num">9</td></tr>
+  </tbody>
+</table></div>
+</section>
 <section>
 <h2>Top Boats for Bluefin Tuna</h2>
-<table>
+<div class="tw"><table>
   <caption>Top 10 boats by average Bluefin Tuna per angler per day (min 5 trips)</caption>
   <thead>
-    <tr><th>#</th><th>Boat</th><th>Landing</th><th>Avg Fish/Angler/Day</th><th>Trips</th></tr>
+    <tr><th class="num">#</th><th>Boat</th><th>Landing</th><th class="num">Avg Fish/Angler/Day</th><th class="num">Trips</th></tr>
   </thead>
   <tbody>
-<tr><td>1</td><td><a href="/sd/boat/Joanna/">Joanna</a></td><td>H&amp;M Landing</td><td>4.41</td><td>17</td></tr>
-<tr><td>2</td><td><a href="/sd/boat/Lucky%20B%20Sportfishing/">Lucky B Sportfishing</a></td><td>Fisherman's Landing</td><td>3.78</td><td>24</td></tr>
-<tr><td>3</td><td><a href="/sd/boat/Game%20Changer/">Game Changer</a></td><td>Point Loma Sportfishing</td><td>3.25</td><td>24</td></tr>
-<tr><td>4</td><td><a href="/sd/boat/Hi-Count/">Hi-Count</a></td><td>Point Loma Sportfishing</td><td>3.15</td><td>7</td></tr>
-<tr><td>5</td><td><a href="/sd/boat/Voodoo/">Voodoo</a></td><td>H&amp;M Landing</td><td>2.96</td><td>21</td></tr>
-<tr><td>6</td><td><a href="/sd/boat/Pegasus/">Pegasus</a></td><td>Fisherman's Landing</td><td>2.88</td><td>258</td></tr>
-<tr><td>7</td><td><a href="/sd/boat/Sauerfish/">Sauerfish</a></td><td>Point Loma Sportfishing</td><td>2.88</td><td>55</td></tr>
-<tr><td>8</td><td><a href="/sd/boat/Primetime/">Primetime</a></td><td>Point Loma Sportfishing</td><td>2.85</td><td>5</td></tr>
-<tr><td>9</td><td><a href="/sd/boat/Success/">Success</a></td><td>Point Loma Sportfishing</td><td>2.74</td><td>32</td></tr>
-<tr><td>10</td><td><a href="/sd/boat/Blue%20Horizon/">Blue Horizon</a></td><td>H&amp;M Landing</td><td>2.64</td><td>11</td></tr>
+<tr><td class="num">1</td><td><a href="/sd/boat/Joanna/">Joanna</a></td><td>H&amp;M Landing</td><td class="num">4.41</td><td class="num">17</td></tr>
+<tr><td class="num">2</td><td><a href="/sd/boat/Lucky%20B%20Sportfishing/">Lucky B Sportfishing</a></td><td>Fisherman's Landing</td><td class="num">3.78</td><td class="num">24</td></tr>
+<tr><td class="num">3</td><td><a href="/sd/boat/Game%20Changer/">Game Changer</a></td><td>Point Loma Sportfishing</td><td class="num">3.25</td><td class="num">24</td></tr>
+<tr><td class="num">4</td><td><a href="/sd/boat/Hi-Count/">Hi-Count</a></td><td>Point Loma Sportfishing</td><td class="num">3.15</td><td class="num">7</td></tr>
+<tr><td class="num">5</td><td><a href="/sd/boat/Voodoo/">Voodoo</a></td><td>H&amp;M Landing</td><td class="num">2.96</td><td class="num">21</td></tr>
+<tr><td class="num">6</td><td><a href="/sd/boat/Pegasus/">Pegasus</a></td><td>Fisherman's Landing</td><td class="num">2.88</td><td class="num">258</td></tr>
+<tr><td class="num">7</td><td><a href="/sd/boat/Sauerfish/">Sauerfish</a></td><td>Point Loma Sportfishing</td><td class="num">2.88</td><td class="num">55</td></tr>
+<tr><td class="num">8</td><td><a href="/sd/boat/Primetime/">Primetime</a></td><td>Point Loma Sportfishing</td><td class="num">2.85</td><td class="num">5</td></tr>
+<tr><td class="num">9</td><td><a href="/sd/boat/Success/">Success</a></td><td>Point Loma Sportfishing</td><td class="num">2.74</td><td class="num">32</td></tr>
+<tr><td class="num">10</td><td><a href="/sd/boat/Blue%20Horizon/">Blue Horizon</a></td><td>H&amp;M Landing</td><td class="num">2.64</td><td class="num">11</td></tr>
   </tbody>
-</table>
+</table></div>
 </section>
 <section>
 <h2>Seasonal Catch Calendar</h2>
-<table>
+<div class="tw"><table>
   <caption>Average Bluefin Tuna per angler per day by month (last 5 years)</caption>
   <thead>
-    <tr><th>Month</th><th>Avg Fish/Angler/Day</th><th>Trips</th></tr>
+    <tr><th>Month</th><th class="num">Avg Fish/Angler/Day</th><th class="num">Trips</th></tr>
   </thead>
   <tbody>
-<tr><td>Jan</td><td>0.18</td><td>6</td></tr>
-<tr><td>Feb</td><td>0.8</td><td>1</td></tr>
-<tr><td>Mar</td><td>1.87</td><td>22</td></tr>
-<tr><td>Apr</td><td>1.63</td><td>264</td></tr>
-<tr><td>May</td><td>1.34</td><td>650</td></tr>
-<tr><td>Jun</td><td>1.01</td><td>1062</td></tr>
-<tr><td>Jul</td><td>1.56</td><td>1614</td></tr>
-<tr><td>Aug</td><td>1.98</td><td>1753</td></tr>
-<tr><td>Sep</td><td>1.94</td><td>1526</td></tr>
-<tr><td>Oct</td><td>1.85</td><td>948</td></tr>
-<tr><td>Nov</td><td>1.77</td><td>207</td></tr>
-<tr><td>Dec</td><td>1.64</td><td>24</td></tr>
+<tr><td>Jan</td><td class="num">0.18</td><td class="num">6</td></tr>
+<tr><td>Feb</td><td class="num">0.8</td><td class="num">1</td></tr>
+<tr><td>Mar</td><td class="num">1.87</td><td class="num">22</td></tr>
+<tr><td>Apr</td><td class="num">1.63</td><td class="num">264</td></tr>
+<tr><td>May</td><td class="num">1.35</td><td class="num">648</td></tr>
+<tr><td>Jun</td><td class="num">1.02</td><td class="num">1053</td></tr>
+<tr><td>Jul</td><td class="num">1.58</td><td class="num">1555</td></tr>
+<tr><td>Aug</td><td class="num">2.06</td><td class="num">1586</td></tr>
+<tr><td>Sep</td><td class="num">1.97</td><td class="num">1433</td></tr>
+<tr><td>Oct</td><td class="num">1.9</td><td class="num">891</td></tr>
+<tr><td>Nov</td><td class="num">1.79</td><td class="num">196</td></tr>
+<tr><td>Dec</td><td class="num">1.64</td><td class="num">24</td></tr>
   </tbody>
-</table>
+</table></div>
 </section>
 </article>
-</div>
-<div id="root"></div>
-<script>(function(){var s=document.getElementById('seo-static');if(s)s.style.display='none';})();</script>
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
-<script type="text/javascript-deferred" id="tt-leaflet-js" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin="anonymous"></script>
-
-<script src="dates.js?v=20261124-1"></script>
-<script src="feature-flags.js?v=20261124-1"></script>
-<script src="regions.js?v=20261124-1"></script>
-<script src="data.js?v=20261125-1"></script>
-<script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
-<script src="chat-api.js?v=20261125-7"></script>
-<script src="analytics.js?v=20261125-3"></script>
-<script src="analytics-events.js?v=20261125-8"></script>
-<script src="clerk-init.js?v=20261124-1"></script>
-<script src="use-auth.js?v=20261124-1"></script>
-<script src="user-prefs.js?v=20261124-1"></script>
-<script src="metric-definitions.js?v=20261124-1"></script>
-
-<script src="dist/tweaks-panel.js?v=20261125-3"></script>
-<script src="dist/metric-label.js?v=20261125-3"></script>
-<script src="dist/ui.js?v=20261125-10"></script>
-<script src="dist/components.js?v=20261125-3"></script>
-<script src="dist/filterbar.js?v=20261125-9"></script>
-<script src="dist/dashboard.js?v=20261125-11"></script>
-<script src="dist/home.js?v=20261125-11"></script>
-<script src="dist/boats.js?v=20261125-3"></script>
-<script src="dist/drilldown.js?v=20261125-9"></script>
-<script src="dist/boat-reviews.js?v=20261125-8"></script>
-<script src="dist/forum-reports.js?v=20261125-10"></script>
-<script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261125-8"></script>
-<script src="dist/tripplanner.js?v=20261125-9"></script>
-<script src="dist/headtohead.js?v=20261125-3"></script>
-<script src="dist/seasonality.js?v=20261125-3"></script>
-<script src="dist/moon.js?v=20261125-3"></script>
-<script src="dist/settings.js?v=20261125-3"></script>
-<script src="dist/account.js?v=20261125-3"></script>
-<script src="dist/analytics.js?v=20261125-3"></script>
-<script src="dist/forecast.js?v=20261125-3"></script>
-<script src="dist/chatbot.js?v=20261125-11"></script>
-<script src="dist/app.js?v=20261125-7"></script>
-<script src="seo.js?v=20261125-2"></script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js').catch(function() {});
-  });
-}
-</script>
+<aside class="cta"><p>Who's catching bluefin tuna right now, and where can you go?</p><div class="cta-actions"><a class="btn btn-primary" href="/sd/today">See today's bluefin tuna counts</a><a class="btn btn-secondary" href="/sd/tripplanner">Plan a trip</a></div></aside>
+</main>
+<footer><div class="foot-inner"><span>© 2026 Tunatracker</span><nav aria-label="Footer"><a href="/sd/today">Fish Counts</a><a href="/sd/boats">Boats</a><a href="/sd/analytics/overview">Analytics</a><a href="/sd/tripplanner">Trip Planner</a><a href="/privacy/">Privacy</a></nav></div></footer>
 </body>
 </html>
