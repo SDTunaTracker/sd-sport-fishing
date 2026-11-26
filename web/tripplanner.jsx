@@ -366,6 +366,43 @@ function RegsSection({ trip }) {
 // ── Trip card ─────────────────────────────────────────────────────────────────
 const NOTE_LINES = 2; // lines visible when collapsed
 
+// "Pack for this trip" (web/pack-list.js): cited tackle checklist by trip
+// length, plus a hook/line row for the bait the barge is serving when the
+// barge-bait feed is on. Flag: FEATURES.SHOW_PACK_LIST (?preview_pack=true).
+function PackListSection({ trip }) {
+  const [bait, setBait] = useState(null);
+  useEffect(() => {
+    if (!window.FEATURES?.SHOW_BAIT_NOW || !window.loadBaitNow) return;
+    let live = true;
+    window.loadBaitNow().then(d => { if (live) setBait(window.bnBargeFor(d, trip.landing)); });
+    return () => { live = false; };
+  }, [trip.landing]);
+  const pl = window.TTPack.buildPackList(trip, bait);
+  if (!pl) return null;
+  const ids = Object.keys(pl.sources);
+  const cite = (src) => src.length ? <sup className="tpk-cite">{src.map(x => ids.indexOf(x) + 1).join(',')}</sup> : null;
+  return (
+    <div className="tpk-section">
+      <div className="tpk-title">Pack for this trip</div>
+      {pl.bait && (
+        <div className="tpk-bait">
+          Barge has <b>{pl.bait.barge}</b>: flyline <b>{pl.bait.hook}</b> hooks on <b>{pl.bait.line}</b>.
+          {pl.bait.note && <> {pl.bait.note}</>}{cite(pl.bait.src)}
+        </div>
+      )}
+      <ul className="tpk-list">
+        {pl.rigs.map(r => <li key={r.name}><b>{r.name}</b>: {r.detail}{cite(r.src)}</li>)}
+        {pl.extras.map(x => <li key={x.text}>{x.text}{cite(x.src)}</li>)}
+      </ul>
+      <div className="tpk-sources">
+        Sources: {ids.map((k, i) => (
+          <span key={k}>{i > 0 && ' · '}{i + 1}. <a href={pl.sources[k].url} target="_blank" rel="noopener">{pl.sources[k].name}</a></span>
+        ))}. General guidance from landings and fishing press, not this boat's own list.
+      </div>
+    </div>
+  );
+}
+
 function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const [noteOpen, setNoteOpen] = useState(false);
 
@@ -402,7 +439,8 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const capBarColor = capPct >= 30 ? '#34D399' : capPct >= 15 ? '#FBBF24' : '#F87171';
   const showRegs    = !!window.TT_REGS && !isPast;
   const docsTag     = showRegs && window.ttTripDocsTag ? window.ttTripDocsTag(s) : null;
-  const hasNote     = !!(s.note || s.tripStatus || s.targetSpecies || s.whatsIncluded) || showRegs;
+  const showPack    = !isPast && !!window.FEATURES?.SHOW_PACK_LIST && !!window.TTPack;
+  const hasNote     = !!(s.note || s.tripStatus || s.targetSpecies || s.whatsIncluded) || showRegs || showPack;
 
   const boatEl = navigate ? (
     <a href={`/sd/boat/${encodeURIComponent(s.boat)}`}
@@ -546,6 +584,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
                 </div>
               )}
               {showRegs && <RegsSection trip={s}/>}
+              {showPack && <PackListSection trip={s}/>}
             </div>
           )}
         </div>

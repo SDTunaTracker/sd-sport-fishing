@@ -17,6 +17,7 @@
 | ENSO/ONI | This branch: `src/enso.py`, Co-Captain context | Built; runs weekly, no key |
 | User catch reports | `USER_CATCH_REPORTS_SPEC.md` | Spec only, awaiting the owner's decision |
 | Barge bait (Everingham) | `src/bait.py`, `web/bait-now.jsx` (trip cards + landing pages) | Built 2026-11-26, dormant: workflow step needs repo variable `BAIT_REPORT_ENABLED=true`, UI flag `BAIT_NOW`. Waiting on the owner's email to Everingham (`BAIT_SOURCES.md` §6). No key |
+| Pack for this trip | `web/pack-list.js`, trip-card details | Built 2026-11-26, flag `PACK_LIST` off. Cited rules only (BAIT_SOURCES.md §5); no key |
 
 ## TL;DR
 
