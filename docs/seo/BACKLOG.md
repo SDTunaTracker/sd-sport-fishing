@@ -12,7 +12,7 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | S3 | Canonical, `og:url` and sitemap use the served URL (trailing slash) | shipped | Removes "Page with redirect" for ~130 URLs |
 | S4 | Sitemap built from the *same* list as the generated pages, with real `lastmod` (last trip date) | shipped | |
 | S5 | `www.thetunatracker.com` returned 522 (about 9% of requests, the whole 5xx rate). 301 Redirect Rule to the apex | done (user) | shipped 2026-11-25: Redirect Rule 301s `www.*` to the apex, path and query kept |
-| S6 | Prerender static HTML for `/sd/today` and `/sd/boats`: last 3 report days by landing (every species landed), boat directory | done (claude/seo-2) | `web/sd/today.html` / `boats.html`; CF serves `x.html` at `/x` and `_redirects` wins over static files, so those two rewrites are gone |
+| S6 | Prerender static HTML for `/sd/today` and `/sd/boats`: last 3 report days by landing (every species landed), boat directory | shipped | `web/sd/today.html` / `boats.html`; CF serves `x.html` at `/x` and `_redirects` wins over static files, so those two rewrites are gone |
 | S6b | Prerender `/` (home) | todo | `index.html` is hand-edited source, so this needs a generated copy or markers the pipeline fills; coordinate with UX |
 | S7 | Search Console + Bing setup; sitemap submit; URL Inspection "View tested page" on `/sd/today` + one boat page to confirm S1/S6 | **user** | See AUDIT §4 |
 
@@ -25,12 +25,14 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | S10 | Landing fleet table: min 5 trips to rank, plus "last 7 days at <landing>" trips table | shipped | Fixes 1-trip boats ranked #1 |
 | S11 | `noindex` boat pages with <5 trips; exclude them from the sitemap | shipped | 13 boats |
 | S12 | Boat landing = landing of the most recent trip | shipped | 27 boats moved landings |
-| S13 | Species pages: "last 14 days" block (boats and counts) | done (claude/seo-2) | Species queries now SD-only, which also removed links to OC/LA boats with no page |
-| S14 | Sibling links on boat pages (other boats at the landing) | done (claude/seo-2) | Up to 12, 5+ trips, most recent first |
-| S29 | Generated pages had no Google Analytics tag or web fonts (only `index.html` has them) | done (claude/seo-2) | Visits landing on boat/landing/species pages weren't counted |
-| S30 | Species pages: the SPA has no species view and redirected visitors to `/sd/today` | done (claude/seo-2) | Species and trip pages are now static only, with a plain site nav. Styling: ask UX |
+| S13 | Species pages: "last 14 days" block (boats and counts) | shipped | Species queries now SD-only, which also removed links to OC/LA boats with no page |
+| S14 | Sibling links on boat pages (other boats at the landing) | shipped | Up to 12, 5+ trips, most recent first |
+| S29 | Generated pages had no Google Analytics tag or web fonts (only `index.html` has them) | shipped | Visits landing on boat/landing/species pages weren't counted |
+| S30 | Species pages: the SPA has no species view and redirected visitors to `/sd/today` | shipped | Species and trip pages are now static only, with a plain site nav. Styling: ask UX |
 | S31 | App landing view shows the slug ("hm-landing") as its heading on `/sd/landing/<slug>/` | coord (app-dev) | Visitors see the app, not the static page there |
-| S28 | Stale `web/sd/boat/Bluefin/` page: the boat has no trips, and the generator never deletes old pages | todo | Delete pages not regenerated in a run (and keep them out of the sitemap) |
+| S32 | Trip-length pages: primary CTA "Find the best {length} trip" → `/sd/pick` (yellowtail species page: `/sd/pick?q=yellowtail`) | done (claude/seo-3) | Overnight → `?q=overnight-week`, Full Day → `?q=fullday-weekend`, other lengths → `/sd/pick` |
+| S33 | Trip CTAs open the picker on their own length: Full Day → `/sd/pick?type=full`, Overnight → `?type=overnight`, 1.5 Day → `?type=1.5`, 2/2.5/3 Day → `?type=multi` | done (claude/seo-3) | `?type=` shows the next 7 days; on main since `claude/pick-type-param` |
+| S28 | Stale `web/sd/boat/Bluefin/` page: the boat has no trips, and the generator never deletes old pages | done (claude/seo-3) | Delete pages not regenerated in a run (and keep them out of the sitemap) |
 | S15 | Consistent metric with the app (exclude half-days; mean over all trips, not only nonzero) plus a methodology page | coord (app/UX) | Numbers on pages must match the app |
 
 ## P1: new data-driven pages
@@ -38,7 +40,7 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | # | Item | Status | Notes |
 |---|---|---|---|
 | S16 | `/sd/report/`: rolling 7-day "San Diego fishing report this week" | todo | Plus a weekly archive capped at 12 indexed weeks |
-| S17 | `/sd/trips/<length>/` for Full Day, Overnight, 1.5, 2, 2.5, 3 Day | done (claude/seo-2) | Last 14 days, boats that run it (3 yrs, 10+ trips), catch by month ("not a forecast") |
+| S17 | `/sd/trips/<length>/` for Full Day, Overnight, 1.5, 2, 2.5, 3 Day | shipped | Last 14 days, boats that run it (3 yrs, 10+ trips), catch by month ("not a forecast") |
 | S18 | `/sd/best-boats/`: leaderboard with methodology | todo | |
 
 ## P2: performance and polish

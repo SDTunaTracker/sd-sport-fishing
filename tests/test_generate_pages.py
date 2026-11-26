@@ -161,11 +161,47 @@ def test_trip_length_pages(tmp_path):
     # is static only, with the GA tag and a site nav
     assert 'id="root"' not in html and "unpkg.com/react" not in html
     assert "gtag/js?id=G-TEST" in html and 'href="/sd/boats">Boats</a>' in html
+    # short dates with the year in the caption (all rows in one year), short
+    # landing names for phones, captions outside the scroll box, 2 decimals
+    assert "<td>Aug 2</td>" in html and "from San Diego landings, 2026</p>" in html
+    assert '<span class="ls">H&amp;M</span>' in html
+    assert '<p class="cap">' in html and "<caption>" not in html
+    assert '<td class="num">1.75</td>' in html            # 35 fish / 20 anglers
+    # CTA points at Pick my trip; presets where /sd/pick has one
+    assert 'href="/sd/pick?type=multi">Find the best 2 day trip</a>' in html
     # Full Day page lists Tiny's trip but not the Newport boat
     full = (web / "sd" / "trips" / "full-day" / "index.html").read_text(encoding="utf-8")
     assert ">Tiny</a>" in full and "Far Boat" not in full
+    assert 'href="/sd/pick?type=full">Find the best full day trip</a>' in full
     # boat page links its trip length; /sd/today links the trip pages
     big = (web / "sd" / "boat" / "Big Boat (SD)" / "index.html").read_text(encoding="utf-8")
     assert '<li><a href="/sd/trips/2-day/">2 Day</a>: 6 trips</li>' in big
     assert '<a href="/sd/trips/overnight/">Overnight</a>' in (web / "sd" / "today.html").read_text(
         encoding="utf-8")
+
+
+def test_stale_pages_pruned(tmp_path):
+    web = tmp_path / "web"
+    web.mkdir()
+    (web / "index.html").write_text(INDEX_HTML, encoding="utf-8")
+    ghost = web / "sd" / "boat" / "Ghost Boat"
+    ghost.mkdir(parents=True)
+    (ghost / "index.html").write_text("old", encoding="utf-8")
+    keep = web / "sd" / "boat" / "not-a-page"           # no index.html: left alone
+    keep.mkdir()
+    generate_all_pages(_db(tmp_path), web, web / "index.html")
+    assert not ghost.exists()
+    assert keep.is_dir()
+    assert (web / "sd" / "boat" / "Big Boat (SD)" / "index.html").is_file()
+
+
+def test_prune_refuses_mass_delete(tmp_path):
+    from src.generate_pages import _prune_stale
+    boats = tmp_path / "sd" / "boat"
+    for i in range(10):
+        (boats / f"B{i}").mkdir(parents=True)
+        (boats / f"B{i}" / "index.html").write_text("x", encoding="utf-8")
+    # A run that only wrote 2 boat pages must not delete the other 8
+    pages = [{"url": "/sd/boat/B0/"}, {"url": "/sd/boat/B1/"}]
+    assert _prune_stale(tmp_path, pages) == []
+    assert len(list(boats.iterdir())) == 10
