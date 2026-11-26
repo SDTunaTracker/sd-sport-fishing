@@ -11,7 +11,7 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | S2 | `seo.js` stops overwriting prerendered `<title>`, description, canonical, og and JSON-LD on first load | shipped | `<html data-prerendered>` marker; SPA navigation still updates meta |
 | S3 | Canonical, `og:url` and sitemap use the served URL (trailing slash) | shipped | Removes "Page with redirect" for ~130 URLs |
 | S4 | Sitemap built from the *same* list as the generated pages, with real `lastmod` (last trip date) | shipped | |
-| S5 | `www.thetunatracker.com` returns 522. Add it as a Pages custom domain or a 301 Redirect Rule to the apex | **user** | Cloudflare dashboard |
+| S5 | `www.thetunatracker.com` returned 522 (about 9% of requests, the whole 5xx rate). 301 Redirect Rule to the apex | done (user) | shipped 2026-11-25: Redirect Rule 301s `www.*` to the apex, path and query kept |
 | S6 | Prerender static HTML for `/sd/today` and `/sd/boats`: last 3 report days by landing (every species landed), boat directory | done (claude/seo-2) | `web/sd/today.html` / `boats.html`; CF serves `x.html` at `/x` and `_redirects` wins over static files, so those two rewrites are gone |
 | S6b | Prerender `/` (home) | todo | `index.html` is hand-edited source, so this needs a generated copy or markers the pipeline fills; coordinate with UX |
 | S7 | Search Console + Bing setup; sitemap submit; URL Inspection "View tested page" on `/sd/today` + one boat page to confirm S1/S6 | **user** | See AUDIT §4 |
@@ -27,6 +27,9 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | S12 | Boat landing = landing of the most recent trip | shipped | 27 boats moved landings |
 | S13 | Species pages: "last 14 days" block (boats and counts) | done (claude/seo-2) | Species queries now SD-only, which also removed links to OC/LA boats with no page |
 | S14 | Sibling links on boat pages (other boats at the landing) | done (claude/seo-2) | Up to 12, 5+ trips, most recent first |
+| S29 | Generated pages had no Google Analytics tag or web fonts (only `index.html` has them) | done (claude/seo-2) | Visits landing on boat/landing/species pages weren't counted |
+| S30 | Species pages: the SPA has no species view and redirected visitors to `/sd/today` | done (claude/seo-2) | Species and trip pages are now static only, with a plain site nav. Styling: ask UX |
+| S31 | App landing view shows the slug ("hm-landing") as its heading on `/sd/landing/<slug>/` | coord (app-dev) | Visitors see the app, not the static page there |
 | S28 | Stale `web/sd/boat/Bluefin/` page: the boat has no trips, and the generator never deletes old pages | todo | Delete pages not regenerated in a run (and keep them out of the sitemap) |
 | S15 | Consistent metric with the app (exclude half-days; mean over all trips, not only nonzero) plus a methodology page | coord (app/UX) | Numbers on pages must match the app |
 
@@ -35,7 +38,7 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | # | Item | Status | Notes |
 |---|---|---|---|
 | S16 | `/sd/report/`: rolling 7-day "San Diego fishing report this week" | todo | Plus a weekly archive capped at 12 indexed weeks |
-| S17 | `/sd/trips/<length>/` for Overnight, 1.5, 2, 3 Day and Full Day | todo | Catch per angler by month, boats that run it |
+| S17 | `/sd/trips/<length>/` for Full Day, Overnight, 1.5, 2, 2.5, 3 Day | done (claude/seo-2) | Last 14 days, boats that run it (3 yrs, 10+ trips), catch by month ("not a forecast") |
 | S18 | `/sd/best-boats/`: leaderboard with methodology | todo | |
 
 ## P2: performance and polish
@@ -53,6 +56,7 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | S27 | PageSpeed Insights run on `/sd/today` and a boat page (no account needed) | **user** | API quota was exhausted from here |
 
 ## Done log
+- 2026-11-25: S5 www redirect live (user). S17 trip pages, S29 GA tag on generated pages, S30 static species/trip pages on `claude/seo-2`.
 - 2026-11-25: S6 (/sd/today, /sd/boats), S13, S14 on `claude/seo-2`; catch tables show the full catch (`full_catch`). PRs #2 and #3 merged.
 - 2026-11-24: brand name → "Tunatracker" in titles, OG, site_name and schema (alternateName keeps the old names); DOMAIN_MIGRATION.md contingency plan.
 - 2026-11-24: audit written; S1–S4, S8–S12 implemented on `claude/seo-d3e39f` (not pushed).
