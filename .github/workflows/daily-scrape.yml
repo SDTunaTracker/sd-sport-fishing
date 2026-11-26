@@ -56,6 +56,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Pull private data from R2
+        id: r2
+        # The repo is public; tracker.db lives in a private Cloudflare R2 bucket (scripts/r2db.py).
+        # Until the R2 secrets exist this is a no-op and the repo copy is used.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          if python scripts/r2db.py configured; then
+            echo "on=true" >> $GITHUB_OUTPUT
+            python scripts/r2db.py pull tracker.db
+          else
+            echo "on=false" >> $GITHUB_OUTPUT
+            echo "R2 not configured: using the files committed in the repo."
+            for f in tracker.db; do
+              # After the cutover the DBs are no longer in git: never run (and
+              # create a fresh empty DB) without them.
+              [ -f "$f" ] || { echo "::error title=R2::$f is not in the repo and R2 is not configured"; exit 1; }
+            done
+          fi
+
       - name: Decide run mode
         id: mode
         run: |
@@ -213,13 +236,26 @@ jobs:
           echo "admin push: HTTP $code"; cat /tmp/admin-push.txt || true; echo
           if [ "$code" != "200" ]; then echo "::warning::Admin data push failed (HTTP $code)"; fi
 
+      - name: Push private data to R2
+        if: steps.r2.outputs.on == 'true'
+        # Conditional put on the ETag from the pull: if anything else wrote the
+        # file meanwhile this fails (exit 3) instead of overwriting it.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python scripts/r2db.py push tracker.db
+
       - name: Commit and push updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
-          # Per-region data files (data-region-oc_la.js, ...) from src/export.py.
+          # Only public outputs once tracker.db lives in R2.
+          git add web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
+          # Per-region data files (data-region-oc_la.js, data-region-sfbay.js; PRs #6/#7).
           if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi
+          if [ "${{ steps.r2.outputs.on }}" != "true" ]; then git add tracker.db; fi
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

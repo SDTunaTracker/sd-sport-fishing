@@ -14,6 +14,12 @@ on:
         default: '7200'
         required: false
 
+# One run at a time: overlapping runs would both pull and push
+# data/ais-discoveries.json.
+concurrency:
+  group: ais-discovery
+  cancel-in-progress: false
+
 jobs:
   discover:
     runs-on: ubuntu-latest
@@ -35,7 +41,25 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install "websockets>=13,<17"
+        run: pip install "websockets>=13,<17" "boto3>=1.36" "python-dotenv>=1.0"
+
+      - name: Pull private data from R2
+        id: r2
+        # data/ais-discoveries.json holds positions of every vessel seen (not just ours), so it is private.
+        # Until the R2 secrets exist this is a no-op and the repo copy is used.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          if python scripts/r2db.py configured; then
+            echo "on=true" >> $GITHUB_OUTPUT
+            python scripts/r2db.py pull data/ais-discoveries.json --allow-missing
+          else
+            echo "on=false" >> $GITHUB_OUTPUT
+            echo "R2 not configured: using the files committed in the repo."
+          fi
 
       - name: Run AIS discovery
         env:
@@ -89,11 +113,23 @@ jobs:
           print(f"Generated {out_path}: {len(positions)} vessels")
           EOF
 
+      - name: Push private data to R2
+        if: steps.r2.outputs.on == 'true'
+        # Conditional put on the ETag from the pull: if anything else wrote the
+        # file meanwhile this fails (exit 3) instead of overwriting it.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python scripts/r2db.py push data/ais-discoveries.json
+
       - name: Commit discoveries
         run: |
           git config user.name "Tuna Tracker AIS Bot"
           git config user.email "bot@thetunatracker.com"
-          git add -A
+          git add web/ais_positions.json
+          if [ "${{ steps.r2.outputs.on }}" != "true" ]; then git add data/ais-discoveries.json; fi
           if git diff --staged --quiet; then
             echo "nothing new to commit"
           else

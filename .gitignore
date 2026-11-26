@@ -27,3 +27,9 @@ data/.mmsi-search-cache.json
 tracker.db.*
 tracker_*.db
 tracker_dump.sql
+
+# scripts/r2db.py lock state (ETags of the last pull)
+.r2-state.json
+*.r2-download
+*.db.local-*
+*.json.local-*

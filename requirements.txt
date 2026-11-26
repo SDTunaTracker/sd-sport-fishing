@@ -13,3 +13,4 @@ tzdata>=2024.1
 selenium>=4.0
 seleniumbase>=4.0
 webdriver-manager>=4.0
+boto3>=1.36          # scripts/r2db.py: private data in Cloudflare R2 (conditional puts)
