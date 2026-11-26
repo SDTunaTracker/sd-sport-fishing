@@ -1,6 +1,6 @@
 {
  "type": "FeatureCollection",
- "generated_at": "2026-11-26T04:00:26Z",
+ "generated_at": "2026-11-26T09:01:12Z",
  "label": "Recent forum reports by spot",
  "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
  "window_days": 14,
@@ -9,6 +9,54 @@
  "attribution": "Spot list courtesy SWYC Anglers",
  "regions_note": "properties.region: san_diego | oc_la | both, from where the point is.",
  "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.39165,
+     32.59085
+    ]
+   },
+   "properties": {
+    "id": "9-mile-bank",
+    "name": "9 Mile Bank",
+    "position": "spot",
+    "region": "san_diego",
+    "precision_nm": 2.0,
+    "reports_7d": 2,
+    "reports_14d": 2,
+    "last_report": "2026-11-24",
+    "species": {
+     "other": 2,
+     "yellowfin": 1
+    },
+    "quality": {
+     "wide_open": 1,
+     "slow": 1,
+     "none": 2
+    },
+    "kinds": {
+     "bite": 5,
+     "conditions": 2
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/9-mile-swordfishing-with-datsnasty-trying-to-bust-a-nickel.872201/",
+      "title": "9 mile Swordfishing with Dats'nasty trying to Bust a Nickel",
+      "date": "2026-11-24",
+      "feed": "bd-socal-offshore"
+     },
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
+      "title": "Yellowfin Repellant",
+      "date": "2026-11-22",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
   {
    "type": "Feature",
    "geometry": {
@@ -95,6 +143,44 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
+     -117.4886,
+     32.7
+    ]
+   },
+   "properties": {
+    "id": "178",
+    "name": "178",
+    "position": "spot",
+    "region": "san_diego",
+    "precision_nm": 2.0,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-24",
+    "species": {
+     "yellowfin": 1
+    },
+    "quality": {
+     "none": 1
+    },
+    "kinds": {
+     "bite": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/full-blown-baby-yft-assault.872639/",
+      "title": "Full-blown baby yft assault",
+      "date": "2026-11-24",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
      -117.58,
      32.4483
     ]
@@ -135,38 +221,30 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -117.39165,
-     32.59085
+     -117.9725,
+     32.655
     ]
    },
    "properties": {
-    "id": "9-mile-bank",
-    "name": "9 Mile Bank",
+    "id": "43-fathom-spot",
+    "name": "43 (Fathom Spot)",
     "position": "spot",
     "region": "san_diego",
     "precision_nm": 2.0,
     "reports_7d": 1,
     "reports_14d": 1,
-    "last_report": "2026-11-22",
-    "species": {
-     "yellowfin": 1,
-     "other": 1
-    },
-    "quality": {
-     "wide_open": 1,
-     "slow": 1,
-     "none": 1
-    },
+    "last_report": "2026-11-25",
+    "species": {},
+    "quality": {},
     "kinds": {
-     "bite": 3,
-     "conditions": 1
+     "bite": 1
     },
     "water_temp_f": null,
     "sources": [
      {
-      "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
-      "title": "Yellowfin Repellant",
-      "date": "2026-11-22",
+      "url": "https://www.bdoutdoors.com/forums/threads/is-it-a-albacore.872664/",
+      "title": "Is it a Albacore?",
+      "date": "2026-11-25",
       "feed": "bd-socal-offshore"
      }
     ]
@@ -294,6 +372,49 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
+     -117.2615,
+     32.6633
+    ]
+   },
+   "properties": {
+    "id": "pt:32.6633,-117.2615",
+    "name": "New Point Loma Lighthouse",
+    "position": "estimate",
+    "region": "san_diego",
+    "precision_nm": 1.0,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-24",
+    "species": {
+     "yellowfin": 1
+    },
+    "quality": {
+     "wide_open": 1
+    },
+    "kinds": {
+     "bite": 1,
+     "conditions": 1,
+     "offset": 1
+    },
+    "water_temp_f": {
+     "min": 73.5,
+     "max": 73.5
+    },
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-november-24th.872655/",
+      "title": "Yellowfin-November 24th",
+      "date": "2026-11-24",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
      -117.2599,
      32.6243
     ]
@@ -328,6 +449,44 @@
       "url": "https://www.bdoutdoors.com/forums/threads/nat-geo.872328/",
       "title": "Nat Geo",
       "date": "2026-11-12",
+      "feed": "bd-socal-offshore"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.6895,
+     33.3377
+    ]
+   },
+   "properties": {
+    "id": "pt:33.3377,-117.6895",
+    "name": "San Clemente Artificial Reef",
+    "position": "estimate",
+    "region": "both",
+    "precision_nm": 1.75,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-24",
+    "species": {},
+    "quality": {},
+    "kinds": {
+     "conditions": 2,
+     "offset": 1
+    },
+    "water_temp_f": {
+     "min": 67.0,
+     "max": 67.0
+    },
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-november-24th.872655/",
+      "title": "Yellowfin-November 24th",
+      "date": "2026-11-24",
       "feed": "bd-socal-offshore"
      }
     ]

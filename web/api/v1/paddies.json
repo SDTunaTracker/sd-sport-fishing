@@ -1,6 +1,6 @@
 {
-  "build": "4aa4b00",
-  "generated_at": "2026-11-26T04:00:25Z",
+  "build": "8399ed5",
+  "generated_at": "2026-11-26T09:01:12Z",
   "window_days": 14,
   "banks": {
     "double-rigs-reef": {
@@ -24,5 +24,5 @@
       ]
     }
   },
-  "unresolved": 1
+  "unresolved": 2
 }
