@@ -712,8 +712,9 @@ function ChecklistPopover({ options, value, onChange, onClose, allLabel }) {
 function TopSearchBar({ selMonth, setSelMonth, tripMonths,
                         selLandings, setSelLandings, selLengths, setSelLengths,
                         openPop, setOpenPop, regions }) {
+  // Full month on desktop, "Nov 2026" on phones so the three fields fit.
   const monthLabel = selMonth
-    ? `${MONTH_NAMES_FULL[selMonth.month]} ${selMonth.year}`
+    ? <><span className="tp-long">{MONTH_NAMES_FULL[selMonth.month]} {selMonth.year}</span><span className="tp-short">{MONTH_NAMES_FULL[selMonth.month].slice(0, 3)} {selMonth.year}</span></>
     : 'Any Month';
   const landingLabel = selLandings === 'all' ? 'All Landings'
     : Array.isArray(selLandings) ? `${selLandings.length} selected` : 'All Landings';

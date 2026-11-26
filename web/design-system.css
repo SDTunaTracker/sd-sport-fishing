@@ -789,3 +789,44 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 /* Trip Planner: Pick my trip between the title and the search bar */
 .tp-pick { margin: 0 0 20px; }
 .tp-pick .pk-title { font-size: 20px; margin-bottom: 14px; }
+
+/* Floating Pick my trip pill: Trip Planner on phones only */
+.pk-fab { display: none; }
+@media (max-width: 760px) {
+  .pk-fab { display: inline-flex; align-items: center; gap: 10px; position: fixed; z-index: 900;
+    left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    height: 50px; padding: 0 22px; border-radius: 999px; background: var(--pine); color: #fff;
+    font: 600 15px var(--sans); text-decoration: none; box-shadow: 0 6px 20px rgba(23,51,44,.28); }
+  .pk-fab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(207,106,60,.45), 0 6px 20px rgba(23,51,44,.28); }
+  .pk-fab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  /* Room under the last card so the pill and chat bubble never cover it (50 + 16 + 16). */
+  .main-content[data-screen-label="tripplanner"] { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Trip Planner search bar: three fields fit at 375 (Trip Length was cut off) */
+.tp-search-field-wrap { min-width: 0; }
+.tp-search-field { min-width: 0; width: 100%; }
+.tp-short { display: none; }
+@media (max-width: 600px) {
+  .tp-search-icon { display: none; }
+  .tp-search-field { padding: 0 10px; }
+  .tp-long { display: none; }
+  .tp-short { display: inline; }
+}
+
+/* What's working: collapsed by default; tap the header to open */
+.ww-toggle { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; color: inherit; font: inherit; min-height: 44px; }
+.ww-toggle:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 8px; }
+.ww-toggle-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ww-toggle .ww-title { display: block; font: 600 18px/1.3 var(--serif); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0; }
+.ww-toggle .ww-sub { display: block; margin-top: 2px; }
+.ww-chev { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2); font-size: 14px; }
+.ww-toggle:hover .ww-chev { border-color: var(--ink-2); }
+.ww-chev svg { transition: transform .15s ease; }
+.ww-card.open .ww-chev svg { transform: rotate(180deg); }
+.ww-card:not(.open) { padding-bottom: 16px; }
+.ww-card.open .ww-top { margin-top: 14px; }
+@media (max-width: 600px) {
+  /* Tabs wrap instead of clipping "1.5 to 3.5 day" at the edge */
+  .ww-tabs { flex-wrap: wrap; overflow: visible; }
+}

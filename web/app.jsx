@@ -535,6 +535,7 @@ function App() {
       {isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
 
       {route.view === 'tripplanner' && !isSfbay && regionDataReady && <ChatBot pageContext={pageContext}/>}
+      {route.view === 'tripplanner' && window.PickFab && !isSfbay && regionDataReady && <PickFab navigate={navigate} regions={regions}/>}
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">

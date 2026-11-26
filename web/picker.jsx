@@ -488,6 +488,17 @@
     );
   }
 
+  // Floating "Pick my trip" pill on phones: Trip Planner only (owner,
+  // 2026-11-26). Hidden above 760px by CSS. Goes to /pick.
+  function PickFab({ navigate, regions }) {
+    return (
+      <a className="pk-fab" href={window.ttPathFromRoute ? window.ttPathFromRoute('pick', {}, regions) : '/sd/pick'}
+         onClick={e => { if (navigate) { e.preventDefault(); navigate('pick'); } }}>
+        <span className="pk-fab-dot" aria-hidden="true"/>Pick my trip
+      </a>
+    );
+  }
+
   // Own route: /sd/pick
   function PickTripView({ regions, navigate }) {
     // Deep links: ?q=<quick pick id> or ?type=full|overnight|1.5|multi|long (next 7 days).
@@ -501,5 +512,5 @@
     );
   }
 
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, HomePicker, PickTripView, ViewModeSwitch });
+  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, HomePicker, PickTripView, ViewModeSwitch, PickFab });
 })();
