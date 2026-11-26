@@ -6,6 +6,9 @@ from src.export import _write_sitemap
 from src.generate_pages import _dedupe_repeats, generate_all_pages
 
 INDEX_HTML = """<!doctype html><html><head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST"></script>
+<script>gtag('config', 'G-TEST');</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=1"><link rel="stylesheet" href="design-system.css?v=2">
 </head><body><div id="root"></div>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
@@ -57,6 +60,7 @@ def test_pages_and_sitemap(tmp_path):
     assert "H&amp;M Landing" in html.split("<title>")[1].split("</title>")[0]  # latest landing
     assert '"@type": "BreadcrumbList"' in html
     assert 'aria-hidden' not in html.split('<div id="root">')[0]
+    assert "gtag/js?id=G-TEST" in html and "fonts.googleapis.com" in html
     # no-JS fallback is injected right after data.js
     assert '<script src="data.js?v=9"></script>\n<script>if(!window.SD)' in html
     # 2026-08-01 repeats 2026-08-02's identical 2-day count -> shown once
@@ -134,3 +138,34 @@ def test_dedupe_keeps_distinct_and_zero_trips():
             dict(base, date="2026-06-28", yellowfin=0, trophy_count=0)]  # zero days kept
     assert [r["date"] for r in _dedupe_repeats(rows)] == [
         "2026-08-03", "2026-07-01", "2026-06-30", "2026-06-29", "2026-06-28"]
+
+
+def test_trip_length_pages(tmp_path):
+    web = tmp_path / "web"
+    web.mkdir()
+    (web / "index.html").write_text(INDEX_HTML, encoding="utf-8")
+    conn = _db(tmp_path)
+    conn.execute("ALTER TABLE trips ADD COLUMN trophy_per_angler REAL")
+    conn.execute("UPDATE trips SET trophy_per_angler = trophy_count * 1.0 / anglers")
+    pages = {p["url"]: p for p in generate_all_pages(conn, web, web / "index.html")}
+
+    assert pages["/sd/trips/2-day/"] == {"url": "/sd/trips/2-day/", "lastmod": "2026-08-02",
+                                         "index": True}
+    assert "/sd/trips/3-day/" not in pages               # no 3 Day trips in the data
+    html = (web / "sd" / "trips" / "2-day" / "index.html").read_text(encoding="utf-8")
+    assert '<link rel="canonical" href="https://thetunatracker.com/sd/trips/2-day/">' in html
+    assert "2 Day Fishing Trips in San Diego" in html
+    assert "Far Boat" not in html                         # OC/LA trips excluded
+    assert "not a forecast" in html
+    # The SPA has no trips view (it would redirect to /sd/today), so the page
+    # is static only, with the GA tag and a site nav
+    assert 'id="root"' not in html and "unpkg.com/react" not in html
+    assert "gtag/js?id=G-TEST" in html and 'href="/sd/boats">Boats</a>' in html
+    # Full Day page lists Tiny's trip but not the Newport boat
+    full = (web / "sd" / "trips" / "full-day" / "index.html").read_text(encoding="utf-8")
+    assert ">Tiny</a>" in full and "Far Boat" not in full
+    # boat page links its trip length; /sd/today links the trip pages
+    big = (web / "sd" / "boat" / "Big Boat (SD)" / "index.html").read_text(encoding="utf-8")
+    assert '<li><a href="/sd/trips/2-day/">2 Day</a>: 6 trips</li>' in big
+    assert '<a href="/sd/trips/overnight/">Overnight</a>' in (web / "sd" / "today.html").read_text(
+        encoding="utf-8")

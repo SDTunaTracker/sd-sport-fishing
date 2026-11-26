@@ -105,6 +105,18 @@ def _parse_index(index_html: str) -> dict:
     vessel_m = re.search(r'<script>window\.VESSEL_WORKER_URL[^<]+</script>', index_html)
     vessel_script = vessel_m.group(0) if vessel_m else "<script>window.VESSEL_WORKER_URL = '';</script>"
 
+    # Google Analytics tag and web fonts from <head>. Without these, visits that
+    # land on a generated page aren't counted and the fallback text renders in
+    # system fonts.
+    gtag_m = re.search(
+        r'<script async src="https://www\.googletagmanager\.com/gtag/js[^"]*"></script>\s*'
+        r'<script>.*?</script>', index_html, re.S)
+    gtag = gtag_m.group(0) if gtag_m else ""
+    if not gtag:
+        log.warning("generate_pages: Google tag not found in index.html")
+    fonts = "\n".join(re.findall(r'<link [^>]*href="https://fonts\.(?:googleapis|gstatic)\.com[^>]*>',
+                                 index_html))
+
     # All script tags from React CDN onward (to end of body)
     react_start = index_html.find('<script src="https://unpkg.com/react@')
     body_end = index_html.rfind('</body>')
@@ -123,6 +135,8 @@ def _parse_index(index_html: str) -> dict:
         clerk_sdk=clerk_sdk,
         vessel_script=vessel_script,
         body_scripts=body_scripts,
+        gtag=gtag,
+        fonts=fonts,
     )
 
 
@@ -286,7 +300,7 @@ def _species_stats(conn: sqlite3.Connection, col: str) -> dict:
 # ── Shared HTML head/body helpers ─────────────────────────────────────────────
 
 def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
-          shared: dict, noindex: bool = False) -> str:
+          shared: dict, noindex: bool = False, app: bool = True) -> str:
     """Build the <head> block for a generated page.
 
     json_ld: a dict, a list of dicts, or None.
@@ -304,6 +318,13 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
         for ld in ld_list
     )
     robots = '<meta name="robots" content="noindex, follow">\n' if noindex else ""
+    # Static-only pages (app=False) skip the SPA's CSS and scripts.
+    app_assets = (
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">\n'
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">\n'
+        '<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">\n'
+    ) if app else ""
+    app_scripts = f"{shared['vessel_script']}\n{shared['clerk_sdk']}\n" if app else ""
 
     # data-prerendered tells web/seo.js not to overwrite this head on first load.
     return f"""<!doctype html>
@@ -329,14 +350,11 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-{ld_block}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
-<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
-<link rel="stylesheet" href="styles.css?v={shared['styles_ver']}">
+{ld_block}{shared.get('gtag', '')}
+{shared.get('fonts', '')}
+{app_assets}<link rel="stylesheet" href="styles.css?v={shared['styles_ver']}">
 <link rel="stylesheet" href="design-system.css?v={shared['ds_ver']}">
-{shared['vessel_script']}
-{shared['clerk_sdk']}
-</head>"""
+{app_scripts}</head>"""
 
 
 def _esc(s: str) -> str:
@@ -344,8 +362,30 @@ def _esc(s: str) -> str:
     return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def _body_wrap(seo_content: str, shared: dict) -> str:
-    """Build the <body> block."""
+_SITE_NAV = " · ".join(
+    f'<a href="{href}">{label}</a>' for label, href in [
+        (f"<strong>{SITE_NAME}</strong>", "/"), ("Fish Counts", "/sd/today"),
+        ("Boats", "/sd/boats"), ("Analytics", "/sd/analytics/overview"),
+        ("Trip Planner", "/sd/tripplanner"),
+    ])
+
+
+def _body_wrap(seo_content: str, shared: dict, app: bool = True) -> str:
+    """Build the <body> block.
+
+    app=False is for routes the SPA has no view for (species, trip lengths):
+    the app would redirect those visitors to /sd/today, so they get the static
+    page with a plain site nav instead, and the SPA isn't loaded.
+    """
+    if not app:
+        return f"""
+<body>
+<div id="seo-static">
+<header><p>{_SITE_NAV}</p></header>
+{seo_content}
+</div>
+</body>
+</html>"""
     return f"""
 <body>
 <div id="seo-static">
@@ -385,6 +425,11 @@ def _breadcrumb_ld(items: list[tuple[str, str]]) -> dict:
 def _fmt_date(iso: str) -> str:
     d = date.fromisoformat(iso[:10])
     return f"{_MONTH_NAMES[d.month]} {d.day}, {d.year}"
+
+
+def _trip_len_link(tl: str) -> str:
+    slug = {t: sl for t, _, sl in TRIP_LENGTHS}.get(tl)
+    return f'<a href="/sd/trips/{slug}/">{_esc(tl)}</a>' if slug else _esc(tl)
 
 
 def _catch_str(r: dict) -> str:
@@ -473,7 +518,7 @@ def _boat_page_html(boat: str, landing: str, stats: dict,
     lengths_section = ""
     if stats["trip_lengths"]:
         lengths_section = "<section><h2>Trips run</h2><ul>" + "".join(
-            f"<li>{_esc(tl)}: {n} trips</li>" for tl, n in stats["trip_lengths"][:6]
+            f"<li>{_trip_len_link(tl)}: {n} trips</li>" for tl, n in stats["trip_lengths"][:6]
         ) + "</ul></section>"
 
     months_section = ""
@@ -722,8 +767,8 @@ def _species_page_html(name: str, slug: str, col: str, stats: dict,
 
     head = _head(title, desc, canonical,
                  {"title": title, "description": desc},
-                 json_ld, shared)
-    return head + _body_wrap(seo_content, shared)
+                 json_ld, shared, app=False)
+    return head + _body_wrap(seo_content, shared, app=False)
 
 
 # ── /sd/today and /sd/boats ───────────────────────────────────────────────────
@@ -796,6 +841,7 @@ def _today_page_html(latest: str, trips: list[dict], shared: dict) -> str:
 {days_html}
 <section><h2>Fish counts by landing</h2><p>{landing_links}</p></section>
 <section><h2>Fish counts by species</h2><p>{species_links}</p></section>
+<section><h2>Fish counts by trip length</h2><p>{_trip_links()}</p></section>
 <p><a href="/sd/boats">All San Diego sportfishing boats →</a></p>
 </article>"""
     head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared)
@@ -843,6 +889,149 @@ def _boats_page_html(all_stats: dict[str, dict], shared: dict) -> str:
 </article>"""
     head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared)
     return head + _body_wrap(seo_content, shared)
+
+
+# ── Trip-length pages: /sd/trips/<slug>/ ──────────────────────────────────────
+# One page per common trip length ("1.5 day trip San Diego" etc.). Historical
+# numbers only; nothing here predicts future fishing.
+
+TRIP_LENGTHS: list[tuple[str, str, str]] = [
+    # (trip_length value in the DB, display name, url slug)
+    ("Full Day",  "Full Day",  "full-day"),
+    ("Overnight", "Overnight", "overnight"),
+    ("1.5 Day",   "1.5 Day",   "1-5-day"),
+    ("2 Day",     "2 Day",     "2-day"),
+    ("2.5 Day",   "2.5 Day",   "2-5-day"),
+    ("3 Day",     "3 Day",     "3-day"),
+]
+TRIP_RECENT_DAYS = 14
+TRIP_BOAT_YEARS = 3       # top-boats window
+TRIP_BOAT_MIN = 10        # trips in that window to be listed
+
+
+def _trip_stats(conn: sqlite3.Connection, tl: str) -> dict | None:
+    total, first, last = conn.execute(
+        f"SELECT COUNT(*), MIN(date), MAX(date) FROM trips "
+        f"WHERE {_SD_IN} AND trip_length=? AND trophy_count IS NOT NULL", (tl,)).fetchone()
+    if not total:
+        return None
+    since = (date.fromisoformat(last[:10]) - timedelta(days=365 * TRIP_BOAT_YEARS)).isoformat()
+    # Mean over all trips (zeros included) so the numbers aren't inflated.
+    boats = [dict(r) for r in conn.execute(f"""
+        SELECT boat, COUNT(*) AS trips,
+               ROUND(AVG(trophy_per_angler), 2) AS per_angler,
+               ROUND(100.0 * SUM(trophy_count > 0) / COUNT(*), 1) AS win_rate
+        FROM trips
+        WHERE {_SD_IN} AND trip_length=? AND date>=? AND trophy_per_angler IS NOT NULL
+        GROUP BY boat HAVING trips>=?
+        ORDER BY per_angler DESC LIMIT 15
+    """, (tl, since, TRIP_BOAT_MIN))]
+    cutoff = str(date.fromisoformat(last[:10]).year - 5)
+    monthly = [dict(r) for r in conn.execute(f"""
+        SELECT CAST(SUBSTR(date, 6, 2) AS INTEGER) AS month, COUNT(*) AS trips,
+               ROUND(AVG(trophy_per_angler), 2) AS per_angler,
+               ROUND(100.0 * SUM(trophy_count > 0) / COUNT(*), 1) AS win_rate
+        FROM trips
+        WHERE {_SD_IN} AND trip_length=? AND date>=? AND trophy_per_angler IS NOT NULL
+        GROUP BY month ORDER BY month
+    """, (tl, cutoff))]
+    _, recent = _recent_sd_trips(conn, TRIP_RECENT_DAYS, "trip_length=" + _sql_str(tl))
+    return dict(total=total, first_year=first[:4], last_date=last[:10], boats=boats,
+                monthly=monthly, recent=recent, since=since)
+
+
+def _sql_str(s: str) -> str:
+    return "'" + s.replace("'", "''") + "'"
+
+
+def _trip_links(current: str = "") -> str:
+    return " · ".join(
+        (_esc(name) if slug == current else f'<a href="/sd/trips/{slug}/">{_esc(name)}</a>')
+        for _, name, slug in TRIP_LENGTHS)
+
+
+def _trip_page_html(name: str, slug: str, st: dict, shared: dict) -> str:
+    canonical = f"/sd/trips/{slug}/"
+    lower = name.lower()
+    title = f"{name} Fishing Trips in San Diego — Boats, Catch & Best Months | {SITE_NAME}"
+    desc = (f"San Diego {lower} sportfishing trips: recent fish counts, which boats run "
+            f"{lower} trips and what they caught, and catch by month. "
+            f"{st['total']:,} trips since {st['first_year']}.")
+    crumbs = [(SITE_NAME, "/"), (f"{name} Trips", "")]
+    json_ld = [_breadcrumb_ld(crumbs), {
+        "@context": "https://schema.org", "@type": "WebPage", "name": title,
+        "description": desc, "url": f"{SITE_URL}{canonical}", "dateModified": st["last_date"],
+    }]
+
+    recent = st["recent"]
+    if recent:
+        shown = recent[:25]
+        rows = "".join(
+            f"<tr><td>{_fmt_date(r['date'])}</td>"
+            f"<td><a href=\"{page_url('boat', r['boat'])}\">{_esc(r['boat'])}</a></td>"
+            f"<td>{_landing_link(r['landing'])}</td><td>{r['anglers'] or ''}</td>"
+            f"<td>{_esc(_catch_str(r))}</td></tr>\n"
+            for r in shown)
+        recent_section = f"""<section>
+<h2>{_esc(name)} fish counts: last {TRIP_RECENT_DAYS} days</h2>
+<table>
+  <caption>{len(shown)} most recent {_esc(lower)} trips from San Diego landings</caption>
+  <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th>Anglers</th><th>Catch</th></tr></thead>
+  <tbody>
+{rows}  </tbody>
+</table>
+</section>"""
+    else:
+        recent_section = (f"<p>No {_esc(lower)} trips reported in the last "
+                          f"{TRIP_RECENT_DAYS} days.</p>")
+
+    boats_section = ""
+    if st["boats"]:
+        rows = "".join(
+            f"<tr><td><a href=\"{page_url('boat', b['boat'])}\">{_esc(b['boat'])}</a></td>"
+            f"<td>{b['trips']}</td><td>{b['per_angler']}</td><td>{b['win_rate']}%</td></tr>\n"
+            for b in st["boats"])
+        boats_section = f"""<section>
+<h2>Boats that run {_esc(lower)} trips</h2>
+<table>
+  <caption>Last {TRIP_BOAT_YEARS} years, boats with at least {TRIP_BOAT_MIN} {_esc(lower)} trips,
+    by average trophy fish per angler per trip (bluefin, yellowfin, yellowtail, dorado)</caption>
+  <thead><tr><th>Boat</th><th>Trips</th><th>Trophy fish per angler</th><th>Trips with trophy fish</th></tr></thead>
+  <tbody>
+{rows}  </tbody>
+</table>
+</section>"""
+
+    month_section = ""
+    if st["monthly"]:
+        rows = "".join(
+            f"<tr><td>{_MONTH_NAMES[m['month']]}</td><td>{m['trips']}</td>"
+            f"<td>{m['per_angler']}</td><td>{m['win_rate']}%</td></tr>\n"
+            for m in st["monthly"] if 1 <= m["month"] <= 12)
+        month_section = f"""<section>
+<h2>{_esc(name)} catch by month</h2>
+<table>
+  <caption>All San Diego {_esc(lower)} trips, last 5 years. Past seasons, not a forecast.</caption>
+  <thead><tr><th>Month</th><th>Trips</th><th>Trophy fish per angler</th><th>Trips with trophy fish</th></tr></thead>
+  <tbody>
+{rows}  </tbody>
+</table>
+</section>"""
+
+    seo_content = f"""<article>
+{_breadcrumb(crumbs)}
+<h1>{_esc(name)} Fishing Trips in San Diego</h1>
+<p>Fish counts and boat history for {_esc(lower)} sportfishing trips from San Diego's
+   landings: {st['total']:,} trips reported since {st['first_year']}, the most recent on
+   {_fmt_date(st['last_date'])}. Catch is fish landed; released fish are not counted.</p>
+{recent_section}
+{boats_section}
+{month_section}
+<section><h2>Other trip lengths</h2><p>{_trip_links(slug)}</p></section>
+<p><a href="/sd/today">Latest San Diego fish counts →</a></p>
+</article>"""
+    head = _head(title, desc, canonical, {"title": title, "description": desc}, json_ld, shared, app=False)
+    return head + _body_wrap(seo_content, shared, app=False)
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
@@ -947,6 +1136,18 @@ def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[di
                           "index": True})
         except Exception as e:
             log.warning("Species page failed for %r: %s", name, e)
+
+    # ── Trip-length pages ─────────────────────────────────────────────────────
+    for tl, name, slug in TRIP_LENGTHS:
+        try:
+            st = _trip_stats(conn, tl)
+            if not st:
+                continue
+            _write(web_dir, f"sd/trips/{slug}/index.html", _trip_page_html(name, slug, st, shared))
+            pages.append({"url": f"/sd/trips/{slug}/", "lastmod": st["last_date"],
+                          "index": st["total"] >= MIN_TRIPS_INDEX})
+        except Exception as e:
+            log.warning("Trip page failed for %r: %s", tl, e)
 
     # ── /sd/today and /sd/boats ───────────────────────────────────────────────
     try:
