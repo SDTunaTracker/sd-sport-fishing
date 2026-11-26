@@ -20,7 +20,8 @@ function trip(boat, daysAgo, fish, anglers = 20, extra = {}) {
 function sched(boat, inDays, extra = {}) {
   return { boat, landing: extra.landing || 'H&M Landing', tripLength: extra.tripLength || 'Overnight', tripLengthDays: extra.tripLengthDays || 1,
            departureAt: dep(inDays), returnAt: dep(inDays + 1, '18:00'), price: extra.price ?? 360, capacity: 30,
-           openSpots: extra.openSpots ?? 10, tripStatus: extra.tripStatus ?? null, sourceId: `${boat}-${inDays}` };
+           openSpots: extra.openSpots ?? 10, tripStatus: extra.tripStatus ?? null, sourceId: `${boat}-${inDays}`,
+           ...(extra.region ? { region: extra.region } : {}) };
 }
 const data = (schedule, trips, more = {}) => ({ schedule, trips, landingsFor: () => null, bookingUrl: (t) => `https://book/${t.sourceId}`, ...more });
 
@@ -116,7 +117,8 @@ test('OC/LA counts every landed species', () => {
     trip('Few', 4, 5, 20, { region: 'oc_la', tripLength: 'Full Day', tripLengthDays: 0.75, fullCatch: fc(2) }),
     trip('Few', 6, 5, 20, { region: 'oc_la', tripLength: 'Full Day', tripLengthDays: 0.75, fullCatch: fc(2) }),
   ];
-  const s = [sched('Rock', 2, { tripLength: 'Full Day', tripLengthDays: 0.75 }), sched('Few', 2, { tripLength: 'Full Day', tripLengthDays: 0.75 })];
+  const oc = { tripLength: 'Full Day', tripLengthDays: 0.75, region: 'oc_la' };
+  const s = [sched('Rock', 2, oc), sched('Few', 2, oc)];
   const r = P.pickTrips({ type: 'full', region: 'oc_la', now: NOW }, data(s, trips));
   assert.equal(r.best.boat, 'Rock');
   assert.equal(r.best.noun, 'fish');
@@ -134,7 +136,7 @@ test('limit-rate metric (SF Bay rows carry .rate)', () => {
   const sf = (rate) => ({ rate, region: 'sf_bay' });
   const trips = [trip('Hi', 2, 0, 20, sf(0.9)), trip('Hi', 4, 0, 20, sf(0.95)), trip('Hi', 6, 0, 20, sf(0.85)),
                  trip('Lo', 2, 0, 20, sf(0.3)), trip('Lo', 4, 0, 20, sf(0.4)), trip('Lo', 6, 0, 20, sf(0.35))];
-  const r = P.pickTrips({ type: 'overnight', region: 'sf_bay', now: NOW }, data([sched('Lo', 2), sched('Hi', 2)], trips, { metric: 'limitRate' }));
+  const r = P.pickTrips({ type: 'overnight', region: 'sf_bay', now: NOW }, data([sched('Lo', 2, { region: 'sf_bay' }), sched('Hi', 2, { region: 'sf_bay' })], trips, { metric: 'limitRate' }));
   assert.equal(r.best.boat, 'Hi');
   assert.match(r.best.reason, /90% of limits/);
 });
@@ -211,4 +213,15 @@ test('reason uses the trip label for non-standard lengths', () => {
   const trips = [trip('Q', 2, 20, 20, tl), trip('Q', 4, 20, 20, tl), trip('Q', 6, 20, 20, tl)];
   const r = P.pickTrips({ type: 'full', now: NOW }, data([sched('Q', 2, tl)], trips));
   assert.match(r.best.reason, /on 3 3\/4 day trips/);
+});
+
+test('a region with no landing list never borrows San Diego rows', () => {
+  const trips = [trip('SD', 2, 40), trip('SD', 4, 40), trip('SD', 6, 40)];
+  const sdRow = { ...sched('SD', 2) };
+  const r = P.pickTrips({ type: 'overnight', region: 'sf_bay', now: NOW }, data([sdRow], trips));
+  assert.equal(r.best, null);
+  assert.equal(r.scheduled, 0);
+  assert.equal(r.reason, 'no-schedule');
+  assert.equal(P.whatsBiting({ region: 'sf_bay', now: NOW }, data([], trips)).trips, 0);
+  assert.equal(P.pickTrips({ type: 'overnight', region: 'san_diego', now: NOW }, data([sdRow], trips)).best.boat, 'SD');
 });

@@ -165,6 +165,15 @@
     };
   }
 
+  // Row-level region test when no landing list is available. Rows without a
+  // region field are base-region (San Diego) rows, never another region's.
+  function regionMatch(t, region) {
+    if (region === 'all') return true;
+    var r = t.region || 'san_diego';
+    if (region === 'all_socal') return r !== 'sf_bay';
+    return r === region;
+  }
+
   function seatsOf(t) {
     if (t.openSpots != null) return t.openSpots;
     if (t.capacity != null) return t.capacity - (t.reservedSpots || 0);
@@ -243,9 +252,7 @@
     var landings = D.landingsFor(region);
     var inRegion = function (t) {
       if (landings) return landings.indexOf(t.landing) >= 0;
-      if (!t.region || region === 'all') return true;
-      if (region === 'all_socal') return t.region !== 'sf_bay';
-      return t.region === region;
+      return regionMatch(t, region);
     };
     var fish = fishFn(query.species, region);
     var rateOf = metric === 'limitRate'
@@ -415,7 +422,7 @@
     for (var i = 0; i < D.trips.length; i++) {
       var t = D.trips[i];
       if (!t || !t.date || t.date < prevStart || t.date > nowDay) continue;
-      if (landings ? landings.indexOf(t.landing) < 0 : (t.region && region !== 'all' && t.region !== region)) continue;
+      if (landings ? landings.indexOf(t.landing) < 0 : !regionMatch(t, region)) continue;
       if (!(t.anglers > 0)) continue;
       var isCur = t.date >= start;
       var bucket = isCur ? cur : prev, counts = isCur ? curC : prevC;
