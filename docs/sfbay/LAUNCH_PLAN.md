@@ -97,7 +97,7 @@ A winter week of no-count days raises nothing (tested). 🤝 Data-health session
 
 ### 5. Launch
 
-- **Flag:** `SFBAY_PUBLIC: false` in `web/feature-flags.js`, which drives `SHOW_SFBAY`.
+- **Flag:** `SFBAY_PUBLIC: true` since 2026-11-26 in `web/feature-flags.js`, which drives `SHOW_SFBAY`.
 - **Soft-launch URL** (works as soon as this PR is deployed and the data file exists):
   `https://thetunatracker.com/?preview_sfbay=true`, then pick **SF Bay Area** in the header. The preview sticks for
   the browser tab (sessionStorage). `?preview_sfbay=false` turns it off. Pages are `noindex` during the preview.
@@ -111,8 +111,8 @@ A winter week of no-count days raises nothing (tested). 🤝 Data-health session
 | 2 | Run the 2019+ backfill and land it | Done. Shipped as the committed seed `data/sfbay_backfill.jsonl.gz` (path a; the R2 cutover is on hold). The daily job loads it insert-only on its first run after merge. | ✅ |
 | 3 | Re-check six-pack classification on the full history; add overrides if needed | Done 2026-11-26. The rule flags 6 boats. The owner chose to keep Argo and Scallywag (peak 8) ranked, so both are pinned as open-party. | ✅ |
 | 4 | Verify `BAG_LIMITS` against current CDFW regs | Done 2026-11-26. All match the 2026 booklet except CA halibut, now corrected to 2 north of Pt Sur. | ✅ |
-| 5 | Soft launch on `?preview_sfbay=true` for a week; review the leaderboards with a NorCal angler | owner | ⬜ |
-| 6 | Flip PR: `SFBAY_PUBLIC: true`, `/sfbay/*` rewrites in `web/_redirects`, SEO prerender + sitemap | this session + SEO | ⬜ |
+| 5 | Soft launch on `?preview_sfbay=true` for a week; review the leaderboards with a NorCal angler | Skipped: the owner chose a direct public launch on 2026-11-26. | ➖ |
+| 6 | Flip PR: `SFBAY_PUBLIC: true`, `/sfbay/*` rewrites in `web/_redirects`, SEO prerender + sitemap | Done 2026-11-26 (owner: "SF fine to open for everyone", no preview week). Flag on, rewrites in, `/sfbay/today`, `/boats` and `/landings` added to the sitemap (`src/export.py`), and the title/canonical now refresh on a region switch. **No `/sfbay/*` prerender yet** (client-rendered like OC/LA); that's an SEO follow-up. | ✅ |
 | 7 | Co-Captain NorCal block, app.json, BloodyDecks tag (can trail the launch) | 🤝 sessions | ⬜ |
 | 8 | Watch for 48 h: `sfbay:*` alerts, Cloudflare 404s on `/sfbay/*` | owner | ⬜ |
 

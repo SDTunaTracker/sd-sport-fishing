@@ -40,6 +40,10 @@
 # oc_la and these paths render San Diego); these lines can stay.
 /ocla                /   200
 /ocla/*              /   200
+# SF Bay Area (launched 2026-11-26, docs/sfbay/LAUNCH_PLAN.md). App shell only.
+# Rollback: set SFBAY_PUBLIC false in web/feature-flags.js; these lines can stay.
+/sfbay               /   200
+/sfbay/*             /   200
 # "All SoCal" (/sd+ocla) retired 2026-11-26: one region at a time.
 /sd+ocla             /sd           301
 /sd+ocla/*           /sd/:splat    301
