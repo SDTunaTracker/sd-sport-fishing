@@ -81,6 +81,7 @@ function ccDateContext() {
 // bookingKind tells the UI how honest the hand-off can be:
 //   exact_trip          — lands on that exact departure (fishingreservations.net)
 //   trip_type_calendar  — lands on the boat + trip type; user taps the date (H&M / Xola)
+//   trip_list           — the landing's upcoming-trip list; user picks the boat/date
 //   call_landing        — no online link we trust; show the landing's phone
 function ccBookingInfo(t) {
   let url = null, kind = 'call_landing';
@@ -94,6 +95,27 @@ function ccBookingInfo(t) {
       break;
     case "Fisherman's Landing":
       if (id) { url = `https://fishermanslanding.fishingreservations.net/resos/user.php?trip_id=${encodeURIComponent(id)}`; kind = 'exact_trip'; }
+      break;
+    // OC/LA landings scraped from fishingreservations (src/schedule.py). Same
+    // user.php?trip_id= page; checked 2026-11-26 (22nd Street 1089292 Freedom,
+    // Pierpoint 1090227 Enterprise 11/27 6:00 am).
+    case '22nd Street Landing':
+      if (id) { url = `https://22ndstreet.fishingreservations.net/sales/user.php?trip_id=${encodeURIComponent(id)}`; kind = 'exact_trip'; }
+      break;
+    case 'Pierpoint Landing':
+      if (id) { url = `https://pierpoint.fishingreservations.com/sales/user.php?trip_id=${encodeURIComponent(id)}`; kind = 'exact_trip'; }
+      break;
+    // Checked 2026-11-26: Ventura 1057592 Pacific Eagle 11/27, Redondo 1086605 Pescador 12/19.
+    case 'Ventura Harbor Sportfishing':
+      if (id) { url = `https://ventura.fishingreservations.com/sales/user.php?trip_id=${encodeURIComponent(id)}`; kind = 'exact_trip'; }
+      break;
+    case 'Redondo Beach Sportfishing':
+      if (id) { url = `https://redondo.fishingreservations.com/sales/user.php?trip_id=${encodeURIComponent(id)}`; kind = 'exact_trip'; }
+      break;
+    // Channel Islands' user.php?trip_id= lands on the landing's general site, not
+    // the trip (checked 2026-11-26), so send people to the trip list instead.
+    case 'Channel Islands Sportfishing':
+      url = 'https://ciscos.fishingreservations.net/sales/'; kind = 'trip_list';
       break;
     case 'H&M Landing': {
       // sourceId = "<xola experience id>@<departure iso>". H&M's trip calendar books
@@ -430,6 +452,7 @@ function buildSystemPrompt(pageContext) {
         t.docs ? `docs: ${t.docs}` : '',
         t.bookingKind === 'exact_trip' ? 'book: exact trip online'
           : t.bookingKind === 'trip_type_calendar' ? 'book: online, pick date on landing calendar'
+          : t.bookingKind === 'trip_list' ? 'book: online, pick it from the landing trip list'
           : 'book: call landing',
       ].filter(Boolean).join(' | ')).join('\n')
     : 'No upcoming trips with open spots in the next 120 days.';
@@ -626,3 +649,74 @@ function incrementChatUsage() {
 }
 
 const DAILY_LIMIT = 999; // Set to 999 until Pro auth is built
+
+// ── Quick picks (one-tap starters) ───────────────────────────────────────────
+// The chips answer instantly from the SAME picks and ranking the website uses:
+// TTPicker.QUICK_PICKS + quickQuery() + pickTrips() in trip-picker.js. So chat
+// and the site's "Pick my trip" can't disagree. No model call, no forecast
+// scores. Each pick is re-hydrated from SD.SCHEDULE via getTripCardData, so
+// seats/price/Book link match the chat's trip cards.
+// Fallback labels only (used if trip-picker.js didn't load: chips then ask the model).
+// On window: a top-level const in a classic script isn't a window property.
+window.CC_QUICK_PICKS = [
+  { label: 'Best overnight this week' },
+  { label: 'Best trip under $300' },
+  { label: 'Where are the yellowtail?' },
+  { label: 'Best full day this weekend' },
+];
+function ccQuickPickList() {
+  const P = window.TTPicker;
+  if (P && Array.isArray(P.QUICK_PICKS) && typeof P.quickQuery === 'function') {
+    return P.QUICK_PICKS.map(q => ({ intent: q.id, label: q.label, range: q.range }));
+  }
+  return window.CC_QUICK_PICKS;
+}
+
+function ccPickerRegion(regions) {
+  const r = regions || ['san_diego'];
+  if (r.includes('all_socal') || (r.includes('san_diego') && r.includes('oc_la'))) return 'all_socal';
+  return r[0] || 'san_diego';
+}
+
+// Returns { best, alternates, reason, asOf, windowLabel } with hydrated trips, or
+// null when the shared module isn't loaded (caller falls back to asking the model).
+function ccRunQuickPick(id, regions) {
+  const P = window.TTPicker;
+  if (!P || typeof P.pickTrips !== 'function' || typeof P.quickQuery !== 'function') return null;
+  const region = ccPickerRegion(regions);
+  const query = P.quickQuery(id, { region });
+  if (!query) return null;
+  const pick = (P.QUICK_PICKS || []).find(q => q.id === id) || {};
+  const pr = typeof P.presets === 'function' ? P.presets() : {};
+  const windowLabel = (pick.range === 'weekend' ? pr.weekend : pr.next7)?.label || null;
+  let r;
+  try { r = P.pickTrips(query); } catch (e) { console.warn('[quickpick]', e); return null; }
+  if (!r) return null;
+  const hydrate = a => {
+    if (!a || !a.sourceId) return null;
+    const d = getTripCardData(a.sourceId);
+    if (!d) return null;
+    const why = [a.reason];
+    if (a.advisory && a.advisory.event) why.push(`NWS ${a.advisory.event} in effect${a.advisory.ends ? ' until ' + ccPacific(a.advisory.ends)?.label : ''}. Check with the landing.`);
+    return { ...d, why: why.filter(Boolean) };
+  };
+  const best = hydrate(r.best);
+  const alternates = (r.alternates || []).map(hydrate).filter(Boolean).slice(0, 2);
+  const regionName = { san_diego: 'San Diego', oc_la: 'Orange County & LA', all_socal: 'Southern California', sf_bay: 'the SF Bay Area' }[region] || region;
+  // "Next 7 days" → "in the next 7 days"; "This weekend" → "this weekend".
+  const wl = windowLabel ? windowLabel.toLowerCase() : '';
+  const when = !wl ? 'right now' : /^next\b/.test(wl) ? `in the ${wl}` : wl;
+  const code = best ? null : (r.reason || (r.scheduled === 0 ? 'no-schedule' : 'no-match'));
+  const reason = !code ? null
+    : code === 'no-schedule' ? `We don't have trip schedules for ${regionName} yet.`
+    : code === 'no-species' ? `No boat has landed many ${(pick.species || query.species || 'of those fish').toLowerCase()} lately, so there's no trip to point you to ${when}.`
+    : `No open trips match that ${when} (as of our last update).`;
+  return { best, alternates, reason, reasonCode: code, windowLabel, asOf: window.SD?.META?.lastScrape || null };
+}
+
+// Plain-text version for chat history, so follow-up questions have context.
+function ccQuickPickHistoryText(label, res) {
+  if (!res || !res.best) return `${label}: nothing matched. ${res && res.reason ? res.reason : ''}`.trim();
+  const line = t => `${t.boat} (${t.tripId}) ${t.tripLength} ${t.departLabel}, $${t.price}, ${t.openSpots} open${t.why && t.why[0] ? ' (' + t.why[0] + ')' : ''}`;
+  return [`${label} (site ranking, observed data):`, `Best bet: ${line(res.best)}`, ...res.alternates.map(a => `Alternate: ${line(a)}`)].join('\n');
+}

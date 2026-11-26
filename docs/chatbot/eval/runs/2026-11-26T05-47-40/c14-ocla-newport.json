@@ -1,0 +1,56 @@
+{
+  "case": {
+    "id": "c14-ocla-newport",
+    "persona": "OC/LA region: no schedules for most landings, mostly non-trophy species",
+    "regions": [
+      "oc_la"
+    ],
+    "turns": [
+      "Best boats out of Newport lately?"
+    ],
+    "expect": "Names Newport Landing / Davey's Locker boats from OC/LA RECENT CATCH with all-species fish per angler, points to the landing's site to book. No trip cards, no invented trips or prices, no forecast language.",
+    "checks": [
+      {
+        "maxCards": 0,
+        "mustSay": [
+          "newport"
+        ],
+        "mustNotSay": [
+          "forecast",
+          "will (fish|bite)",
+          "bite outlook",
+          "best day to go"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Best boats out of Newport lately?",
+      "text": "Based on recent catch (last 30 days) out of Newport Landing, here's what's been producing:\n\n- **Aggressor** (Full Day): 6 trips, **6.8 fish/angler** all species — mostly whitefish (5.5/angler), some calico bass and skipjack.\n- **Patriot** (Full Day): 11 trips, **2.9 fish/angler** — whitefish, rockfish, calico, and a few yellowfin (0.3/angler).\n\nTunatracker doesn't carry Newport Landing's schedule or open spots, so head to Newport Landing's own site to see dates and book.\n\n<followups>[\"What about Davey's Locker boats?\", \"Show me OC/LA boats with open spots\", \"Which boats catch the most yellowfin lately?\"]</followups>",
+      "ms": 5834,
+      "usage": {
+        "input_tokens": 35713,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 262,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 70370,
+      "cards": [],
+      "verdict": {
+        "pass": true,
+        "fails": []
+      }
+    }
+  ]
+}

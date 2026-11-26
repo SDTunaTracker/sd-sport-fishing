@@ -1,0 +1,54 @@
+[
+  {
+    "id": "c05-cheapest-tomorrow",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 1,
+    "cardsWithIssues": 0,
+    "ms": [
+      6146
+    ],
+    "inputTokens": [
+      22918
+    ]
+  },
+  {
+    "id": "c11-overnight-under-500",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      8858
+    ],
+    "inputTokens": [
+      22912
+    ]
+  },
+  {
+    "id": "c14-ocla-newport",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      5834
+    ],
+    "inputTokens": [
+      35713
+    ]
+  },
+  {
+    "id": "r04-trip-docs",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 2,
+    "cardsWithIssues": 0,
+    "ms": [
+      7680
+    ],
+    "inputTokens": [
+      22916
+    ]
+  }
+]
