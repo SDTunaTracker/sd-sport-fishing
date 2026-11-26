@@ -7213,3 +7213,13 @@ a.bv-title:hover { text-decoration: underline; text-underline-offset: 3px; }
 .bn-note { margin: 0 0 6px; font: 400 13px/18px var(--ss-font-sans); color: var(--tb-gray-3); }
 .bn-src { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-gray-3); }
 .bn-src a { color: inherit; text-decoration: underline; }
+
+/* ── Pack for this trip (web/pack-list.js, TripCard details) ───────────── */
+.tpk-section { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E2E8F0; }
+.tpk-title { font: 600 13px/18px var(--ss-font-sans); color: var(--tb-ink); margin-bottom: 4px; }
+.tpk-bait { font: 400 13px/18px var(--ss-font-sans); color: var(--tb-ink); background: #F0F9FF; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; }
+.tpk-list { margin: 0; padding-left: 18px; font: 400 13px/19px var(--ss-font-sans); color: var(--tb-ink); }
+.tpk-list li { margin: 2px 0; }
+.tpk-cite { font-size: 9px; color: var(--tb-gray-3); margin-left: 2px; }
+.tpk-sources { margin-top: 6px; font: 400 11px/15px var(--ss-font-sans); color: var(--tb-gray-3); }
+.tpk-sources a { color: inherit; text-decoration: underline; }

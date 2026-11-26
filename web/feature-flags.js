@@ -25,6 +25,9 @@
     // from api/v1/bait_now.json (src/bait.py, Everingham Bait Report). Waiting on
     // the owner's email to Everingham. Preview: ?preview_bait=true
     BAIT_NOW: false,
+    // "Pack for this trip" checklist in trip-card details (web/pack-list.js),
+    // cited to landing tackle pages. Preview: ?preview_pack=true
+    PACK_LIST: false,
   };
   // SHOW_OCLA is the single gate checked by all UI code
   window.FEATURES.SHOW_OCLA = window.FEATURES.OCLA_PUBLIC || window.FEATURES._previewOcla;
@@ -32,6 +35,7 @@
   window.FEATURES.SHOW_SFBAY = window.FEATURES.SFBAY_PUBLIC || window.FEATURES._previewSfbay;
   window.FEATURES.SHOW_GOOGLE_REVIEWS = window.FEATURES.GOOGLE_REVIEWS || params.get('preview_google') === 'true';
   window.FEATURES.SHOW_YOUTUBE_VIDEOS = window.FEATURES.YOUTUBE_VIDEOS || params.get('preview_videos') === 'true';
+  window.FEATURES.SHOW_PACK_LIST = window.FEATURES.PACK_LIST || params.get('preview_pack') === 'true';
   window.FEATURES.SHOW_BAIT_NOW = window.FEATURES.BAIT_NOW || params.get('preview_bait') === 'true';
 
   // Deployed places-proxy Worker URL, no trailing slash. Empty = panel stays hidden.

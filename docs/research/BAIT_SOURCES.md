@@ -150,4 +150,10 @@ Trip length adds the second and third rigs from T1 (sinker rig 50–80 lb with 6
 - `src/bait.py` writes `bait_receiver_status` (a row only when the bait or "As of" changes) and `web/api/v1/bait_now.json`. Tests: `tests/test_bait.py`.
 - `web/bait-now.jsx`: a "Barge bait" line on upcoming trip cards and a panel on landing pages. Both credit and link Everingham, show the "As of" time and their note, and hide after 24 h.
 - **To turn it on, after Everingham says yes:** set the GitHub repo variable `BAIT_REPORT_ENABLED` to `true` (Settings → Secrets and variables → Actions → Variables), wait for one hourly run, then set `BAIT_NOW: true` in `web/feature-flags.js`. Preview before that with `?preview_bait=true`.
-- Not built yet: the packing-list reference table (step 3) and boat-side bait signals (step 2).
+- Not built yet: boat-side bait signals (step 2); they depend on the landing "Update" extraction owned by the BloodyDecks session.
+
+**Packing list built 2026-11-26 (flag off).** Step 3 is `web/pack-list.js` (pure rules, tests in `tests/pack-list.test.mjs`) plus a "Pack for this trip" block in each upcoming trip card's details:
+- Rigs by trip length from T1; long-range trips (3 days and up) link the matching Point Loma list (T2).
+- When the barge-bait feed is on, it adds the bait → hook and line row from the rule table above.
+- Every line carries a numbered citation, the sources are listed under it, and it ends with "ask the deckhand". It says this is general guidance, not the boat's own list.
+- Flag `PACK_LIST` in `web/feature-flags.js`; preview with `?preview_pack=true` (add `&preview_bait=true` for the bait row). It needs no key or email: it only links to public pages.
