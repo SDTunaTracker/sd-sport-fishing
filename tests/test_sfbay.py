@@ -90,7 +90,7 @@ def test_wrong_page_date_rejected_and_no_count_day_detected():
     ("Full Day", {"King Salmon": 12, "Striped Bass": 1}, 10, "salmon", 0.6),
     ("Crab Combo", {"Dungeness Crab": 150, "Rockfish": 90}, 15, "crab_combo", (1.0 + 0.6) / 2),
     ("Full Day", {"Dungeness Crab": 100, "Rockfish": 100}, 10, "crab_combo", 1.0),
-    ("Full Day", {"California Halibut": 15}, 10, "halibut", 0.5),
+    ("Full Day", {"California Halibut": 10}, 10, "halibut", 0.5),   # limit 2 north of Pt. Sur
     ("Full Day", {}, 10, "unknown", None),
     ("Sturgeon", {"White Sturgeon": 3}, 10, "sturgeon", None),
     ("Salmon Trolling California Ocean", {}, 10, "salmon", 0.0),
