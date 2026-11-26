@@ -30,3 +30,12 @@
 /sd/account          /   200
 /sd/analytics        /   200
 /sd/analytics/*      /   200
+
+# OC / LA region (launched 2026-11-25, docs/ocla/LAUNCH_REVIEW.md). Nothing is
+# prerendered under /ocla yet, so the whole tree is the app shell.
+# Rollback: set OCLA_PUBLIC false in web/feature-flags.js (app.jsx then drops
+# oc_la and these paths render San Diego); these lines can stay.
+/ocla                /   200
+/ocla/*              /   200
+/sd+ocla             /   200
+/sd+ocla/*           /   200

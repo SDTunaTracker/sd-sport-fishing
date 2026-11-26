@@ -390,7 +390,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
             <table className="dt">
               <thead><tr>
                 <th style={{width: 36}}>#</th><th>Boat</th><th className="num">Trips</th>
-                <th className="num">Tuna/Angler</th><th>Label</th>
+                <th className="num">{SDA.headlineLabel()}/Angler</th><th>Label</th>
               </tr></thead>
               <tbody>
                 {boats.map((b, i) => (
@@ -455,7 +455,7 @@ function LandingsView({ filters, setFilters, navigate, regions }) {
   const landings = useMemo(() => SDA.landingSummary(trips, filters.species), [trips, filters.species]);
   const sf = SDA.speciesField(filters.species);
   const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel = speciesActive ? filters.species : 'Tuna';
+  const speciesLabel = speciesActive ? filters.species : SDA.headlineLabel();
 
   return (
     <React.Fragment>

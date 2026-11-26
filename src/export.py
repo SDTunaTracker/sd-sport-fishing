@@ -835,7 +835,12 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     ).fetchall()
     # all_rows includes is_preliminary=1 (still-fishing) for the Today widget.
     # analytics TRIPS strip them — anglers unknown, TPA meaningless until confirmed.
-    all_rows = [_trip_to_js(r) for r in rows]
+    # Non-base regions (OC/LA, ...) keep fullCatch for their whole history:
+    # their headline metric is all-species fish/angler/day (web/analytics.js
+    # metricSpeciesFor), and it adds well under 1 MiB to the region file.
+    # data.js (BASE_REGION) keeps the 30-day cutoff.
+    all_rows = [_trip_to_js(r, include_full_catch=(r["region"] or BASE_REGION) != BASE_REGION)
+                for r in rows]
     trips    = [t for t in all_rows if not t.get('isPreliminary')]
     boats    = _boats_from_trips(trips)
 

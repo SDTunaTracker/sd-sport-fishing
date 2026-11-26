@@ -4,13 +4,14 @@ Reviewed 2026-11-25 on branch `claude/ocla-launch`, using the live `tracker.db` 
 and the site served locally at `/ocla/...?preview_ocla=true` at 1440px and 375px (15 routes × 2 widths, scripted
 with Playwright, plus an SD regression pass).
 
-## Verdict: NO-GO today. GO once the owner decisions and the launch gates below are done
+## Verdict: GO. Launched 2026-11-25 on the owner's instruction ("Launch for everyone right now")
 
-The plumbing works: OC/LA routing, region filtering, the 11 landings' daily scrapes, and every page renders
-with no JS errors and no horizontal overflow at 375px. This branch fixes the San Diego-only content that leaked
-into OC/LA pages. **The remaining blocker is the metric.** Every headline number on the site counts trophy fish
-(bluefin, yellowfin, yellowtail, dorado), and most OC/LA trips catch none. On Nov 24 the OC/LA fleet ran
-23 trips with 726 anglers and landed **2,826 fish**. The Today page says **"11 boats brought in 11 fish."**
+The owner decided D1, D3, D4 and D5 in this session on 2026-11-25. This PR sets `OCLA_PUBLIC: true` and adds the
+`/ocla` rewrites. OC/LA now leads with fish per angler per day across all species. Trophy fish appear as a
+second number. On Nov 24 the Today page went from **"11 boats brought in 11 fish"** to
+**"11 boats brought in 1,740 fish, mostly rockfish and whitefish. The fleet averaged 7.21 fish per angler."**
+Gates still open after launch: G2 (boat profiles, conditions, Hooks Landing data), G5 (prerendered `/ocla/`
+pages), G6 and G7 (post-merge checks). None of them block visitors.
 
 ---
 
@@ -18,12 +19,12 @@ into OC/LA pages. **The remaining blocker is the metric.** Every headline number
 
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
-| D1 | **Headline metric for OC/LA** | (a) keep trophy/angler/day; (b) **fish per angler per day, all species** (from `full_catch`); (c) the angler picks a species preset, with the default set per region | **(b) for OC/LA, with trophy kept as a secondary column.** The data is already there: `full_catch` is stored for every OC/LA trip. Numbers below. |
+| D1 ✅ | **Headline metric for OC/LA** — **Decided 2026-11-25: (b), all species, trophy as a second column; visitors can switch to their own target species in Settings** | (a) keep trophy/angler/day; (b) **fish per angler per day, all species** (from `full_catch`); (c) the angler picks a species preset, with the default set per region | **(b) for OC/LA, with trophy kept as a secondary column.** The data is already there: `full_catch` is stored for every OC/LA trip. Numbers below. |
 | D2 | **Which landings count as "OC / LA"** | Today: 11 landings, including Channel Islands (Oxnard) and Ventura Harbor, which are in Ventura County. Oceanside is grouped with San Diego. | Keep all 11, but name the region for what it covers (D3). Keep Oceanside in San Diego. |
-| D3 | **Region name and URL** | `OC / LA` + `/ocla/` (current); "LA & Orange County"; "OC, LA & Ventura" | Keep the `/ocla/` URL (it's in code, sitemap plans and user localStorage). Display it as **"OC / LA"** in the header, and say "Orange County, LA & Ventura" in page titles and descriptions. This branch already uses "Orange County & LA" in SEO titles, so tell me if you want Ventura added. |
-| D5 | **Hooks Landing (Oxnard)** | It's in the socalfishreports archive but not scraped (data-gaps session finding). Black Pearl, Santa Barbara and Morro Bay are also there but further north. | Add Hooks Landing to OC/LA, since it's next to Channel Islands Sportfishing. Leave the others out. |
+| D3 ✅ | **Region name and URL** — **Decided: "OC / LA" in the header, "Orange County, LA & Ventura" in page titles** (done) | `OC / LA` + `/ocla/` (current); "LA & Orange County"; "OC, LA & Ventura" | Keep the `/ocla/` URL (it's in code, sitemap plans and user localStorage). Display it as **"OC / LA"** in the header, and say "Orange County, LA & Ventura" in page titles and descriptions. This branch already uses "Orange County & LA" in SEO titles, so tell me if you want Ventura added. |
+| D5 ✅ | **Hooks Landing (Oxnard)** — **Decided: add it.** Scraper/backfill handed to the data-gaps session; it joins `OCLA_LANDINGS` once rows exist | It's in the socalfishreports archive but not scraped (data-gaps session finding). Black Pearl, Santa Barbara and Morro Bay are also there but further north. | Add Hooks Landing to OC/LA, since it's next to Channel Islands Sportfishing. Leave the others out. |
 | D6 | **OC/LA history vs `data.js` size** | ✅ **Decided: separate file.** | Implemented on this branch: `data.js` is San Diego-only (20.5 → 15.3 MiB on the live DB). OC/LA is in `web/data-region-oc_la.js` (5.1 MiB), loaded the first time a visitor picks OC/LA, with a loading state and retry. Generic for SF Bay. OC/LA history backfill is unblocked. |
-| D4 | **Nav placement and launch style** | (a) flip `OCLA_PUBLIC` so the header region switcher shows for everyone; (b) soft launch: share `/?preview_ocla=true` for a week first | **(b) then (a).** The soft-launch URL already works today with no deploy. See the launch plan. |
+| D4 ✅ | **Nav placement and launch style** — **Decided: launch for everyone now (a)**, no soft-launch week | (a) flip `OCLA_PUBLIC` so the header region switcher shows for everyone; (b) soft launch: share `/?preview_ocla=true` for a week first | **(b) then (a).** The soft-launch URL already works today with no deploy. See the launch plan. |
 
 ### D1 data: OC/LA vs San Diego, full-day+ trips, 2026
 
@@ -120,10 +121,10 @@ Before/after screenshots are in `docs/ocla/screens/` (home, Trip Planner at 1440
 
 | # | Gate | Owner | Status |
 |---|---|---|---|
-| G1 | **Headline metric** (D1) implemented on Today, Overview, Boats and the boat page | this session, after D1 | ❌ waiting on D1 |
+| G1 | **Headline metric** (D1) implemented on Today, Overview, Boats and the boat page | this session | ✅ `SDA.metricFor(region, settings)`: OC/LA counts every landed species (from `fullCatch`, now exported for the whole OC/LA history, +0.5 MiB). Today/Home strips show total fish, trophy fish, then top species. Boats list adds a Trophy/Day column, and labels read "Fish" instead of "Tuna". Win rate, top-performer and form compare trips on the same metric. Custom target species in Settings override it in every region (Account offers inshore species when OC/LA is selected). SD output unchanged (checked side by side). |
 | G2 | **Data completeness**: counts, species, schedules, booking, boat profiles and conditions for OC/LA, checked and backfilled where possible | "Backfill data gaps and add data-health alerts" | 🟡 counts and species complete Jun 1–Nov 24 (checked against the socalfishreports per-date archive: 0 missing rows). Schedules being added for 22nd St, Pierpoint, Redondo, Channel Islands and Ventura (fishingreservations). Still missing: Dana Wharf (FareHarbor), Davey's (Rezdy), LA Waterfront (TripWorks), Newport, Long Beach, MdR; **boat profiles/photos (0 of ~60)**; OC/LA conditions (tide station, SST); history (D6). |
 | G3 | **Region-specific BloodyDecks** (owner must-have, below) | "Revive BloodyDecks data collection" (data) + this session (UI) | 🟡 Data live on thetunatracker.com (checked 2026-11-25): `whats_working.json` has `by_region.oc_la`, the card no longer falls back to SD reports, and `forum_spots.geojson` serves (1 spot so far; it fills as Paddies catches up). The Charts Forum layer is UX-approved and ships with this PR. |
-| G4 | `/ocla/...` rewrites in `web/_redirects` + flag flip | this session, launch PR | ❌ launch PR |
+| G4 | `/ocla/...` rewrites in `web/_redirects` + flag flip | this session | ✅ `OCLA_PUBLIC: true`; `/ocla`, `/ocla/*`, `/sd+ocla`, `/sd+ocla/*` serve the app shell |
 | G5 | Prerendered `/ocla/` pages + sitemap (S26) | SEO session | ❌ |
 | G7 | Per-region data file live: the first scrape after merge writes `data-region-oc_la.js`, and `daily-scrape.yml` commits it. Check the file exists on thetunatracker.com and `/ocla/today?preview_ocla=true` loads it | this session, after merge | ❌ after merge |
 | G6 | Live Co-Captain check: eval case `c14-ocla-newport` + 3 manual questions | this session / Co-Captain | ❌ needs the production proxy |
@@ -143,6 +144,13 @@ Rule: on a single-region page, show items where `region == <that region>` or `"b
 | Volume | about 1–3 placed OC/LA posts a week since October | — | ⚠️ thin. Expect "no recent reports" states for OC/LA. |
 
 ## Launch plan
+
+**As run on 2026-11-25:** the owner chose to launch straight away, so steps 1–2 were combined into PR #6.
+The hourly scrape after merge writes the split `data.js` + `data-region-oc_la.js` (G7). Until then the
+deployed `data.js` still has OC/LA inline, without older `fullCatch`, so OC/LA history numbers count only the
+seven tracked species for about an hour.
+
+Original plan, kept for reference:
 
 1. **Soft launch (no deploy needed, possible now but not recommended until G1/G3):** share `https://thetunatracker.com/?preview_ocla=true` and pick OC / LA in the
    header switcher. Deep links to `/ocla/...` will 404 until step 2, so start from `/`.

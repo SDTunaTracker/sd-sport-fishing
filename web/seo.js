@@ -49,27 +49,27 @@
   // OC/LA region (/ocla/...) overrides. Keys missing here fall back to CONFIG.
   var OCLA_CONFIG = {
     home: {
-      title: SITE_NAME + ' — Orange County & LA Fish Counts & Boat Leaderboards',
+      title: SITE_NAME + ' — Orange County, LA & Ventura Fish Counts & Boat Leaderboards',
       desc:  'Daily fish counts from Newport, Davey\'s Locker, Dana Wharf, 22nd Street, Long Beach, Redondo, Marina Del Rey, Pierpoint, Channel Islands and Ventura sportfishing boats, ranked fairly.'
     },
     today: {
-      title: 'Today\'s Orange County & LA Fish Counts — Sportfishing Report' + SFX,
+      title: 'Today\'s Orange County, LA & Ventura Fish Counts — Sportfishing Report' + SFX,
       desc:  'Today\'s fish counts from Orange County, Los Angeles and Ventura County landings, by boat: yellowtail, tuna, calico bass, rockfish and more.'
     },
     boats: {
-      title: 'Orange County & LA Sportfishing Boats' + SFX,
+      title: 'Orange County, LA & Ventura Sportfishing Boats' + SFX,
       desc:  'Every Orange County, Los Angeles and Ventura County sportfishing boat with catch records, win rates and recent trips.'
     },
     analytics: {
-      title: 'Orange County & LA Sportfishing Analytics' + SFX,
+      title: 'Orange County, LA & Ventura Sportfishing Analytics' + SFX,
       desc:  'Win rates, fish per angler, seasonality and head-to-head comparisons for Orange County, LA and Ventura County sportfishing boats.'
     },
     'analytics-finder': {
-      title: 'Find the Best Orange County & LA Sportfishing Boat' + SFX,
+      title: 'Find the Best Orange County, LA & Ventura Sportfishing Boat' + SFX,
       desc:  'Pick your target species, trip length and month — see which Orange County and LA boats historically catch the most fish for those trips.'
     },
     tripplanner: {
-      title: 'Orange County & LA Sportfishing Trips' + SFX,
+      title: 'Orange County, LA & Ventura Sportfishing Trips' + SFX,
       desc:  'Find Orange County, LA and Ventura County sportfishing landings and book directly with them.'
     },
   };

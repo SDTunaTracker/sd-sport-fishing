@@ -27,8 +27,87 @@
     return set;
   }
 
-  function preprocessTrips(settings) {
-    const trophySp = (settings && settings.trophySpecies) || ['Bluefin','Yellowfin','Yellowtail','Dorado'];
+  // ── Headline metric per region ─────────────────────────────────────────
+  // San Diego's headline is trophy fish (bluefin, yellowfin, yellowtail,
+  // dorado) per angler per day. OC/LA boats mostly catch rockfish, calico,
+  // whitefish and bonito, so trophy-only reads near zero outside Sep–Oct;
+  // its headline is ALL landed species per angler per day, with trophy fish
+  // shown alongside (owner decision D1, docs/ocla/LAUNCH_REVIEW.md).
+  // A visitor who picks their own target species in Settings always gets
+  // their own species, in every region.
+  var DEFAULT_TROPHY = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
+  var CORE_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Skipjack', 'Bigeye', 'Albacore'];
+  var ALL_SPECIES_REGIONS = { oc_la: true };
+
+  function _isDefaultTrophy(sp) {
+    return !sp || (sp.length === DEFAULT_TROPHY.length && DEFAULT_TROPHY.every(function (s) { return sp.indexOf(s) >= 0; }));
+  }
+  // Count of one species on a trip: the tracked columns first, then fullCatch
+  // (every landed species; region files carry it for the whole history).
+  function speciesCount(t, sp) {
+    var v = t[sp];
+    if (typeof v === 'number') return v;
+    return (t.fullCatch && t.fullCatch[sp]) || 0;
+  }
+  // {species: landed count} for every species with fish. Tracked columns win
+  // over fullCatch for the seven core species.
+  function catchBySpecies(t) {
+    var out = {};
+    CORE_SPECIES.forEach(function (sp) { if ((t[sp] || 0) > 0) out[sp] = t[sp]; });
+    var fc = t.fullCatch;
+    if (fc && typeof fc === 'object') {
+      Object.keys(fc).forEach(function (sp) {
+        if (CORE_SPECIES.indexOf(sp) >= 0) return;
+        var n = +fc[sp] || 0;
+        if (n > 0) out[sp] = (out[sp] || 0) + n;
+      });
+    }
+    return out;
+  }
+  function allFish(t) {
+    var c = catchBySpecies(t), n = 0;
+    for (var k in c) n += c[k];
+    return n;
+  }
+  function trophyFish(t) {
+    return DEFAULT_TROPHY.reduce(function (s, sp) { return s + (t[sp] || 0); }, 0);
+  }
+  // metricFor(region, settings) -> { allSpecies, species, fish(t), rate(t), noun }
+  //   region: effective region id ('san_diego' | 'oc_la' | 'all_socal').
+  function metricFor(region, settings) {
+    var sp = settings && settings.trophySpecies;
+    var all = !!ALL_SPECIES_REGIONS[region] && _isDefaultTrophy(sp);
+    var species = all ? null : (sp && sp.length ? sp : DEFAULT_TROPHY);
+    var fish = all ? allFish : function (t) {
+      return species.reduce(function (s, x) { return s + speciesCount(t, x); }, 0);
+    };
+    return {
+      allSpecies: all,
+      species: species,
+      fish: fish,
+      rate: function (t) {
+        var a = t.anglers > 0 ? t.anglers : 0;
+        if (!a) return 0;
+        var d = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
+        return fish(t) / a / d;
+      },
+      noun: all ? 'fish' : (_isDefaultTrophy(species) ? 'trophy fish' : 'target fish'),
+    };
+  }
+
+  // Word for the headline fish in labels ("Tuna/Day", "Fish/Day"): 'Fish'
+  // when the current metric counts every species (OC/LA default).
+  function headlineLabel() {
+    return (window.SD_METRIC && window.SD_METRIC.allSpecies) ? 'Fish' : 'Tuna';
+  }
+  function headlineIsAllSpecies() { return !!(window.SD_METRIC && window.SD_METRIC.allSpecies); }
+
+  // Region the SD_PROC_TRIPS metric was built for (app.jsx re-runs
+  // preprocessTrips when the effective region changes).
+  function preprocessTrips(settings, region) {
+    if (region) window.SD_METRIC_REGION = region;
+    const metric = metricFor(window.SD_METRIC_REGION || 'san_diego', settings);
+    window.SD_METRIC = metric;
     const method   = (settings && settings.tripLengthMethod) || 'rounded';
     const sixpackSet = _sixpackFilter(settings);
     const out = [];
@@ -45,10 +124,21 @@
         var key = String(t.boat || '').trim().toLowerCase();
         if (sixpackSet.has(key)) continue;
       }
-      var totalTuna = trophySp.reduce(function(s, sp) { return s + (t[sp] || 0); }, 0);
+      // totalTuna keeps its historical name: it is the region's headline fish
+      // count (see metricFor). trophyFish is always the four trophy species.
+      var totalTuna = metric.fish(t);
       var rawDays   = t.tripLengthDays > 0 ? t.tripLengthDays : 1;
       var calcDays  = method === 'rounded' ? Math.max(1, Math.floor(rawDays)) : rawDays;
-      out.push(Object.assign({}, t, { totalTuna: totalTuna, calcDays: calcDays }));
+      var row = { totalTuna: totalTuna, trophyFish: trophyFish(t), calcDays: calcDays };
+      // Win rate, top-performer rate, streaks and form compare trips on
+      // trophyPerAnglerPerDay. On all-species regions that comparison must use
+      // the region's headline fish too; the exported trophy-only value stays
+      // available as trophyOnlyPerAnglerPerDay.
+      if (metric.allSpecies) {
+        row.trophyOnlyPerAnglerPerDay = t.trophyPerAnglerPerDay;
+        row.trophyPerAnglerPerDay = metric.rate(t);
+      }
+      out.push(Object.assign({}, t, row));
     }
     window.SD_PROC_TRIPS = out;
   }
@@ -161,6 +251,8 @@
       const totalTuna = b.trips.reduce((s, t) => s + (t[sf] || 0), 0);
       const totalAnglers = b.trips.reduce((s, t) => s + t.anglers, 0);
       const totalAnglerDays = b.trips.reduce((s, t) => s + (t.anglers * (t.calcDays || 1)), 0);
+      const totalTrophy = b.trips.reduce((s, t) => s + (t.trophyFish || 0), 0);
+      const avgTrophyPerDay = totalAnglerDays ? totalTrophy / totalAnglerDays : 0;
       const avgTPA = totalAnglers ? totalTuna / totalAnglers : 0;
       const avgTPAPerDay = totalAnglerDays ? totalTuna / totalAnglerDays : 0;
       const medTPA = median(tpas);
@@ -190,6 +282,7 @@
         totalAnglers,
         avgTPA,
         avgTPAPerDay,
+        avgTrophyPerDay,
         medTPA,
         medTPAPerDay,
         successRate,
@@ -832,8 +925,9 @@
     return n;
   }
 
-  function preprocessHalfDayTrips(settings) {
-    var trophySp = (settings && settings.trophySpecies) || ['Bluefin','Yellowfin','Yellowtail','Dorado'];
+  function preprocessHalfDayTrips(settings, region) {
+    if (region) window.SD_METRIC_REGION = region;
+    var metric = metricFor(window.SD_METRIC_REGION || 'san_diego', settings);
     var sixpackSet = _sixpackFilter(settings);
     var src = (window.SD && window.SD.HALF_DAY_TRIPS) || [];
     var out = [];
@@ -844,7 +938,7 @@
         if (sixpackSet.has(key)) continue;
       }
       var totalFish = _hdTotalFish(t);
-      var totalTrophy = trophySp.reduce(function(s, sp) { return s + (t[sp] || 0); }, 0);
+      var totalTrophy = metric.fish(t);
       out.push(Object.assign({}, t, {
         totalFish: totalFish,
         totalTuna: totalTrophy,   // keep the field name that shared helpers expect
@@ -1150,6 +1244,13 @@
   }
 
   window.SDA = {
+    metricFor,
+    headlineLabel,
+    headlineIsAllSpecies,
+    catchBySpecies,
+    speciesCount,
+    allFish,
+    trophyFish,
     preprocessTrips,
     filterTrips,
     boatLeaderboard,

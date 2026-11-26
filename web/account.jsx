@@ -5,6 +5,9 @@
 const ALL_LANDINGS = ['Seaforth', "Fisherman's", 'H&M', 'Point Loma'];
 
 const ACCOUNT_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Bigeye', 'Skipjack', 'Albacore'];
+// OC/LA boats are mostly inshore/bottom trips. These count from each trip's
+// full catch, which the OC/LA data file carries for its whole history.
+const ACCOUNT_SPECIES_OCLA = ['Calico Bass', 'Rockfish', 'Whitefish', 'Bonito', 'Barracuda', 'White Sea Bass', 'Halibut', 'Sheephead', 'Sand Bass', 'Lingcod'];
 
 function _getInitials(name) {
   if (!name) return '?';
@@ -301,7 +304,7 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
 
         {isSignedIn ? (
           <div className="acct-chips">
-            {ACCOUNT_SPECIES.map(function(sp) {
+            {ACCOUNT_SPECIES.concat(regions && regions.indexOf('oc_la') >= 0 ? ACCOUNT_SPECIES_OCLA : []).map(function(sp) {
               return (
                 <SettingsChip
                   key={sp}

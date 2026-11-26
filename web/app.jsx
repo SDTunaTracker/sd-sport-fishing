@@ -200,6 +200,14 @@ function App() {
   const [regionDataTick, setRegionDataTick] = useS(0);
   const [regionLoadError, setRegionLoadError] = useS(null);
   const regionDataReady = !window.ttRegionData || window.ttRegionData.isLoaded(regions);
+  // The headline metric depends on the region (OC/LA counts all species, see
+  // SDA.metricFor), so re-derive SD_PROC_TRIPS synchronously, before this
+  // render's children read it, whenever the effective region changes.
+  const metricRegion = window.getEffectiveRegion ? window.getEffectiveRegion(regions) : 'san_diego';
+  if (window.SD_METRIC_REGION !== metricRegion) {
+    SDA.preprocessTrips(settings, metricRegion);
+    SDA.preprocessHalfDayTrips(settings, metricRegion);
+  }
   useE(() => {
     if (regionDataReady) return;
     setRegionLoadError(null);
@@ -525,7 +533,7 @@ function App() {
                        options={[{value:'all',label:'All'}, ...[...new Set(window.SD.TRIPS.map(t => t.year))].sort((a,b) => b-a).map(y => ({value:String(y),label:String(y)}))]}
                        onChange={v => setFilters({ ...filters, year: v })}/>
           <TweakSelect label="Species focus" value={filters.species}
-                       options={[{value:'all',label:'All Tuna'},{value:'Bluefin',label:'Bluefin'},{value:'Yellowfin',label:'Yellowfin'},{value:'Yellowtail',label:'Yellowtail'},{value:'Dorado',label:'Dorado'},{value:'Skipjack',label:'Skipjack'},{value:'Bigeye',label:'Bigeye'},{value:'Albacore',label:'Albacore'}]}
+                       options={[{value:'all',label:SDA.headlineIsAllSpecies() ? 'All species' : 'All Tuna'},{value:'Bluefin',label:'Bluefin'},{value:'Yellowfin',label:'Yellowfin'},{value:'Yellowtail',label:'Yellowtail'},{value:'Dorado',label:'Dorado'},{value:'Skipjack',label:'Skipjack'},{value:'Bigeye',label:'Bigeye'},{value:'Albacore',label:'Albacore'}]}
                        onChange={v => setFilters({ ...filters, species: v })}/>
         </TweakSection>
       </TweaksPanel>
