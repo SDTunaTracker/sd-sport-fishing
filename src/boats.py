@@ -14,7 +14,7 @@ import json
 import logging
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import requests
@@ -200,20 +200,53 @@ def _find_captains(soup: BeautifulSoup) -> list[str]:
     return captains
 
 
+# A year counts as year_built only next to "built" / "year built" / "year:".
+# Landing pages are full of other years ("Summer 2026 Charter Rates").
+_YEAR_BUILT_RES = (
+    re.compile(r"\b(?:built|launched|constructed)\b[^.\d]{0,40}?\b((?:19|20)\d{2})\b", re.I),
+    re.compile(r"\byear(?:\s+built)?\s*[:\-]\s*((?:19|20)\d{2})\b", re.I),
+    re.compile(r"\byear\s+built\s+((?:19|20)\d{2})\b", re.I),
+)
+_FT = r"(?:ft\.?|feet|foot|')"
+# Length overall first ("88 feet in overall length", "LOA: 88'"). The spec
+# line "85 ft. x 22 ft." is often the registered length, so it's a fallback.
+_LOA_RES = (
+    re.compile(rf"(\d{{2,3}})\s*{_FT}\s*(?:in\s+)?(?:overall|LOA\b|length\s+overall)", re.I),
+    re.compile(rf"(?:\bLOA\b|length\s+overall|overall\s+length)\s*[:\-]?\s*(?:of\s+)?(\d{{2,3}})\s*{_FT}", re.I),
+    re.compile(rf"(\d{{2,3}})\s*{_FT}\s*(?:in\s+length|long)\b", re.I),
+)
+# Spec line "85 x 22 Feet" / "85 ft. x 22 ft.": length is the first number.
+_SPEC_RE = re.compile(rf"\b(\d{{2,3}})\s*(?:ft\.?|')?\s*x\s*\d{{1,3}}\s*{_FT}", re.I)
+_ANY_FT_RE = re.compile(r"(\d{2,3})\s*(?:ft\.?|feet|foot)(?![a-z])", re.I)
+
+
+def find_year_built(text: str, today: date | None = None) -> int | None:
+    """Year next to "built"/"year", in 1900..last year; otherwise None."""
+    last_year = (today or date.today()).year - 1
+    for rx in _YEAR_BUILT_RES:
+        for m in rx.finditer(text):
+            y = int(m.group(1))
+            if 1900 <= y <= last_year:
+                return y
+    return None
+
+
+def find_length_ft(text: str) -> int | None:
+    """Length overall when the page states it, else the first "N ft" figure."""
+    for rx in (*_LOA_RES, _SPEC_RE, _ANY_FT_RE):
+        for m in rx.finditer(text):
+            v = int(m.group(1))
+            if 15 <= v <= 250:
+                return v
+    return None
+
+
 def _find_specs(soup: BeautifulSoup) -> tuple[int | None, int | None, int | None]:
     """Returns (year_built, length_ft, passenger_capacity)."""
-    year_built = length_ft = capacity = None
-    full_text = soup.get_text(" ")
-
-    m = re.search(r"\b(19|20)\d{2}\b", full_text)
-    if m:
-        y = int(m.group())
-        if 1960 <= y <= 2030:
-            year_built = y
-
-    m = re.search(r"(\d{2,3})\s*(?:ft\.?|feet|foot)\b", full_text, re.I)
-    if m:
-        length_ft = int(m.group(1))
+    capacity = None
+    full_text = re.sub(r"\s+", " ", soup.get_text(" "))
+    year_built = find_year_built(full_text)
+    length_ft = find_length_ft(full_text)
 
     m = re.search(r"(\d+)\s*(?:passengers?|anglers?|persons?)\b", full_text, re.I)
     if m:

@@ -261,7 +261,26 @@ def check(conn: sqlite3.Connection, today: date | None = None,
         if last is None or now - last > APP_JSON_MAX_AGE:
             probs.append(Problem("export:app.json", "app.json", "warning",
                                  f"api/v1/app.json last generated {gen or 'never'}"))
+
+    # Boat profiles: a build year of this year or later (or before 1900) is a
+    # parse error, e.g. "Summer 2026 Charter Rates" read as the year built.
+    probs.extend(check_boat_profiles(conn, today))
     return probs
+
+
+def check_boat_profiles(conn: sqlite3.Connection, today: date) -> list[Problem]:
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='boat_profiles'").fetchone():
+        return []
+    bad = conn.execute(
+        "SELECT boat || ' (' || year_built || ')' FROM boat_profiles"
+        " WHERE year_built IS NOT NULL AND (year_built >= ? OR year_built < 1900) ORDER BY boat",
+        (today.year,),
+    ).fetchall()
+    if not bad:
+        return []
+    return [Problem("boat_profiles:year_built", "boat_profiles", "warning",
+                    f"{len(bad)} boat profile(s) with an impossible year built: "
+                    + ", ".join(r[0] for r in bad))]
 
 
 _SCHED_REFRESH_DDL = """CREATE TABLE IF NOT EXISTS schedule_refresh (
