@@ -375,6 +375,10 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const moonC  = moonColor(moon.illum);
   const price  = s.price != null ? `$${s.price.toFixed(0)}` : null;
   const url    = bookingUrl(s);
+  // Channel Islands links to the landing's trip list, not the exact trip.
+  const viewLabel = (typeof window.ccBookingInfo === 'function' &&
+    (() => { try { return window.ccBookingInfo(s).kind === 'trip_list'; } catch (e) { return false; } })())
+    ? 'View trips' : 'View Trip';
   const tpaKey = `${s.boat}|${s.tripLength}`;
   const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
 
@@ -506,7 +510,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
         ) : url && (
           <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn"
              onClick={trackClick}>
-            View Trip →
+            {viewLabel} →
           </a>
         )}
       </div>
@@ -563,7 +567,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
         ) : url && (
           <a href={url} target="_blank" rel="noopener noreferrer" className="tp-card-book-btn tp-card-book-full"
              onClick={trackClick}>
-            View Trip →
+            {viewLabel} →
           </a>
         )}
       </div>
