@@ -103,6 +103,18 @@ window.TTTrack = {
     } catch(e) {}
   },
 
+  // One-tap starter answered from the shared site ranking (no question text sent).
+  chatQuickPick: function(p) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_quick_pick', {
+        intent:    p.intent,
+        msg_index: p.msgIndex,
+        trip_ids:  (p.tripIds || []).join(','),
+        empty:     !!p.empty,
+      });
+    }
+  },
+
   chatOpen: function() {
     if (typeof gtag !== 'undefined') {
       gtag('event', 'chat_open');

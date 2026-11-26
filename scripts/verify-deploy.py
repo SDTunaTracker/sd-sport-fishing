@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 Verify that all JSX files in web/ are referenced in web/index.html,
-that version strings are recent (within 7 days), and that no file
-exceeds the Cloudflare Pages 25 MiB per-file limit.
+that version strings are recent (within 7 days), that no file
+exceeds the Cloudflare Pages 25 MiB per-file limit, and that no web
+file still contains git merge-conflict markers.
 
 Run before committing or as part of CI pre-flight.
 Exit code 0 = all good. Exit code 1 = problems found.
@@ -55,6 +56,27 @@ for fpath in sorted(web.rglob("*")):
     elif size_mb >= WARN_MB:
         size_warns.append((rel, size_mb))
 
+# ── 4. No leftover merge-conflict markers in shipped text files ──────────────
+# A conflicted index.html once got committed with <<<<<<< / >>>>>>> lines and
+# every check above still passed. Scan every text file Pages serves.
+TEXT_EXT = {".html", ".js", ".jsx", ".css", ".json", ".txt", ".xml", ".svg", ".webmanifest", ".md"}
+MARKER = re.compile(r"^(<{7}|>{7})(?: |$)|^={7}$", re.M)
+conflicted = []
+for fpath in sorted(web.rglob("*")):
+    if not fpath.is_file() or fpath.suffix.lower() not in TEXT_EXT and fpath.name not in ("_headers", "_redirects"):
+        continue
+    if fpath.stat().st_size > 8 * 1024 * 1024:   # generated data files (data.js); git never conflicts them by hand
+        continue
+    try:
+        body = fpath.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    m = MARKER.search(body)
+    # A lone ======= line is a marker only next to <<<<<<< or >>>>>>>.
+    if m and (not m.group(0).startswith("=") or re.search(r"^(<{7}|>{7})", body, re.M)):
+        line = body.count(chr(10), 0, m.start()) + 1
+        conflicted.append((fpath.relative_to(web.parent), line))
+
 # ── Report ────────────────────────────────────────────────────────────────────
 fail = False
 
@@ -82,7 +104,14 @@ if stale:
         print(f"  {tag}  (date: {raw})")
     fail = True
 
+if conflicted:
+    print("MERGE-CONFLICT markers left in:")
+    for rel, line in conflicted:
+        print(f"  {rel}:{line}")
+    print("  Fix: resolve the conflict (keep both sides' <script> tags), then commit again.")
+    fail = True
+
 if not fail:
-    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits.")
+    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits, no conflict markers.")
 
 sys.exit(1 if fail else 0)
