@@ -29,6 +29,7 @@
 # rewrite here would hide them.
 /sd/charts           /   200
 /sd/tripplanner      /   200
+/sd/pick             /   200
 /sd/account          /   200
 /sd/analytics        /   200
 /sd/analytics/*      /   200

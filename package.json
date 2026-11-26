@@ -3,7 +3,8 @@
     "build": "npx esbuild web/*.jsx --outdir=web/dist --format=iife --loader:.jsx=jsx --jsx-factory=React.createElement --jsx-fragment=React.Fragment --minify-whitespace --minify-syntax --target=es2018",
     "build:owner": "npx esbuild web/owner/admin.jsx --outfile=web/owner/admin/admin.js --format=iife --loader:.jsx=jsx --jsx-factory=React.createElement --jsx-fragment=React.Fragment --minify-whitespace --minify-syntax --target=es2018",
     "test:analytics": "node --test tests/analytics/worker.test.mjs",
-    "dev:analytics": "node scripts/analytics-dev-server.mjs --seed"
+    "dev:analytics": "node scripts/analytics-dev-server.mjs --seed",
+    "test:picker": "node --test tests/trip-picker.test.mjs"
   },
   "dependencies": {
     "playwright": "^1.60.0"

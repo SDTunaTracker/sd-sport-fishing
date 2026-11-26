@@ -47,7 +47,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // clean paths for backward compatibility.
 // Format: /<region-prefix>/<view>[/<params>]  e.g. /sd/today, /ocla/analytics/overview
 const HASH_VIEWS = {
-  home: 'home', today: 'today', tripplanner: 'tripplanner',
+  home: 'home', today: 'today', tripplanner: 'tripplanner', pick: 'pick',
   settings: 'account', admin: 'admin', forecast: 'forecast',
   account: 'account', boats: 'boats', charts: 'charts',
 };
@@ -471,7 +471,7 @@ function App() {
   const navMap = {
     home: 'home', today: 'today', forecast: 'forecast', analytics: 'analytics',
     tripplanner: 'tripplanner', account: 'account', boats: 'boats', charts: 'charts',
-    landings: 'landings',
+    landings: 'landings', pick: 'pick',
   };
 
   const isSfbay = regions[0] === 'sf_bay';
@@ -482,6 +482,8 @@ function App() {
     content = <HomeView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
+  } else if (route.view === 'pick' && window.PickTripView) {
+    content = <PickTripView navigate={navigate} regions={regions}/>;
   } else if (route.view === 'analytics') {
     content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions} subtab={route.params.subtab || 'overview'}/>;
   } else if (route.view === 'boats') {
@@ -517,6 +519,7 @@ function App() {
   }
 
   const headerActive = route.view === 'boat' ? 'boats'
+    : route.view === 'pick' ? 'today'
     : (isSfbay && route.view === 'home') ? 'today'
     : route.view === 'landing' ? (isSfbay ? 'landings' : 'analytics')
     : route.view;
@@ -531,6 +534,7 @@ function App() {
       {isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
 
       {route.view === 'tripplanner' && !isSfbay && regionDataReady && <ChatBot pageContext={pageContext}/>}
+      {window.PickFab && !isSfbay && route.view !== 'pick' && route.view !== 'today' && regionDataReady && <PickFab navigate={navigate} regions={regions}/>}
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">

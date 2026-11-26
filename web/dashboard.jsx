@@ -578,6 +578,16 @@ function TodayView({ navigate, settings, regions }) {
   // summary, a quiet species strip, then the ranked boat list. It shares the
   // "vs usual" logic and row details with Home's counts block. No season
   // leaderboard here (Home rail + Analytics have it), just a link.
+  // Simple answers (web/picker.jsx): plain "best trip" answers first, with a
+  // Simple / Detailed switch; Detailed is the full Today v2 report.
+  if (window.THTodayReport && window.TodaySimple) {
+    return (
+      <React.Fragment>
+        <ReturnVisitToast navigate={navigate}/>
+        <window.TodaySimple navigate={navigate} settings={settings} regions={regions} Report={window.THTodayReport}/>
+      </React.Fragment>
+    );
+  }
   if (window.THTodayReport) {
     return (
       <React.Fragment>
