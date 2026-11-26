@@ -320,6 +320,23 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
         n = export(conn, DATA_JS_PATH, weather_forecast=weather_fc)
         summary_lines.append(f"  data.js written: {DATA_JS_PATH}  ({n} trips total)")
 
+        # SF Bay Area (norcalfishreports.com): own table + own export file, so
+        # nothing here can affect San Diego / OC-LA. At most every 6h, 2 pages.
+        # A block stops the feed until the owner clears it (docs/sfbay/LAUNCH_PLAN.md).
+        try:
+            from . import scrape_norcal, export_sfbay
+            if not export_only:
+                seeded = scrape_norcal.load_seed(conn)   # one-time 2019+ backfill seed
+                if seeded is not None:
+                    summary_lines.append(f"  SF Bay backfill seed loaded: {seeded} rows")
+                st = scrape_norcal.run_daily(conn)
+                if st:
+                    summary_lines.append(f"  SF Bay scrape: {st}")
+            p_sf, n_sf = export_sfbay.write_sfbay_js(conn, DATA_JS_PATH.parent)
+            summary_lines.append(f"  data-region-sfbay.js written ({n_sf} trips)")
+        except Exception as e:
+            summary_lines.append(f"  SF Bay ERROR (non-fatal): {type(e).__name__}: {e}")
+
         # Staleness alerting — log any landing dark for 4+ hours during operating hours.
         try:
             _hour = datetime.now().hour
@@ -361,6 +378,11 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                     pass
                 except Exception as e:
                     summary_lines.append(f"  BloodyDecks health check ERROR (non-fatal): {e}")
+                try:
+                    from . import sfbay_health
+                    probs += sfbay_health.check(conn)
+                except Exception as e:
+                    summary_lines.append(f"  SF Bay health check ERROR (non-fatal): {e}")
                 completeness.write_report(probs)
                 from .alerts import process as process_alerts
                 acts = process_alerts(probs)

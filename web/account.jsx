@@ -5,6 +5,9 @@
 const ALL_LANDINGS = ['Seaforth', "Fisherman's", 'H&M', 'Point Loma'];
 
 const ACCOUNT_SPECIES = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado', 'Bigeye', 'Skipjack', 'Albacore'];
+// OC/LA boats are mostly inshore/bottom trips. These count from each trip's
+// full catch, which the OC/LA data file carries for its whole history.
+const ACCOUNT_SPECIES_OCLA = ['Calico Bass', 'Rockfish', 'Whitefish', 'Bonito', 'Barracuda', 'White Sea Bass', 'Halibut', 'Sheephead', 'Sand Bass', 'Lingcod'];
 
 function _getInitials(name) {
   if (!name) return '?';
@@ -160,11 +163,11 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
 
   // ── Region ────────────────────────────────────────────────────
   var regionChoice =
-    regions && regions.length >= 2   ? 'all_socal' :
-    regions && regions[0] === 'oc_la' ? 'oc_la'    : 'san_diego';
+    regions && regions[0] === 'sf_bay' ? 'sf_bay' :
+    regions && regions[0] === 'oc_la'  ? 'oc_la'  : 'san_diego';
 
   function setRegion(val) {
-    var map = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    var map = { san_diego: ['san_diego'], oc_la: ['oc_la'], sf_bay: ['sf_bay'] };
     if (onRegionsDirect) onRegionsDirect(map[val] || ['san_diego']);
     if (window.setUserPref) window.setUserPref('region_choice', val);
   }
@@ -301,7 +304,7 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
 
         {isSignedIn ? (
           <div className="acct-chips">
-            {ACCOUNT_SPECIES.map(function(sp) {
+            {ACCOUNT_SPECIES.concat(regions && regions.indexOf('oc_la') >= 0 ? ACCOUNT_SPECIES_OCLA : []).map(function(sp) {
               return (
                 <SettingsChip
                   key={sp}
@@ -393,8 +396,9 @@ function MyAccountView({ settings, onSettingsChange, regions, onRegionsDirect, n
           >
             <option value="san_diego">San Diego</option>
             <option value="oc_la" disabled={!(window.FEATURES && window.FEATURES.SHOW_OCLA)}>
-              OC / LA (soon)
+              {window.FEATURES && window.FEATURES.SHOW_OCLA ? 'OC / LA' : 'OC / LA (soon)'}
             </option>
+            {window.FEATURES && window.FEATURES.SHOW_SFBAY && <option value="sf_bay">SF Bay Area</option>}
           </select>
         </div>
 

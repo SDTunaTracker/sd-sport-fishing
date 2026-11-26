@@ -84,9 +84,10 @@ function AuthButton() {
 const REGION_OPTIONS = [
   { id: 'san_diego',  label: 'San Diego' },
   { id: 'oc_la',     label: 'OC / LA' },
-  { id: 'all_socal', label: 'All SoCal' },
+  { id: 'sf_bay',    label: 'SF Bay Area' },
 ];
-const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+// One region at a time. 'all_socal' (retired) may still be a saved preference: San Diego.
+const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego'], sf_bay: ['sf_bay'] };
 
 // Returns an onClick that lets real <a> nav links work as SPA navigation while
 // preserving native browser behavior for modified clicks (new tab, etc.).
@@ -104,7 +105,13 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
   const dropdownRef = React.useRef(null);
   const { isSignedIn } = useAuth();
 
-  const NAV = [
+  const isSfbay = !!(regions && regions[0] === 'sf_bay');
+  // SF Bay has its own, smaller page set (web/sfbay.jsx); no forecasts there.
+  const NAV = isSfbay ? [
+    { id: 'today',    label: 'Today',    icon: 'fa-chart-column' },
+    { id: 'boats',    label: 'Boats',    icon: 'fa-sailboat' },
+    { id: 'landings', label: 'Landings', icon: 'fa-anchor' },
+  ] : [
     { id: 'today',       label: 'Today',        icon: 'fa-chart-column' },
     // Forecast entry removed 2026-09-06 (soft-retire). See _redirects for /sd/forecast handling.
     { id: 'charts',      label: 'Charts',       icon: 'fa-map' },
@@ -131,7 +138,7 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
   }
 
   const currentChoice =
-    regions && regions.length >= 2 ? 'all_socal' :
+    isSfbay ? 'sf_bay' :
     regions && regions[0] === 'oc_la' ? 'oc_la' : 'san_diego';
   const currentLabel = (REGION_OPTIONS.find(o => o.id === currentChoice) || REGION_OPTIONS[0]).label;
 
@@ -179,24 +186,27 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
                   <span>San Diego</span>
                 </div>
                 {window.FEATURES && window.FEATURES.SHOW_OCLA ? (
-                  <React.Fragment>
-                    <div className={`region-dropdown-item${currentChoice === 'oc_la' ? ' sel' : ''}`}
-                         onClick={() => handleRegionSelect('oc_la')}>
-                      <span className={`rdrop-dot${currentChoice === 'oc_la' ? ' sel' : ''}`}/>
-                      <span>OC / LA</span>
-                    </div>
-                    <div className={`region-dropdown-item${currentChoice === 'all_socal' ? ' sel' : ''}`}
-                         onClick={() => handleRegionSelect('all_socal')}>
-                      <span className={`rdrop-dot${currentChoice === 'all_socal' ? ' sel' : ''}`}/>
-                      <span>All SoCal</span>
-                    </div>
-                  </React.Fragment>
+                  <div className={`region-dropdown-item${currentChoice === 'oc_la' ? ' sel' : ''}`}
+                       onClick={() => handleRegionSelect('oc_la')}>
+                    <span className={`rdrop-dot${currentChoice === 'oc_la' ? ' sel' : ''}`}/>
+                    <span>OC / LA</span>
+                  </div>
                 ) : (
                   <div className="region-dropdown-item region-dropdown-item-cs">
                     <i className="fa-solid fa-lock" style={{fontSize:9,color:'var(--tb-gray-3)'}}/>
                     <span style={{color:'var(--tb-gray-3)'}}>OC / LA</span>
                     <span className="rdrop-cs-badge">Coming Soon</span>
                   </div>
+                )}
+                {window.FEATURES && window.FEATURES.SHOW_SFBAY && (
+                  <React.Fragment>
+                    <div className="region-dropdown-divider" role="separator"><span>NorCal</span></div>
+                    <div className={`region-dropdown-item${currentChoice === 'sf_bay' ? ' sel' : ''}`}
+                         onClick={() => handleRegionSelect('sf_bay')}>
+                      <span className={`rdrop-dot${currentChoice === 'sf_bay' ? ' sel' : ''}`}/>
+                      <span>SF Bay Area</span>
+                    </div>
+                  </React.Fragment>
                 )}
               </div>
             )}
@@ -572,7 +582,12 @@ function SectionHeader({ eyebrow, title, linkLabel, onLink }) {
   );
 }
 
-function AppFooter() {
+function AppFooter({ regions } = {}) {
+  // Region-aware footer: OC/LA visitors get OC/LA links and data sources.
+  const footRegions = regions || ['san_diego'];
+  const pfx = '/' + (window.regionsToHashPrefix ? window.regionsToHashPrefix(footRegions) : 'sd');
+  const footLandings = (window.getLandingsForRegion && window.getEffectiveRegion
+    && window.getLandingsForRegion(window.getEffectiveRegion(footRegions))) || null;
   const lastScrape = window.SD?.META?.lastScrape;
   const updatedStr = lastScrape
     ? new Date(lastScrape).toLocaleString('en-US', {
@@ -582,7 +597,7 @@ function AppFooter() {
       })
     : null;
   // Same rounding as the homepage hero, so the two trip counts always agree.
-  const totalTrips = window.SD?.META?.tripCount || 0;
+  const totalTrips = (window.ttRegionData ? window.ttRegionData.totalTripCount() : ((window.SD && window.SD.META && window.SD.META.tripCount) || 0));
   const tripDisplay = totalTrips
     ? (Math.floor(totalTrips / 100) * 100).toLocaleString() + '+ trips tracked since 2015.'
     : 'Trips tracked since 2015.';
@@ -593,8 +608,11 @@ function AppFooter() {
         <div className="app-footer-brand">
           <div className="app-footer-logo"><BrandMark size={26}/>{BRAND_NAME}</div>
           <p className="app-footer-blurb">
-            San Diego's most complete sportfishing analytics — daily fish counts,
-            boat leaderboards, and trip stats from every major San Diego landing.
+            {regions && window.getEffectiveRegion && window.getEffectiveRegion(regions) !== 'san_diego'
+              ? <React.Fragment>Southern California sportfishing analytics — daily fish counts,
+                  boat leaderboards, and trip stats from San Diego, Orange County and LA-area landings.</React.Fragment>
+              : <React.Fragment>San Diego's most complete sportfishing analytics — daily fish counts,
+                  boat leaderboards, and trip stats from every major San Diego landing.</React.Fragment>}
             {' '}{tripDisplay}
           </p>
           {updatedStr && (
@@ -604,22 +622,20 @@ function AppFooter() {
 
         <div className="app-footer-col">
           <div className="app-footer-col-head">Navigate</div>
-          <a href="/sd/home"               className="app-footer-nav-link">Home</a>
-          <a href="/sd/today"              className="app-footer-nav-link">Today's Report</a>
+          <a href={pfx + "/home"}               className="app-footer-nav-link">Home</a>
+          <a href={pfx + "/today"}              className="app-footer-nav-link">Today's Report</a>
           {/* Forecast link removed 2026-09-06 (soft-retire); /sd/forecast 301s to /sd/charts via web/_redirects. */}
-          <a href="/sd/charts"             className="app-footer-nav-link">Charts</a>
-          <a href="/sd/boats"              className="app-footer-nav-link">Boats</a>
-          <a href="/sd/analytics/overview" className="app-footer-nav-link">Analytics</a>
-          <a href="/sd/tripplanner"        className="app-footer-nav-link">Trip Planner</a>
+          <a href={pfx + "/charts"}             className="app-footer-nav-link">Charts</a>
+          <a href={pfx + "/boats"}              className="app-footer-nav-link">Boats</a>
+          <a href={pfx + "/analytics/overview"} className="app-footer-nav-link">Analytics</a>
+          <a href={pfx + "/tripplanner"}        className="app-footer-nav-link">Trip Planner</a>
         </div>
 
         <div className="app-footer-col">
           <div className="app-footer-col-head">Data Sources</div>
-          <span className="app-footer-data-item">H&amp;M Landing</span>
-          <span className="app-footer-data-item">Fisherman's Landing</span>
-          <span className="app-footer-data-item">Seaforth Sportfishing</span>
-          <span className="app-footer-data-item">Point Loma Sportfishing</span>
-          <span className="app-footer-data-item">Oceanside Sea Center</span>
+          {(footLandings || (window.REGIONS || []).flatMap(r => r.landings)).map(l => (
+            <span key={l} className="app-footer-data-item">{l}</span>
+          ))}
           <div className="app-footer-data-note">
             Reported daily from{' '}
             <a href="https://fishcounts.com" target="_blank" rel="noopener noreferrer"

@@ -263,6 +263,34 @@ function getBoatFormForChat(boats, lastN) {
   return out;
 }
 
+// OC/LA: no schedule feed, and trophy species are rare there, so give the
+// model each OC/LA boat's last-30-day catch across ALL landed species
+// (fullCatch is exported for the last 30 days only).
+function getOclaFormForChat(regions) {
+  const r = regions || ['san_diego'];
+  if (!r.includes('oc_la')) return '';
+  const ocla = new Set(window.getLandingsForRegion ? (window.getLandingsForRegion('oc_la') || []) : []);
+  const cutoff = window.TT_DATES.pacificDateOffsetDays(-30);
+  const byBoat = {};
+  (window.SD?.TRIPS || []).forEach(t => {
+    if (!ocla.has(t.landing) || !t.fullCatch || !(t.anglers > 0) || (t.date || '') < cutoff) return;
+    const b = byBoat[t.boat] || (byBoat[t.boat] = { landing: t.landing, trips: 0, anglers: 0, fish: {}, lengths: new Set(), last: '' });
+    b.trips++; b.anglers += t.anglers; b.lengths.add(t.tripLength);
+    if (t.date > b.last) b.last = t.date;
+    Object.entries(t.fullCatch).forEach(([sp, n]) => { if (n > 0) b.fish[sp] = (b.fish[sp] || 0) + n; });
+  });
+  return Object.entries(byBoat)
+    .sort((a, b) => b[1].trips - a[1].trips)
+    .slice(0, 40)
+    .map(([boat, b]) => {
+      const total = Object.values(b.fish).reduce((s, n) => s + n, 0);
+      const top = Object.entries(b.fish).sort((x, y) => y[1] - x[1]).slice(0, 4)
+        .map(([sp, n]) => `${sp} ${(n / b.anglers).toFixed(1)}`).join(', ');
+      return `${boat} (${b.landing}; ${[...b.lengths].join('/')}): ${b.trips} trips, last ${b.last} — ` +
+             `${(total / b.anglers).toFixed(1)} fish/angler all species${top ? ` (${top} per angler)` : ''}`;
+    }).join('\n') || 'No OC/LA trips in the last 30 days.';
+}
+
 function getBoatStatsForChat(regions) {
   const allowed = getRegionLandings(regions);
   try {
@@ -347,6 +375,30 @@ Mention this only if the user asks about El Niño, water temperature or why the 
 `;
 }
 
+// OC/LA section of the system prompt ('' unless the user's regions include
+// oc_la). Kept out of buildSystemPrompt so prompt restructures rebase cleanly.
+// Landings with rows in SCHEDULE get normal trip cards via UPCOMING TRIPS;
+// the rest have no schedule feed, so the model must point to the landing.
+function ccRegionBlock(regions, trips) {
+  const r = regions || ['san_diego'];
+  if (!r.includes('oc_la')) return '';
+  const ocla = (window.getLandingsForRegion && window.getLandingsForRegion('oc_la')) || [];
+  const scheduled = new Set((trips || []).map(t => t.landing).filter(l => ocla.includes(l)));
+  const sites = window.OCLA_LANDING_SITES || {};
+  const noFeed = ocla.filter(l => !scheduled.has(l));
+  const nl = String.fromCharCode(10);
+  return `
+
+ORANGE COUNTY / LA LANDINGS (the user is browsing ${r.includes('san_diego') ? 'all of Southern California' : 'the OC / LA region'}):
+- Landings: ${ocla.join(', ')}.
+${scheduled.size ? `- Trips from ${[...scheduled].join(', ')} are in UPCOMING TRIPS above; use trip cards for those as usual.${nl}` : ''}- Tunatracker has NO trip schedules, prices or open spots for: ${noFeed.join(', ')}. Never invent them and never write a <trip-card> for those landings. Recommend boats from OC/LA RECENT CATCH below, then tell the user to check the schedule and book on that landing's own website, by name (e.g. "book on Davey's Locker's site"). Do not write URLs, phone numbers or markdown links for these landings. ${noFeed.some(l => sites[l]) ? `The Trip Planner page the user is on lists booking links for: ${noFeed.filter(l => sites[l]).join(', ')}; you may say so.` : ''}${noFeed.some(l => !sites[l]) ? ` For ${noFeed.filter(l => !sites[l]).join(', ')}, say to contact the landing directly.` : ''}
+- Most OC/LA trips target rockfish, whitefish, calico bass, bonito and other local species; tuna/yellowtail/dorado are seasonal there. Use "fish per angler (all species)" for OC/LA boats, not trophy-only stats, unless the user asks about a specific species.
+- All HARD RULES apply here too: only the data below, landed fish only, no forecasts or predictions.
+
+OC/LA RECENT CATCH (last 30 days, landed fish per angler; species breakdown in brackets):
+${getOclaFormForChat(r)}`;
+}
+
 function buildSystemPrompt(pageContext) {
   const meta     = window.SD?.META;
   const today    = window.SD?.TODAY;
@@ -394,7 +446,10 @@ function buildSystemPrompt(pageContext) {
       ).join('\n')
     : 'No season stats.';
 
-  return `You are Co-Captain, the AI fishing partner for Tunatracker (formerly The Tuna Tracker; thetunatracker.com), a San Diego sportfishing data site. You help an angler pick the best real upcoming trip for them and hand them off to the landing's own site to book. If asked what happened to The Tuna Tracker: it's the same site with a shorter name.
+  const hasOcla = regions.includes('oc_la');
+  const siteScope = hasOcla ? 'a Southern California (San Diego, Orange County and LA-area) sportfishing data site' : 'a San Diego sportfishing data site';
+
+  return `You are Co-Captain, the AI fishing partner for Tunatracker (formerly The Tuna Tracker; thetunatracker.com), ${siteScope}. You help an angler pick the best real upcoming trip for them and hand them off to the landing's own site to book. If asked what happened to The Tuna Tracker: it's the same site with a shorter name.
 
 DATES (San Diego time):
 - Today is ${dc.todayName}. Tomorrow is ${dc.tomorrowName}.
@@ -436,7 +491,8 @@ ${pageContext?.page ? `Current page: ${pageContext.page}.` : ''}
 
 DATA (as of ${asOf}):
 ${ccEnsoLine()}
-TODAY'S COUNTS (${today?.date || 'unknown'}): ${today?.trophyCount ?? 0} trophy fish, ${today?.anglers ?? 0} anglers, ${today?.boatCount ?? today?.boats?.length ?? 0} boats reporting.
+
+${hasOcla ? 'SAN DIEGO ' : ''}TODAY'S COUNTS (${today?.date || 'unknown'}): ${today?.trophyCount ?? 0} trophy fish, ${today?.anglers ?? 0} anglers, ${today?.boatCount ?? today?.boats?.length ?? 0} boats reporting.
 
 UPCOMING TRIPS (next 120 days, open spots only; id | boat | landing | length | departs (PT) | price/person | open/capacity | season win rate & TPA for that boat+length | notes | how to book):
 ${tripRows}
@@ -445,7 +501,7 @@ RECENT FORM (last 10 reported trips per boat; landed fish per angler by species)
 ${formRows}
 
 SEASON LEADERBOARD (${window.TT_DATES.getPacificYear()}, boats with 10+ trips, by trophy fish per angler per day):
-${seasonRows}`;
+${seasonRows}${ccRegionBlock(regions, trips)}`;
 }
 
 async function streamChatMessage(userMessage, history, pageContext, onUpdate) {

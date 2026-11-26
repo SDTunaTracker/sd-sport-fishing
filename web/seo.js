@@ -46,6 +46,45 @@
     },
   };
 
+  // OC/LA region (/ocla/...) overrides. Keys missing here fall back to CONFIG.
+  var OCLA_CONFIG = {
+    home: {
+      title: SITE_NAME + ' — Orange County, LA & Ventura Fish Counts & Boat Leaderboards',
+      desc:  'Daily fish counts from Newport, Davey\'s Locker, Dana Wharf, 22nd Street, Long Beach, Redondo, Marina Del Rey, Pierpoint, Channel Islands and Ventura sportfishing boats, ranked fairly.'
+    },
+    today: {
+      title: 'Today\'s Orange County, LA & Ventura Fish Counts — Sportfishing Report' + SFX,
+      desc:  'Today\'s fish counts from Orange County, Los Angeles and Ventura County landings, by boat: yellowtail, tuna, calico bass, rockfish and more.'
+    },
+    boats: {
+      title: 'Orange County, LA & Ventura Sportfishing Boats' + SFX,
+      desc:  'Every Orange County, Los Angeles and Ventura County sportfishing boat with catch records, win rates and recent trips.'
+    },
+    analytics: {
+      title: 'Orange County, LA & Ventura Sportfishing Analytics' + SFX,
+      desc:  'Win rates, fish per angler, seasonality and head-to-head comparisons for Orange County, LA and Ventura County sportfishing boats.'
+    },
+    'analytics-finder': {
+      title: 'Find the Best Orange County, LA & Ventura Sportfishing Boat' + SFX,
+      desc:  'Pick your target species, trip length and month — see which Orange County and LA boats historically catch the most fish for those trips.'
+    },
+    tripplanner: {
+      title: 'Orange County, LA & Ventura Sportfishing Trips' + SFX,
+      desc:  'Find Orange County, LA and Ventura County sportfishing landings and book directly with them.'
+    },
+  };
+
+  // City for a landing (boat/landing JSON-LD). Default San Diego.
+  var LANDING_CITY = {
+    'Oceanside Sea Center': 'Oceanside',
+    '22nd Street Landing': 'San Pedro', 'LA Waterfront Sportfishing': 'San Pedro',
+    'Long Beach Sportfishing': 'Long Beach', 'Marina Del Rey Sportfishing': 'Marina del Rey',
+    'Redondo Beach Sportfishing': 'Redondo Beach', 'Pierpoint Landing': 'Long Beach',
+    'Channel Islands Sportfishing': 'Oxnard', 'Ventura Harbor Sportfishing': 'Ventura',
+    'Newport Landing': 'Newport Beach', "Davey's Locker": 'Newport Beach',
+    'Dana Wharf Sportfishing': 'Dana Point',
+  };
+
   // Same objects are baked into web/index.html (ids jld-org / jld-site).
   var ORG_LD = {
     '@context': 'https://schema.org', '@type': 'Organization',
@@ -94,7 +133,45 @@
   var prerenderedPath = document.documentElement.hasAttribute('data-prerendered')
     ? normPath(window.location.pathname) : null;
 
+  // SF Bay Area (/sfbay/...). Its own titles; noindex until SFBAY_PUBLIC is on so
+  // soft-launch preview URLs never get indexed. Prerender + sitemap: SEO session.
+  function updateSfbay(view, params) {
+    var path = window.location.pathname.replace(/\/+$/, '') || '/';
+    // Read the view from the path itself: the popstate fallback below doesn't
+    // know the /sfbay prefix and would otherwise pass 'today' for every page.
+    var segs = path.split('/');           // ['', 'sfbay', view, detail]
+    view = segs[2] || 'today';
+    if (view === 'boat' && segs[3]) params = { boat: decodeURIComponent(segs[3]) };
+    var S = ' | Tunatracker';
+    var T = {
+      today:    ['SF Bay Area Fish Counts Today — Emeryville, Berkeley, Sausalito, SF, Half Moon Bay' + S,
+                 'Daily open-party fish counts from SF Bay Area sportfishing boats, scored by limit rate for rockfish, salmon, crab and halibut.'],
+      boats:    ['SF Bay Area Sportfishing Boat Leaderboard — Limit Rates by Target' + S,
+                 'Compare SF Bay Area party boats by how often they put anglers on limits of rockfish, salmon, crab and halibut.'],
+      landings: ['SF Bay Area Sportfishing Landings' + S,
+                 'Every SF Bay Area sportfishing landing and boat: Emeryville, Berkeley, Sausalito, San Francisco and Half Moon Bay.'],
+    };
+    var cfg = view === 'boat' && params.boat
+      ? [params.boat + ' Fish Counts & Limit Rates — SF Bay Area' + S,
+         params.boat + ' recent fish counts and limit rates by target (rockfish, salmon, crab, halibut).']
+      : (T[view] || T.today);
+    document.title = cfg[0];
+    setMeta('description', cfg[1]);
+    setMeta('og:title', cfg[0], 'property');
+    setMeta('og:description', cfg[1], 'property');
+    setCanonical(BASE + path);
+    var pub = window.FEATURES && window.FEATURES.SFBAY_PUBLIC;
+    var robots = document.querySelector('meta[name="robots"]');
+    if (!pub) {
+      if (!robots) { robots = document.createElement('meta'); robots.setAttribute('name', 'robots'); document.head.appendChild(robots); }
+      robots.setAttribute('content', 'noindex');
+    } else if (robots && robots.getAttribute('content') === 'noindex') {
+      robots.remove();
+    }
+  }
+
   function update(view, params) {
+    if (/^\/sfbay(\/|$)/.test(window.location.pathname)) { updateSfbay(view, params || {}); return; }
     if (prerenderedPath !== null) {
       if (normPath(window.location.pathname) === prerenderedPath) return;
       prerenderedPath = null;
@@ -114,6 +191,7 @@
     if (view === 'boat' && params.boat) {
       var boatMeta = (window.SD && window.SD.BOATS && window.SD.BOATS.find(function(b) { return b.name === params.boat; })) || null;
       var landingName = (boatMeta && boatMeta.landing) || params.landing || 'San Diego Sportfishing';
+      var city = LANDING_CITY[landingName] || 'San Diego';
       cfg = {
         title: params.boat + ' Fish Report & Counts — ' + landingName + SFX,
         desc:  'View ' + params.boat + '\'s recent fish counts, win rate, and upcoming trip schedule at ' + landingName + '.',
@@ -121,11 +199,11 @@
       var jldBoat = {
         '@context': 'https://schema.org', '@type': 'LocalBusiness',
         name: params.boat,
-        description: 'Sportfishing charter boat operating out of ' + landingName + ', San Diego.',
+        description: 'Sportfishing charter boat operating out of ' + landingName + ', ' + city + '.',
         url: pageUrl,
         address: {
           '@type': 'PostalAddress',
-          addressLocality: 'San Diego', addressRegion: 'CA', addressCountry: 'US',
+          addressLocality: city, addressRegion: 'CA', addressCountry: 'US',
         },
         parentOrganization: { '@type': 'Organization', name: landingName },
       };
@@ -139,9 +217,18 @@
         };
       }
       setJsonLd('jld-entity', jldBoat);
+    } else if (view === 'landing' && params.landing) {
+      var lcity = LANDING_CITY[params.landing] || 'San Diego';
+      cfg = {
+        title: params.landing + ' Fish Counts — Fleet & Boat Stats' + SFX,  // matches src/generate_pages.py
+        desc:  'Daily fish counts, boat rankings and catch history for every boat at ' + params.landing + ' in ' + lcity + ', CA.',
+      };
+      clearJsonLd('jld-entity');
     } else {
       var cfgKey = (view === 'analytics' && params.subtab) ? 'analytics-' + params.subtab : view;
-      cfg = CONFIG[cfgKey] || CONFIG[view] || CONFIG.today;
+      var isOcla = /^\/ocla(\/|$)/.test(path);
+      cfg = (isOcla && (OCLA_CONFIG[cfgKey] || OCLA_CONFIG[view]))
+        || CONFIG[cfgKey] || CONFIG[view] || CONFIG.today;
       clearJsonLd('jld-entity');
     }
 

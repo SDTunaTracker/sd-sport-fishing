@@ -1,72 +1,95 @@
 {
   "boat_reports_last_error": null,
-  "boat_reports_last_run_utc": "2026-11-25T17:15:44Z",
-  "boat_reports_last_success_utc": "2026-11-25T17:15:44Z",
-  "boat_reports_pending": 174,
+  "boat_reports_last_run_utc": "2026-11-26T04:00:25Z",
+  "boat_reports_last_success_utc": "2026-11-26T04:00:25Z",
+  "boat_reports_pending": 326,
   "consecutive_failures": 0,
   "consecutive_zero_runs": 0,
   "extract_consecutive_failed_runs": 0,
   "extract_last_error": null,
-  "extract_last_run_utc": "2026-11-25T17:12:08Z",
-  "extract_last_success_utc": "2026-11-25T17:12:08Z",
+  "extract_last_run_utc": "2026-11-26T03:50:28Z",
+  "extract_last_success_utc": "2026-11-26T03:50:28Z",
   "feeds": {
     "bd-baja": {
       "consecutive_failures": 0,
       "last_error": null,
-      "last_new_row_utc": "2026-11-25T04:30:12Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
-      "newest_post_published_at": "2026-11-25T01:33:26Z"
+      "last_new_row_utc": "2026-11-26T03:40:40Z",
+      "last_success_utc": "2026-11-26T03:40:40Z",
+      "newest_post_published_at": "2026-11-25T22:12:54Z"
+    },
+    "bd-california": {
+      "consecutive_failures": 0,
+      "last_error": null,
+      "last_new_row_utc": "2026-11-25T19:29:09Z",
+      "last_success_utc": "2026-11-26T03:40:40Z",
+      "newest_post_published_at": "2026-11-25T00:33:23Z"
     },
     "bd-long-range": {
       "consecutive_failures": 0,
       "last_error": null,
-      "last_new_row_utc": "2026-11-25T17:00:47Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
-      "newest_post_published_at": "2026-11-25T16:33:27Z"
+      "last_new_row_utc": "2026-11-26T03:40:40Z",
+      "last_success_utc": "2026-11-26T03:40:40Z",
+      "newest_post_published_at": "2026-11-25T21:43:24Z"
     },
     "bd-socal-offshore": {
       "consecutive_failures": 0,
       "last_error": null,
-      "last_new_row_utc": "2026-11-25T08:52:47Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
-      "newest_post_published_at": "2026-11-25T06:08:54Z"
+      "last_new_row_utc": "2026-11-26T03:40:40Z",
+      "last_success_utc": "2026-11-26T03:40:40Z",
+      "newest_post_published_at": "2026-11-26T00:45:50Z"
     },
     "bd-socal-sportboats": {
       "consecutive_failures": 0,
       "last_error": null,
-      "last_new_row_utc": "2026-11-25T17:00:47Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
-      "newest_post_published_at": "2026-11-25T16:48:14Z"
+      "last_new_row_utc": "2026-11-26T03:40:40Z",
+      "last_success_utc": "2026-11-26T03:40:40Z",
+      "newest_post_published_at": "2026-11-26T02:58:48Z"
     },
     "bd-spearfishing": {
       "consecutive_failures": 0,
       "last_error": null,
       "last_new_row_utc": "2026-11-24T22:06:38Z",
-      "last_success_utc": "2026-11-25T17:00:47Z",
+      "last_success_utc": "2026-11-26T03:40:40Z",
       "newest_post_published_at": "2026-11-08T14:25:56Z"
     }
   },
   "last_error": null,
-  "last_items_seen": 123,
-  "last_new_row_utc": "2026-11-25T08:52:47Z",
-  "last_run_utc": "2026-11-25T17:00:47Z",
-  "last_success_utc": "2026-11-25T17:00:47Z",
-  "newest_post_published_at": "2026-11-25T06:08:54Z",
-  "pending_extract": 202,
-  "spots_features": 1,
-  "spots_geocoded": 171,
-  "spots_last_run_utc": "2026-11-25T18:44:49Z",
-  "spots_rows": 342,
+  "last_items_seen": 148,
+  "last_new_row_utc": "2026-11-26T03:40:40Z",
+  "last_run_utc": "2026-11-26T03:40:40Z",
+  "last_success_utc": "2026-11-26T03:40:40Z",
+  "newest_post_published_at": "2026-11-26T00:45:50Z",
+  "pending_extract": 16,
+  "spots_features": 9,
+  "spots_geocoded": 559,
+  "spots_last_run_utc": "2026-11-26T04:00:26Z",
+  "spots_rows": 1203,
   "spots_unresolved_names": {
-    "13 Fathom": 1,
-    "13 Fathom Spot": 1,
-    "Juggs Bank": 1,
-    "Lower Banks": 1,
-    "San Carlos": 1,
-    "San Pablo Bay": 1,
-    "The Rocks": 1,
-    "the Ridge": 2,
-    "the rocks": 1
+    "Alejos Rocks": 1,
+    "Catalina backside additional structure spots": 1,
+    "Catalina backside structure spot": 1,
+    "Colnett": 1,
+    "Colonet zone": 1,
+    "Del Mar": 1,
+    "Ensenada": 4,
+    "Green buoy": 1,
+    "Osborne Bank": 2,
+    "Osbourne Bank": 1,
+    "Ranger Bank": 1,
+    "SBI": 1,
+    "San Pablo": 1,
+    "bait receiver": 1,
+    "border": 1,
+    "high ridge": 1,
+    "islands": 2,
+    "large paddy": 1,
+    "oil rig": 1,
+    "south of Ensenada": 1,
+    "the Ridge": 4,
+    "the beach": 1,
+    "the pens": 1,
+    "the rigs": 1,
+    "weather buoy near the corner": 1
   },
-  "total_rows": 569
+  "total_rows": 902
 }

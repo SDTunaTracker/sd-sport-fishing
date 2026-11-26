@@ -91,6 +91,7 @@ function parseRoute(raw) {
     return { view: 'analytics', params: { subtab: sub }, hashRegions: regionIds };
   }
   if (seg === 'boats')      return { view: 'boats',     params: {},                        hashRegions: regionIds };
+  if (seg === 'landings' && regionIds && regionIds[0] === 'sf_bay') return { view: 'landings', params: {}, hashRegions: regionIds };
   if (seg === 'landings')   return { view: 'analytics', params: { subtab: 'overview' },    hashRegions: regionIds };
   if (seg === 'headtohead') return { view: 'analytics', params: { subtab: 'headtohead' },  hashRegions: regionIds };
   if (seg === 'moon')       return { view: 'analytics', params: { subtab: 'moon' },        hashRegions: regionIds };
@@ -122,6 +123,27 @@ function pathFromRoute(view, params = {}, regions = ['san_diego']) {
 }
 window.ttPathFromRoute = pathFromRoute;
 
+// Shown while a region's data file (web/region-data.js) loads on first use.
+function RegionLoading({ regions, error, onRetry }) {
+  const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'this region';
+  if (error) {
+    return (
+      <div className="region-loading" role="alert">
+        <div className="region-loading-title">Couldn't load {label} fish counts.</div>
+        <div className="region-loading-sub">Check your connection and try again.</div>
+        <button className="btn primary" onClick={onRetry}>Try again</button>
+      </div>
+    );
+  }
+  return (
+    <div className="region-loading" role="status" aria-live="polite" aria-busy="true">
+      <div className="region-loading-title"><span className="region-loading-spinner" aria-hidden="true"></span>Loading {label} fish counts…</div>
+      <div className="region-loading-sub">One-time download for this region.</div>
+      {window.SkeletonRows && <SkeletonRows count={6}/>}
+    </div>
+  );
+}
+
 function App() {
   const [route, setRoute] = useS(() => routeFromLocation());
   const [navBusy, setNavBusy] = useS(false);
@@ -135,7 +157,21 @@ function App() {
   // Clerk auth state — hook must be at top level.
   const { user, isSignedIn } = useAuth();
 
-  const [regions, setRegions] = useS(() => {
+  // One region at a time: normalizeRegions (regions.js) turns any combination,
+  // e.g. a saved or linked "All SoCal", into San Diego.
+  const _norm = (ids) => (window.normalizeRegions ? window.normalizeRegions(ids) : ids);
+  const [regions, setRegions] = useS(() => _norm((() => {
+    // SF Bay Area (behind SHOW_SFBAY): a /sfbay/... URL or a saved choice wins.
+    if (window.FEATURES && window.FEATURES.SHOW_SFBAY) {
+      const r0 = routeFromLocation();
+      if (r0.hashRegions && r0.hashRegions[0] === 'sf_bay') return ['sf_bay'];
+      if (!r0.hashRegions) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('tt_regions'));
+          if (Array.isArray(saved) && saved[0] === 'sf_bay') return ['sf_bay'];
+        } catch(e) {}
+      }
+    }
     // Feature flag: OC/LA is not public yet — lock to SD-only.
     if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) return ['san_diego'];
     const initial = routeFromLocation();
@@ -147,12 +183,26 @@ function App() {
     // Migrate old single-region localStorage key
     const old = localStorage.getItem('tt_region');
     if (old === 'oc_la')     return ['oc_la'];
-    if (old === 'all_socal') return ['san_diego', 'oc_la'];
     return ['san_diego'];
-  });
+  })()));
 
-  // Strip any oc_la that leaked in from localStorage/hash when flag is off.
+  // Replace a retired combined selection in localStorage so it doesn't come back.
   useE(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tt_regions'));
+      if (Array.isArray(saved) && saved.length > 1) localStorage.setItem('tt_regions', JSON.stringify(regions));
+    } catch(e) {}
+  }, []);
+
+  // Strip any oc_la / sf_bay that leaked in from localStorage/hash when its flag is off.
+  useE(() => {
+    if (regions.includes('sf_bay') && !(window.FEATURES && window.FEATURES.SHOW_SFBAY)) {
+      const next = ['san_diego'];
+      setRegions(next);
+      try { localStorage.setItem('tt_regions', JSON.stringify(next)); } catch(e) {}
+      return;
+    }
+    if (regions.includes('sf_bay')) return;
     if (!window.FEATURES || !window.FEATURES.SHOW_OCLA) {
       if (regions.includes('oc_la')) {
         const next = ['san_diego'];
@@ -173,6 +223,32 @@ function App() {
     SDA.preprocessHalfDayTrips(s);
     return s;
   });
+  // Non-base regions (OC/LA, ...) ship in their own data file, loaded the first
+  // time the visitor selects them. Until it's merged into window.SD, the page
+  // shows RegionLoading instead of rendering with that region missing.
+  const [regionDataTick, setRegionDataTick] = useS(0);
+  const [regionLoadError, setRegionLoadError] = useS(null);
+  const regionDataReady = !window.ttRegionData || window.ttRegionData.isLoaded(regions);
+  // The headline metric depends on the region (OC/LA counts all species, see
+  // SDA.metricFor), so re-derive SD_PROC_TRIPS synchronously, before this
+  // render's children read it, whenever the effective region changes.
+  const metricRegion = window.getEffectiveRegion ? window.getEffectiveRegion(regions) : 'san_diego';
+  if (window.SD_METRIC_REGION !== metricRegion) {
+    SDA.preprocessTrips(settings, metricRegion);
+    SDA.preprocessHalfDayTrips(settings, metricRegion);
+  }
+  useE(() => {
+    if (regionDataReady) return;
+    setRegionLoadError(null);
+    window.ttRegionData.ensure(regions).then(() => {
+      // Re-derive SD_PROC_TRIPS with the merged rows (current saved settings).
+      const s = loadSettings();
+      SDA.preprocessTrips(s);
+      SDA.preprocessHalfDayTrips(s);
+      setRegionDataTick(t => t + 1);
+    }).catch(e => setRegionLoadError((e && e.message) || String(e)));
+  }, [regions, regionDataReady, regionDataTick]);
+
   function onSettingsChange(next) {
     saveSettings(next);
     SDA.preprocessTrips(next);
@@ -183,7 +259,8 @@ function App() {
   // When a user signs in, pull their saved region and species from Clerk metadata.
   useE(() => {
     if (!isSignedIn || !window.getUserPref) return;
-    const CHOICE_MAP = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'] };
+    const CHOICE_MAP = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego'] };
+    if (window.FEATURES && window.FEATURES.SHOW_SFBAY) CHOICE_MAP.sf_bay = ['sf_bay'];
     const savedChoice = window.getUserPref('region_choice', null);
     if (savedChoice && CHOICE_MAP[savedChoice]) {
       setRegionsDirect(CHOICE_MAP[savedChoice]);
@@ -237,27 +314,15 @@ function App() {
   }, [regions, route]);
 
   function setRegionsDirect(newRegions) {
-    const cleaned = Array.isArray(newRegions) && newRegions.length > 0 ? newRegions : ['san_diego'];
+    const cleaned = _norm(Array.isArray(newRegions) && newRegions.length > 0 ? newRegions : ['san_diego']);
     setRegions(cleaned);
     try { localStorage.setItem('tt_regions', JSON.stringify(cleaned)); } catch(e) {}
     setFilters(f => ({ ...f, landing: 'all', boat: 'all' }));
   }
 
+  // Regions are single-select (no combined "All SoCal" view since 2026-11-26).
   function toggleRegion(regionId) {
-    setRegions(prev => {
-      let next;
-      if (prev.includes(regionId)) {
-        if (prev.length === 1) return prev; // at-least-one constraint
-        next = prev.filter(r => r !== regionId);
-      } else {
-        // Keep consistent order matching REGIONS array order
-        const order = (window.REGIONS || []).map(r => r.id);
-        next = [...prev, regionId].sort((a, b) => order.indexOf(a) - order.indexOf(b));
-      }
-      localStorage.setItem('tt_regions', JSON.stringify(next));
-      return next;
-    });
-    setFilters(f => ({ ...f, landing: 'all', boat: 'all' }));
+    setRegionsDirect([regionId]);
   }
 
   // expose tweak setter for inline buttons in dashboard
@@ -348,7 +413,7 @@ function App() {
   // routing is migrated to path-based routes (see links/routing spec).
   useE(() => {
     if (window.__updateMetaTags) window.__updateMetaTags(route.view, route.params || {});
-  }, [route.view, route.params?.boat, route.params?.subtab]);
+  }, [route.view, route.params?.boat, route.params?.subtab, regionDataTick]);
 
   // Lock the document scroll context when the full-bleed Charts map is active.
   useE(() => {
@@ -406,10 +471,14 @@ function App() {
   const navMap = {
     home: 'home', today: 'today', forecast: 'forecast', analytics: 'analytics',
     tripplanner: 'tripplanner', account: 'account', boats: 'boats', charts: 'charts',
+    landings: 'landings',
   };
 
+  const isSfbay = regions[0] === 'sf_bay';
   let content;
-  if (route.view === 'home') {
+  if (isSfbay && route.view !== 'account') {
+    content = <SFBayView view={route.view} params={route.params || {}} navigate={navigate}/>;
+  } else if (route.view === 'home') {
     content = <HomeView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
@@ -431,19 +500,25 @@ function App() {
       try { window.history.replaceState(null, '', '#charts'); } catch (e) {}
     }
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings}/>
+      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'charts') {
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings}/>
+      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
                               regions={regions} onRegionsDirect={setRegionsDirect} navigate={navigate}/>;
   }
 
+  if (!regionDataReady && route.view !== 'account') {
+    content = <RegionLoading regions={regions} error={regionLoadError}
+                             onRetry={() => setRegionDataTick(t => t + 1)}/>;
+  }
+
   const headerActive = route.view === 'boat' ? 'boats'
-    : route.view === 'landing' ? 'analytics'
+    : (isSfbay && route.view === 'home') ? 'today'
+    : route.view === 'landing' ? (isSfbay ? 'landings' : 'analytics')
     : route.view;
 
   return (
@@ -453,9 +528,9 @@ function App() {
                  hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                  regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
       <main className="main-content" data-screen-label={route.view}>{content}</main>
-      <AppFooter/>
+      {isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
 
-      {route.view === 'tripplanner' && <ChatBot pageContext={pageContext}/>}
+      {route.view === 'tripplanner' && !isSfbay && regionDataReady && <ChatBot pageContext={pageContext}/>}
 
       <TweaksPanel title="Tweaks">
         <TweakSection title="Display">
@@ -481,7 +556,7 @@ function App() {
                        options={[{value:'all',label:'All'}, ...[...new Set(window.SD.TRIPS.map(t => t.year))].sort((a,b) => b-a).map(y => ({value:String(y),label:String(y)}))]}
                        onChange={v => setFilters({ ...filters, year: v })}/>
           <TweakSelect label="Species focus" value={filters.species}
-                       options={[{value:'all',label:'All Tuna'},{value:'Bluefin',label:'Bluefin'},{value:'Yellowfin',label:'Yellowfin'},{value:'Yellowtail',label:'Yellowtail'},{value:'Dorado',label:'Dorado'},{value:'Skipjack',label:'Skipjack'},{value:'Bigeye',label:'Bigeye'},{value:'Albacore',label:'Albacore'}]}
+                       options={[{value:'all',label:SDA.headlineIsAllSpecies() ? 'All species' : 'All Tuna'},{value:'Bluefin',label:'Bluefin'},{value:'Yellowfin',label:'Yellowfin'},{value:'Yellowtail',label:'Yellowtail'},{value:'Dorado',label:'Dorado'},{value:'Skipjack',label:'Skipjack'},{value:'Bigeye',label:'Bigeye'},{value:'Albacore',label:'Albacore'}]}
                        onChange={v => setFilters({ ...filters, species: v })}/>
         </TweakSection>
       </TweaksPanel>

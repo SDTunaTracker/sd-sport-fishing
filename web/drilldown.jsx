@@ -140,9 +140,16 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
                   onClick={() => { setDetailTab('reviews'); setReviewOpenSignal(s => s + 1); }}>
             <i className="fa-regular fa-pen-to-square"></i> Write a review
           </button>
-          <button className="btn primary" onClick={() => navigate('tripplanner')}>
-            Book a trip <i className="fa-solid fa-arrow-right"></i>
-          </button>
+          {/* OC/LA landings have no schedule feed: link to the landing's own booking page. */}
+          {window.OCLA_LANDING_SITES && window.OCLA_LANDING_SITES[meta.landing] ? (
+            <a className="btn primary" href={window.OCLA_LANDING_SITES[meta.landing]} target="_blank" rel="noopener">
+              Book with {meta.landing} <i className="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          ) : (
+            <button className="btn primary" onClick={() => navigate('tripplanner')}>
+              Book a trip <i className="fa-solid fa-arrow-right"></i>
+            </button>
+          )}
         </div>
       </div>
 
@@ -254,6 +261,7 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
         <>
           <ReviewsSection boat={boat} landing={meta.landing} openSignal={reviewOpenSignal}/>
           {window.ForumReportsSection && <ForumReportsSection boat={boat}/>}
+          {window.LandingNotesSection && <LandingNotesSection boat={boat}/>}
           {window.GoogleReviewsSection && <GoogleReviewsSection boat={boat} landing={meta.landing}/>}
           {window.BoatVideosSection && <BoatVideosSection boat={boat}/>}
         </>
@@ -385,7 +393,7 @@ function LandingDetail({ filters, setFilters, navigate, landing, regions }) {
             <table className="dt">
               <thead><tr>
                 <th style={{width: 36}}>#</th><th>Boat</th><th className="num">Trips</th>
-                <th className="num">Tuna/Angler</th><th>Label</th>
+                <th className="num">{SDA.headlineLabel()}/Angler</th><th>Label</th>
               </tr></thead>
               <tbody>
                 {boats.map((b, i) => (
@@ -451,7 +459,7 @@ function LandingsView({ filters, setFilters, navigate, regions }) {
   const landings = useMemo(() => SDA.landingSummary(trips, filters.species), [trips, filters.species]);
   const sf = SDA.speciesField(filters.species);
   const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel = speciesActive ? filters.species : 'Tuna';
+  const speciesLabel = speciesActive ? filters.species : SDA.headlineLabel();
 
   return (
     <React.Fragment>

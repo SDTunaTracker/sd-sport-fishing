@@ -1,6 +1,9 @@
 /data.js
   Cache-Control: no-cache, must-revalidate
 
+/data-region-*
+  Cache-Control: no-cache, must-revalidate
+
 /ais_positions.json
   Cache-Control: no-cache, must-revalidate
 
@@ -46,5 +49,10 @@
 
 /api/v1/forum_spots.geojson
   Content-Type: application/geo+json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/landing_notes.json
+  Content-Type: application/json
   Access-Control-Allow-Origin: *
   Cache-Control: no-cache, must-revalidate
