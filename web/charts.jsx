@@ -1326,138 +1326,6 @@ function BoatsSetupOverlay() {
   );
 }
 
-// ── Catch overlay ─────────────────────────────────────────────────────────────
-
-var _CATCH_DAYS = 14;
-
-// Named fishing zones → lat/lng; keys are lowercase substrings to match against rawText
-var _FISHING_ZONES = [
-  { keys: ['coronado island', 'the islands', 'islands area'], lat: 32.42, lng: -117.25 },
-  { keys: ['9-mile', '9 mile', 'nine-mile', 'nine mile'],     lat: 32.70, lng: -117.40 },
-  { keys: ['43 fathom', '43-fathom'],                         lat: 32.80, lng: -117.60 },
-  { keys: ['60-mile', '60 mile', 'sixty mile'],               lat: 32.40, lng: -117.70 },
-  { keys: ['302 spot', '302spot'],                            lat: 32.00, lng: -117.70 },
-  { keys: ['209 spot', '209spot'],                            lat: 32.30, lng: -117.90 },
-  { keys: ['182 spot', '182spot'],                            lat: 32.60, lng: -118.00 },
-  { keys: ['tanner bank', 'tanner'],                          lat: 32.70, lng: -119.10 },
-  { keys: ['cortes bank', 'cortes'],                          lat: 32.40, lng: -119.10 },
-  { keys: ['san clemente island'],                            lat: 32.90, lng: -118.50 },
-  { keys: ['catalina island', 'catalina'],                    lat: 33.40, lng: -118.40 },
-  { keys: ['hidden bank'],                                    lat: 32.95, lng: -117.50 },
-  { keys: ['425 bank', ' 425 '],                              lat: 31.90, lng: -119.50 },
-  { keys: ['point loma kelp', 'pt loma kelp', 'loma kelp'],  lat: 32.65, lng: -117.28 },
-  { keys: ['ensenada'],                                       lat: 31.87, lng: -116.60 },
-  { keys: ['uncle sam bank', 'uncle sam'],                    lat: 32.60, lng: -118.30 },
-];
-
-var _CATCH_COLORS = {
-  Bluefin:   '#3b82f6',
-  Yellowfin: '#f59e0b',
-  Yellowtail:'#f97316',
-  Dorado:    '#22c55e',
-};
-
-function _zoneFromText(text) {
-  if (!text) return null;
-  var t = text.toLowerCase();
-  for (var i = 0; i < _FISHING_ZONES.length; i++) {
-    var z = _FISHING_ZONES[i];
-    for (var j = 0; j < z.keys.length; j++) {
-      if (t.indexOf(z.keys[j]) !== -1) return { lat: z.lat, lng: z.lng };
-    }
-  }
-  return null;
-}
-
-function _landingCoords(name) {
-  var metas = (window.SD && window.SD.LANDINGS_META) || [];
-  for (var i = 0; i < metas.length; i++) {
-    if (metas[i].name === name) return { lat: metas[i].lat, lng: metas[i].lng };
-  }
-  return (window.OCLA_LANDING_COORDS && window.OCLA_LANDING_COORDS[name]) || null;
-}
-
-function _dominantSpecies(trip) {
-  var best = null, bestN = 0;
-  ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'].forEach(function(sp) {
-    var n = trip[sp] || 0;
-    if (n > bestN) { bestN = n; best = sp; }
-  });
-  return best;
-}
-
-// Deterministic per-trip jitter so toggling doesn't reshuffle markers
-function _tripJitter(id, axis) {
-  var h = 0, s = id + axis;
-  for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffffffff;
-  return ((h & 0xffff) / 0xffff - 0.5) * 0.014;
-}
-
-// filterDateStr: optional YYYY-MM-DD upper bound. Catches after this date are hidden.
-// When scrubbing into the past, recency opacity is also relative to filterDate.
-// regionLandings: landings of the selected region (null = all regions).
-function buildCatchLayer(trips, filterDateStr, regionLandings) {
-  var todayMs = Date.now();
-  var todayStr = window.TT_DATES.getPacificDate();
-  var cutStr = window.TT_DATES.pacificDateOffsetDays(-_CATCH_DAYS);
-  // When scrubbing past, cap at scrubber date; future scrubbing shows all current catches
-  var maxDateStr = (filterDateStr && filterDateStr < todayStr) ? filterDateStr : todayStr;
-  var referenceMs = filterDateStr ? Math.min(new Date(filterDateStr + 'T12:00:00').getTime(), todayMs) : todayMs;
-  var group  = L.layerGroup();
-
-  trips.filter(function(t) {
-    var inRegion = regionLandings ? regionLandings.indexOf(t.landing) !== -1 : true;
-    return t.date >= cutStr && t.date <= maxDateStr && !t.isPreliminary && inRegion;
-  }).forEach(function(trip) {
-    var zoneLoc = _zoneFromText(trip.rawText);
-    var isZone  = !!zoneLoc;
-    var loc     = zoneLoc || _landingCoords(trip.landing);
-    if (!loc) return;
-
-    var tid   = String(trip.id || trip.boat + trip.date);
-    var lat   = loc.lat + _tripJitter(tid, 'lat');
-    var lng   = loc.lng + _tripJitter(tid, 'lng');
-    var ageDays  = (referenceMs - new Date(trip.date).getTime()) / 86400000;
-    var recency  = Math.max(0.35, 1 - (ageDays / _CATCH_DAYS) * 0.65);
-    var tc       = trip.trophyCount || 0;
-    var radius   = Math.max(6, Math.min(18, 6 + Math.sqrt(tc) * 2.2));
-    var sp       = _dominantSpecies(trip);
-    var color    = _CATCH_COLORS[sp] || '#8b5cf6';
-
-    var marker = L.circleMarker([lat, lng], {
-      radius:      radius,
-      color:       isZone ? color : '#ffffff',
-      weight:      2,
-      dashArray:   isZone ? null : '4,3',
-      fillColor:   color,
-      fillOpacity: recency * 0.82,
-      opacity:     recency,
-    });
-
-    var speciesStr = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'].filter(function(s) {
-      return (trip[s] || 0) > 0;
-    }).map(function(s) { return trip[s] + ' ' + s; }).join(', ') || 'No trophies';
-    var ageStr  = ageDays < 1 ? 'Today' : ageDays < 2 ? 'Yesterday' : Math.floor(ageDays) + ' days ago';
-    var locTag  = isZone ? '📍 Zone' : '🚢 Landing (approx)';
-    var boatKey = JSON.stringify(trip.boat);
-
-    marker.bindPopup(
-      '<div class="catch-popup">' +
-        '<div class="catch-popup-boat">' + trip.boat + '</div>' +
-        '<div class="catch-popup-meta">' + trip.tripLength + ' &middot; ' + (trip.anglers || '?') + ' anglers</div>' +
-        '<div class="catch-popup-species">' + speciesStr + '</div>' +
-        '<div class="catch-popup-loc">' + locTag + ' &middot; ' + ageStr + '</div>' +
-        '<button class="catch-popup-btn" onclick="window._ttCatchNav(' + boatKey + ')">View boat →</button>' +
-      '</div>',
-      { className: 'catch-popup-wrap', maxWidth: 240 }
-    );
-
-    marker.addTo(group);
-  });
-
-  return group;
-}
-
 // ── BloodyDecks forum spots (api/v1/forum_spots.geojson) ─────────────────────
 // One feature per spot with recent forum reports (scraper/paddies/spots.py).
 // Contract: side-session notes bloodydecks-forum-spots.md. Design: UX session
@@ -1675,8 +1543,8 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 // ── LayerPanel ────────────────────────────────────────────────────────────────
 // Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
-function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, sstMode, dirMode,
-                      onBase, onCond, onTides, onBoats, onCatches, onSstMode, onDirMode,
+function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirMode,
+                      onBase, onCond, onTides, onBoats, onSstMode, onDirMode,
                       spotCount, showSpots, onSpots, spotWindow, onSpotWindow }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
@@ -1752,9 +1620,6 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, showCatches, 
         <div className="layer-group-row">
           <button className={'layer-btn' + (showTides   ? ' active' : '')} onClick={function() { onTides(!showTides); }}>
             <span className="layer-btn-icon">🌙</span>Tides
-          </button>
-          <button className={'layer-btn' + (showCatches ? ' active' : '')} onClick={function() { onCatches(!showCatches); }}>
-            <span className="layer-btn-icon">🎣</span>Catches
           </button>
           <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
             <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
@@ -1981,13 +1846,11 @@ function ChartReadoutDock({ readout, onClose, onSave }) {
 
 function ChartsView({ navigate, settings, regions }) {
   var effRegion = (regions && window.getEffectiveRegion) ? window.getEffectiveRegion(regions) : 'san_diego';
-  var regionLandings = (window.getLandingsForRegion && window.getLandingsForRegion(effRegion)) || null;
   var unitSystem = (settings && settings.unitSystem) || 'imperial';
   const [baseLayer, setBaseLayer]   = React.useState('sst');
   const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false, pressure: false });
   const [showTides, setShowTides]   = React.useState(false);
   const [showBoats, setShowBoats]   = React.useState(false);
-  const [showCatches, setShowCatches] = React.useState(false);
   const [showSpots, setShowSpots]     = React.useState(false);
   const [spotsGeo, setSpotsGeo]       = React.useState(null);
   const [spotWindow, setSpotWindow]   = React.useState(14);
@@ -2040,7 +1903,6 @@ function ChartsView({ navigate, settings, regions }) {
   const murGridRef       = React.useRef(null);
   const murSSTLayerRef   = React.useRef(null);
   const murFrontLayerRef = React.useRef(null);
-  const catchLayerRef    = React.useRef(null);
   const spotLayerRef     = React.useRef(null);
   const sliderThrottleRef = React.useRef(null);
   // Raw, sampleable grid data for the tap-to-read popup (refs stay current
@@ -2287,8 +2149,6 @@ function ChartsView({ navigate, settings, regions }) {
       setShowModal(true);
     };
 
-    window._ttCatchNav = function(boat) { if (navigate) navigate('boat', { boat: boat }); };
-
     mapInstance.current.on('click', function(e) {
       setTapReadout(buildPointReadout(e.latlng.lat, e.latlng.lng, null));
     });
@@ -2299,7 +2159,6 @@ function ChartsView({ navigate, settings, regions }) {
       window.removeEventListener('orientationchange', _onWinResize);
       if (_resizeObserver) { _resizeObserver.disconnect(); _resizeObserver = null; }
       delete window.ttOpenWaypointModal;
-      delete window._ttCatchNav;
       userLocMarkerRef.current = null;
       tapMarkerRef.current = null;
       if (mapInstance.current) { mapInstance.current.remove(); mapInstance.current = null; }
@@ -2656,20 +2515,6 @@ function ChartsView({ navigate, settings, regions }) {
     }
   }, [sliderStep, sliderSeries]);
 
-  // Catch overlay — rebuilds when catches toggled or scrubber crosses a day boundary
-  React.useEffect(function() {
-    if (!mapInstance.current) return;
-    if (catchLayerRef.current) { mapInstance.current.removeLayer(catchLayerRef.current); catchLayerRef.current = null; }
-    if (showCatches) {
-      var trips = (window.SD && window.SD.TRIPS) || [];
-      var filterDateStr = scrubberDayKey
-        ? scrubberDayKey.slice(0,4) + '-' + scrubberDayKey.slice(4,6) + '-' + scrubberDayKey.slice(6,8)
-        : null;
-      catchLayerRef.current = buildCatchLayer(trips, filterDateStr, regionLandings);
-      catchLayerRef.current.addTo(mapInstance.current);
-    }
-  }, [showCatches, scrubberDayKey, effRegion]);
-
   // BloodyDecks forum spots — region-filtered; the button only shows when the
   // selected region has at least one spot.
   React.useEffect(function() {
@@ -2767,7 +2612,6 @@ function ChartsView({ navigate, settings, regions }) {
   if (condLayers.currents) activeLayerLabels.push('Currents');
   if (condLayers.pressure) activeLayerLabels.push('Pressure');
   if (showTides)           activeLayerLabels.push('Tides');
-  if (showCatches)         activeLayerLabels.push('Catches');
   if (showBoats)           activeLayerLabels.push('Boats');
   if (showSpots && regionSpots14.length) activeLayerLabels.push('Forum');
 
@@ -2796,11 +2640,11 @@ function ChartsView({ navigate, settings, regions }) {
         <div className="layer-panel-desktop">
           <LayerPanel
             baseLayer={baseLayer} condLayers={condLayers}
-            showTides={showTides} showBoats={showBoats} showCatches={showCatches}
+            showTides={showTides} showBoats={showBoats}
             sstMode={sstMode} dirMode={dirMode}
             onBase={setBaseLayer}
             onCond={onCond}
-            onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
+            onTides={setShowTides} onBoats={setShowBoats}
             onSstMode={setSstMode} onDirMode={setDirMode}
             spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
             spotWindow={spotWindow} onSpotWindow={setSpotWindow}
@@ -2908,11 +2752,11 @@ function ChartsView({ navigate, settings, regions }) {
             <div className="layers-sheet-title">Map Layers</div>
             <LayerPanel
               baseLayer={baseLayer} condLayers={condLayers}
-              showTides={showTides} showBoats={showBoats} showCatches={showCatches}
+              showTides={showTides} showBoats={showBoats}
               sstMode={sstMode} dirMode={dirMode}
               onBase={setBaseLayer}
               onCond={onCond}
-              onTides={setShowTides} onBoats={setShowBoats} onCatches={setShowCatches}
+              onTides={setShowTides} onBoats={setShowBoats}
               onSstMode={setSstMode} onDirMode={setDirMode}
               spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
               spotWindow={spotWindow} onSpotWindow={setSpotWindow}
