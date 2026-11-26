@@ -111,7 +111,9 @@ def build_payload(conn: sqlite3.Connection, today: date | None = None) -> dict:
                                                **LANDING_SITES.get(b["landing"], {})})
         L["boats"] += 1
     for t in trips:
-        if t.get("landing_slug"):
+        # A boat that moved landings is listed under its latest one only, so older
+        # trips can name a landing that has no boats now: skip those.
+        if t.get("landing_slug") and t["landing"] in landings:
             landings[t["landing"]]["slug"] = t["landing_slug"]
 
     latest = trips[-1]["date"] if trips else None

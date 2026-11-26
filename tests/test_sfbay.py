@@ -142,6 +142,18 @@ def test_insert_idempotent_and_export_excludes_other_regions():
     assert all(len(t) == len(p["TRIP_FIELDS"]) for t in p["TRIPS"])
 
 
+def test_export_survives_boat_changing_landing():
+    conn = _db()
+    trips, _ = S.parse_day(PAGE, DAY)
+    S.insert_trips(conn, trips, today=DAY + timedelta(days=30))
+    later = S.parse_day(PAGE.replace("July 18", "July 19").replace(
+        '"/landings/fish_emeryville.php">Fish Emeryville', '"/landings/new_home.php">New Home'),
+        DAY + timedelta(days=1))[0]
+    S.insert_trips(conn, later, today=DAY + timedelta(days=30))
+    p = E.build_payload(conn, today=DAY + timedelta(days=2))
+    assert {b["landing"] for b in p["BOATS"] if b["name"] == "Test Wolf"} == {"New Home"}
+
+
 def test_recent_day_updates_counts_in_place():
     conn = _db()
     trips, _ = S.parse_day(PAGE, DAY)
