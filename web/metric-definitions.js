@@ -1,7 +1,7 @@
 window.METRIC_DEFINITIONS = {
   winRate: {
     name: 'Win Rate',
-    tooltip: '% of head-to-head matchups won. A matchup is when 2+ boats run the same trip length on the same day — the boat with the most tuna per angler wins. Days when no boat caught tuna don't count as a win. Requires 10+ matchups.',
+    tooltip: '% of head-to-head matchups won. A matchup is when 2+ boats run the same trip length on the same day — the boat with the most tuna per angler wins. Days when no boat caught tuna do not count as a win. Requires 10+ matchups.',
   },
   tpaDay: {
     name: 'TPA/Day',
