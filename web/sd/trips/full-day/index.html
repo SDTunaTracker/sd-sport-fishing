@@ -107,8 +107,7 @@
   p { margin: 0 0 12px; }
   .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 16px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  caption { caption-side: top; text-align: left; font-size: 14px; color: var(--muted);
-            padding: 0 0 8px; }
+  .cap { font-size: 14px; line-height: 1.5; color: var(--muted); margin: 6px 0 2px; }
   th { text-align: left; font: 500 10.5px/1.2 'DM Mono', ui-monospace, monospace; letter-spacing: .1em;
        text-transform: uppercase; color: var(--faint); padding: 10px 12px 10px 0;
        border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -125,6 +124,15 @@
   .foot-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; font-size: 14px; color: var(--muted);
                 display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
   .foot-inner nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .ls { display: none; }
+  @media (max-width: 480px) {
+    .lf, .lc { display: none; }
+    .ls { display: inline; }
+    th, td { padding-right: 8px; }
+    th { letter-spacing: .05em; }
+    td.num { font-size: 13.5px; }
+    td:not(.num):not(:first-child) { overflow-wrap: anywhere; }
+  }
   @media (max-width: 760px) {
     .nav { display: none; }
     h1 { font-size: 28px; }
@@ -143,44 +151,43 @@
    Nov 25, 2026. Catch is fish landed; released fish are not counted.</p>
 <section>
 <h2>Full Day fish counts: last 14 days</h2>
-<div class="tw"><table>
-  <caption>25 most recent full day trips from San Diego landings</caption>
+<p class="cap">25 most recent full day trips from San Diego landings, 2026</p><div class="tw"><table>
   <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th class="num">Anglers</th><th>Catch</th></tr></thead>
   <tbody>
-<tr><td>Nov 25, 2026</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">36</td><td>150 yellowfin, 1 dorado, 113 skipjack</td></tr>
-<tr><td>Nov 25, 2026</td><td><a href="/sd/boat/Sea%20Watch/">Sea Watch</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">35</td><td>126 yellowfin, 32 skipjack, 1 bonito</td></tr>
-<tr><td>Nov 25, 2026</td><td><a href="/sd/boat/Point%20Loma/">Point Loma</a></td><td><a href="/sd/landing/point-loma/">Point Loma Sportfishing</a></td><td class="num">22</td><td>101 yellowfin, 16 skipjack</td></tr>
-<tr><td>Nov 25, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/">Fisherman's Landing</a></td><td class="num">45</td><td>16 yellowfin, 102 skipjack</td></tr>
-<tr><td>Nov 24, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/">Fisherman's Landing</a></td><td class="num">45</td><td>231 yellowfin, 19 skipjack, 8 bonito</td></tr>
-<tr><td>Nov 24, 2026</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">36</td><td>210 yellowfin, 60 skipjack</td></tr>
-<tr><td>Nov 23, 2026</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">35</td><td>160 yellowfin, 21 skipjack</td></tr>
-<tr><td>Nov 23, 2026</td><td><a href="/sd/boat/Sea%20Watch/">Sea Watch</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">36</td><td>115 yellowfin, 7 skipjack, 12 bullet tuna, 1 bonito</td></tr>
-<tr><td>Nov 23, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/">Fisherman's Landing</a></td><td class="num">44</td><td>65 yellowfin, 7 skipjack, 34 bonito</td></tr>
-<tr><td>Nov 23, 2026</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/">Oceanside Sea Center</a></td><td class="num">8</td><td>2 yellowtail, 14 whitefish, 6 bonito, 4 sand bass, 2 calico bass, 1 sculpin &amp; 1 skipjack tuna</td></tr>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">37</td><td>205 yellowfin, 185 skipjack</td></tr>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Malihini/">Malihini</a></td><td><a href="/sd/landing/hm-landing/">H&amp;M Landing</a></td><td class="num">24</td><td>107 yellowfin, 6 skipjack</td></tr>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Pronto/">Pronto</a></td><td><a href="/sd/landing/oceanside/">Oceanside Sea Center</a></td><td class="num">12</td><td>2 yellowtail, 80 barracuda, 25 whitefish, 18 bonito, 3 sand bass, 1 calico bass, 1 sheephead &amp; 1 skipjack tuna</td></tr>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Blue%20Horizon/">Blue Horizon</a></td><td><a href="/sd/landing/oceanside/">Oceanside Sea Center</a></td><td class="num">22</td><td>90 whitefish, 16 barracuda, 15 sand bass, 13 calico bass, 7 bonito, 2 sheephead &amp; 1 yellowtail</td></tr>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/">Oceanside Sea Center</a></td><td class="num">18</td><td>3 skipjack, 120 whitefish, 18 sand bass, 12 rockfish, 6 barracuda, 4 bonito, 2 calico bass &amp; 1 yellowtail</td></tr>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Got%20Bait/">Got Bait</a></td><td><a href="/sd/landing/point-loma/">Point Loma Sportfishing</a></td><td class="num">3</td><td>2 swordfish</td></tr>
-<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">33</td><td>165 yellowfin, 4 yellowtail, 22 dorado, 92 skipjack</td></tr>
-<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Sea%20Watch/">Sea Watch</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td class="num">13</td><td>127 yellowfin, 2 yellowtail, 8 skipjack, 16 bonito, 1 sand bass</td></tr>
-<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Tomahawk/">Tomahawk</a></td><td><a href="/sd/landing/fishermans-landing/">Fisherman's Landing</a></td><td class="num">35</td><td>30 yellowfin, 4 skipjack, 44 bonito, 6 sand bass, 2 barracuda</td></tr>
-<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Mission%20Belle/">Mission Belle</a></td><td><a href="/sd/landing/point-loma/">Point Loma Sportfishing</a></td><td class="num">11</td><td>29 yellowfin, 5 skipjack</td></tr>
-<tr><td>Nov 21, 2026</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/">Oceanside Sea Center</a></td><td class="num">28</td><td>14 skipjack, 20 sand bass, 18 barracuda, 16 bonito, 12 rockfish, 12 whitefish, 6 calico bass &amp; 1 white seabass</td></tr>
-<tr><td>Nov 20, 2026</td><td><a href="/sd/boat/Malihini/">Malihini</a></td><td><a href="/sd/landing/hm-landing/">H&amp;M Landing</a></td><td class="num">22</td><td>71 yellowfin, 3 skipjack, 15 bonito, 1 halibut, 1 sand bass</td></tr>
-<tr><td>Nov 20, 2026</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/">Oceanside Sea Center</a></td><td class="num">20</td><td>36 barracuda, 30 bonito, 18 calico bass, 16 sand bass, 12 whitefish, 6 yellowtail &amp; 1 sheephead</td></tr>
-<tr><td>Nov 19, 2026</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/">Fisherman's Landing</a></td><td class="num">12</td><td>15 yellowfin, 5 yellowtail, 4 skipjack, 40 bonito, 4 sand bass</td></tr>
-<tr><td>Nov 18, 2026</td><td><a href="/sd/boat/Polaris%20Supreme/">Polaris Supreme</a></td><td><a href="/sd/landing/seaforth/">Seaforth Sportfishing</a></td><td></td><td>300 yellowfin, 88 yellowtail</td></tr>
+<tr><td>Nov 25</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">36</td><td>150 yellowfin, 1 dorado, 113 skipjack</td></tr>
+<tr><td>Nov 25</td><td><a href="/sd/boat/Sea%20Watch/">Sea Watch</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">35</td><td>126 yellowfin, 32 skipjack, 1 bonito</td></tr>
+<tr><td>Nov 25</td><td><a href="/sd/boat/Point%20Loma/">Point Loma</a></td><td><a href="/sd/landing/point-loma/"><span class="lf">Point Loma Sportfishing</span><span class="ls">Point Loma</span></a></td><td class="num">22</td><td>101 yellowfin, 16 skipjack</td></tr>
+<tr><td>Nov 25</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/"><span class="lf">Fisherman's Landing</span><span class="ls">Fisherman's</span></a></td><td class="num">45</td><td>16 yellowfin, 102 skipjack</td></tr>
+<tr><td>Nov 24</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/"><span class="lf">Fisherman's Landing</span><span class="ls">Fisherman's</span></a></td><td class="num">45</td><td>231 yellowfin, 19 skipjack, 8 bonito</td></tr>
+<tr><td>Nov 24</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">36</td><td>210 yellowfin, 60 skipjack</td></tr>
+<tr><td>Nov 23</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">35</td><td>160 yellowfin, 21 skipjack</td></tr>
+<tr><td>Nov 23</td><td><a href="/sd/boat/Sea%20Watch/">Sea Watch</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">36</td><td>115 yellowfin, 7 skipjack, 12 bullet tuna, 1 bonito</td></tr>
+<tr><td>Nov 23</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/"><span class="lf">Fisherman's Landing</span><span class="ls">Fisherman's</span></a></td><td class="num">44</td><td>65 yellowfin, 7 skipjack, 34 bonito</td></tr>
+<tr><td>Nov 23</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/"><span class="lf">Oceanside Sea Center</span><span class="ls">Oceanside</span></a></td><td class="num">8</td><td>2 yellowtail, 14 whitefish, 6 bonito, 4 sand bass, 2 calico bass, 1 sculpin &amp; 1 skipjack tuna</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">37</td><td>205 yellowfin, 185 skipjack</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/Malihini/">Malihini</a></td><td><a href="/sd/landing/hm-landing/"><span class="lf">H&amp;M Landing</span><span class="ls">H&amp;M</span></a></td><td class="num">24</td><td>107 yellowfin, 6 skipjack</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/Pronto/">Pronto</a></td><td><a href="/sd/landing/oceanside/"><span class="lf">Oceanside Sea Center</span><span class="ls">Oceanside</span></a></td><td class="num">12</td><td>2 yellowtail, 80 barracuda, 25 whitefish, 18 bonito, 3 sand bass, 1 calico bass, 1 sheephead &amp; 1 skipjack tuna</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/Blue%20Horizon/">Blue Horizon</a></td><td><a href="/sd/landing/oceanside/"><span class="lf">Oceanside Sea Center</span><span class="ls">Oceanside</span></a></td><td class="num">22</td><td>90 whitefish, 16 barracuda, 15 sand bass, 13 calico bass, 7 bonito, 2 sheephead &amp; 1 yellowtail</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/"><span class="lf">Oceanside Sea Center</span><span class="ls">Oceanside</span></a></td><td class="num">18</td><td>3 skipjack, 120 whitefish, 18 sand bass, 12 rockfish, 6 barracuda, 4 bonito, 2 calico bass &amp; 1 yellowtail</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/Got%20Bait/">Got Bait</a></td><td><a href="/sd/landing/point-loma/"><span class="lf">Point Loma Sportfishing</span><span class="ls">Point Loma</span></a></td><td class="num">3</td><td>2 swordfish</td></tr>
+<tr><td>Nov 21</td><td><a href="/sd/boat/San%20Diego/">San Diego</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">33</td><td>165 yellowfin, 4 yellowtail, 22 dorado, 92 skipjack</td></tr>
+<tr><td>Nov 21</td><td><a href="/sd/boat/Sea%20Watch/">Sea Watch</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td class="num">13</td><td>127 yellowfin, 2 yellowtail, 8 skipjack, 16 bonito, 1 sand bass</td></tr>
+<tr><td>Nov 21</td><td><a href="/sd/boat/Tomahawk/">Tomahawk</a></td><td><a href="/sd/landing/fishermans-landing/"><span class="lf">Fisherman's Landing</span><span class="ls">Fisherman's</span></a></td><td class="num">35</td><td>30 yellowfin, 4 skipjack, 44 bonito, 6 sand bass, 2 barracuda</td></tr>
+<tr><td>Nov 21</td><td><a href="/sd/boat/Mission%20Belle/">Mission Belle</a></td><td><a href="/sd/landing/point-loma/"><span class="lf">Point Loma Sportfishing</span><span class="ls">Point Loma</span></a></td><td class="num">11</td><td>29 yellowfin, 5 skipjack</td></tr>
+<tr><td>Nov 21</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/"><span class="lf">Oceanside Sea Center</span><span class="ls">Oceanside</span></a></td><td class="num">28</td><td>14 skipjack, 20 sand bass, 18 barracuda, 16 bonito, 12 rockfish, 12 whitefish, 6 calico bass &amp; 1 white seabass</td></tr>
+<tr><td>Nov 20</td><td><a href="/sd/boat/Malihini/">Malihini</a></td><td><a href="/sd/landing/hm-landing/"><span class="lf">H&amp;M Landing</span><span class="ls">H&amp;M</span></a></td><td class="num">22</td><td>71 yellowfin, 3 skipjack, 15 bonito, 1 halibut, 1 sand bass</td></tr>
+<tr><td>Nov 20</td><td><a href="/sd/boat/Chubasco%20II/">Chubasco II</a></td><td><a href="/sd/landing/oceanside/"><span class="lf">Oceanside Sea Center</span><span class="ls">Oceanside</span></a></td><td class="num">20</td><td>36 barracuda, 30 bonito, 18 calico bass, 16 sand bass, 12 whitefish, 6 yellowtail &amp; 1 sheephead</td></tr>
+<tr><td>Nov 19</td><td><a href="/sd/boat/Dolphin/">Dolphin</a></td><td><a href="/sd/landing/fishermans-landing/"><span class="lf">Fisherman's Landing</span><span class="ls">Fisherman's</span></a></td><td class="num">12</td><td>15 yellowfin, 5 yellowtail, 4 skipjack, 40 bonito, 4 sand bass</td></tr>
+<tr><td>Nov 18</td><td><a href="/sd/boat/Polaris%20Supreme/">Polaris Supreme</a></td><td><a href="/sd/landing/seaforth/"><span class="lf">Seaforth Sportfishing</span><span class="ls">Seaforth</span></a></td><td></td><td>300 yellowfin, 88 yellowtail</td></tr>
   </tbody>
 </table></div>
 </section>
 <section>
 <h2>Boats that run full day trips</h2>
-<div class="tw"><table>
-  <caption>Last 3 years, boats with at least 10 full day trips,
-    by average trophy fish per angler per trip (bluefin, yellowfin, yellowtail, dorado)</caption>
-  <thead><tr><th>Boat</th><th class="num">Trips</th><th class="num">Trophy fish per angler</th><th class="num">Trips with trophy fish</th></tr></thead>
+<p class="cap">Last 3 years, boats with at least 10 full day trips,
+    by average trophy fish (bluefin, yellowfin, yellowtail, dorado) per angler per trip.
+    Trophy % is the share of trips that landed at least one.</p><div class="tw"><table>
+  <thead><tr><th>Boat</th><th class="num">Trips</th><th class="num">Per angler</th><th class="num">Trophy %</th></tr></thead>
   <tbody>
 <tr><td><a href="/sd/boat/Lucky%20B%20Sportfishing/">Lucky B Sportfishing</a></td><td class="num">63</td><td class="num">3.77</td><td class="num">92.1%</td></tr>
 <tr><td><a href="/sd/boat/Bight%2028%20%28SD%29/">Bight 28 (SD)</a></td><td class="num">11</td><td class="num">2.49</td><td class="num">90.9%</td></tr>
@@ -202,12 +209,12 @@
 </section>
 <section>
 <h2>Full Day catch by month</h2>
-<div class="tw"><table>
-  <caption>All San Diego full day trips, last 5 years. Past seasons, not a forecast.</caption>
-  <thead><tr><th>Month</th><th class="num">Trips</th><th class="num">Trophy fish per angler</th><th class="num">Trips with trophy fish</th></tr></thead>
+<p class="cap">All San Diego full day trips, last 5 years: trophy fish per angler per trip,
+    and the share of trips that landed any. Past seasons, not a forecast.</p><div class="tw"><table>
+  <thead><tr><th>Month</th><th class="num">Trips</th><th class="num">Per angler</th><th class="num">Trophy %</th></tr></thead>
   <tbody>
 <tr><td>Jan</td><td class="num">39</td><td class="num">0.01</td><td class="num">2.6%</td></tr>
-<tr><td>Feb</td><td class="num">45</td><td class="num">0.0</td><td class="num">2.2%</td></tr>
+<tr><td>Feb</td><td class="num">45</td><td class="num">0.00</td><td class="num">2.2%</td></tr>
 <tr><td>Mar</td><td class="num">211</td><td class="num">0.57</td><td class="num">65.9%</td></tr>
 <tr><td>Apr</td><td class="num">335</td><td class="num">0.51</td><td class="num">64.2%</td></tr>
 <tr><td>May</td><td class="num">548</td><td class="num">0.75</td><td class="num">66.1%</td></tr>
@@ -224,7 +231,7 @@
 <section><h2>Other trip lengths</h2><p>Full Day · <a href="/sd/trips/overnight/">Overnight</a> · <a href="/sd/trips/1-5-day/">1.5 Day</a> · <a href="/sd/trips/2-day/">2 Day</a> · <a href="/sd/trips/2-5-day/">2.5 Day</a> · <a href="/sd/trips/3-day/">3 Day</a></p></section>
 <p><a href="/sd/today">Latest San Diego fish counts →</a></p>
 </article>
-<aside class="cta"><p>Compare upcoming full day trips by boat, price and date.</p><div class="cta-actions"><a class="btn btn-primary" href="/sd/tripplanner">Find a full day trip</a><a class="btn btn-secondary" href="/sd/today">Today's counts</a></div></aside>
+<aside class="cta"><p>Which upcoming full day trip looks best? Pick my trip compares them for you.</p><div class="cta-actions"><a class="btn btn-primary" href="/sd/pick?type=full">Find the best full day trip</a><a class="btn btn-secondary" href="/sd/today">Today's counts</a></div></aside>
 </main>
 <footer><div class="foot-inner"><span>© 2026 Tunatracker</span><nav aria-label="Footer"><a href="/sd/today">Fish Counts</a><a href="/sd/boats">Boats</a><a href="/sd/analytics/overview">Analytics</a><a href="/sd/tripplanner">Trip Planner</a><a href="/privacy/">Privacy</a></nav></div></footer>
 </body>

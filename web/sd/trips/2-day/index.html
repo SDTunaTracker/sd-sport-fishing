@@ -107,8 +107,7 @@
   p { margin: 0 0 12px; }
   .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0 16px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  caption { caption-side: top; text-align: left; font-size: 14px; color: var(--muted);
-            padding: 0 0 8px; }
+  .cap { font-size: 14px; line-height: 1.5; color: var(--muted); margin: 6px 0 2px; }
   th { text-align: left; font: 500 10.5px/1.2 'DM Mono', ui-monospace, monospace; letter-spacing: .1em;
        text-transform: uppercase; color: var(--faint); padding: 10px 12px 10px 0;
        border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -125,6 +124,15 @@
   .foot-inner { max-width: 760px; margin: 0 auto; padding: 20px 16px 32px; font-size: 14px; color: var(--muted);
                 display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
   .foot-inner nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .ls { display: none; }
+  @media (max-width: 480px) {
+    .lf, .lc { display: none; }
+    .ls { display: inline; }
+    th, td { padding-right: 8px; }
+    th { letter-spacing: .05em; }
+    td.num { font-size: 13.5px; }
+    td:not(.num):not(:first-child) { overflow-wrap: anywhere; }
+  }
   @media (max-width: 760px) {
     .nav { display: none; }
     h1 { font-size: 28px; }
@@ -143,25 +151,24 @@
    Nov 22, 2026. Catch is fish landed; released fish are not counted.</p>
 <section>
 <h2>2 Day fish counts: last 14 days</h2>
-<div class="tw"><table>
-  <caption>3 most recent 2 day trips from San Diego landings</caption>
+<p class="cap">3 most recent 2 day trips from San Diego landings, 2026</p><div class="tw"><table>
   <thead><tr><th>Date</th><th>Boat</th><th>Landing</th><th class="num">Anglers</th><th>Catch</th></tr></thead>
   <tbody>
-<tr><td>Nov 22, 2026</td><td><a href="/sd/boat/Electra/">Electra</a></td><td><a href="/sd/landing/hm-landing/">H&amp;M Landing</a></td><td class="num">15</td><td>20 yellowfin, 29 yellowtail, 1 dorado, 16 skipjack, 71 rockfish, 51 bonito</td></tr>
-<tr><td>Nov 14, 2026</td><td><a href="/sd/boat/Electra/">Electra</a></td><td><a href="/sd/landing/hm-landing/">H&amp;M Landing</a></td><td class="num">23</td><td>11 yellowfin, 61 dorado, 6 skipjack</td></tr>
-<tr><td>Nov 13, 2026</td><td><a href="/sd/boat/New%20Lo-An/">New Lo-An</a></td><td><a href="/sd/landing/point-loma/">Point Loma Sportfishing</a></td><td class="num">25</td><td>141 yellowfin, 6 yellowtail, 1 wahoo, 1 striped marlin</td></tr>
+<tr><td>Nov 22</td><td><a href="/sd/boat/Electra/">Electra</a></td><td><a href="/sd/landing/hm-landing/"><span class="lf">H&amp;M Landing</span><span class="ls">H&amp;M</span></a></td><td class="num">15</td><td>20 yellowfin, 29 yellowtail, 1 dorado, 16 skipjack, 71 rockfish, 51 bonito</td></tr>
+<tr><td>Nov 14</td><td><a href="/sd/boat/Electra/">Electra</a></td><td><a href="/sd/landing/hm-landing/"><span class="lf">H&amp;M Landing</span><span class="ls">H&amp;M</span></a></td><td class="num">23</td><td>11 yellowfin, 61 dorado, 6 skipjack</td></tr>
+<tr><td>Nov 13</td><td><a href="/sd/boat/New%20Lo-An/">New Lo-An</a></td><td><a href="/sd/landing/point-loma/"><span class="lf">Point Loma Sportfishing</span><span class="ls">Point Loma</span></a></td><td class="num">25</td><td>141 yellowfin, 6 yellowtail, 1 wahoo, 1 striped marlin</td></tr>
   </tbody>
 </table></div>
 </section>
 <section>
 <h2>Boats that run 2 day trips</h2>
-<div class="tw"><table>
-  <caption>Last 3 years, boats with at least 10 2 day trips,
-    by average trophy fish per angler per trip (bluefin, yellowfin, yellowtail, dorado)</caption>
-  <thead><tr><th>Boat</th><th class="num">Trips</th><th class="num">Trophy fish per angler</th><th class="num">Trips with trophy fish</th></tr></thead>
+<p class="cap">Last 3 years, boats with at least 10 2 day trips,
+    by average trophy fish (bluefin, yellowfin, yellowtail, dorado) per angler per trip.
+    Trophy % is the share of trips that landed at least one.</p><div class="tw"><table>
+  <thead><tr><th>Boat</th><th class="num">Trips</th><th class="num">Per angler</th><th class="num">Trophy %</th></tr></thead>
   <tbody>
 <tr><td><a href="/sd/boat/Voyager/">Voyager</a></td><td class="num">50</td><td class="num">4.31</td><td class="num">92.0%</td></tr>
-<tr><td><a href="/sd/boat/Pegasus/">Pegasus</a></td><td class="num">44</td><td class="num">3.3</td><td class="num">84.1%</td></tr>
+<tr><td><a href="/sd/boat/Pegasus/">Pegasus</a></td><td class="num">44</td><td class="num">3.30</td><td class="num">84.1%</td></tr>
 <tr><td><a href="/sd/boat/Pacific%20Voyager/">Pacific Voyager</a></td><td class="num">85</td><td class="num">3.22</td><td class="num">89.4%</td></tr>
 <tr><td><a href="/sd/boat/Apollo/">Apollo</a></td><td class="num">48</td><td class="num">3.16</td><td class="num">97.9%</td></tr>
 <tr><td><a href="/sd/boat/Tradition/">Tradition</a></td><td class="num">10</td><td class="num">3.06</td><td class="num">90.0%</td></tr>
@@ -180,12 +187,12 @@
 </section>
 <section>
 <h2>2 Day catch by month</h2>
-<div class="tw"><table>
-  <caption>All San Diego 2 day trips, last 5 years. Past seasons, not a forecast.</caption>
-  <thead><tr><th>Month</th><th class="num">Trips</th><th class="num">Trophy fish per angler</th><th class="num">Trips with trophy fish</th></tr></thead>
+<p class="cap">All San Diego 2 day trips, last 5 years: trophy fish per angler per trip,
+    and the share of trips that landed any. Past seasons, not a forecast.</p><div class="tw"><table>
+  <thead><tr><th>Month</th><th class="num">Trips</th><th class="num">Per angler</th><th class="num">Trophy %</th></tr></thead>
   <tbody>
-<tr><td>Jan</td><td class="num">1</td><td class="num">0.0</td><td class="num">0.0%</td></tr>
-<tr><td>Feb</td><td class="num">4</td><td class="num">0.4</td><td class="num">25.0%</td></tr>
+<tr><td>Jan</td><td class="num">1</td><td class="num">0.00</td><td class="num">0.0%</td></tr>
+<tr><td>Feb</td><td class="num">4</td><td class="num">0.40</td><td class="num">25.0%</td></tr>
 <tr><td>Mar</td><td class="num">11</td><td class="num">1.18</td><td class="num">54.5%</td></tr>
 <tr><td>Apr</td><td class="num">76</td><td class="num">2.23</td><td class="num">77.6%</td></tr>
 <tr><td>May</td><td class="num">181</td><td class="num">1.29</td><td class="num">61.3%</td></tr>
@@ -194,7 +201,7 @@
 <tr><td>Aug</td><td class="num">419</td><td class="num">3.76</td><td class="num">89.7%</td></tr>
 <tr><td>Sep</td><td class="num">373</td><td class="num">3.72</td><td class="num">88.7%</td></tr>
 <tr><td>Oct</td><td class="num">261</td><td class="num">3.45</td><td class="num">90.4%</td></tr>
-<tr><td>Nov</td><td class="num">68</td><td class="num">2.4</td><td class="num">83.8%</td></tr>
+<tr><td>Nov</td><td class="num">68</td><td class="num">2.40</td><td class="num">83.8%</td></tr>
 <tr><td>Dec</td><td class="num">7</td><td class="num">1.97</td><td class="num">71.4%</td></tr>
   </tbody>
 </table></div>
@@ -202,7 +209,7 @@
 <section><h2>Other trip lengths</h2><p><a href="/sd/trips/full-day/">Full Day</a> · <a href="/sd/trips/overnight/">Overnight</a> · <a href="/sd/trips/1-5-day/">1.5 Day</a> · 2 Day · <a href="/sd/trips/2-5-day/">2.5 Day</a> · <a href="/sd/trips/3-day/">3 Day</a></p></section>
 <p><a href="/sd/today">Latest San Diego fish counts →</a></p>
 </article>
-<aside class="cta"><p>Compare upcoming 2 day trips by boat, price and date.</p><div class="cta-actions"><a class="btn btn-primary" href="/sd/tripplanner">Find a 2 day trip</a><a class="btn btn-secondary" href="/sd/today">Today's counts</a></div></aside>
+<aside class="cta"><p>Which upcoming 2 day trip looks best? Pick my trip compares them for you.</p><div class="cta-actions"><a class="btn btn-primary" href="/sd/pick?type=multi">Find the best 2 day trip</a><a class="btn btn-secondary" href="/sd/today">Today's counts</a></div></aside>
 </main>
 <footer><div class="foot-inner"><span>© 2026 Tunatracker</span><nav aria-label="Footer"><a href="/sd/today">Fish Counts</a><a href="/sd/boats">Boats</a><a href="/sd/analytics/overview">Analytics</a><a href="/sd/tripplanner">Trip Planner</a><a href="/privacy/">Privacy</a></nav></div></footer>
 </body>
