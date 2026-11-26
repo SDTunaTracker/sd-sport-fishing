@@ -490,7 +490,7 @@ function TodayCatch({ navigate, settings, regions }) {
                   <span className="trophy-col" style={{fontWeight:600, color:'var(--tb-ink)'}}>{fmt.n(b.totalTuna)}</span>
                   <span className="anglers-col">{fmt.n(b.anglers)}</span>
                   <span style={{display:'inline-flex', alignItems:'center', gap:4, fontWeight:700, color: i === 0 ? 'var(--ss-orange-500)' : 'var(--tb-ink)'}}>
-                    {fmt.tpa(b.trophyPerAnglerPerDay)}
+                    {fmt.tpa(SDA.rankRate(b))}
                     {i === 0 && <span className="top-boat-chip" aria-label="Top boat by TPA/Day">★ Top</span>}
                   </span>
                   <span className="rating-col"><RatingBadge ratingKey={b.ratingKey}/></span>
@@ -801,7 +801,7 @@ function HomeView({ navigate, settings, regions }) {
                   <div className="ch-rep-nm">{b.boat}</div>
                   <div className="ch-rep-sub">
                     {shortName(b.landing)} · {b.tripLength} · {fmt.n(b.anglers)} anglers
-                    {' · '}<span className="ch-rep-tpa">{fmt.tpa(b.trophyPerAnglerPerDay)} tuna/person/day</span>
+                    {' · '}<span className="ch-rep-tpa">{fmt.tpa(SDA.rankRate(b))} tuna/person/day</span>
                     {b.reportedAt ? ` · ${timeAgo(b.reportedAt)}` : ''}
                   </div>
                   <div className="ch-rep-catch">{catchLine(b)}</div>

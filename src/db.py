@@ -310,6 +310,21 @@ _NEW_TRIP_COLUMNS = [
 ]
 
 
+# Tuna-only count and rate (best-boat rankings; src/parse.py tuna_metrics).
+# VIRTUAL generated columns: computed from the species columns on read, so
+# every insert/update path and every existing row stays correct with no
+# backfill. Same day divisor as trophy_per_angler_per_day (floor, min 1).
+_TUNA_SUM_SQL = ("(COALESCE(bluefin,0) + COALESCE(yellowfin,0)"
+                 " + COALESCE(bigeye,0) + COALESCE(albacore,0))")
+_TUNA_TRIP_COLUMNS = [
+    ("tuna_count", f"INTEGER GENERATED ALWAYS AS ({_TUNA_SUM_SQL}) VIRTUAL"),
+    ("tuna_per_angler_per_day",
+     f"REAL GENERATED ALWAYS AS (CASE WHEN anglers > 0 AND trip_length_days > 0"
+     f" THEN {_TUNA_SUM_SQL} * 1.0 / anglers / MAX(1, CAST(trip_length_days AS INTEGER))"
+     f" ELSE 0 END) VIRTUAL"),
+]
+
+
 _NEW_SCHED_COLUMNS = [
     ("trip_status",    "TEXT"),
     ("target_species", "TEXT"),
@@ -324,6 +339,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
     existing = {row[1] for row in conn.execute("PRAGMA table_info(trips)").fetchall()}
     for col, defn in _NEW_TRIP_COLUMNS:
         if col not in existing:
+            conn.execute(f"ALTER TABLE trips ADD COLUMN {col} {defn}")
+    # table_info hides generated columns; table_xinfo lists them.
+    xexisting = {row[1] for row in conn.execute("PRAGMA table_xinfo(trips)").fetchall()}
+    for col, defn in _TUNA_TRIP_COLUMNS:
+        if col not in xexisting:
             conn.execute(f"ALTER TABLE trips ADD COLUMN {col} {defn}")
     sched_existing = {row[1] for row in conn.execute("PRAGMA table_info(scheduled_trips)").fetchall()}
     for col, defn in _NEW_SCHED_COLUMNS:

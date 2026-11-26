@@ -251,7 +251,10 @@
       return (window.getLandingsForRegion && window.getLandingsForRegion(eff)) || [];
     }, [regions]);
 
-    const visible = returned.filter(b => landing === 'all' || b.landing === landing);
+    // The day's counts table lists boats by the catch it shows (fish per
+    // angler); fishingRating's own order is the tuna ranking.
+    const visible = returned.filter(b => landing === 'all' || b.landing === landing)
+      .sort((x, y) => thFish(y) / Math.max(1, y.anglers) - thFish(x) / Math.max(1, x.anglers));
 
     const totals = useMemo(() => thTotals(visible), [visible, metric.allSpecies, settings]);
 
@@ -395,7 +398,7 @@
 
             <div className="th-rail">
               <div className="th-card">
-                <div className="th-card-head"><span className="th-lbl">Season leaders</span><span className="th-lbl-soft">fish per angler, per day</span></div>
+                <div className="th-card-head"><span className="th-lbl">Season leaders</span><span className="th-lbl-soft">tuna per angler, per day</span></div>
                 {seasonLeaders.map((b, i) => (
                   <div key={b.boat} className="th-leader" onClick={() => navigate('boat', { boat: b.boat })}>
                     <span className="th-leader-rank">{i + 1}</span>

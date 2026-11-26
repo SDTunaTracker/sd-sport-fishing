@@ -36,7 +36,7 @@ test('consistent boat beats a one-trip wonder', () => {
   assert.equal(r.alternates.length, 2);
   assert.ok(r.alternates.some((a) => a.boat === 'Lucky'));
   assert.equal(r.best.bookingUrl, 'https://book/Steady-3');
-  assert.match(r.best.reason, /Steady averaged 3\.0 fish per angler on 4 overnights in the last 14 days \(fleet: 2\.8\)/);
+  assert.match(r.best.reason, /Steady averaged 3\.0 tuna per angler on 4 overnights in the last 14 days \(fleet: 2\.8\)/);
   assert.match(r.alternates.find((a) => a.boat === 'Lucky').reason, /treat it as a lean/);
 });
 
@@ -82,16 +82,6 @@ test('species query ranks by that species', () => {
   assert.equal(blue.best.noun, 'bluefin');
 });
 
-test("species 'Tuna' counts bluefin + yellowfin, not yellowtail", () => {
-  const trips = [
-    trip('Mixed', 2, 40, 20, { Bluefin: 20, Yellowfin: 20 }), trip('Mixed', 4, 40, 20, { Bluefin: 20, Yellowfin: 20 }), trip('Mixed', 6, 40, 20, { Bluefin: 20, Yellowfin: 20 }),
-    trip('Yft', 2, 30, 20, { Yellowfin: 30 }), trip('Yft', 4, 30, 20, { Yellowfin: 30 }), trip('Yft', 6, 30, 20, { Yellowfin: 30 }),
-  ];
-  const r = P.pickTrips({ type: 'overnight', species: 'Tuna', now: NOW }, data([sched('Mixed', 2), sched('Yft', 2)], trips));
-  assert.equal(r.best.boat, 'Mixed');
-  assert.equal(r.best.rate, 2);
-});
-
 test('one row per boat: its best departure, earliest on a tie', () => {
   const trips = [trip('A', 2, 40), trip('A', 4, 40), trip('A', 6, 40)];
   const r = P.pickTrips({ type: 'overnight', now: NOW }, data([sched('A', 5), sched('A', 2)], trips));
@@ -117,7 +107,7 @@ test('boats with no recent trips rank below boats with data', () => {
   assert.equal(r.alternates.length, 0);
 });
 
-test('OC/LA counts every landed species', () => {
+test('OC/LA ranks on tuna too, not every landed species', () => {
   const fc = (n) => ({ Yellowtail: 0, Rockfish: n, Whitefish: n });
   const trips = [
     trip('Rock', 2, 0, 20, { region: 'oc_la', tripLength: 'Full Day', tripLengthDays: 0.75, fullCatch: fc(100) }),
@@ -130,8 +120,8 @@ test('OC/LA counts every landed species', () => {
   const oc = { tripLength: 'Full Day', tripLengthDays: 0.75, region: 'oc_la' };
   const s = [sched('Rock', 2, oc), sched('Few', 2, oc)];
   const r = P.pickTrips({ type: 'full', region: 'oc_la', now: NOW }, data(s, trips));
-  assert.equal(r.best.boat, 'Rock');
-  assert.equal(r.best.noun, 'fish');
+  assert.equal(r.best.boat, 'Few');
+  assert.equal(r.best.noun, 'tuna');
 });
 
 test('region filter uses landingsFor when available', () => {
@@ -195,11 +185,11 @@ test('whatsBiting in OC/LA ranks every landed species', () => {
 });
 
 test('quick picks build queries and run', () => {
-  assert.deepEqual(P.QUICK_PICKS.map((q) => q.id), ['overnight-week', 'under-300', 'tuna-week', 'fullday-weekend']);
+  assert.deepEqual(P.QUICK_PICKS.map((q) => q.id), ['overnight-week', 'under-300', 'yellowtail', 'fullday-weekend']);
   const q = P.quickQuery('under-300', { now: NOW, region: 'san_diego' });
   assert.deepEqual([q.from, q.to, q.maxPrice], ['2026-11-25', '2026-12-01', 300]);
   assert.equal(P.quickQuery('fullday-weekend', { now: NOW }).from, '2026-11-27');
-  assert.equal(P.quickQuery('tuna-week', { now: NOW }).species, 'Tuna');
+  assert.equal(P.quickQuery('yellowtail', { now: NOW }).species, 'Yellowtail');
   const trips = [trip('A', 2, 40), trip('A', 4, 40), trip('A', 6, 40)];
   const r = P.pickTrips(P.quickQuery('under-300', { now: NOW }), data([sched('A', 2, { price: 280 }), sched('B', 2, { price: 400 })], trips));
   assert.equal(r.best.boat, 'A');

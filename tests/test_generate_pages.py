@@ -2,6 +2,7 @@
 import sqlite3
 from pathlib import Path
 
+from src.db import _TUNA_TRIP_COLUMNS
 from src.export import _write_sitemap
 from src.generate_pages import _dedupe_repeats, generate_all_pages
 
@@ -23,7 +24,10 @@ def _db(tmp_path: Path) -> sqlite3.Connection:
         id INTEGER PRIMARY KEY, date TEXT, boat TEXT, landing TEXT, trip_length TEXT,
         anglers INTEGER, bluefin INTEGER, yellowfin INTEGER, yellowtail INTEGER,
         dorado INTEGER, trophy_count INTEGER, trophy_per_angler_per_day REAL,
-        full_catch TEXT)""")
+        full_catch TEXT, bigeye INTEGER, albacore INTEGER, trip_length_days REAL)""")
+    # Same generated tuna columns as production (src/db.py).
+    for col, defn in _TUNA_TRIP_COLUMNS:
+        conn.execute(f"ALTER TABLE trips ADD COLUMN {col} {defn}")
     rows = []
     # "Big Boat": 6 trips, moved from Seaforth to H&M; last two rows repeat a 2-day count.
     for i, (d, landing) in enumerate([
@@ -40,6 +44,7 @@ def _db(tmp_path: Path) -> sqlite3.Connection:
     conn.executemany("""INSERT INTO trips (date, boat, landing, trip_length, anglers, bluefin,
         yellowfin, yellowtail, dorado, trophy_count, trophy_per_angler_per_day)
         VALUES (?,?,?,?,?,?,?,?,?,?,?)""", rows)
+    conn.execute("UPDATE trips SET trip_length_days = CASE trip_length WHEN '2 Day' THEN 2 ELSE 0.75 END")
     return conn
 
 
@@ -205,3 +210,57 @@ def test_prune_refuses_mass_delete(tmp_path):
     pages = [{"url": "/sd/boat/B0/"}, {"url": "/sd/boat/B1/"}]
     assert _prune_stale(tmp_path, pages) == []
     assert len(list(boats.iterdir())) == 10
+
+
+def _tuna_rank_db(tmp_path):
+    """Two H&M boats: 'Yellowtail King' lands more trophy fish, 'Tuna Boat' more tuna."""
+    conn = _db(tmp_path)
+    for i in range(12):
+        d = f"2026-07-{10 + i:02d}"
+        conn.execute("""INSERT INTO trips (date, boat, landing, trip_length, trip_length_days,
+            anglers, bluefin, yellowfin, yellowtail, dorado, bigeye, albacore, trophy_count,
+            trophy_per_angler_per_day) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (d, "Yellowtail King", "H&M Landing", "Full Day", 0.75, 20, 0, 0, 80, 0, 0, 0, 80, 4.0))
+        conn.execute("""INSERT INTO trips (date, boat, landing, trip_length, trip_length_days,
+            anglers, bluefin, yellowfin, yellowtail, dorado, bigeye, albacore, trophy_count,
+            trophy_per_angler_per_day) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (d, "Tuna Boat", "H&M Landing", "Full Day", 0.75, 20, 10, 10, 0, 0, 5, 5, 20, 1.0))
+    return conn
+
+
+def test_tuna_columns_are_generated(tmp_path):
+    conn = _tuna_rank_db(tmp_path)
+    row = conn.execute("""SELECT tuna_count, tuna_per_angler_per_day FROM trips
+        WHERE boat='Tuna Boat' LIMIT 1""").fetchone()
+    assert row == (30, 1.5)                       # bigeye + albacore count; 30/20/1 day
+    row = conn.execute("""SELECT tuna_count, tuna_per_angler_per_day FROM trips
+        WHERE boat='Big Boat (SD)' LIMIT 1""").fetchone()
+    assert row == (30, 0.75)                      # yellowfin only; 2-day divisor
+    conn.execute("UPDATE trips SET yellowfin = 0 WHERE boat='Big Boat (SD)'")
+    assert conn.execute("SELECT MAX(tuna_count) FROM trips WHERE boat='Big Boat (SD)'"
+                        ).fetchone()[0] == 0      # follows edits, no backfill needed
+
+
+def test_static_rankings_use_tuna(tmp_path):
+    web = tmp_path / "web"
+    web.mkdir()
+    (web / "index.html").write_text(INDEX_HTML, encoding="utf-8")
+    conn = _tuna_rank_db(tmp_path)
+    conn.execute("ALTER TABLE trips ADD COLUMN trophy_per_angler REAL")
+    conn.execute("UPDATE trips SET trophy_per_angler = trophy_count * 1.0 / anglers")
+    generate_all_pages(conn, web, web / "index.html")
+
+    landing = (web / "sd" / "landing" / "hm-landing" / "index.html").read_text(encoding="utf-8")
+    assert "ranked by average tuna (bluefin, yellowfin, bigeye, albacore)" in landing
+    # Tuna Boat (1.50 tuna/angler/day) outranks Yellowtail King (0 tuna, more trophy fish)
+    assert landing.index(">Tuna Boat</a>") < landing.index(">Yellowtail King</a>")
+
+    full = (web / "sd" / "trips" / "full-day" / "index.html").read_text(encoding="utf-8")
+    boats = full.split("Boats that run")[1]
+    assert boats.index(">Tuna Boat</a>") < boats.index(">Yellowtail King</a>")
+    assert "Tuna per angler" in boats
+
+    # Species pages rank on that species: Yellowtail King tops the yellowtail page.
+    yt = (web / "sd" / "species" / "yellowtail" / "index.html").read_text(encoding="utf-8")
+    top = yt.split("Top Boats for")[1]
+    assert ">Yellowtail King</a>" in top and ">Tuna Boat</a>" not in top

@@ -791,6 +791,8 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
   const speciesActive = filters.species && filters.species !== 'all';
   const speciesLabel  = speciesActive ? filters.species : SDA.headlineLabel();
+  // Boat rankings count tuna (SDA.rankField) unless a species filter is set.
+  const rankLabel     = speciesActive ? filters.species : SDA.rankLabel();
 
   const _defSp = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
   const _selSp = settings && settings.trophySpecies;
@@ -865,7 +867,7 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
              value={fmt.n(totalTuna)}
              ctx={`${fmt.n(totalAnglers)} anglers fished`}/>
         <KPI label="Best Boat" value={topBoats[0]?.boat || '—'}
-             ctx={topBoats[0] ? `${fmt.tpa(topBoats[0].avgTPA)} ${speciesLabel.toLowerCase()}/angler · ${topBoats[0].landing}` : ''}/>
+             ctx={topBoats[0] ? `${fmt.tpa(topBoats[0].avgTPA)} ${rankLabel.toLowerCase()}/angler · ${topBoats[0].landing}` : ''}/>
         <KPI label="Peak Month"
              value={bestMonth ? MONTH_NAMES[bestMonth.month - 1] : '—'}
              ctx={bestMonth ? `${fmt.tpa(bestMonth.tpa)} ${speciesLabel.toLowerCase()}/angler · ${fmt.n(bestMonth.tuna)} caught` : ''}/>
@@ -873,8 +875,8 @@ function AnalyticsView({ filters: propFilters, setFilters: setPropFilters, navig
 
       {/* Top Boats leaderboard */}
       <div style={{marginBottom: 12}}>
-        <Panel title={`Top Boats — ${speciesLabel} per Angler per Day`}
-               meta={`Ranked by avg ${speciesLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips`}
+        <Panel title={`Top Boats — ${rankLabel} per Angler per Day`}
+               meta={`Ranked by avg ${rankLabel.toLowerCase()}/angler/day · min ${filters.minTrips} trips`}
                actions={<button className="btn sm ghost" onClick={() => navigate('boats', {})}>View All →</button>}>
           {topBoats.length === 0 ? (
             <div className="muted-block">No boats meet the minimum trip threshold for these filters.</div>

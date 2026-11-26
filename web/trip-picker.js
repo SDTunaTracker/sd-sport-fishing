@@ -25,8 +25,7 @@
 //       from/to 'YYYY-MM-DD' (Pacific dates, inclusive; default next 7 days)
 //       days: optional ['YYYY-MM-DD', ...] — only departures on these days
 //             (multi-select in Pick dates); from/to become its first/last day
-//       species 'Bluefin' | 'Yellowfin' | 'Yellowtail' | 'Dorado' | 'Tuna' | ... (optional;
-//       'Tuna' = bluefin + yellowfin)
+//       species 'Bluefin' | 'Yellowfin' | 'Yellowtail' | 'Dorado' | ... (optional)
 //       maxPrice number, dollars (optional)
 //       region  'san_diego' (default) | 'oc_la' | 'all_socal' | 'sf_bay'
 //       now     ms timestamp (tests); defaults to Date.now()
@@ -65,6 +64,9 @@
   var SHRINK_K = 2;          // pseudo-trips of fleet average blended into each boat
   var TROPHY = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
   var ALL_SPECIES_REGIONS = { oc_la: true };
+  // Best-boat picks rank on tuna in every region (owner decision 2026-11-26;
+  // same set as web/analytics.js TUNA_SPECIES and the mobile app).
+  var TUNA = ['Bluefin', 'Yellowfin', 'Bigeye', 'Albacore'];
   var SPECIES_FLOOR = 0.05;  // fish per angler (per day) below which a boat isn't "landing" a species
 
   function daysOf(len) {
@@ -117,32 +119,24 @@
   }
 
   // Fish counted for a trip under this query.
-  // "Tuna" groups the tunas anglers book for (bluefin + yellowfin).
   function fishFn(species, region) {
-    if (species === 'Tuna') {
-      var one = fishFn('Bluefin', region), two = fishFn('Yellowfin', region);
-      return function (t) { return one(t) + two(t); };
-    }
     if (species) {
       return function (t) {
         if (t[species] != null) return +t[species] || 0;
         return (t.fullCatch && +t.fullCatch[species]) || 0;
       };
     }
-    if (ALL_SPECIES_REGIONS[region]) {
-      return function (t) {
-        if (t.fullCatch) { var n = 0; for (var k in t.fullCatch) n += +t.fullCatch[k] || 0; return n; }
-        return t.trophyCount || 0;
-      };
-    }
     return function (t) {
-      return t.trophyCount != null ? t.trophyCount : TROPHY.reduce(function (s, x) { return s + (t[x] || 0); }, 0);
+      return TUNA.reduce(function (s, x) {
+        var v = t[x] != null ? t[x] : (t.fullCatch && t.fullCatch[x]);
+        return s + (+v || 0);
+      }, 0);
     };
   }
   function nounFor(species, region, metric) {
     if (metric === 'limitRate') return 'of limits';
     if (species) return species.toLowerCase();
-    return 'fish';   // owner wording (#13): "fish", not "trophy fish"
+    return 'tuna';
   }
 
   function defaults(data) {
@@ -458,13 +452,11 @@
   // mobile visitors (no chat on phones) get the same answers chat users do.
   //   range: 'weekend' | 'next7' | 'next14'
   var ALL_TYPES = ['full', 'overnight', '1.5', 'multi', 'long'];
-  // These four match Co-Captain's starter buttons exactly. Tuna replaced
-  // "Where are the yellowtail?" (2026-11-26): yellowfin out-land yellowtail
-  // ~8:1 in San Diego and owners say tuna is what anglers ask about.
+  // These four match Co-Captain's starter buttons exactly.
   var QUICK_PICKS = [
     { id: 'overnight-week', label: 'Best overnight this week', type: 'overnight', range: 'next7' },
     { id: 'under-300', label: 'Best trip under $300', type: ['full', 'overnight', '1.5'], range: 'next7', maxPrice: 300 },
-    { id: 'tuna-week', label: 'Best boat for tuna this week', type: ['full', 'overnight', '1.5', 'multi'], range: 'next7', species: 'Tuna' },
+    { id: 'yellowtail', label: 'Where are the yellowtail?', type: ['full', 'overnight', '1.5', 'multi'], range: 'next7', species: 'Yellowtail' },
     { id: 'fullday-weekend', label: 'Best full day this weekend', type: 'full', range: 'weekend' },
   ];
   // Query for a quick pick: quickQuery(id, { region, now }) -> pickTrips query.
