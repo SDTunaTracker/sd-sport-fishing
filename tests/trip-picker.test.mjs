@@ -167,3 +167,17 @@ test('typeOf groups trip lengths', () => {
   assert.equal(P.typeOf('5 Day'), 'long');
   assert.equal(P.typeOf('Long Range'), 'long');
 });
+
+test('scheduled counts future departures so "no schedule" differs from "none match"', () => {
+  const r1 = P.pickTrips({ type: 'long', now: NOW }, data([sched('A', 2)], []));
+  assert.equal(r1.considered, 0);
+  assert.equal(r1.scheduled, 1);
+  const r2 = P.pickTrips({ type: 'full', region: 'oc_la', now: NOW }, data([], []));
+  assert.equal(r2.scheduled, 0);
+});
+
+test('whatsBiting in OC/LA ranks every landed species', () => {
+  const trips = [trip('A', 1, 0, 10, { region: 'oc_la', fullCatch: { Rockfish: 40, Yellowtail: 5 }, Yellowfin: 0 })];
+  const w = P.whatsBiting({ now: NOW, region: 'oc_la' }, data([], trips));
+  assert.equal(w.items[0].species, 'Rockfish');
+});

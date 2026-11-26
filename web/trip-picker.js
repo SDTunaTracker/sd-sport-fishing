@@ -14,7 +14,9 @@
 //   - NWS small-craft advisories are returned as a WARNING, never scored.
 //
 // API (also window.TTPicker):
-//   pickTrips(query, data?) -> { best, alternates[], considered, noData, query }
+//   pickTrips(query, data?) -> { best, alternates[], considered, noData, scheduled, query }
+//     (scheduled = future departures in the region of any type; 0 means the
+//      region has no schedule data, which is different from "none match")
 //     query: { type, from, to, species?, maxPrice?, region?, now? }
 //       type    'full' | 'overnight' | '1.5' | 'multi' | 'long', an exact
 //               trip length ('Full Day', '2 Day', ...), or an array of those
@@ -250,6 +252,10 @@
         };
 
     // 1) Candidates: scheduled, in range, seats left, within budget.
+    var scheduled = 0;
+    D.schedule.forEach(function (t) {
+      if (t && t.departureAt && inRegion(t) && new Date(t.departureAt).getTime() > now) scheduled++;
+    });
     var cands = D.schedule.filter(function (t) {
       if (!t || !t.departureAt || !inRegion(t)) return false;
       if (!match(t.tripLength, t.tripLengthDays)) return false;
@@ -264,7 +270,7 @@
     });
 
     var result = {
-      best: null, alternates: [], considered: cands.length, noData: 0,
+      best: null, alternates: [], considered: cands.length, noData: 0, scheduled: scheduled,
       query: { type: query.type || 'full', from: from, to: to, species: query.species || null,
                maxPrice: query.maxPrice != null ? query.maxPrice : null, region: region },
     };
@@ -377,7 +383,19 @@
     var days = query.days || 7;
     var region = query.region || 'san_diego';
     var landings = D.landingsFor(region);
-    var species = query.species || TROPHY;
+    var species = query.species || null;
+    if (!species && ALL_SPECIES_REGIONS[region]) {
+      // Every landed species in the window (OC/LA headline counts all fish).
+      var seenSp = {};
+      for (var j = 0; j < D.trips.length; j++) {
+        var tj = D.trips[j];
+        if (!tj || !tj.date || tj.date < isoDay(now - (2 * days - 1) * DAY) || tj.date > isoDay(now)) continue;
+        if (tj.region && tj.region !== region) continue;
+        for (var k in (tj.fullCatch || {})) seenSp[k] = 1;
+      }
+      species = Object.keys(seenSp);
+    }
+    species = species && species.length ? species : TROPHY;
     var nowDay = isoDay(now);
     var start = isoDay(now - (days - 1) * DAY), prevStart = isoDay(now - (2 * days - 1) * DAY);
     var cur = { anglers: 0, trips: 0 }, prev = { anglers: 0, trips: 0 };

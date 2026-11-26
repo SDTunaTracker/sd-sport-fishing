@@ -16,6 +16,10 @@
       title: 'Today\'s San Diego Fish Counts — Live Sportfishing Report' + SFX,
       desc:  'Today\'s fish counts from H&M, Fisherman\'s, Seaforth, Point Loma, and Oceanside landings, checked hourly: bluefin, yellowfin, yellowtail and dorado by boat.'
     },
+    pick: {
+      title: 'Pick My Trip: the Best San Diego Fishing Trip to Book This Week' + SFX,
+      desc:  'Choose a trip type and dates and get one answer: the San Diego boat with open seats that has been catching best lately, plus two alternates.'
+    },
     forecast: {
       title: 'San Diego Ocean Conditions' + SFX,
       desc:  'San Diego sportfishing ocean conditions: sea surface temperature, wind and swell.'
@@ -55,6 +59,10 @@
     today: {
       title: 'Today\'s Orange County, LA & Ventura Fish Counts — Sportfishing Report' + SFX,
       desc:  'Today\'s fish counts from Orange County, Los Angeles and Ventura County landings, by boat: yellowtail, tuna, calico bass, rockfish and more.'
+    },
+    pick: {
+      title: 'Pick My Trip: the Best Orange County, LA & Ventura Fishing Trip This Week' + SFX,
+      desc:  'Choose a trip type and dates and get one answer: the boat with open seats that has been catching best lately, plus two alternates.'
     },
     boats: {
       title: 'Orange County, LA & Ventura Sportfishing Boats' + SFX,
@@ -259,7 +267,7 @@
   var VIEW_MAP = {
     home: 'home', today: 'today', forecast: 'forecast', boats: 'boats',
     analytics: 'analytics', tripplanner: 'tripplanner', charts: 'charts',
-    account: 'account', settings: 'account', boat: 'boat', landing: 'landing',
+    account: 'account', settings: 'account', boat: 'boat', landing: 'landing', pick: 'pick',
   };
 
   function updateFromLocation() {
