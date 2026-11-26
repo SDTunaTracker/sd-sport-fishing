@@ -47,6 +47,7 @@ LANDINGS = (
     "Dana Wharf Sportfishing",
     # Ventura
     "Channel Islands Sportfishing",
+    "Hooks Landing",
     "Ventura Harbor Sportfishing",
 )
 

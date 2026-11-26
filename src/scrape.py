@@ -84,6 +84,12 @@ SOURCES: tuple[LandingSource, ...] = (
         region="oc_la",
     ),
     LandingSource(
+        name="Hooks Landing",  # Oxnard, next to Channel Islands Sportfishing
+        url="https://socalfishreports.com/landings/hooks_landing.php",
+        referer=None,
+        region="oc_la",
+    ),
+    LandingSource(
         name="Ventura Harbor Sportfishing",
         url="https://socalfishreports.com/landings/ventura_harbor_sportfishing_llc.php",
         referer=None,

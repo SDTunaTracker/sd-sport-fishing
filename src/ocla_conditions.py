@@ -35,6 +35,7 @@ POINTS: dict[str, tuple[float, float]] = {
 # Which point describes each OC/LA landing's home water.
 LANDING_POINT: dict[str, str] = {
     "Channel Islands Sportfishing": "Ventura / Channel Islands",
+    "Hooks Landing":                "Ventura / Channel Islands",
     "Ventura Harbor Sportfishing":  "Ventura / Channel Islands",
     "Marina Del Rey Sportfishing":  "Santa Monica Bay",
     "Redondo Beach Sportfishing":   "Santa Monica Bay",
