@@ -725,7 +725,9 @@ def build_app_payload(conn: sqlite3.Connection, full: dict, today: date | None =
         "TRIPS": trips,
         "HALF_DAY_TRIPS": half,
         "MONTHLY": _monthly_rollup(conn),
-        "BOAT_PROFILES": full["BOAT_PROFILES"],
+        # San Diego only, like TRIPS and SCHEDULE (the app only links SD boats).
+        "BOAT_PROFILES": {k: v for k, v in full["BOAT_PROFILES"].items()
+                          if v.get("landing") in sd_landings},
     }
 
 
