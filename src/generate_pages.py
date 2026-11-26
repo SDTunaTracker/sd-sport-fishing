@@ -399,11 +399,16 @@ _BRAND_SVG = (
     'height="12" rx="1.2"/><rect x="16" y="25" width="4.5" height="17" rx="1.2"/></svg>'
 )
 
-# "Pick my trip" (/sd/pick, web/trip-picker.js). ?q= takes the picker's preset
-# ids; pages without a matching preset link to /sd/pick itself.
+# "Pick my trip" (/sd/pick, web/trip-picker.js). ?type= opens the picker on a
+# trip type for the next 7 days (full, overnight, 1.5, multi = 2-3.5 day,
+# long = 4+ day); ?q= takes a preset id. Keyed by trip-length or species slug.
 _PICK_URL = {
-    "overnight": "/sd/pick?q=overnight-week",
-    "full-day": "/sd/pick?q=fullday-weekend",
+    "full-day": "/sd/pick?type=full",
+    "overnight": "/sd/pick?type=overnight",
+    "1-5-day": "/sd/pick?type=1.5",
+    "2-day": "/sd/pick?type=multi",
+    "2-5-day": "/sd/pick?type=multi",
+    "3-day": "/sd/pick?type=multi",
     "yellowtail": "/sd/pick?q=yellowtail",
 }
 
