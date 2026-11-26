@@ -344,6 +344,21 @@ def public_species(names) -> Counter:
     return c
 
 
+def _photo_counts(conn) -> dict[str, int]:
+    """source_id -> number of BloodyDecks photos on that post (links only)."""
+    if not _has_table(conn, "paddy_sources"):
+        return {}
+    if "photos" not in {r[1] for r in conn.execute("PRAGMA table_info(paddy_sources)")}:
+        return {}
+    out = {}
+    for sid, ph in conn.execute("SELECT id, photos FROM paddy_sources WHERE photos IS NOT NULL"):
+        try:
+            out[sid] = len(json.loads(ph))
+        except (TypeError, ValueError):
+            pass
+    return out
+
+
 def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
                   now: datetime | None = None, window_days: int = WINDOW_DAYS) -> dict:
     gaz = gaz or Gazetteer()
@@ -358,6 +373,7 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
     groups: dict[str, list] = defaultdict(list)
     for r in rows:
         groups[_cell_key(r)].append(r)
+    photo_counts = _photo_counts(conn)
 
     features = []
     for key, rs in groups.items():
@@ -386,7 +402,7 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
             if r["url"] and r["url"] not in seen:
                 seen.add(r["url"])
                 links.append({"url": r["url"], "title": r["title"], "date": r["report_date"],
-                              "feed": r["feed_id"]})
+                              "feed": r["feed_id"], "photos": photo_counts.get(r["source_id"], 0)})
             if len(links) >= MAX_SOURCES_PER_SPOT:
                 break
         features.append({

@@ -7068,6 +7068,11 @@ button.btn-save-boat[data-saved="true"],
 .ww-link { margin-top: auto; padding-top: 4px; align-self: flex-start; min-height: 32px; display: inline-flex; align-items: center; font: 500 13px var(--sans); color: var(--accent-ink); text-decoration: none; }
 .ww-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .ww-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+/* BloodyDecks photos: a link to the post, never an embed (full-size originals). */
+.fr-photos-link { display: inline-flex; align-items: center; min-height: 32px; margin-top: 6px; align-self: flex-start; font: 500 13px var(--sans); color: var(--muted); text-decoration: none; }
+.fr-photos-link:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+.fr-photos-link:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+@media (max-width: 900px) { .fr-photos-link { min-height: 44px; } }
 .ww-card .fr-attrib { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 
 @media (max-width: 900px) {
