@@ -70,7 +70,9 @@
   window.REGION_HASH_TO_IDS = {
     'sd':      ['san_diego'],
     'ocla':    ['oc_la'],
-    'sd+ocla': ['san_diego', 'oc_la'],
+    // "All SoCal" (sd+ocla) was removed 2026-11-26 (owner: one region at a
+    // time). Old /sd+ocla/... links open San Diego; _redirects 301s them.
+    'sd+ocla': ['san_diego'],
   };
   if (SHOW_SFBAY) window.REGION_HASH_TO_IDS['sfbay'] = ['sf_bay'];
 
@@ -81,6 +83,15 @@
     if (hasSd && hasOcla) return 'sd+ocla';
     if (hasOcla)          return 'ocla';
     return 'sd';
+  };
+
+  // The site shows exactly one region at a time. Any saved / linked
+  // combination (the retired "All SoCal" = San Diego + OC/LA) becomes San Diego.
+  window.normalizeRegions = function (regionIds) {
+    var ids = Array.isArray(regionIds) ? regionIds.filter(Boolean) : [];
+    if (ids.length === 1) return ids;
+    if (ids.indexOf('sf_bay') !== -1) return ['sf_bay'];
+    return ['san_diego'];
   };
 
   // Effective single-region string for analytics.js filterTrips
