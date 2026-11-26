@@ -1,6 +1,5 @@
 // No-horizontal-clipping sweep (UX audit). Needs Playwright + Chrome:
-//   $env:NODE_PATH="<repo>
-ode_modules"; node scripts/ux/clipsweep.js http://localhost:8768 . [paths...]
+//   set NODE_PATH to the repo node_modules, then: node scripts/ux/clipsweep.js http://localhost:8768 . [paths...]
 // For each width, flags (a) page-level sideways scroll, (b) visible elements
 // that run past the viewport's right edge, (c) text boxes cut off by an
 // ancestor with overflow hidden/clip (scrollWidth > clientWidth) that are not
