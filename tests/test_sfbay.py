@@ -216,6 +216,21 @@ def test_health_no_alert_on_no_trip_days():
     assert H.check(conn, today=date(2026, 11, 25), now=now) == []
 
 
+def test_today_not_posted_yet_is_not_a_layout_alert(tmp_path):
+    # Early in the day the site serves the latest posted day's full page (here
+    # July 18) for today's URL (July 19). That must not raise sfbay:parse.
+    conn = _db()
+    today = DAY + timedelta(days=1)
+    assert S.not_posted_yet(PAGE, today) and not S.not_posted_yet(PAGE, DAY)
+    f = S.Fetcher(cache_dir=tmp_path, min_delay=0, max_delay=0)
+    f.session.get = lambda *a, **k: _Resp(200, PAGE)
+    st = S.scrape_days(conn, [today], fetcher=f, today=today)
+    assert st["not_posted"] == 1 and st["rows"] == 0
+    assert conn.execute("SELECT status, error FROM norcal_fetch_log").fetchone() == (200, "not_posted")
+    now = datetime(2026, 7, 19, 18, tzinfo=timezone.utc)
+    assert H.check(conn, today=today, now=now) == []
+
+
 def test_health_flags_layout_change_and_stale_fetch():
     conn = _db()
     now = datetime(2026, 7, 20, 18, tzinfo=timezone.utc)
