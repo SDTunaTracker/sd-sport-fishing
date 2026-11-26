@@ -1187,6 +1187,43 @@ def _write(web_dir, rel: str, html: str) -> None:
     out.write_text(html, encoding="utf-8")
 
 
+_PRUNE_KINDS = ("boat", "landing", "species", "trips")
+
+
+def _prune_stale(web_dir, pages: list[dict]) -> list[str]:
+    """Delete generated pages under web/sd/<kind>/ that this run didn't write.
+
+    Otherwise a page whose boat was renamed or lost its trips stays online
+    forever with frozen numbers. Safety: a kind is only pruned when this run
+    wrote at least one page of it, and more than 3 deletions must be under a
+    quarter of the pages written, so a failed or partial run can't wipe the site.
+    """
+    from urllib.parse import unquote
+    written: dict[str, set[str]] = {k: set() for k in _PRUNE_KINDS}
+    for p in pages:
+        parts = p["url"].strip("/").split("/")          # sd, kind, name
+        if len(parts) == 3 and parts[1] in written:
+            written[parts[1]].add(unquote(parts[2]))
+    removed: list[str] = []
+    for kind, names in written.items():
+        root = Path(web_dir) / "sd" / kind
+        if not names or not root.is_dir():
+            continue
+        stale = [d for d in root.iterdir()
+                 if d.is_dir() and d.name not in names and (d / "index.html").is_file()]
+        if len(stale) > 3 and len(stale) * 4 > len(names):
+            log.warning("generate_pages: not pruning %d stale %s pages (too many)", len(stale), kind)
+            continue
+        for d in stale:
+            (d / "index.html").unlink()
+            if not any(d.iterdir()):
+                d.rmdir()
+            removed.append(f"/sd/{kind}/{d.name}/")
+    if removed:
+        log.info("generate_pages: removed stale pages %s", removed)
+    return removed
+
+
 def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[dict]:
     """Generate all static pages. Called from export.py.
 
@@ -1307,5 +1344,6 @@ def generate_all_pages(conn: sqlite3.Connection, web_dir, index_path) -> list[di
     except Exception as e:
         log.warning("Today/boats page failed: %s", e)
 
+    _prune_stale(web_dir, pages)
     log.info("generate_pages: %d boats, %d landings, %d species", n_boats, n_landings, n_species)
     return pages

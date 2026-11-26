@@ -30,7 +30,7 @@ Status: `todo` · `doing` · `done (branch)` · `shipped` (on main and live) · 
 | S29 | Generated pages had no Google Analytics tag or web fonts (only `index.html` has them) | done (claude/seo-2) | Visits landing on boat/landing/species pages weren't counted |
 | S30 | Species pages: the SPA has no species view and redirected visitors to `/sd/today` | done (claude/seo-2) | Species and trip pages are now static only, with a plain site nav. Styling: ask UX |
 | S31 | App landing view shows the slug ("hm-landing") as its heading on `/sd/landing/<slug>/` | coord (app-dev) | Visitors see the app, not the static page there |
-| S28 | Stale `web/sd/boat/Bluefin/` page: the boat has no trips, and the generator never deletes old pages | todo | Delete pages not regenerated in a run (and keep them out of the sitemap) |
+| S28 | Stale `web/sd/boat/Bluefin/` page: the boat has no trips, and the generator never deletes old pages | done (claude/seo-2) | Delete pages not regenerated in a run (and keep them out of the sitemap) |
 | S15 | Consistent metric with the app (exclude half-days; mean over all trips, not only nonzero) plus a methodology page | coord (app/UX) | Numbers on pages must match the app |
 
 ## P1: new data-driven pages
