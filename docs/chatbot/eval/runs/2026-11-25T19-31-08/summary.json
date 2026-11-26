@@ -1,0 +1,28 @@
+[
+  {
+    "id": "r02-mexico-license",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      13879
+    ],
+    "inputTokens": [
+      23416
+    ]
+  },
+  {
+    "id": "r03-unknown-reg",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      5030
+    ],
+    "inputTokens": [
+      23407
+    ]
+  }
+]

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "c13-hm-friday-night",
+    "turnsPassed": "0/1",
+    "fails": [
+      "Producer departs 2026-12-04 > 2026-11-27",
+      "Sea Adventure 80 departs 2026-12-04 > 2026-11-27"
+    ],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      7990
+    ],
+    "inputTokens": [
+      23001
+    ]
+  },
+  {
+    "id": "c14-ocla-newport",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      5345
+    ],
+    "inputTokens": [
+      9787
+    ]
+  },
+  {
+    "id": "r01-bluefin-limit",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      6182
+    ],
+    "inputTokens": [
+      22998
+    ]
+  },
+  {
+    "id": "r02-mexico-license",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      8088
+    ],
+    "inputTokens": [
+      23009
+    ]
+  },
+  {
+    "id": "r03-unknown-reg",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 0,
+    "cardsWithIssues": 0,
+    "ms": [
+      4174
+    ],
+    "inputTokens": [
+      23000
+    ]
+  },
+  {
+    "id": "r04-trip-docs",
+    "turnsPassed": "1/1",
+    "fails": [],
+    "cards": 3,
+    "cardsWithIssues": 0,
+    "ms": [
+      8966
+    ],
+    "inputTokens": [
+      23001
+    ]
+  }
+]

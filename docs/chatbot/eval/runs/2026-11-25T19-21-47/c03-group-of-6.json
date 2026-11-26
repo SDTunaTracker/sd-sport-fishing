@@ -1,0 +1,154 @@
+{
+  "case": {
+    "id": "c03-group-of-6",
+    "persona": "Group of 6 friends, overnight, mid-December",
+    "turns": [
+      "We have 6 guys looking for an overnight or 1.5 day around Dec 12-13. Which trips have room for all 6?"
+    ],
+    "expect": "Only trips with openSpots >= 6 departing Dec 11-13; H&M evening departures on the correct local date.",
+    "checks": [
+      {
+        "minCards": 1,
+        "minSpots": 6,
+        "dateFrom": "2026-12-11",
+        "dateTo": "2026-12-13",
+        "lengths": [
+          "Overnight",
+          "1.5 Day"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "We have 6 guys looking for an overnight or 1.5 day around Dec 12-13. Which trips have room for all 6?",
+      "text": "For your crew of 6 on Dec 12-13, here are the overnight/1.5-day options with room:\n\n- Sea Adventure 80 is the only boat with trips both nights (Fri 12/11 and Sat 12/12), **32/32 open** each.\n- Producer runs the most fish per angler lately — **4.91 trophy/angler/day** over its last 10 trips (TPA/day = trophy fish per angler per day), but only runs Fri 12/11 in this window.\n\n<trip-card>{\"tripId\": \"hm-8b4580-12121900\", \"why\": [\"Only overnight on Sat 12/12 with room for 6\", \"32/32 open as of last update\", \"$340/person\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b4572-12112000\", \"why\": [\"Producer led recent form: 4.91 trophy/angler/day over last 10 trips\", \"29/29 open as of last update\", \"$360/person, Fri 12/11 overnight\"]}</trip-card>\n\n<trip-card>{\"tripId\": \"hm-8b45a4-12111800\", \"why\": [\"Old Glory 1.5-day Fri 12/11, 28/29 open\", \"Season Win Rate 31% at this length (% of same-day, same-length matchups where the boat had best catch per angler)\", \"$490/person\"]}</trip-card>\n\nConfirm spots and price on the landing's site before you commit — this is a snapshot as of the last update.\n\n<followups>[\"Show only Saturday 12/12 departures\",\"Compare Producer vs Old Glory recent catches\",\"What about 2-day trips that weekend?\"]</followups>",
+      "ms": 10194,
+      "usage": {
+        "input_tokens": 23324,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 536,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44160,
+      "cards": [
+        {
+          "tripId": "hm-8b4580-12121900",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b4580-12121900",
+            "sourceId": "559175c7cf8b9c18468b4580@2026-12-13T03:00:00+00:00",
+            "boat": "Sea Adventure 80",
+            "landing": "H&M Landing",
+            "tripLength": "Overnight",
+            "departLocal": "2026-12-12T19:00:00-08:00",
+            "departLabel": "Sat 12/12 7:00 PM",
+            "departDate": "2026-12-12",
+            "returnLocal": "2026-12-13T17:00:00-08:00",
+            "returnLabel": "Sun 12/13 5:00 PM",
+            "price": 340,
+            "openSpots": 32,
+            "capacity": 32,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-12/1900?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "docs": null,
+            "winRate": 15,
+            "avgTPA": 1.68,
+            "boatPageUrl": "#boat/Sea%20Adventure%2080"
+          },
+          "why": [
+            "Only overnight on Sat 12/12 with room for 6",
+            "32/32 open as of last update",
+            "$340/person"
+          ],
+          "boat": "Sea Adventure 80",
+          "date": "2026-12-12",
+          "tripLength": "Overnight",
+          "price": 340,
+          "openSpots": 32,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/559175c7cf8b9c18468b4580/2026-12-12/1900?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        },
+        {
+          "tripId": "hm-8b4572-12112000",
+          "hydrated": null,
+          "why": [
+            "Producer led recent form: 4.91 trophy/angler/day over last 10 trips",
+            "29/29 open as of last update",
+            "$360/person, Fri 12/11 overnight"
+          ],
+          "issues": [
+            "unknown tripId hm-8b4572-12112000 (card would be dropped)"
+          ]
+        },
+        {
+          "tripId": "hm-8b45a4-12111800",
+          "hydrated": {
+            "type": "trip",
+            "tripId": "hm-8b45a4-12111800",
+            "sourceId": "53f677dead2171442d8b45a4@2026-12-12T02:00:00+00:00",
+            "boat": "Old Glory",
+            "landing": "H&M Landing",
+            "tripLength": "1.5 Day",
+            "departLocal": "2026-12-11T18:00:00-08:00",
+            "departLabel": "Fri 12/11 6:00 PM",
+            "departDate": "2026-12-11",
+            "returnLocal": "2026-12-13T06:00:00-08:00",
+            "returnLabel": "Sun 12/13 6:00 AM",
+            "price": 490,
+            "openSpots": 28,
+            "capacity": 29,
+            "spotsAsOf": "2026-11-25T10:22:35+00:00",
+            "bookingUrl": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/53f677dead2171442d8b45a4/2026-12-11/1800?openExternal=true",
+            "bookingKind": "exact_trip",
+            "landingPhone": "(619) 222-1144",
+            "targetSpecies": null,
+            "included": null,
+            "tripStatus": null,
+            "docs": null,
+            "winRate": 31,
+            "avgTPA": 1.73,
+            "boatPageUrl": "#boat/Old%20Glory"
+          },
+          "why": [
+            "Old Glory 1.5-day Fri 12/11, 28/29 open",
+            "Season Win Rate 31% at this length (% of same-day, same-length matchups where the boat had best catch per angler)",
+            "$490/person"
+          ],
+          "boat": "Old Glory",
+          "date": "2026-12-11",
+          "tripLength": "1.5 Day",
+          "price": 490,
+          "openSpots": 28,
+          "landing": "H&M Landing",
+          "url": "https://checkout.xola.app/index.html#seller/53e93b35ad2171ef768b4588/experiences/53f677dead2171442d8b45a4/2026-12-11/1800?openExternal=true",
+          "bookingKind": "exact_trip",
+          "issues": []
+        }
+      ],
+      "verdict": {
+        "pass": false,
+        "fails": [
+          "1 card(s) with issues"
+        ]
+      }
+    }
+  ]
+}

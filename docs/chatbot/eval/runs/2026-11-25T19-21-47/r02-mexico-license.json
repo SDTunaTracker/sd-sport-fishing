@@ -1,0 +1,56 @@
+{
+  "case": {
+    "id": "r02-mexico-license",
+    "persona": "Regs: Mexico paperwork",
+    "turns": [
+      "Do I need a Mexican fishing license for a 1.5 day trip?"
+    ],
+    "expect": "Mexican permit (CONAPESCA) if fishing Mexican waters, FMM/passport via INM list, ask the landing, official link; no invented price.",
+    "checks": [
+      {
+        "mustSay": [
+          "CONAPESCA|Mexican (sport[- ]fishing )?(permit|licen[cs]e)",
+          "landing",
+          "check|confirm"
+        ],
+        "mustNotSay": [
+          "(permit|licen[cs]e)[^.]{0,30}\\$\\s?\\d+|\\$\\s?\\d+[^.]{0,30}(permit|licen[cs]e)",
+          "you (do not|don.t) need (a|any) (mexican )?(permit|license)",
+          "(most|many|usually|typically)\\b.{0,50}?\\b(cross|fish|go)\\b.{0,30}mexic",
+          "(sell|sold)[^.]{0,30}(at|on) (check-?in|the dock|the landing)"
+        ]
+      }
+    ]
+  },
+  "turns": [
+    {
+      "user": "Do I need a Mexican fishing license for a 1.5 day trip?",
+      "text": "Short answer: if the boat crosses into Mexican waters, yes — each angler needs their own Mexican sport-fishing permit from CONAPESCA, and you'll also be on the boat's INM passenger list (the FMM visitor permit). Carry your passport. This is a summary last checked 2026-11-25 — confirm with the landing and check [CONAPESCA](https://www.gob.mx/conapesca/documentos/conapesca-01-016-pesca-deportivo-recreativa) and [INM](https://www.gob.mx/inm/acciones-y-programas/sport-fishing-and-nautical-tourism).\n\nA few important notes:\n- I don't have data on which specific 1.5-day trips cross into Mexican waters — ask the landing directly.\n- Each trip listing's docs note is the best signal. For example, Seaforth's Tribute 1.5-day shows \"MX permit extra,\" Fisherman's Constitution 1.5-day shows \"passport not req; MX permit extra,\" and Old Glory's February+ 1.5-days show \"passport req.\" If a trip has no docs note, the listing doesn't say — confirm with the landing.\n- Many landings sell the CONAPESCA permit at check-in, but I can't confirm that for any specific boat.\n\nWant me to pull up specific 1.5-day options so you can see each one's docs note?\n\n<followups>[\"Show upcoming 1.5-day trips\", \"Which 1.5-days don't require a passport?\", \"What's the Mexico bag limit?\"]</followups>",
+      "ms": 8543,
+      "usage": {
+        "input_tokens": 23307,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 505,
+        "service_tier": "standard",
+        "inference_geo": "global",
+        "speed": "standard",
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        }
+      },
+      "systemChars": 44160,
+      "cards": [],
+      "verdict": {
+        "pass": false,
+        "fails": [
+          "said /(sell|sold)[^.]{0,30}(at|on) (check-?in|the dock|the landing)/"
+        ]
+      }
+    }
+  ]
+}

@@ -7089,6 +7089,45 @@ button.btn-save-boat[data-saved="true"],
     -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
 }
 
+/* ── Regulations (trip details strip + card-face docs tag; data in regulations.js) ── */
+.tp-docs-tag    { display: inline-block; margin-top: 6px; padding: 2px 8px; background: var(--band); color: var(--ink-2); border-radius: 20px; font: 500 11px/16px var(--mono); white-space: nowrap; }
+.tp-regs        { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--ink); font-size: 13px; line-height: 1.5; }
+.tp-regs-eyebrow{ font: 500 10.5px/16px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; }
+.tp-regs-sub    { font: 500 10.5px/16px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 10px 0 4px; }
+.tp-regs-stale  { margin: 4px 0; font-size: 12px; color: var(--muted); }
+.tp-regs-grid   { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.tp-regs-item   { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.tp-regs-sp     { margin: 0; font-size: 13px; color: var(--ink-2); }
+.tp-regs-limit  { margin: 0; font: 400 13px/1.5 var(--mono); color: var(--ink); white-space: nowrap; }
+.tp-regs-note   { margin: 0; grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.tp-regs-p      { margin: 4px 0; }
+.tp-regs-muted  { color: var(--muted); font-size: 12px; }
+.tp-regs-mx     { margin-top: 12px; padding: 12px 14px; background: var(--band); border-radius: 10px; }
+.tp-regs-mx .tp-regs-sub { margin-top: 0; }
+.tp-regs-listing{ margin: 2px 0 8px; color: var(--muted); }
+.tp-regs-listing q { font-style: italic; }
+.tp-regs-attr   { display: block; font: 400 11px/16px var(--mono); color: var(--faint); }
+.tp-regs-more   { margin-top: 10px; }
+.tp-regs-more summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: 13px; color: var(--ink-2); }
+.tp-regs-more ul{ margin: 0 0 4px; padding-left: 18px; color: var(--ink-2); }
+.tp-regs-more li{ margin: 3px 0; }
+.tp-regs-foot   { margin-top: 10px; display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--faint); }
+.tp-regs-src    { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.tp-regs-src a  { color: var(--accent-ink); font-size: 12.5px; text-decoration: underline; text-underline-offset: 2px; min-height: 32px; display: inline-flex; align-items: center; }
+@media (max-width: 480px) {
+  .tp-regs-grid  { grid-template-columns: 1fr; }
+  .tp-regs-src a { min-height: 44px; }
+}
+/* Docs tag: in the card header on desktop, in the badge footer on phones. */
+.tp-docs-tag-m  { display: none; margin-top: 0; }
+@media (max-width: 768px) {
+  .tp-card-left-meta .tp-docs-tag { display: none; }
+  .tp-docs-tag-m { display: inline-block; }
+}
+.tp-regs-lede     { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
+.tp-regs-morelink { color: var(--accent-ink); font-size: 12.5px; text-decoration: underline; text-underline-offset: 2px; min-height: 32px; display: inline-flex; align-items: center; }
+@media (max-width: 480px) { .tp-regs-morelink { min-height: 44px; } }
+
 /* Region data file loading (web/region-data.js, app.jsx RegionLoading) */
 .region-loading { max-width: 720px; margin: 48px auto; padding: 0 16px; text-align: center; }
 .region-loading-title { font: 600 20px/1.3 var(--serif); color: var(--ink); display: inline-flex; align-items: center; gap: 10px; }
