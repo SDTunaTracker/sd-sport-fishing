@@ -84,10 +84,10 @@ function AuthButton() {
 const REGION_OPTIONS = [
   { id: 'san_diego',  label: 'San Diego' },
   { id: 'oc_la',     label: 'OC / LA' },
-  { id: 'all_socal', label: 'All SoCal' },
   { id: 'sf_bay',    label: 'SF Bay Area' },
 ];
-const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego', 'oc_la'], sf_bay: ['sf_bay'] };
+// One region at a time. 'all_socal' (retired) may still be a saved preference: San Diego.
+const REGION_ID_TO_ARRAYS = { san_diego: ['san_diego'], oc_la: ['oc_la'], all_socal: ['san_diego'], sf_bay: ['sf_bay'] };
 
 // Returns an onClick that lets real <a> nav links work as SPA navigation while
 // preserving native browser behavior for modified clicks (new tab, etc.).
@@ -139,7 +139,6 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
 
   const currentChoice =
     isSfbay ? 'sf_bay' :
-    regions && regions.length >= 2 ? 'all_socal' :
     regions && regions[0] === 'oc_la' ? 'oc_la' : 'san_diego';
   const currentLabel = (REGION_OPTIONS.find(o => o.id === currentChoice) || REGION_OPTIONS[0]).label;
 
@@ -187,18 +186,11 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
                   <span>San Diego</span>
                 </div>
                 {window.FEATURES && window.FEATURES.SHOW_OCLA ? (
-                  <React.Fragment>
-                    <div className={`region-dropdown-item${currentChoice === 'oc_la' ? ' sel' : ''}`}
-                         onClick={() => handleRegionSelect('oc_la')}>
-                      <span className={`rdrop-dot${currentChoice === 'oc_la' ? ' sel' : ''}`}/>
-                      <span>OC / LA</span>
-                    </div>
-                    <div className={`region-dropdown-item${currentChoice === 'all_socal' ? ' sel' : ''}`}
-                         onClick={() => handleRegionSelect('all_socal')}>
-                      <span className={`rdrop-dot${currentChoice === 'all_socal' ? ' sel' : ''}`}/>
-                      <span>All SoCal</span>
-                    </div>
-                  </React.Fragment>
+                  <div className={`region-dropdown-item${currentChoice === 'oc_la' ? ' sel' : ''}`}
+                       onClick={() => handleRegionSelect('oc_la')}>
+                    <span className={`rdrop-dot${currentChoice === 'oc_la' ? ' sel' : ''}`}/>
+                    <span>OC / LA</span>
+                  </div>
                 ) : (
                   <div className="region-dropdown-item region-dropdown-item-cs">
                     <i className="fa-solid fa-lock" style={{fontSize:9,color:'var(--tb-gray-3)'}}/>
