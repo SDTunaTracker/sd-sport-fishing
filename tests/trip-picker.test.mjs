@@ -82,6 +82,17 @@ test('species query ranks by that species', () => {
   assert.equal(blue.best.noun, 'bluefin');
 });
 
+test("species 'Tuna' counts tuna, not yellowtail", () => {
+  const trips = [
+    trip('Mixed', 2, 40, 20, { Bluefin: 20, Yellowfin: 20 }), trip('Mixed', 4, 40, 20, { Bluefin: 20, Yellowfin: 20 }), trip('Mixed', 6, 40, 20, { Bluefin: 20, Yellowfin: 20 }),
+    trip('Yft', 2, 30, 20, { Yellowfin: 30 }), trip('Yft', 4, 30, 20, { Yellowfin: 30 }), trip('Yft', 6, 30, 20, { Yellowfin: 30 }),
+  ];
+  const r = P.pickTrips({ type: 'overnight', species: 'Tuna', now: NOW }, data([sched('Mixed', 2), sched('Yft', 2)], trips));
+  assert.equal(r.best.boat, 'Mixed');
+  assert.equal(r.best.rate, 2);
+  assert.equal(r.best.noun, 'tuna');
+});
+
 test('one row per boat: its best departure, earliest on a tie', () => {
   const trips = [trip('A', 2, 40), trip('A', 4, 40), trip('A', 6, 40)];
   const r = P.pickTrips({ type: 'overnight', now: NOW }, data([sched('A', 5), sched('A', 2)], trips));
@@ -185,11 +196,11 @@ test('whatsBiting in OC/LA ranks every landed species', () => {
 });
 
 test('quick picks build queries and run', () => {
-  assert.deepEqual(P.QUICK_PICKS.map((q) => q.id), ['overnight-week', 'under-300', 'yellowtail', 'fullday-weekend']);
+  assert.deepEqual(P.QUICK_PICKS.map((q) => q.id), ['overnight-week', 'under-300', 'tuna-week', 'fullday-weekend']);
   const q = P.quickQuery('under-300', { now: NOW, region: 'san_diego' });
   assert.deepEqual([q.from, q.to, q.maxPrice], ['2026-11-25', '2026-12-01', 300]);
   assert.equal(P.quickQuery('fullday-weekend', { now: NOW }).from, '2026-11-27');
-  assert.equal(P.quickQuery('yellowtail', { now: NOW }).species, 'Yellowtail');
+  assert.equal(P.quickQuery('tuna-week', { now: NOW }).species, 'Tuna');
   const trips = [trip('A', 2, 40), trip('A', 4, 40), trip('A', 6, 40)];
   const r = P.pickTrips(P.quickQuery('under-300', { now: NOW }), data([sched('A', 2, { price: 280 }), sched('B', 2, { price: 400 })], trips));
   assert.equal(r.best.boat, 'A');
