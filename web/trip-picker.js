@@ -64,6 +64,9 @@
   var SHRINK_K = 2;          // pseudo-trips of fleet average blended into each boat
   var TROPHY = ['Bluefin', 'Yellowfin', 'Yellowtail', 'Dorado'];
   var ALL_SPECIES_REGIONS = { oc_la: true };
+  // Best-boat picks rank on tuna in every region (owner decision 2026-11-26;
+  // same set as web/analytics.js TUNA_SPECIES and the mobile app).
+  var TUNA = ['Bluefin', 'Yellowfin', 'Bigeye', 'Albacore'];
   var SPECIES_FLOOR = 0.05;  // fish per angler (per day) below which a boat isn't "landing" a species
 
   function daysOf(len) {
@@ -123,20 +126,17 @@
         return (t.fullCatch && +t.fullCatch[species]) || 0;
       };
     }
-    if (ALL_SPECIES_REGIONS[region]) {
-      return function (t) {
-        if (t.fullCatch) { var n = 0; for (var k in t.fullCatch) n += +t.fullCatch[k] || 0; return n; }
-        return t.trophyCount || 0;
-      };
-    }
     return function (t) {
-      return t.trophyCount != null ? t.trophyCount : TROPHY.reduce(function (s, x) { return s + (t[x] || 0); }, 0);
+      return TUNA.reduce(function (s, x) {
+        var v = t[x] != null ? t[x] : (t.fullCatch && t.fullCatch[x]);
+        return s + (+v || 0);
+      }, 0);
     };
   }
   function nounFor(species, region, metric) {
     if (metric === 'limitRate') return 'of limits';
     if (species) return species.toLowerCase();
-    return ALL_SPECIES_REGIONS[region] ? 'fish' : 'trophy fish';
+    return 'tuna';
   }
 
   function defaults(data) {

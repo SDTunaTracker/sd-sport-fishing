@@ -40,7 +40,7 @@ function HeadToHead({ filters, setFilters, navigate, regions }) {
   const bestDay = matchups[0];  // matchups already sorted desc by date
 
   const speciesActive = filters.species && filters.species !== 'all';
-  const speciesLabel = speciesActive ? filters.species : SDA.headlineLabel();
+  const speciesLabel = speciesActive ? filters.species : SDA.rankLabel();
 
   return (
     <React.Fragment>
@@ -185,7 +185,7 @@ function MatchupCard({ m, navigate }) {
                 {t.anglers} anglers
               </span>
               <span className="num" style={{textAlign: 'right', fontVariantNumeric: 'tabular-nums'}}>
-                {t.trophyCount} tuna
+                {speciesActive ? (t[filters.species] || 0) : (t.rankCount ?? t.trophyCount)} {speciesLabel.toLowerCase()}
               </span>
               <span className="num" style={{
                 textAlign: 'right',

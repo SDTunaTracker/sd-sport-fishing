@@ -36,7 +36,7 @@ test('consistent boat beats a one-trip wonder', () => {
   assert.equal(r.alternates.length, 2);
   assert.ok(r.alternates.some((a) => a.boat === 'Lucky'));
   assert.equal(r.best.bookingUrl, 'https://book/Steady-3');
-  assert.match(r.best.reason, /Steady averaged 3\.0 trophy fish per angler on 4 overnights in the last 14 days \(fleet: 2\.8\)/);
+  assert.match(r.best.reason, /Steady averaged 3\.0 tuna per angler on 4 overnights in the last 14 days \(fleet: 2\.8\)/);
   assert.match(r.alternates.find((a) => a.boat === 'Lucky').reason, /treat it as a lean/);
 });
 
@@ -107,7 +107,7 @@ test('boats with no recent trips rank below boats with data', () => {
   assert.equal(r.alternates.length, 0);
 });
 
-test('OC/LA counts every landed species', () => {
+test('OC/LA ranks on tuna too, not every landed species', () => {
   const fc = (n) => ({ Yellowtail: 0, Rockfish: n, Whitefish: n });
   const trips = [
     trip('Rock', 2, 0, 20, { region: 'oc_la', tripLength: 'Full Day', tripLengthDays: 0.75, fullCatch: fc(100) }),
@@ -120,8 +120,8 @@ test('OC/LA counts every landed species', () => {
   const oc = { tripLength: 'Full Day', tripLengthDays: 0.75, region: 'oc_la' };
   const s = [sched('Rock', 2, oc), sched('Few', 2, oc)];
   const r = P.pickTrips({ type: 'full', region: 'oc_la', now: NOW }, data(s, trips));
-  assert.equal(r.best.boat, 'Rock');
-  assert.equal(r.best.noun, 'fish');
+  assert.equal(r.best.boat, 'Few');
+  assert.equal(r.best.noun, 'tuna');
 });
 
 test('region filter uses landingsFor when available', () => {

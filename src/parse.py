@@ -96,6 +96,11 @@ TRACKED_SPECIES = ("Bluefin", "Yellowfin", "Yellowtail", "Dorado",
 # Trophy species per user spec.
 TROPHY_SPECIES = ("Bluefin", "Yellowfin", "Yellowtail", "Dorado")
 
+# Tuna species: what best-boat rankings use, in every region (owner decision
+# 2026-11-26, same set as the mobile app). Mirrored by the trips.tuna_count /
+# tuna_per_angler_per_day columns (src/db.py) and web/analytics.js TUNA_SPECIES.
+TUNA_SPECIES = ("Bluefin", "Yellowfin", "Bigeye", "Albacore")
+
 # Raw-name -> canonical. Lowercased on lookup.
 _SPECIES_ALIASES = {
     "bluefin tuna": "Bluefin",
@@ -331,6 +336,21 @@ def trophy_metrics(species: dict[str, int], anglers: int, trip_days: float) -> T
     per_angler = (total / anglers) if anglers > 0 else 0.0
     per_apd = (per_angler / metric_days(trip_days)) if trip_days > 0 else 0.0
     return TrophyMetrics(total, per_angler, per_apd)
+
+
+@dataclass
+class TunaMetrics:
+    tuna_count: int
+    tuna_per_angler: float
+    tuna_per_angler_per_day: float
+
+
+def tuna_metrics(species: dict[str, int], anglers: int, trip_days: float) -> TunaMetrics:
+    """Tuna-only twin of trophy_metrics (same day divisor)."""
+    total = sum(species.get(sp, 0) for sp in TUNA_SPECIES)
+    per_angler = (total / anglers) if anglers > 0 else 0.0
+    per_apd = (per_angler / metric_days(trip_days)) if trip_days > 0 else 0.0
+    return TunaMetrics(total, per_angler, per_apd)
 
 
 # --- Full catch summary --------------------------------------------------
