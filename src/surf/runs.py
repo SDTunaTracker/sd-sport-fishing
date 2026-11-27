@@ -4,14 +4,14 @@ CDIP keeps no archive of past forecast runs: each `_ecmwf_fc` / `_forecast`
 file is overwritten when it rebuilds, and the MOP_validation archive is one
 spliced series with no lead time. So each scrape we snapshot the current
 runs at the validation buoy sites (BP{site}) and at every break's MOP point,
-keyed by the run's creation time. After a few weeks this gives bias / RMSE /
-skill by lead-time bucket against the buoys (scored by the surf verification
-harness, src/surf/verify.py on the surf-forecast branch).
+keyed by the run's creation time. After a few weeks, `score_leads()` gives
+bias / RMSE / skill by lead-time bucket against the buoys.
 
 Table surf_runs (tracker.db):
   point, kind, run_created, valid_ts, lead_h, hs, tp, dp
 
     python -m src.surf.runs              # snapshot now (skips runs already stored)
+    python -m src.surf.runs --score      # lead-time table for the validation sites
 """
 from __future__ import annotations
 
@@ -91,12 +91,49 @@ def snapshot(conn: sqlite3.Connection) -> dict[str, int]:
     return {"stored": stored, "skipped": skipped, "failed": failed}
 
 
+LEAD_BUCKETS = ((0, 24), (24, 48), (48, 72), (72, 120), (120, 168))
+
+
+def score_leads(conn: sqlite3.Connection, sites=VALIDATION_SITES) -> list[dict]:
+    """Bias / RMSE of archived runs vs buoy obs, by lead bucket (needs pandas)."""
+    import numpy as np
+    import pandas as pd
+    from .verify import load_obs
+    out = []
+    for s in sites:
+        obs = load_obs(s)
+        if obs.empty:
+            continue
+        for kind in KINDS:
+            df = pd.read_sql_query("SELECT valid_ts, lead_h, hs FROM surf_runs WHERE point=? AND kind=?",
+                                   conn, params=(f"BP{s}", kind))
+            if df.empty:
+                continue
+            df["valid_ts"] = pd.to_datetime(df["valid_ts"], utc=True).dt.floor("h")
+            df["obs"] = obs["hs"].reindex(df["valid_ts"]).to_numpy()
+            df = df.dropna()
+            for lo, hi in LEAD_BUCKETS:
+                g = df[(df["lead_h"] >= lo) & (df["lead_h"] < hi)]
+                if len(g) < 12:
+                    continue
+                e = g["hs"] - g["obs"]
+                out.append({"site": s, "kind": kind, "lead": f"{lo}-{hi}h", "n": len(g),
+                            "bias": float(e.mean()), "rmse": float(np.sqrt((e ** 2).mean())),
+                            "runs": int(g.shape[0])})
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--db", type=Path, default=DB)
+    ap.add_argument("--score", action="store_true")
     a = ap.parse_args(argv)
     conn = sqlite3.connect(a.db)
-    print(snapshot(conn))
+    if a.score:
+        for r in score_leads(conn):
+            print(r)
+    else:
+        print(snapshot(conn))
     return 0
 
 

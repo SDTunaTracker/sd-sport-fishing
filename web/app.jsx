@@ -49,7 +49,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 const HASH_VIEWS = {
   home: 'home', today: 'today', tripplanner: 'tripplanner', pick: 'pick',
   settings: 'account', admin: 'admin', forecast: 'forecast',
-  account: 'account', boats: 'boats', charts: 'charts',
+  account: 'account', boats: 'boats', charts: 'charts', surf: 'surf',
 };
 
 const ANALYTICS_SUBTABS = ['overview', 'finder', 'headtohead', 'seasonality', 'moon', 'halfday'];
@@ -472,7 +472,7 @@ function App() {
   const navMap = {
     home: 'home', today: 'today', forecast: 'forecast', analytics: 'analytics',
     tripplanner: 'tripplanner', account: 'account', boats: 'boats', charts: 'charts',
-    landings: 'landings', pick: 'pick',
+    landings: 'landings', pick: 'pick', surf: 'surf',
   };
 
   const isSfbay = regions[0] === 'sf_bay';
@@ -483,6 +483,8 @@ function App() {
     content = <HomeView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
+  } else if (route.view === 'surf' && window.SurfView) {
+    content = <SurfView navigate={navigate}/>;
   } else if (route.view === 'pick' && window.PickTripView) {
     content = <PickTripView navigate={navigate} regions={regions}/>;
   } else if (route.view === 'analytics') {
