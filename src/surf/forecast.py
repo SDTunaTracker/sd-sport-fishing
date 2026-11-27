@@ -428,6 +428,20 @@ def build(now: datetime | None = None) -> dict:
     except Exception as e:  # noqa: BLE001
         log.warning("NWS SRF failed: %s", e)
         srf = None
+    # NWS forecaster notes (AFD .BEACHES) and surf alerts: each guarded so a
+    # fetch failure never stops surf.json being written.
+    try:
+        from .nws import forecaster_notes
+        nws_notes = forecaster_notes()
+    except Exception as e:  # noqa: BLE001
+        log.warning("NWS AFD failed: %s", e)
+        nws_notes = None
+    try:
+        from .nws import surf_alerts
+        nws_alerts = surf_alerts()
+    except Exception as e:  # noqa: BLE001
+        log.warning("NWS alerts failed: %s", e)
+        nws_alerts = None
     buoys = {}
     for s in sorted({b["buoy"] for b in BREAKS}):
         try:
@@ -443,10 +457,11 @@ def build(now: datetime | None = None) -> dict:
                   "Wind: ECMWF IFS via Open-Meteo. "
                   "Tide: NOAA La Jolla 9410230.",
         "credits": [C.CREDIT, "Wind: Open-Meteo.com (CC BY 4.0), ECMWF IFS open data (CC BY 4.0)",
-                    "Tides: NOAA CO-OPS", "Surf Zone Forecast: National Weather Service San Diego"],
+                    "Tides: NOAA CO-OPS",
+                    "Surf Zone Forecast, forecaster notes and alerts: National Weather Service San Diego"],
         "verification": VERIFICATION, "breaks": breaks,
         "tides": {"station": TIDE_STATION, "name": "La Jolla", "hilo": hilo},
-        "nws": srf, "buoys": buoys,
+        "nws": srf, "nwsNotes": nws_notes, "nwsAlerts": nws_alerts, "buoys": buoys,
     }, tide_h, now)   # extras.py: display-only fields
 
 
