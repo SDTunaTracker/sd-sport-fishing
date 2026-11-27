@@ -792,6 +792,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
     <div className="sf-wrap">
       <SurfTopBar title="Surf report" data={data}/>
       <SurfNws nws={data.nws}/>
+      {window.SurfNwsNotes && <window.SurfNwsNotes notes={data.nwsNotes}/>}
 
       {mine.length > 0 && (
         <section className="st-sec" aria-label="My spots">
@@ -1287,11 +1288,13 @@ function SurfView({ navigate, sub, spot }) {
   if (error) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
   if (!data) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">Loading surf forecast…</p></div>;
   const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
-  if (sub === 'forecast') return <SurfForecastPage {...props}/>;
-  if (sub === 'map') return <SurfMapPage {...props}/>;
-  if (sub === 'cams') return <SurfCamsPage {...props} camId={spot}/>;
-  if (sub === 'break' && spot) return <SurfBreakPage {...props} spot={spot}/>;
-  return <SurfReport {...props}/>;
+  const page = sub === 'forecast' ? <SurfForecastPage {...props}/>
+    : sub === 'map' ? <SurfMapPage {...props}/>
+    : sub === 'cams' ? <SurfCamsPage {...props} camId={spot}/>
+    : sub === 'break' && spot ? <SurfBreakPage {...props} spot={spot}/>
+    : <SurfReport {...props}/>;
+  // NWS surf alerts banner (surf-nws.jsx) above every Surftracker tab.
+  return <>{window.SurfNwsAlerts && <window.SurfNwsAlerts alerts={data.nwsAlerts}/>}{page}</>;
 }
 
 window.SurfView = SurfView;
