@@ -1,41 +1,105 @@
+// ── NASA GIBS imagery: dates and tile options ────────────────────────────────
+//
+// GIBS serves every layer per data day. Two traps (measured 2026-11-27):
+// - MUR runs ~3 days behind, not 2. A guessed date 404s (Chrome blocks the
+//   HTML error as ERR_BLOCKED_BY_ORB) and the default SST map came up blank.
+//   The 'default' keyword returns the newest day GIBS has, and every tile says
+//   which day it is in the Layer-Time-Actual header.
+// - Daily swath layers (L2 SST, chlorophyll, true colour) fill in as the
+//   satellite passes, so today is half empty: use yesterday, a complete day.
+// GIBS sends dated tiles with no-store, so sw.js caches them itself (a dated
+// tile never changes).
+var GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/';
+var _GIBS_DATE_KEY = 'tt_gibs_dates_v1', _GIBS_DATE_TTL = 3 * 3600000;
+
+function _utcDay(offsetDays) {
+  var d = new Date(Date.now() - (offsetDays || 0) * 86400000);
+  return d.toISOString().slice(0, 10);
+}
+
+function _gibsDates() {
+  try { return JSON.parse(localStorage.getItem(_GIBS_DATE_KEY) || '{}') || {}; } catch (e) { return {}; }
+}
+
+// The newest day GIBS has for a layer, if we learned it in the last 3 hours.
+function gibsLatestDate(layer) {
+  var c = _gibsDates()[layer];
+  return c && Date.now() - c.ts < _GIBS_DATE_TTL ? c.date : null;
+}
+
+// Ask GIBS which day 'default' is for a layer (one ~11 KB tile over San Diego),
+// and remember it. Resolves to "YYYY-MM-DD" or null.
+var _gibsDatePromises = {};
+function resolveGibsLatestDate(layer, tms, ext) {
+  var known = gibsLatestDate(layer);
+  if (known) return Promise.resolve(known);
+  if (_gibsDatePromises[layer]) return _gibsDatePromises[layer];
+  var z = 7, x = 21, y = 51; // z7 tile over the San Diego grounds
+  var url = GIBS + layer + '/default/default/' + tms + '/' + z + '/' + y + '/' + x + '.' + (ext || 'png');
+  _gibsDatePromises[layer] = fetch(url, { mode: 'cors' }).then(function(r) {
+    var t = r.ok && r.headers.get('layer-time-actual');
+    var date = t ? String(t).slice(0, 10) : null;
+    if (date) {
+      try {
+        var all = _gibsDates(); all[layer] = { date: date, ts: Date.now() };
+        localStorage.setItem(_GIBS_DATE_KEY, JSON.stringify(all));
+      } catch (e) {}
+    }
+    return date;
+  }).catch(function() { return null; }).then(function(d) { delete _gibsDatePromises[layer]; return d; });
+  return _gibsDatePromises[layer];
+}
+
+// Shared tile options. crossOrigin lets sw.js keep real (not opaque) copies;
+// bounds stops requests outside the area the map can show; updateWhenZooming
+// false waits for the pinch to end instead of fetching every in-between zoom.
+var _TILE_BOUNDS = [[22.0, -132.0], [42.0, -108.0]];
+function _gibsLayer(path, opts) {
+  return L.tileLayer(GIBS + path, Object.assign({
+    crossOrigin: 'anonymous', bounds: _TILE_BOUNDS, updateWhenZooming: false, keepBuffer: 3,
+  }, opts));
+}
+
 // ── SST source configuration ──────────────────────────────────────────────────
 
 var SST_SOURCES = {
   daily: {
     label: 'Daily (MODIS)',
     badge: null,
-    desc: 'Latest single-day MODIS Aqua SST. Marine layer may create cloud gaps — switch to Gap-free for clearer coverage.',
+    desc: "Yesterday's MODIS Aqua daytime passes at about 1 km. Marine-layer clouds leave gaps, so switch to Gap-free for full coverage.",
     layer: function() {
-      return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_Thermal_4km_Day_Daily/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png',
-        { opacity: 0.75, attribution: 'NASA GIBS · MODIS Aqua', maxNativeZoom: 6 }
+      return _gibsLayer(
+        'MODIS_Aqua_L2_Sea_Surface_Temp_Day/default/' + _utcDay(1) + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
+        { opacity: 0.8, attribution: 'NASA GIBS · MODIS Aqua', maxNativeZoom: 7 }
       );
     },
+    date: function() { return _utcDay(1); },
   },
   night: {
     label: 'Nightly (MODIS)',
     badge: null,
-    desc: 'Nighttime MODIS Aqua SST pass. Different cloud coverage than daytime — may reveal clearer ocean areas.',
+    desc: "Last night's MODIS Aqua passes. Night clouds sit differently from daytime ones, so this can show water the day pass missed.",
     layer: function() {
-      return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Aqua_L3_SST_Thermal_4km_Night_Daily/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png',
-        { opacity: 0.75, attribution: 'NASA GIBS · MODIS Aqua Night', maxNativeZoom: 6 }
+      return _gibsLayer(
+        'MODIS_Aqua_L2_Sea_Surface_Temp_Night/default/' + _utcDay(1) + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
+        { opacity: 0.8, attribution: 'NASA GIBS · MODIS Aqua Night', maxNativeZoom: 7 }
       );
     },
+    date: function() { return _utcDay(1); },
   },
   mur: {
     label: 'Gap-free (MUR)',
     badge: null,
-    desc: 'JPL MUR multi-source composite — fuses satellite + in-situ data. No cloud gaps. ~2 day lag. Best for finding temperature breaks.',
+    desc: 'JPL MUR multi-source composite: fuses satellite and in-situ data. No cloud gaps. About 3 days behind. Best for finding temperature breaks.',
     layer: function() {
-      var d = new Date();
-      d.setDate(d.getDate() - 2);
-      var dt = d.toISOString().slice(0, 10);
-      return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GHRSST_L4_MUR_Sea_Surface_Temperature/default/' + dt + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
+      // Newest day GIBS has: the one we learned, else 'default' (same tiles).
+      var dt = gibsLatestDate('GHRSST_L4_MUR_Sea_Surface_Temperature') || 'default';
+      return _gibsLayer(
+        'GHRSST_L4_MUR_Sea_Surface_Temperature/default/' + dt + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
         { opacity: 0.80, attribution: 'NASA GIBS · JPL MUR', maxNativeZoom: 7 }
       );
     },
+    date: function() { return gibsLatestDate('GHRSST_L4_MUR_Sea_Surface_Temperature'); },
   },
   raster: {
     label: 'Canvas + Fronts',
@@ -48,27 +112,27 @@ var SST_SOURCES = {
 // ── Overlay layers (synchronous tile/WMS layers) ──────────────────────────────
 
 function getOverlayLayer(chartType, sstMode) {
-  var yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  var yday = yesterday.toISOString().slice(0, 10);
+  var yday = _utcDay(1);
 
   switch (chartType) {
     case 'sst':
       return (SST_SOURCES[sstMode || 'mur'] || SST_SOURCES.mur).layer();
     case 'chlorophyll':
-      return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_Chlorophyll_a/default/' + yday + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
+      return _gibsLayer(
+        'VIIRS_NOAA20_Chlorophyll_a/default/' + yday + '/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png',
         { opacity: 0.75, attribution: 'NASA GIBS · VIIRS NOAA-20', maxNativeZoom: 7 }
       );
     case 'bathymetry':
       return L.tileLayer.wms('https://wms.gebco.net/mapserv', {
         layers: 'GEBCO_LATEST', format: 'image/png', transparent: true,
         opacity: 0.65, attribution: '© GEBCO 2024',
+        bounds: _TILE_BOUNDS, updateWhenZooming: false,
       });
     case 'satellite':
-      return L.tileLayer(
-        'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
-        { opacity: 1.0, attribution: 'NASA GIBS · MODIS Terra', maxNativeZoom: 9 }
+      // VIIRS NOAA-20: MODIS Terra/Aqua start shutting down late 2026 (NASA).
+      return _gibsLayer(
+        'VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/' + yday + '/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+        { opacity: 1.0, attribution: 'NASA GIBS · VIIRS NOAA-20', maxNativeZoom: 9 }
       );
     default:
       return null; // wind / waves / tides handled async
@@ -654,7 +718,7 @@ function _loadSSTGrid() {
       staleCache = c.data;
     }
   } catch(e) {}
-  return fetch('/sst_grid.json', { cache: 'no-store' })
+  return fetch('/sst_grid.json', { cache: 'no-cache' })
     .then(function(r) {
       if (!r.ok) throw new Error('sst_grid.json HTTP ' + r.status);
       return r.json();
@@ -1774,7 +1838,7 @@ function ChartsHeader({ baseLayer, condLayers, sstMode }) {
     sst:         sstSrc.desc + ' Bait concentrates at 1–2°F transitions in the 64–72°F range.',
     chlorophyll: 'Phytoplankton density indicates feeding zones — bait fish gather at the edges of green plumes.',
     bathymetry:  'Underwater structure — banks, ledges, and drop-offs hold fish year-round.',
-    satellite:   'True-color MODIS Terra pass. Cloud cover and water clarity visible at a glance.',
+    satellite:   "True-color VIIRS NOAA-20 pass from yesterday. Cloud cover and water clarity visible at a glance.",
     wind:        'Animated wind flow. Green = calm (<8 kt), yellow = moderate, red = rough. Data: Open-Meteo.',
     waves:       'Animated swell field. Particles colored by height (blue=calm, red=rough 3m+). Data: Open-Meteo Marine.',
     currents:    window.TT_CURRENTS_LIVE
@@ -1994,6 +2058,8 @@ function ChartsView({ navigate, settings, regions }) {
   const [swellPeriod, setSwellPeriod] = React.useState(null);
   const [sstReadout, setSstReadout] = React.useState(null);
   const [sstGridDate, setSstGridDate] = React.useState(null);
+  // Day the SST tiles show ("2026-11-24"), so a days-old MUR map says so.
+  const [sstTileDate, setSstTileDate] = React.useState(null);
   const [geoNote, setGeoNote]       = React.useState(null);
   const [tapReadout, setTapReadout] = React.useState(null);
   const [scaleCollapsed, setScaleCollapsed] = React.useState(false);
@@ -2282,6 +2348,34 @@ function ChartsView({ navigate, settings, regions }) {
     };
   }, []);
 
+  // Put a tile overlay on the map the way Surfline/Windy switch layers: the
+  // old layer stays up until the new one has drawn (Leaflet 'load', or 4 s at
+  // most), so a switch never flashes to an empty map. sstSource names the SST
+  // tile source so the date pill can say which day the tiles show.
+  const overlaySwapRef = React.useRef(0);
+  function swapTileOverlay(next, sstSource) {
+    var map = mapInstance.current;
+    if (!map) return;
+    var token = ++overlaySwapRef.current;
+    var old = overlayLayer.current;
+    overlayLayer.current = next || null;
+    function dropOld() {
+      if (old && map.hasLayer(old)) map.removeLayer(old);
+      old = null;
+    }
+    if (!next) { dropOld(); setSstTileDate(null); return; }
+    var t = setTimeout(dropOld, 4000);
+    next.once('load', function() { clearTimeout(t); dropOld(); });
+    next.addTo(map);
+    var src = sstSource ? SST_SOURCES[sstSource] : null;
+    setSstTileDate(src && src.date ? src.date() : null);
+    if (sstSource === 'mur' && !(src && src.date())) {
+      resolveGibsLatestDate('GHRSST_L4_MUR_Sea_Surface_Temperature', 'GoogleMapsCompatible_Level7').then(function(d) {
+        if (d && overlaySwapRef.current === token) setSstTileDate(d);
+      });
+    }
+  }
+
   // Swap base layer (SST / chlorophyll / bathymetry / satellite)
   React.useEffect(function() {
     if (!mapInstance.current) return;
@@ -2293,13 +2387,17 @@ function ChartsView({ navigate, settings, regions }) {
     setSwellPeriod(null);
     clearTimeout(sliderThrottleRef.current);
 
-    if (basemapLayer.current) { mapInstance.current.removeLayer(basemapLayer.current); }
-    basemapLayer.current = L.tileLayer(
-      // Stadia key is domain-restricted (thetunatracker.com only) — safe to
-      // ship in client source; the token is worthless from any other origin.
-      'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=8a36ee0b-ea57-435e-8d59-6887fa9e997e',
-      { attribution: '© Stadia Maps © OpenMapTiles © OpenStreetMap', maxZoom: 20 }
-    ).addTo(mapInstance.current);
+    // The basemap is built once: rebuilding it on every layer change made the
+    // whole map flash dark and re-download its tiles.
+    if (!basemapLayer.current) {
+      basemapLayer.current = L.tileLayer(
+        // Stadia key is domain-restricted (thetunatracker.com only) — safe to
+        // ship in client source; the token is worthless from any other origin.
+        'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=8a36ee0b-ea57-435e-8d59-6887fa9e997e',
+        { attribution: '© Stadia Maps © OpenMapTiles © OpenStreetMap', maxZoom: 20,
+          crossOrigin: 'anonymous', bounds: _TILE_BOUNDS, updateWhenZooming: false, keepBuffer: 3 }
+      ).addTo(mapInstance.current);
+    }
 
     [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
       if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
@@ -2307,8 +2405,8 @@ function ChartsView({ navigate, settings, regions }) {
     murGridRef.current = null;
     setSstReadout(null);
 
-    if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
     if (baseLayer === 'sst' && sstModeRef.current === 'raster') {
+      swapTileOverlay(null);
       setLayerError('sst', false);
       setCondLoading(true);
       _loadSSTGrid().then(function(grid) {
@@ -2321,8 +2419,7 @@ function ChartsView({ navigate, settings, regions }) {
         ovs.front.addTo(mapInstance.current); murFrontLayerRef.current = ovs.front;
       }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); } });
     } else if (baseLayer) {
-      var overlay = getOverlayLayer(baseLayer, sstModeRef.current);
-      if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+      swapTileOverlay(getOverlayLayer(baseLayer, sstModeRef.current), baseLayer === 'sst' ? sstModeRef.current : null);
     }
 
     return function() { cancelled = true; };
@@ -2333,7 +2430,7 @@ function ChartsView({ navigate, settings, regions }) {
     if (baseLyrRef.current !== 'sst' || !mapInstance.current) return;
     localStorage.setItem('tt_sst_mode', sstMode);
     var cancelled = false;
-    if (overlayLayer.current) { mapInstance.current.removeLayer(overlayLayer.current); overlayLayer.current = null; }
+    if (sstMode === 'raster') swapTileOverlay(null);
     [murSSTLayerRef, murFrontLayerRef].forEach(function(ref) {
       if (ref.current) { mapInstance.current.removeLayer(ref.current); ref.current = null; }
     });
@@ -2353,8 +2450,7 @@ function ChartsView({ navigate, settings, regions }) {
       }).catch(function() { if (!cancelled) { setCondLoading(false); setLayerError('sst', true); } });
     } else {
       setLayerError('sst', false);
-      var overlay = getOverlayLayer('sst', sstMode);
-      if (overlay) { overlay.addTo(mapInstance.current); overlayLayer.current = overlay; }
+      swapTileOverlay(getOverlayLayer('sst', sstMode), sstMode);
     }
     return function() { cancelled = true; };
   }, [sstMode]);
@@ -2886,6 +2982,9 @@ function ChartsView({ navigate, settings, regions }) {
         {baseLayer === 'sst' && sstMode === 'raster' && sstGridDate && !layerErrors.sst && (
           <div className="sst-grid-date-pill">Canvas · {sstGridDate}</div>
         )}
+        {baseLayer === 'sst' && sstMode !== 'raster' && sstTileDate && !layerErrors.sst && (
+          <div className="sst-grid-date-pill">{(SST_SOURCES[sstMode] || SST_SOURCES.mur).label} · {sstTileDate}</div>
+        )}
 
         {showBoatSetup && <BoatsSetupOverlay />}
         {showBoats && isFutureMode && (
@@ -3025,7 +3124,11 @@ function _prewarmTiles(z, makeUrl) {
       for (var dy = -1; dy <= 1; dy++) {
         var x = cx + dx, y = cy + dy;
         if (x < 0 || y < 0 || x >= n || y >= n) continue;
-        (new Image()).src = makeUrl(z, x, y);
+        // Same CORS mode as the tile layers, or the browser keeps two copies
+        // and the map can't use the warmed one.
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = makeUrl(z, x, y);
       }
     }
   } catch (e) {}
@@ -3036,8 +3139,17 @@ function _prewarmCharts() {
   _chartsPrewarmed = true;
 
   // 1. Stadia Alidade Smooth Dark tiles — the actual basemap in use.
+  // {r} in the layer URL is '@2x' on high-DPI screens; match it.
+  var r2x = (window.devicePixelRatio || 1) > 1 ? '@2x' : '';
   _prewarmTiles(7, function(z, x, y) {
-    return 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/' + z + '/' + x + '/' + y + '.png?api_key=8a36ee0b-ea57-435e-8d59-6887fa9e997e';
+    return 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/' + z + '/' + x + '/' + y + r2x + '.png?api_key=8a36ee0b-ea57-435e-8d59-6887fa9e997e';
+  });
+
+  // 1b. The default SST layer (MUR): learn its newest day, then warm its tiles.
+  resolveGibsLatestDate('GHRSST_L4_MUR_Sea_Surface_Temperature', 'GoogleMapsCompatible_Level7').then(function(d) {
+    _prewarmTiles(7, function(z, x, y) {
+      return GIBS + 'GHRSST_L4_MUR_Sea_Surface_Temperature/default/' + (d || 'default') + '/GoogleMapsCompatible_Level7/' + z + '/' + y + '/' + x + '.png';
+    });
   });
 
   // 2. SST grid — prime the cache for the canvas raster layer.

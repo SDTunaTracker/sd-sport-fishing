@@ -1,7 +1,41 @@
 // Tunatracker — app-shell service worker
 // Bumping CACHE forces old service workers to be replaced on next visit
 // (the activate handler purges every key that isn't the current CACHE).
-var CACHE = 'tt-shell-v4';
+var CACHE = 'tt-shell-v5';
+
+// Map tiles live in their own cache so a shell bump doesn't throw them away.
+// NASA GIBS sends even dated tiles with no-store, so without this every visit
+// re-downloads the same SST/chlorophyll tiles. A tile whose URL carries a date
+// (YYYY-MM-DD) never changes; Stadia basemap tiles are good for days. Capped
+// at TILE_MAX entries, oldest first out.
+var TILE_CACHE = 'tt-tiles-v1';
+var TILE_MAX = 800;
+var _DATED_GIBS = /gibs\.earthdata\.nasa\.gov\/.*\/\d{4}-\d{2}-\d{2}\//;
+var _STADIA_TILE = /tiles\.stadiamaps\.com\/tiles\//;
+var _tilePuts = 0;
+function _trimTiles() {
+  return caches.open(TILE_CACHE).then(function(c) {
+    return c.keys().then(function(keys) {
+      var extra = keys.length - TILE_MAX;
+      return extra > 0 ? Promise.all(keys.slice(0, extra).map(function(k) { return c.delete(k); })) : null;
+    });
+  });
+}
+function _tileCacheFirst(req) {
+  return caches.open(TILE_CACHE).then(function(c) {
+    return c.match(req).then(function(hit) {
+      if (hit) return hit;
+      return fetch(req).then(function(res) {
+        // Only real (CORS) 200s: an opaque copy costs ~7 MB of quota in Chrome.
+        if (res && res.status === 200 && res.type === 'cors') {
+          c.put(req, res.clone());
+          if (++_tilePuts % 50 === 0) _trimTiles();
+        }
+        return res;
+      });
+    });
+  });
+}
 
 // Regex for files that CHANGE without their URL changing. The daily scrape
 // commits a fresh data.js roughly every hour but does NOT re-stamp the
@@ -31,7 +65,7 @@ self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
       return Promise.all(
-        keys.filter(function(k) { return k !== CACHE; }).map(function(k) { return caches.delete(k); })
+        keys.filter(function(k) { return k !== CACHE && k !== TILE_CACHE; }).map(function(k) { return caches.delete(k); })
       );
     })
   );
@@ -74,6 +108,12 @@ self.addEventListener('fetch', function(e) {
         }).catch(function() { return _cacheOrError(req); });
       })
     );
+    return;
+  }
+
+  // Map tiles: cache-first in the tile cache (see TILE_CACHE above).
+  if (_DATED_GIBS.test(url) || _STADIA_TILE.test(url)) {
+    e.respondWith(_tileCacheFirst(req).catch(function() { return fetch(req); }));
     return;
   }
 

@@ -9,7 +9,6 @@
     { v: '', label: 'Any price' }, { v: '200', label: 'Under $200' }, { v: '300', label: 'Under $300' },
     { v: '500', label: 'Under $500' }, { v: '1000', label: 'Under $1,000' },
   ];
-  const MODE_KEY = 'tt-view-mode';
   const TYPE_KEY = 'tt-pick-type';
 
   function store(k, v) {
@@ -391,24 +390,7 @@
     );
   }
 
-  // ── Simple / Detailed ───────────────────────────────────────────────────────
-  function useViewMode() {
-    const [mode, setMode] = useState(() => store(MODE_KEY) === 'detailed' ? 'detailed' : 'simple');
-    const set = (m) => { setMode(m); store(MODE_KEY, m); };
-    return [mode, set];
-  }
-
-  function ViewModeSwitch({ mode, onChange }) {
-    return (
-      <div className="vm" role="radiogroup" aria-label="How much detail">
-        {[['simple', 'Simple'], ['detailed', 'Detailed']].map(([k, l]) => (
-          <button key={k} role="radio" aria-checked={mode === k} className={mode === k ? 'on' : ''} onClick={() => onChange(k)}>{l}</button>
-        ))}
-      </div>
-    );
-  }
-
-  // Few big numbers for Simple mode: this week's fleet catch.
+  // This week's fleet catch in three numbers (Home, under the answers).
   function SimpleNumbers({ regions }) {
     const P = window.TTPicker;
     const tick = useDataTick();
@@ -422,45 +404,6 @@
         <div><dt>Trips reported</dt><dd>{w.trips}</dd></div>
         <div><dt>Fish per angler</dt><dd>{w.anglers ? (fish / w.anglers).toFixed(1) : '—'}</dd></div>
       </dl>
-    );
-  }
-
-  // Today: answers first, then (Simple) big numbers with the full report
-  // behind "See the details", or (Detailed) the full report. Pick my trip
-  // lives only on Home and the Trip Planner (owner, 2026-11-26).
-  function TodaySimple({ regions, navigate, settings, Report }) {
-    const [mode, setMode] = useViewMode();
-    const [open, setOpen] = useState(false);
-    const region = regionOf(regions);
-    const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'San Diego';
-    const hasAnswers = !!window.TTPicker && region !== 'sf_bay';
-    return (
-      <div className={`tsim tsim-${mode}`}>
-        <div className="tsim-head">
-          {mode === 'simple' ? (
-            <div>
-              <div className="pk-eyebrow">This week · {label}</div>
-              <h1 className="tsim-title">Where to fish this week</h1>
-            </div>
-          ) : <div className="pk-eyebrow">Quick answers · {label}</div>}
-          <ViewModeSwitch mode={mode} onChange={setMode}/>
-        </div>
-        {hasAnswers && <TodayAnswers regions={regions} navigate={navigate}/>}
-        {mode === 'simple' ? (
-          <React.Fragment>
-            <SimpleNumbers regions={regions}/>
-            <div className="tsim-details">
-              <button className="tsim-more" aria-expanded={open} onClick={() => setOpen(o => !o)}>
-                {open ? 'Hide the details' : 'See the details'}<span aria-hidden="true">{open ? ' ↑' : ' ↓'}</span>
-              </button>
-              <span className="tsim-more-sub">Every boat's catch, by day</span>
-            </div>
-            {open && <Report navigate={navigate} settings={settings} regions={regions}/>}
-          </React.Fragment>
-        ) : (
-          <Report navigate={navigate} settings={settings} regions={regions}/>
-        )}
-      </div>
     );
   }
 
@@ -527,5 +470,5 @@
     );
   }
 
-  Object.assign(window, { PickMyTrip, TodayAnswers, TodaySimple, HomeAnswers, HomePicker, PickTripView, ViewModeSwitch, PickFab });
+  Object.assign(window, { PickMyTrip, TodayAnswers, HomeAnswers, HomePicker, PickTripView, PickFab });
 })();

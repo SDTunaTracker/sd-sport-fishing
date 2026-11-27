@@ -337,11 +337,18 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
           />
           {search && <button onClick={() => setSearch('')} className="boats-search-clear">×</button>}
         </div>
-        <div className="row" style={{ gap: 4 }}>
-          {[['all','All'],['hot','🔥 Hot']].map(([val, lbl]) => (
-            <span key={val} className={`filter-pill ${formFilter === val ? 'on' : ''}`}
-                  onClick={() => setFormFilter(val)}>{lbl}</span>
-          ))}
+        <div className="boats-controls-row">
+          {/* One on/off chip instead of an All | Hot pair: "All" was only the off state. */}
+          <button type="button" aria-pressed={formFilter === 'hot'}
+                  className={`filter-pill ${formFilter === 'hot' ? 'on' : ''}`}
+                  onClick={() => setFormFilter(formFilter === 'hot' ? 'all' : 'hot')}>🔥 Hot</button>
+          {/* Year / month / trip length / species sit behind a Filters button.
+              Landing and boat are left out (the search box and the per-landing
+              grouping already cover them); min trips is left out because this
+              page always lists every boat. Active filters from other pages
+              still show as removable chips. */}
+          <AnalyticsFilterBar filters={filters} setFilters={setFilters} regions={regions}
+                              fields={['year', 'month', 'tripLength', 'species']} />
         </div>
         <div className="boats-view-toggle">
           <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Grid view">
@@ -355,8 +362,6 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
           </button>
         </div>
       </div>
-
-      <FilterBar filters={filters} setFilters={setFilters} regions={regions} />
 
       {/* ── MAP VIEW ─────────────────────────────────────────────────── */}
       {viewMode === 'map' && (
@@ -382,7 +387,7 @@ function BoatsView({ filters, setFilters, navigate, tweaks, settings, regions })
       {viewMode === 'grid' && (
         <div className="boats-grid-wrap">
           {landingOrder.length === 0 && (
-            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--tb-gray-3)' }}>No boats match your search.</div>
+            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--tb-gray-3)' }}>No boats match your search or filters.</div>
           )}
           {landingOrder.map(lname => {
             const meta  = landingsMeta.find(m => m.name === lname);
