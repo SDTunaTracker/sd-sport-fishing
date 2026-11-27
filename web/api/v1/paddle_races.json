@@ -1,0 +1,69 @@
+{
+  "updated": "2026-11-27",
+  "about": "Hand-maintained race list for Paddle Tracker. PaddleGuru's terms of service forbid automated access, so nothing here is scraped: details are typed in from each race page, which every race links back to. Anything marked status 'draft — confirm' has not been checked by the owner yet.",
+  "defaults": {"paceMph": 4.5, "tz": "America/Los_Angeles"},
+  "races": [
+    {
+      "id": "hanohano-2026",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2026,
+      "date": "2026-01-24",
+      "startLocal": null,
+      "startFlexible": false,
+      "location": {"name": "Bonita Cove, Mission Bay", "lat": 32.7686, "lon": -117.2485},
+      "organiser": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {"id": "long", "label": "Long course", "miles": 9, "courseId": null},
+        {"id": "short", "label": "Short course", "miles": 4.5, "courseId": null},
+        {"id": "junior", "label": "Junior", "miles": 0.6, "courseId": null}
+      ],
+      "divisions": ["Prone", "SUP", "OC", "Surfski"],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": null,
+      "sources": ["SUP Connect, 30th Hanohano report", "standupmagazin.com, 31st Hanohano"],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "the-loop-2025",
+      "name": "The Loop",
+      "year": 2025,
+      "date": "2025-05-10",
+      "startLocal": null,
+      "startFlexible": false,
+      "location": {"name": "Coronado Shores, Coronado", "lat": 32.6735, "lon": -117.1700},
+      "organiser": null,
+      "paddleguru": "https://paddleguru.com/races/THELOOP2025",
+      "registration": null,
+      "distances": [
+        {"id": "loop", "label": "The Loop", "miles": 11.25, "courseId": "the-loop"}
+      ],
+      "divisions": ["Prone"],
+      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
+      "notes": "Prone only (arms and hands). First run 1997.",
+      "sources": ["Perfect Paddles, The Loop 2023", "SurfTech prone race guide"],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "plank-to-plank",
+      "name": "Plank to Plank",
+      "year": null,
+      "date": null,
+      "startLocal": null,
+      "startFlexible": false,
+      "location": {"name": "Gator Beach, Coronado", "lat": 32.6560, "lon": -117.1640},
+      "organiser": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {"id": "main", "label": "Gator Beach to IB", "miles": 6, "courseId": "plank-to-plank"}
+      ],
+      "divisions": ["Prone", "SUP"],
+      "course": "Point-to-point down the Silver Strand, Gator Beach to the beach by Ye Olde Plank Inn, Imperial Beach.",
+      "notes": "Date and current status unknown.",
+      "sources": ["Coronado Patch event listing"],
+      "status": "draft — confirm"
+    }
+  ]
+}

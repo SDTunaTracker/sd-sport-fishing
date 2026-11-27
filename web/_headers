@@ -37,6 +37,18 @@
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 
+/api/v1/paddle_races.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/paddle_race_forecast.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/paddle_courses/*
+  Content-Type: application/geo+json
+  Cache-Control: no-cache, must-revalidate
+
 /api/v1/buoys.json
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate

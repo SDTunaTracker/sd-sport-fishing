@@ -76,10 +76,10 @@ function parseRoute(raw) {
   const detail = parts.length ? decodeURIComponent(parts.join('/')) : '';
 
   if (seg === 'boat' && detail) return { view: 'boat', params: { boat: detail }, hashRegions: regionIds };
-  // Surftracker (discreet surf mode): /sd/surf[/forecast|/map|/cams[/<cam>]|/break/<id>]
+  // Surftracker (discreet surf mode): /sd/surf[/forecast|/map|/cams[/<cam>]|/break/<id>|/races[/<race>]]
   if (seg === 'surf') {
-    const sub = ['forecast', 'map', 'break', 'cams'].includes(parts[0]) ? parts[0] : 'report';
-    const spot = (sub === 'break' || sub === 'cams') && parts[1] ? decodeURIComponent(parts[1]) : '';
+    const sub = ['forecast', 'map', 'break', 'cams', 'races'].includes(parts[0]) ? parts[0] : 'report';
+    const spot = (sub === 'break' || sub === 'cams' || sub === 'races') && parts[1] ? decodeURIComponent(parts[1]) : '';
     return { view: 'surf', params: spot ? { sub, spot } : { sub }, hashRegions: regionIds };
   }
   if (seg === 'landing' && detail) return { view: 'landing', params: { landing: detail }, hashRegions: regionIds };
@@ -125,7 +125,7 @@ function pathFromRoute(view, params = {}, regions = ['san_diego']) {
   else if (view === 'analytics') route = 'analytics/' + (params.subtab || 'overview');
   else if (view === 'boats') route = 'boats';
   else if (view === 'surf') route = 'surf' + (params.sub && params.sub !== 'report' ? '/' + params.sub : '')
-    + ((params.sub === 'break' || params.sub === 'cams') && params.spot ? '/' + encodeURIComponent(params.spot) : '');
+    + ((params.sub === 'break' || params.sub === 'cams' || params.sub === 'races') && params.spot ? '/' + encodeURIComponent(params.spot) : '');
   else route = view;
   return '/' + prefix + '/' + route;
 }

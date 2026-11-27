@@ -1,0 +1,360 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "id": "the-loop",
+    "name": "The Loop (prone, ~11 mi)",
+    "status": "draft — confirm",
+    "summary": "Ocean start off Coronado Shores, west along Coronado and North Island to the end of Zuniga Jetty, into the bay past Ballast Point, east along North Island, past the Ferry Landing, under the Coronado Bridge and along the golf course to Glorietta Bay.",
+    "backup": "In bad surf, fog or water quality the organisers have run a bay-only out-and-back (\"The Lap\", ~10.25 mi) instead. Not drawn.",
+    "sources": [
+      "Perfect Paddles, The Loop 2023 race description (perfectpaddles.com)",
+      "Isle Surf & SUP blog, 2013 Loop paddles (islesurfandsup.com)"
+    ],
+    "drawnBy": "Tunatracker, from the written description; waypoints approximate"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "course"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -117.177,
+            32.6745
+          ],
+          [
+            -117.185,
+            32.6775
+          ],
+          [
+            -117.206,
+            32.679
+          ],
+          [
+            -117.2245,
+            32.6695
+          ],
+          [
+            -117.23,
+            32.685
+          ],
+          [
+            -117.2305,
+            32.7
+          ],
+          [
+            -117.2215,
+            32.7125
+          ],
+          [
+            -117.205,
+            32.714
+          ],
+          [
+            -117.19,
+            32.7135
+          ],
+          [
+            -117.17,
+            32.701
+          ],
+          [
+            -117.161,
+            32.6945
+          ],
+          [
+            -117.158,
+            32.6878
+          ],
+          [
+            -117.16,
+            32.684
+          ],
+          [
+            -117.165,
+            32.68
+          ],
+          [
+            -117.1712,
+            32.6802
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 0,
+        "name": "Start, off Coronado Shores",
+        "role": "start",
+        "leg": "on the ocean leg",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.177,
+          32.6745
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 1,
+        "name": "Off the Hotel del",
+        "role": "via",
+        "leg": "on the ocean leg",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.185,
+          32.6775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 2,
+        "name": "Off North Island",
+        "role": "via",
+        "leg": "to Zuniga Jetty",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.206,
+          32.679
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 3,
+        "name": "Zuniga Jetty, last marker",
+        "role": "mark",
+        "leg": "into the bay",
+        "water": "channel",
+        "current": "PCT0031"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.2245,
+          32.6695
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 4,
+        "name": "Off Ballast Point",
+        "role": "via",
+        "leg": "into the bay",
+        "water": "channel",
+        "current": "PCT0031"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.23,
+          32.685
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 5,
+        "name": "North Island, west end",
+        "role": "via",
+        "leg": "along North Island",
+        "water": "bay",
+        "current": "PCT0031",
+        "currentFactor": 0.5
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.2305,
+          32.7
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 6,
+        "name": "North Island, NW corner",
+        "role": "via",
+        "leg": "along North Island",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.2215,
+          32.7125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 7,
+        "name": "North Island, bay side",
+        "role": "via",
+        "leg": "along North Island",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.205,
+          32.714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 8,
+        "name": "North Island piers",
+        "role": "via",
+        "leg": "to the Ferry Landing",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.19,
+          32.7135
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 9,
+        "name": "Off the Ferry Landing",
+        "role": "via",
+        "leg": "to the bridge",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.17,
+          32.701
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 10,
+        "name": "Off Tidelands Park",
+        "role": "via",
+        "leg": "to the bridge",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.161,
+          32.6945
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 11,
+        "name": "Under the Coronado Bridge",
+        "role": "mark",
+        "leg": "along the golf course",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.158,
+          32.6878
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 12,
+        "name": "Golf course",
+        "role": "via",
+        "leg": "into Glorietta Bay",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.16,
+          32.684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 13,
+        "name": "Glorietta Bay mouth",
+        "role": "via",
+        "leg": "into Glorietta Bay",
+        "water": "bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.165,
+          32.68
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 14,
+        "name": "Finish, Glorietta Bay",
+        "role": "finish"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.1712,
+          32.6802
+        ]
+      }
+    }
+  ]
+}

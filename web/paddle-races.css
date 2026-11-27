@@ -1,0 +1,111 @@
+/* Paddle Tracker races (web/paddle-races.jsx). Prefix pr-. Uses the site's
+   design tokens where present, with fallbacks so it can move to its own site. */
+.pr-wrap {
+  --pr-ink: var(--ink, #17332C); --pr-ink-2: var(--ink-2, #2D4A42); --pr-muted: var(--muted, #6B7A75);
+  --pr-line: var(--line, #EAE6DC); --pr-band: var(--band, #F4F1E9); --pr-surface: var(--surface, #fff);
+  --pr-sans: var(--sans, Inter, system-ui, sans-serif); --pr-serif: var(--serif, Fraunces, Georgia, serif);
+  --pr-mono: var(--mono, 'DM Mono', ui-monospace, monospace); --pr-r: var(--radius-md, 10px);
+  --pr-great: #1E6B47; --pr-good: #3E8E5E; --pr-fair: #D9A23A; --pr-poor: #D9722E; --pr-hard: #B23A3A; --pr-none: #8C9A9C;
+  max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; color: var(--pr-ink); font-family: var(--pr-sans);
+  box-sizing: border-box;
+}
+.pr-wrap *, .pr-wrap *::before, .pr-wrap *::after { box-sizing: border-box; }
+.pr-title { font: 600 28px/1.15 var(--pr-serif); margin: 6px 0 6px; }
+.pr-year { color: var(--pr-muted); font-weight: 500; }
+.pr-h2 { font: 600 19px/1.25 var(--pr-serif); margin: 0 0 8px; }
+.pr-muted { color: var(--pr-muted); margin: 0 0 12px; font-size: 14px; line-height: 1.45; }
+.pr-small { font-size: 12.5px; }
+.pr-meta { margin: 0 0 10px; color: var(--pr-ink-2); font-size: 14.5px; }
+.pr-flag { display: inline-block; margin: 0 0 14px; padding: 4px 10px; border-radius: 999px; background: #FBF1DC;
+  color: #7A5512; font: 600 12px/1.4 var(--pr-sans); }
+.pr-crumb { display: inline-block; margin-bottom: 6px; color: var(--pr-ink-2); text-decoration: none; font-size: 14px; }
+.pr-crumb:hover { text-decoration: underline; }
+.pr-foot, .pr-src { color: var(--pr-muted); font-size: 12px; margin: 18px 0 0; }
+
+/* pills and colours */
+.pr-pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font: 700 12px/1.3 var(--pr-sans);
+  color: #fff; background: var(--pr-none); white-space: nowrap; }
+.pr-pill-big { font-size: 15px; padding: 5px 12px; }
+.pr-great { background: var(--pr-great); } .pr-good { background: var(--pr-good); }
+.pr-fair { background: var(--pr-fair); color: #3A2A05; } .pr-poor { background: var(--pr-poor); }
+.pr-hard { background: var(--pr-hard); } .pr-none { background: var(--pr-none); }
+.pr-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; flex: none; }
+
+/* list */
+.pr-group { margin: 18px 0 0; }
+.pr-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--pr-line); }
+.pr-row { display: grid; grid-template-columns: 58px 1fr auto; gap: 12px; align-items: center; padding: 12px 4px;
+  border-bottom: 1px solid var(--pr-line); text-decoration: none; color: inherit; }
+.pr-row:hover { background: var(--pr-band); }
+.pr-row-date { display: flex; flex-direction: column; font-family: var(--pr-mono); }
+.pr-row-date b { font-size: 14px; font-weight: 500; } .pr-row-date i { font-style: normal; font-size: 11.5px; color: var(--pr-muted); }
+.pr-row-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pr-row-name { font-weight: 600; font-size: 15.5px; }
+.pr-row-sub { color: var(--pr-ink-2); font-size: 13px; }
+.pr-draft { font-style: normal; margin-left: 8px; padding: 1px 7px; border-radius: 999px; background: #FBF1DC; color: #7A5512;
+  font: 600 10.5px/1.5 var(--pr-sans); vertical-align: 2px; }
+.pr-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.pr-chip { padding: 1px 7px; border: 1px solid var(--pr-line); border-radius: 999px; font-size: 11.5px; color: var(--pr-ink-2); }
+.pr-past { opacity: .55; }
+.pr-past:hover { opacity: .85; }
+
+/* race page */
+.pr-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.pr-tab { border: 1px solid var(--pr-line); background: var(--pr-surface); color: var(--pr-ink); border-radius: 999px;
+  padding: 6px 12px; font: 600 13px/1.2 var(--pr-sans); cursor: pointer; }
+.pr-tab small { font-weight: 500; color: var(--pr-muted); }
+.pr-tab.on { background: var(--pr-ink); color: #fff; border-color: var(--pr-ink); }
+.pr-tab.on small { color: #D5E2DD; }
+.pr-call { background: var(--pr-band); border-radius: var(--pr-r); padding: 12px 14px; margin: 0 0 14px; }
+.pr-call > .pr-muted:last-child { margin: 0; }
+.pr-call-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 6px; }
+.pr-call-reason { font-weight: 600; font-size: 15px; line-height: 1.35; }
+.pr-best { margin-top: 8px; }
+.pr-best-h { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 6px; }
+.pr-bars { display: flex; align-items: flex-end; gap: 2px; height: 46px; }
+.pr-bar { flex: 1; border-radius: 3px 3px 0 0; min-width: 4px; }
+.pr-bars-x { display: flex; justify-content: space-between; font: 500 11px/1.4 var(--pr-mono); color: var(--pr-muted); }
+
+.pr-map { height: 420px; border-radius: var(--pr-r); overflow: hidden; border: 1px solid var(--pr-line); margin: 0 0 8px;
+  background: #EEF0EE; }
+.pr-map-fail { display: flex; align-items: center; justify-content: center; color: var(--pr-muted); }
+.pr-wp-wrap, .pr-arrow-wrap { background: none; border: 0; }
+.pr-wp { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--pr-ink); font: 700 10px/1 var(--pr-sans); color: var(--pr-ink); }
+.pr-wp-start { background: var(--pr-ink); color: #fff; }
+.pr-wp-finish { background: #fff; border-width: 3px; }
+.pr-wp-mark { width: 12px; height: 12px; margin: 4px; background: var(--pr-fair); border-color: #fff; }
+.pr-arrow { display: block; width: 14px; height: 14px; }
+.pr-tip { font: 500 12px/1.35 var(--pr-sans); }
+
+.pr-legs { margin: 8px 0 18px; border-top: 1px solid var(--pr-line); }
+.pr-leg-row { display: grid; grid-template-columns: minmax(0, 2.2fr) .8fr 1.1fr 1.2fr 64px; gap: 8px; align-items: center;
+  width: 100%; padding: 9px 4px; border: 0; border-bottom: 1px solid var(--pr-line); background: none; color: inherit;
+  font: 400 13.5px/1.3 var(--pr-sans); text-align: left; cursor: pointer; }
+.pr-leg-row:hover, .pr-leg-row.on { background: var(--pr-band); }
+.pr-leg-row small { display: block; color: var(--pr-muted); font-size: 11.5px; }
+.pr-leg-head { cursor: default; font: 600 10.5px/1.2 var(--pr-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pr-muted); }
+.pr-leg-head:hover { background: none; }
+.pr-leg-name { font-weight: 600; }
+.pr-leg-row > :last-child { justify-self: end; }
+.pr-g { color: var(--pr-muted); font-size: 12px; }
+.pr-leg-name small { font-weight: 400; padding-left: 16px; }
+
+.pr-details { margin-top: 10px; }
+.pr-dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; margin: 0 0 12px; font-size: 14px; }
+.pr-dl dt { color: var(--pr-muted); } .pr-dl dd { margin: 0; }
+.pr-pg { display: inline-block; padding: 8px 14px; border-radius: var(--pr-r); background: var(--pr-ink); color: #fff;
+  text-decoration: none; font-weight: 600; font-size: 14px; }
+
+@media (max-width: 640px) {
+  .pr-title { font-size: 24px; }
+  .pr-map { height: 340px; }
+  .pr-leg-head { display: none; }
+  .pr-leg-row { grid-template-columns: .8fr 1fr 1.2fr; grid-template-areas: "name name pill" "on wind water"; row-gap: 4px; }
+  .pr-leg-row > :nth-child(1) { grid-area: name; }
+  .pr-leg-row > :nth-child(2) { grid-area: on; }
+  .pr-leg-row > :nth-child(3) { grid-area: wind; }
+  .pr-leg-row > :nth-child(4) { grid-area: water; }
+  .pr-leg-row > :nth-child(5) { grid-area: pill; justify-self: end; }
+  .pr-dl { grid-template-columns: 90px 1fr; }
+}

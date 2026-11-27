@@ -1582,6 +1582,11 @@ function SurfView({ navigate, sub, spot }) {
   const [spotsTried, setSpotsTried] = useSfState(false);
   useSfEffect(() => { const t = setTimeout(() => setSpotsTried(true), 4000); return () => clearTimeout(t); }, []);
   const { data, error } = ctx;
+  // Paddle races (web/paddle-races.jsx): own data, doesn't need surf.json.
+  if (sub === 'races' && window.PaddleRaces) {
+    return <window.PaddleRaces raceId={spot} hrefFor={id => sfPath({ sub: 'races', spot: id })}
+                               go={id => navigate('surf', id ? { sub: 'races', spot: id } : { sub: 'races' })}/>;
+  }
   if (error) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
   if (!data) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">Loading surf forecast…</p></div>;
   const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
