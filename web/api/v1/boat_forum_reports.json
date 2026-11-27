@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T09:01:12Z",
+ "generated_at": "2026-11-27T06:34:24Z",
  "source": "BloodyDecks (bdoutdoors.com) forum trip reports",
  "label": "From BloodyDecks trip reports",
  "note": "Summaries of public forum posts, extracted automatically. Not verified reviews; follow the links for the original posts.",
@@ -92,7 +92,9 @@
        "Yellowtail": 16
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "A Bit Rough on the Apollo",
@@ -140,7 +142,9 @@
        "Lingcod": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -231,7 +235,9 @@
        "Bonito": 30
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Constitution 21st-23rd",
@@ -273,7 +279,9 @@
        "Bluefin": 78
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -351,7 +359,9 @@
        "Barracuda": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -426,7 +436,9 @@
        "Lingcod": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Full Day 10/9, 10/10",
@@ -464,7 +476,9 @@
        "Whitefish": 3
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "inshore, offshore, inshore 9/27-29",
@@ -496,7 +510,9 @@
        "Bullet Tuna": 48
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Dolphin 9/12+13",
@@ -533,7 +549,9 @@
        "Calico Bass": 12
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Dolphin yellows fun",
@@ -565,7 +583,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Dolphin 8/17 Yellowtail",
@@ -602,7 +622,9 @@
        "Whitefish": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Dolphin 8/5 wide open bass and gamefish galore",
@@ -638,7 +660,9 @@
        "Bonito": 25
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "7/1 Dolphin",
@@ -674,7 +698,9 @@
        "Barracuda": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "7/1 Dolphin",
@@ -698,7 +724,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -768,7 +796,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "El Do 6/29 - 7/01 report",
@@ -815,7 +845,9 @@
        "Halibut": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -904,7 +936,9 @@
        "Dorado": 13
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -972,7 +1006,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Excel 10-day on the water report",
@@ -989,7 +1025,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1058,7 +1096,9 @@
      "spots": [],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Freedom Overnight 8/15",
@@ -1096,7 +1136,9 @@
        "Sheephead": 20
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1167,7 +1209,9 @@
      "spots": [],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Freelance 7/21",
@@ -1212,7 +1256,9 @@
        "Sheephead": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1299,7 +1345,9 @@
        "Bullet Tuna": 10
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1382,7 +1430,9 @@
        "Calico Bass": 35
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1455,7 +1505,9 @@
        "Skipjack": 38
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Full Day 10/9, 10/10",
@@ -1497,7 +1549,9 @@
        "Skipjack": 10
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "inshore, offshore, inshore 9/27-29",
@@ -1528,7 +1582,9 @@
        "Dorado": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Grande offshore, light line = good time",
@@ -1569,7 +1625,9 @@
        "Dorado": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "7/13 Grande blessed day offshore",
@@ -1610,32 +1668,34 @@
        "Dorado": 42
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
   "Highliner": {
    "landing": "Seaforth Sportfishing",
    "region": "san_diego",
-   "report_count": 2,
+   "report_count": 3,
    "aspects": {
     "overall": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     },
     "captain": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     },
     "crew": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 0,
      "neg": 0
     },
     "galley": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 0,
      "neg": 0
     },
@@ -1646,12 +1706,12 @@
     },
     "fish_finding": {
      "pos": 2,
-     "mixed": 0,
+     "mixed": 1,
      "neg": 0
     }
    },
    "rebook": {
-    "yes": 2,
+    "yes": 3,
     "no": 0
    },
    "reports": [
@@ -1692,7 +1752,9 @@
        "Rockfish": 180
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "7/13-7/14 Reverse 1.5 Highliner Limits",
@@ -1732,7 +1794,53 @@
        "Bluefin": 96
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
+    },
+    {
+     "title": "HIGHLINER, \"Be Careful What You Pray For!\"",
+     "url": "https://www.bdoutdoors.com/forums/threads/highliner-be-careful-what-you-pray-for.866587/",
+     "published_at": "2026-06-11T05:09:36+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-05-19",
+     "trip_length": "2 Day",
+     "scores": {
+      "overall": 1,
+      "captain": 2,
+      "crew": 1,
+      "galley": 1,
+      "fish_finding": 0
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "one of heart, soul and pie",
+      "captain": "kudos to Captain JZ and crew for bumping the Highliner up baited and fueled to…",
+      "crew": "You did everything humanly possible; we'll get our second shot with you in June!",
+      "galley": "Alex whips up a Super Burger stacked with two patties, pastrami, bacon, seared onions",
+      "fish_finding": "15 BFT total for the day was tough but still the fleets high count",
+      "would_rebook": "we'll get our second shot with you in June!"
+     },
+     "catch_summary": "15 BFT 25–40 lbs; limits of big reds and assorted rockfish for all",
+     "tackle": [
+      "25 lb fluorocarbon, butt-hooked dine - BFT",
+      "jig, sinking/drop-shot technique - BFT"
+     ],
+     "spots": [
+      "Hidden Bank",
+      "60 Mile Bank"
+     ],
+     "region": "san_diego",
+     "landing_count": {
+      "date": "2026-05-23",
+      "landing": "Seaforth Sportfishing",
+      "trip_length": "Overnight",
+      "anglers": 24,
+      "catch": null
+     },
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1800,7 +1908,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Live on the water reports coming in from the 8 day Indy.",
@@ -1817,7 +1927,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -1897,7 +2009,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Intrepid 8 day Sept 4-12",
@@ -1927,7 +2041,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Intrepid Anglers Choice 8 Day (Part 2)",
@@ -1961,7 +2077,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Intrepid Anglers Choice 8 Day - 8/24-9/1 (Part 1)",
@@ -1988,7 +2106,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Intrepid 7/11 to 7/19/26",
@@ -2018,7 +2138,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Intrepid Live",
@@ -2035,7 +2157,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Intrepid 3 day july 2-5",
@@ -2059,7 +2183,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2147,7 +2273,9 @@
        "Barracuda": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2221,7 +2349,9 @@
      "spots": [],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2298,7 +2428,9 @@
        "Whitefish": 10
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2388,7 +2520,9 @@
        "Dorado": 41
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2477,7 +2611,9 @@
        "Rockfish": 180
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2556,7 +2692,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2645,7 +2783,9 @@
        "Lingcod": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2721,7 +2861,9 @@
        "Yellowfin": 33
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "9/8 Mission Belle Hide and Seek",
@@ -2759,7 +2901,9 @@
        "Yellowfin": 33
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Mission Belle 8/19. Jig goes down, fish comes up",
@@ -2799,7 +2943,9 @@
        "Sand Bass": 16
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2887,7 +3033,9 @@
        "Bonito": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -2972,7 +3120,9 @@
        "Barracuda": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3060,7 +3210,9 @@
        "Bonito": 3
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3141,7 +3293,9 @@
        "Striped Marlin": 1
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Rolling the Dice on the New Lo-An!",
@@ -3183,7 +3337,9 @@
        "Yellowtail": 5
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3265,7 +3421,9 @@
        "Rockfish": 1
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Seaforth 8/13",
@@ -3300,7 +3458,9 @@
        "Sand Bass": 2
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "7/10 twilight trip La Jolla",
@@ -3343,7 +3503,9 @@
        "Sheephead": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "recommendations for full day San Diego, Islands trip.",
@@ -3371,7 +3533,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Local San Diego Yellowtail fishing",
@@ -3400,7 +3564,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Local San Diego Yellowtail fishing",
@@ -3425,7 +3591,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3518,7 +3686,9 @@
        "Yellowtail": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Ocean Odyssey 1.5 day trip.",
@@ -3547,7 +3717,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3607,7 +3779,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Pacific Queen 2 day 11/8-11/10",
@@ -3651,7 +3825,9 @@
        "Yellowfin": 11
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3734,7 +3910,9 @@
        "Wahoo": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Quick Report: Penn-sponsored 3-day aboard Pacifica; August 31-September 3",
@@ -3764,7 +3942,7 @@
       "Tanner",
       "SCI"
      ],
-     "region": "san_diego",
+     "region": "both",
      "landing_count": {
       "date": "2026-09-03",
       "landing": "Seaforth Sportfishing",
@@ -3775,7 +3953,9 @@
        "Yellowtail": 35
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3846,7 +4026,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -3921,7 +4103,9 @@
        "Dorado": 36
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Pegasus 2 day",
@@ -3961,7 +4145,9 @@
        "Bluefin": 19
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4037,7 +4223,9 @@
        "Bullet Tuna": 6
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4123,7 +4311,9 @@
        "Halibut": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Polaris Supreme 4 Day Report: 7/2-7/6/26",
@@ -4161,7 +4351,9 @@
        "Yellowtail": 6
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4249,7 +4441,9 @@
        "Lingcod": 1
       }
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "inshore, offshore, inshore 9/27-29",
@@ -4289,7 +4483,9 @@
        "Bullet Tuna": 18
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Premier (H&M) afternoon 1/2 day Sept 28",
@@ -4331,7 +4527,9 @@
        "Sheephead": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "7/14 A Premier visit to La Jolla",
@@ -4376,7 +4574,9 @@
        "Sand Bass": 7
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4456,7 +4656,9 @@
        "White Sea Bass": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Pride Overnight - 7/15/26",
@@ -4500,7 +4702,9 @@
        "Barracuda": 4
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Pride open party 6/14 fishing",
@@ -4544,7 +4748,9 @@
        "Lingcod": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4637,7 +4843,9 @@
        "Striped Marlin": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Producer blast 10-4-26",
@@ -4681,7 +4889,9 @@
        "Striped Marlin": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4766,7 +4976,9 @@
        "Sheephead": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "6/22 Cat on the Pursuit",
@@ -4805,7 +5017,9 @@
        "Rockfish": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4880,7 +5094,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -4964,7 +5180,9 @@
        "Yellowtail": 76
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Local San Diego Yellowtail fishing",
@@ -4989,7 +5207,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -5066,7 +5286,9 @@
        "Halibut": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "First Trip Back: Sea Watch 8/4",
@@ -5102,7 +5324,9 @@
        "Sheephead": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -5178,7 +5402,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Searcher 8-Day Report #2",
@@ -5219,7 +5445,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "8 day Searcher report Nov 9-17",
@@ -5257,7 +5485,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Searcher/ Penn 3 day!",
@@ -5281,7 +5511,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Searcher/Penn Fishing 3 day!",
@@ -5305,7 +5537,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.8
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -5375,7 +5609,9 @@
      "spots": [],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Shogun 10 Day 10/27 to 11/6",
@@ -5409,7 +5645,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Shogun 8 day Report",
@@ -5448,7 +5686,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Quick Report: 8-Day Penn trip onboard Shogun- June 12-20, 2026",
@@ -5479,17 +5719,19 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
   "Spirit of Adventure": {
    "landing": "H&M Landing",
    "region": "san_diego",
-   "report_count": 2,
+   "report_count": 3,
    "aspects": {
     "overall": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     },
@@ -5499,7 +5741,7 @@
      "neg": 0
     },
     "crew": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     },
@@ -5566,7 +5808,9 @@
       "anglers": 20,
       "catch": null
      },
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Spirit of Adventure 8/31-9/8",
@@ -5612,7 +5856,34 @@
       "anglers": 20,
       "catch": null
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
+    },
+    {
+     "title": "Soa 3 day",
+     "url": "https://www.bdoutdoors.com/forums/threads/soa-3-day.866628/",
+     "published_at": "2026-06-12T12:11:01+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": null,
+     "trip_length": "3 Day",
+     "scores": {
+      "overall": 2,
+      "crew": 2
+     },
+     "would_rebook": null,
+     "quotes": {
+      "overall": "Fishing is great. Crew and boat are great.",
+      "crew": "Crew and boat are great."
+     },
+     "catch_summary": "Yellowtail 12–30 lb while kelp fishing",
+     "tackle": [],
+     "spots": [],
+     "region": "san_diego",
+     "landing_count": null,
+     "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -5696,7 +5967,9 @@
        "Calico Bass": 9
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "SportKing Full Day 8/4/2026",
@@ -5726,7 +5999,9 @@
      ],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Sport King 7/20",
@@ -5749,7 +6024,9 @@
      ],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Sport King 6/24",
@@ -5789,7 +6066,9 @@
        "Barracuda": 5
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -5873,7 +6152,9 @@
        "Skipjack": 2
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Great barracuda fishing on Dana Point twilight trip.",
@@ -5897,7 +6178,9 @@
      "spots": [],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -5987,7 +6270,9 @@
        "Striped Marlin": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6078,7 +6363,9 @@
        "Dorado": 4
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Tomahawk 8/14-16",
@@ -6124,7 +6411,9 @@
        "Yellowtail": 39
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Tomahawk 2 Day 8/3-8/5 Report",
@@ -6163,7 +6452,9 @@
        "Bluefin": 25
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "1.5 day on the Tomahawk",
@@ -6204,7 +6495,9 @@
        "Dorado": 3
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6288,7 +6581,9 @@
        "Rockfish": 200
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6368,7 +6663,9 @@
        "Skipjack": 25
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6450,7 +6747,9 @@
        "Bonito": 10
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Tribute 3 day report. Yellowtail and bluefin.",
@@ -6481,7 +6780,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6569,7 +6870,9 @@
        "Calico Bass": 12
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "LA Harbor Sportfishing TRITON 07/24",
@@ -6597,7 +6900,9 @@
      "spots": [],
      "region": "oc_la",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6678,7 +6983,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Vagabonded 9/20-23",
@@ -6708,7 +7015,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "VAGABOND 8/26-30",
@@ -6747,7 +7056,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "Vagabond 3 day",
@@ -6766,7 +7077,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "quick report Vagabond 7/22 - 25",
@@ -6804,7 +7117,9 @@
      ],
      "region": "san_diego",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "My 3 Day Vagabond Trip July 5-8",
@@ -6837,7 +7152,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "quick report - 3 day Vagabond 7/5-8",
@@ -6860,7 +7177,9 @@
      ],
      "region": "both",
      "landing_count": null,
-     "match_confidence": 0.95
+     "match_confidence": 0.95,
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -6942,7 +7261,9 @@
        "Sand Bass": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     },
     {
      "title": "1/2 Day on the Western Pride 7/7/26",
@@ -6985,7 +7306,9 @@
        "Sheephead": 1
       }
      },
-     "match_confidence": 1.0
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
     }
    ]
   }

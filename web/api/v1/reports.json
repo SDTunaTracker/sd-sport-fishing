@@ -1,13 +1,13 @@
 {
-  "build": "8399ed5",
-  "generated_at": "2026-11-26T09:01:12Z",
+  "build": "a4dea78",
+  "generated_at": "2026-11-27T06:34:23Z",
   "window_days": 14,
   "feeds": [
     {
       "id": "bd-socal-offshore",
       "name": "BD Southern California Offshore",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-offshore-fishing-reports/",
-      "items_14d": 34
+      "items_14d": 68
     },
     {
       "id": "bd-spearfishing",
@@ -19,47 +19,48 @@
       "id": "bd-baja",
       "name": "BD Baja Mexico Fishing Reports",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/baja-mexico-fishing-reports-discussion/",
-      "items_14d": 11
+      "items_14d": 10
     },
     {
       "id": "bd-socal-sportboats",
       "name": "BD Southern California Sportboats",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-sportboats/",
-      "items_14d": 12
+      "items_14d": 11
     },
     {
       "id": "bd-long-range",
       "name": "BD Long Range Fishing",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/san-diego-long-range-sportfishing-reports/",
-      "items_14d": 25
+      "items_14d": 51
     },
     {
       "id": "bd-california",
       "name": "BD California Sport Fishing Reports",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/california-sport-fishing-reports/",
       "items_14d": 4
+    },
+    {
+      "id": "bd-socal-trip-planning",
+      "name": "BD Southern CA Fishing Trip Planning",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/california-inshore-trip-planning/",
+      "items_14d": 12
+    },
+    {
+      "id": "bd-kayak",
+      "name": "BD Kayak Fishing",
+      "forum_url": "https://www.bdoutdoors.com/forums/forum/kayak-fishing-reports/",
+      "items_14d": 2
     }
   ],
   "summary_48h": {
-    "top_banks": [
-      {
-        "bank": "43-fathom-spot",
-        "name": "43 (Fathom Spot)",
-        "mentions": 1,
-        "top_species": []
-      }
-    ],
+    "top_banks": [],
     "species_counts": {
-      "yellowfin": 5,
-      "wahoo": 2,
-      "marlin": 1
+      "bluefin": 2,
+      "yellowfin": 1,
+      "wahoo": 1
     },
-    "water_temp_f": {
-      "min": 84.0,
-      "max": 84.0,
-      "median": 84.0
-    },
-    "water_color_mode": "dirty",
+    "water_temp_f": null,
+    "water_color_mode": null,
     "paddies_reported": 0
   },
   "banks": {
@@ -759,25 +760,7 @@
       "url": "https://www.bdoutdoors.com/forums/threads/11-15-26-wahoo-hell-yeah.872438/",
       "feed_id": "bd-socal-offshore",
       "raw": "Area between Delmar and La Jolla"
-    },
-    {
-      "lat": 32.6243,
-      "lon": -117.2599,
-      "region": "san_diego",
-      "precision": "offset",
-      "precision_nm": 2.0,
-      "resolution": "offset:mission-bay-jetty",
-      "trip_date": "2026-11-12",
-      "bank": null,
-      "species": [
-        "bonito",
-        "yellowfin"
-      ],
-      "quote": "trolled South about 8 miles out",
-      "url": "https://www.bdoutdoors.com/forums/threads/nat-geo.872328/",
-      "feed_id": "bd-socal-offshore",
-      "raw": "8 miles out"
     }
   ],
-  "unresolved_14d": 88
+  "unresolved_14d": 87
 }

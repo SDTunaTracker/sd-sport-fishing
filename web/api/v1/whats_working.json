@@ -1,15 +1,14 @@
 {
- "generated_at": "2026-11-26T09:01:12Z",
+ "generated_at": "2026-11-27T06:34:24Z",
  "label": "What's working, from BloodyDecks trip reports and the landings' reports",
  "note": "Automatic summaries of recent public forum posts; follow the links for details.",
  "classes": {
   "short": {
    "label": "Half & 3/4 day",
-   "headline": "Del Mar and Pt Loma · 25lb/30lb flyline",
+   "headline": "Pt Loma · 25lb/30lb flyline",
    "window_days": 21,
-   "report_count": 31,
+   "report_count": 33,
    "top_spots": [
-    "Del Mar",
     "Pt Loma"
    ],
    "items": [
@@ -28,7 +27,9 @@
      "bait": "sardine (on board)",
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Dolphin",
@@ -45,7 +46,9 @@
      "bait": "sardine (on board)",
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Sea Watch",
@@ -61,7 +64,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Dolphin",
@@ -78,7 +83,9 @@
      "bait": "sardine (on board)",
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Sea Watch",
@@ -93,7 +100,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "New Seaforth",
@@ -108,7 +117,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": null,
@@ -125,7 +136,9 @@
      "bait": "sardine (on board)",
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Sea Watch",
@@ -141,7 +154,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -168,7 +183,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "San Diego",
@@ -184,7 +201,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "San Diego",
@@ -199,7 +218,9 @@
      "bait": null,
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Pursuit",
@@ -213,7 +234,9 @@
      "bait": null,
      "conditions": null,
      "region": "oc_la",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Grande",
@@ -229,7 +252,9 @@
      "bait": "anchovy, mostly; some sardine",
      "conditions": "Severe shearwater pressure; small 3-5 lb fish grade.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -258,7 +283,9 @@
      "bait": "sardine (on board)",
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "New Lo-An",
@@ -270,7 +297,9 @@
      "bait": null,
      "conditions": "Hot, sunny November; generator overheated; bait dying briefly.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Pacific Queen",
@@ -287,7 +316,9 @@
      "bait": "sardine, green and slimy, lively; some anchovy for chum",
      "conditions": "Light wind, long-period swells, mid-to-high 70s°F, deep blue water.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -313,7 +344,9 @@
      "bait": "sardine (on board)",
      "conditions": null,
      "region": "san_diego",
-     "source": "landing"
+     "source": "landing",
+     "photos": 0,
+     "reply": false
     }
    ]
   },
@@ -343,7 +376,9 @@
      "bait": null,
      "conditions": "Water cooling; northern bank 85°F; bait not in best shape.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Shogun",
@@ -360,7 +395,9 @@
      "bait": "live bait (dying late trip); lures primary producers",
      "conditions": "extremely hot water, bad weather incoming, bait scarce late trip.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Vagabond",
@@ -377,7 +414,9 @@
      "bait": "sardine, mostly decent, not quite as cured as hoped; scad mackerel up to 5 lbs live",
      "conditions": "Warm south, temps dropped; 24-ft groundswell late; blustery near San Martin.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Searcher",
@@ -391,7 +430,9 @@
      "bait": null,
      "conditions": "Unusually warm water; wind event ~30 knots evening of Nov 16.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Searcher",
@@ -408,7 +449,9 @@
      "bait": "sardine, good quantity, lasted full trip",
      "conditions": "abundant wildlife; scarce bottom life; barracuda infestation at San Carlos",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Searcher",
@@ -425,7 +468,9 @@
      "bait": "sardine/anchovy 4-7 in, lively, good shape",
      "conditions": "Good weather early; rough seas and long uphill run back.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     },
     {
      "boat": "Shogun",
@@ -442,7 +487,9 @@
      "bait": "live bait (bait-making noted); sardine/mackerel unspecified",
      "conditions": "ripping current; slow troll stretches; wide-open bite Wednesday afternoon.",
      "region": "san_diego",
-     "source": "forum"
+     "source": "forum",
+     "photos": 0,
+     "reply": false
     }
    ]
   }
@@ -451,11 +498,10 @@
   "san_diego": {
    "short": {
     "label": "Half & 3/4 day",
-    "headline": "Del Mar and Pt Loma · 25lb/30lb flyline",
+    "headline": "Pt Loma · 25lb/30lb flyline",
     "window_days": 21,
-    "report_count": 30,
+    "report_count": 32,
     "top_spots": [
-     "Del Mar",
      "Pt Loma"
     ],
     "items": [
@@ -474,7 +520,9 @@
       "bait": "sardine (on board)",
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Dolphin",
@@ -491,7 +539,9 @@
       "bait": "sardine (on board)",
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Sea Watch",
@@ -507,7 +557,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Dolphin",
@@ -524,7 +576,9 @@
       "bait": "sardine (on board)",
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Sea Watch",
@@ -539,7 +593,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "New Seaforth",
@@ -554,7 +610,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": null,
@@ -571,7 +629,9 @@
       "bait": "sardine (on board)",
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Sea Watch",
@@ -587,7 +647,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      }
     ]
    },
@@ -611,7 +673,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "San Diego",
@@ -627,7 +691,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "San Diego",
@@ -642,7 +708,9 @@
       "bait": null,
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Grande",
@@ -658,7 +726,9 @@
       "bait": "anchovy, mostly; some sardine",
       "conditions": "Severe shearwater pressure; small 3-5 lb fish grade.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      }
     ]
    },
@@ -687,7 +757,9 @@
       "bait": "sardine (on board)",
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "New Lo-An",
@@ -699,7 +771,9 @@
       "bait": null,
       "conditions": "Hot, sunny November; generator overheated; bait dying briefly.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Pacific Queen",
@@ -716,7 +790,9 @@
       "bait": "sardine, green and slimy, lively; some anchovy for chum",
       "conditions": "Light wind, long-period swells, mid-to-high 70s°F, deep blue water.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      }
     ]
    },
@@ -742,7 +818,9 @@
       "bait": "sardine (on board)",
       "conditions": null,
       "region": "san_diego",
-      "source": "landing"
+      "source": "landing",
+      "photos": 0,
+      "reply": false
      }
     ]
    },
@@ -772,7 +850,9 @@
       "bait": null,
       "conditions": "Water cooling; northern bank 85°F; bait not in best shape.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Shogun",
@@ -789,7 +869,9 @@
       "bait": "live bait (dying late trip); lures primary producers",
       "conditions": "extremely hot water, bad weather incoming, bait scarce late trip.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Vagabond",
@@ -806,7 +888,9 @@
       "bait": "sardine, mostly decent, not quite as cured as hoped; scad mackerel up to 5 lbs live",
       "conditions": "Warm south, temps dropped; 24-ft groundswell late; blustery near San Martin.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Searcher",
@@ -820,7 +904,9 @@
       "bait": null,
       "conditions": "Unusually warm water; wind event ~30 knots evening of Nov 16.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Searcher",
@@ -837,7 +923,9 @@
       "bait": "sardine, good quantity, lasted full trip",
       "conditions": "abundant wildlife; scarce bottom life; barracuda infestation at San Carlos",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Searcher",
@@ -854,7 +942,9 @@
       "bait": "sardine/anchovy 4-7 in, lively, good shape",
       "conditions": "Good weather early; rough seas and long uphill run back.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Shogun",
@@ -871,7 +961,9 @@
       "bait": "live bait (bait-making noted); sardine/mackerel unspecified",
       "conditions": "ripping current; slow troll stretches; wide-open bite Wednesday afternoon.",
       "region": "san_diego",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      }
     ]
    }
@@ -901,7 +993,9 @@
       "bait": "anchovy, good size, lively",
       "conditions": "2-5 mph wind, sunny, clean water, shearwaters a problem.",
       "region": "oc_la",
-      "source": "forum"
+      "source": "forum",
+      "photos": 7,
+      "reply": false
      },
      {
       "boat": "Monte Carlo",
@@ -918,7 +1012,9 @@
       "bait": "anchovy under 4 in, some lively 5-6 in mixed",
       "conditions": "fast current at anchor; private boaters nearby at the rigs.",
       "region": "oc_la",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Sum Fun",
@@ -933,7 +1029,9 @@
       "bait": "sardine",
       "conditions": "Morning slow; warmer water found near the domes around noon.",
       "region": "oc_la",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      }
     ]
    },
@@ -960,7 +1058,9 @@
       "bait": null,
       "conditions": null,
       "region": "oc_la",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      },
      {
       "boat": "Eldorado",
@@ -972,7 +1072,9 @@
       "bait": null,
       "conditions": "Great weather; good bait.",
       "region": "both",
-      "source": "forum"
+      "source": "forum",
+      "photos": 0,
+      "reply": false
      }
     ]
    },

@@ -1,11 +1,11 @@
 {
  "type": "FeatureCollection",
- "generated_at": "2026-11-26T09:01:12Z",
+ "generated_at": "2026-11-27T06:34:24Z",
  "label": "Recent forum reports by spot",
  "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
  "window_days": 14,
  "short_window_days": 7,
- "note": "position 'posted' = coordinates printed in the thread; 'estimate' = worked out from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far to trust each point. Follow the links for the original posts.",
+ "note": "position 'posted' = coordinates printed in the thread; 'estimate' = worked out from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far to trust each point. Follow the links for the original posts. species counts mentions, not fish; tuna_7d / tuna are tuna counts the posts state (bluefin, yellowfin, albacore, bigeye), null when no post states one.",
  "attribution": "Spot list courtesy SWYC Anglers",
  "regions_note": "properties.region: san_diego | oc_la | both, from where the point is.",
  "features": [
@@ -27,10 +27,14 @@
     "reports_7d": 2,
     "reports_14d": 2,
     "last_report": "2026-11-24",
+    "posted_at": "2026-11-24T16:43:19+00:00",
     "species": {
      "other": 2,
      "yellowfin": 1
     },
+    "tuna_7d": 0,
+    "tuna_reports_7d": 1,
+    "tuna": null,
     "quality": {
      "wide_open": 1,
      "slow": 1,
@@ -46,13 +50,15 @@
       "url": "https://www.bdoutdoors.com/forums/threads/9-mile-swordfishing-with-datsnasty-trying-to-bust-a-nickel.872201/",
       "title": "9 mile Swordfishing with Dats'nasty trying to Bust a Nickel",
       "date": "2026-11-24",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      },
      {
       "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-repellant.872598/",
       "title": "Yellowfin Repellant",
       "date": "2026-11-22",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 1
      }
     ]
    }
@@ -75,10 +81,14 @@
     "reports_7d": 1,
     "reports_14d": 2,
     "last_report": "2026-11-23",
+    "posted_at": "2026-11-24T00:51:56+00:00",
     "species": {
      "yellowfin": 3,
      "other": 1
     },
+    "tuna_7d": 2,
+    "tuna_reports_7d": 1,
+    "tuna": null,
     "quality": {
      "wide_open": 3,
      "slow": 1
@@ -93,13 +103,15 @@
       "url": "https://www.bdoutdoors.com/forums/threads/el-ni%C3%B1o-november-giant-yellowfin-at-catalina-keep-fishing-hooked-up-on-every-pass-60-100-lb-yft.872513/",
       "title": "El Niño November GIANT Yellowfin at Catalina, KEEP FISHING! HOOKED UP ON EVERY PASS 60-100 lb YFT!",
       "date": "2026-11-23",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      },
      {
       "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
       "title": "Marlin & Jumbo Yellowfin in under 60 minutes!!!",
       "date": "2026-11-17",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -122,7 +134,11 @@
     "reports_7d": 0,
     "reports_14d": 1,
     "last_report": "2026-11-15",
+    "posted_at": "2026-11-18T22:20:39+00:00",
     "species": {},
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {},
     "kinds": {
      "offset": 1
@@ -133,7 +149,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/11-15-26-wahoo-hell-yeah.872438/",
       "title": "11-15-26 Wahoo hell Yeah !!",
       "date": "2026-11-15",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -156,9 +173,13 @@
     "reports_7d": 1,
     "reports_14d": 1,
     "last_report": "2026-11-24",
+    "posted_at": "2026-11-24T21:12:33+00:00",
     "species": {
      "yellowfin": 1
     },
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {
      "none": 1
     },
@@ -171,7 +192,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/full-blown-baby-yft-assault.872639/",
       "title": "Full-blown baby yft assault",
       "date": "2026-11-24",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 2
      }
     ]
    }
@@ -194,9 +216,13 @@
     "reports_7d": 0,
     "reports_14d": 1,
     "last_report": "2026-11-13",
+    "posted_at": "2026-11-16T13:14:51+00:00",
     "species": {
      "other": 1
     },
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {},
     "kinds": {
      "conditions": 1,
@@ -211,7 +237,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
       "title": "320 pound Black Marlin 302 Thursday",
       "date": "2026-11-13",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -234,7 +261,11 @@
     "reports_7d": 1,
     "reports_14d": 1,
     "last_report": "2026-11-25",
+    "posted_at": "2026-11-25T06:08:54+00:00",
     "species": {},
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {},
     "kinds": {
      "bite": 1
@@ -245,7 +276,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/is-it-a-albacore.872664/",
       "title": "Is it a Albacore?",
       "date": "2026-11-25",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 1
      }
     ]
    }
@@ -268,10 +300,14 @@
     "reports_7d": 0,
     "reports_14d": 1,
     "last_report": "2026-11-17",
+    "posted_at": "2026-11-17T15:44:16+00:00",
     "species": {
      "other": 2,
      "yellowfin": 2
     },
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {
      "good": 4
     },
@@ -285,7 +321,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/marlin-jumbo-yellowfin-in-under-60-minutes.872416/",
       "title": "Marlin & Jumbo Yellowfin in under 60 minutes!!!",
       "date": "2026-11-17",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -308,9 +345,13 @@
     "reports_7d": 1,
     "reports_14d": 1,
     "last_report": "2026-11-22",
+    "posted_at": "2026-11-22T01:52:38+00:00",
     "species": {
      "yellowfin": 3
     },
+    "tuna_7d": 2,
+    "tuna_reports_7d": 1,
+    "tuna": null,
     "quality": {},
     "kinds": {
      "bite": 2,
@@ -326,7 +367,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/small-yft-dbl-rigs.872447/",
       "title": "Small YFT Dbl Rigs",
       "date": "2026-11-22",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -349,7 +391,11 @@
     "reports_7d": 1,
     "reports_14d": 1,
     "last_report": "2026-11-22",
+    "posted_at": "2026-11-22T16:20:15+00:00",
     "species": {},
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {
      "slow": 1
     },
@@ -362,7 +408,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/secret-spot-lobster.872371/",
       "title": "Secret spot lobster",
       "date": "2026-11-22",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -385,9 +432,13 @@
     "reports_7d": 1,
     "reports_14d": 1,
     "last_report": "2026-11-24",
+    "posted_at": "2026-11-25T02:58:22+00:00",
     "species": {
      "yellowfin": 1
     },
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {
      "wide_open": 1
     },
@@ -405,51 +456,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-november-24th.872655/",
       "title": "Yellowfin-November 24th",
       "date": "2026-11-24",
-      "feed": "bd-socal-offshore"
-     }
-    ]
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     -117.2599,
-     32.6243
-    ]
-   },
-   "properties": {
-    "id": "pt:32.6243,-117.2599",
-    "name": "New Point Loma Lighthouse",
-    "position": "estimate",
-    "region": "san_diego",
-    "precision_nm": 2.0,
-    "reports_7d": 0,
-    "reports_14d": 1,
-    "last_report": "2026-11-12",
-    "species": {
-     "yellowfin": 2,
-     "other": 2
-    },
-    "quality": {
-     "wide_open": 1
-    },
-    "kinds": {
-     "bite": 4,
-     "conditions": 1,
-     "offset": 1
-    },
-    "water_temp_f": {
-     "min": 75.0,
-     "max": 75.0
-    },
-    "sources": [
-     {
-      "url": "https://www.bdoutdoors.com/forums/threads/nat-geo.872328/",
-      "title": "Nat Geo",
-      "date": "2026-11-12",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -472,7 +480,11 @@
     "reports_7d": 1,
     "reports_14d": 1,
     "last_report": "2026-11-24",
+    "posted_at": "2026-11-25T02:58:22+00:00",
     "species": {},
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {},
     "kinds": {
      "conditions": 2,
@@ -487,7 +499,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/yellowfin-november-24th.872655/",
       "title": "Yellowfin-November 24th",
       "date": "2026-11-24",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }
@@ -510,10 +523,14 @@
     "reports_7d": 0,
     "reports_14d": 1,
     "last_report": "2026-11-14",
+    "posted_at": "2026-11-16T18:08:53+00:00",
     "species": {
      "yellowtail": 2,
      "other": 2
     },
+    "tuna_7d": null,
+    "tuna_reports_7d": 0,
+    "tuna": null,
     "quality": {
      "good": 2,
      "slow": 1
@@ -528,7 +545,8 @@
       "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
       "title": "Over night on the Eldorado",
       "date": "2026-11-14",
-      "feed": "bd-socal-offshore"
+      "feed": "bd-socal-offshore",
+      "photos": 0
      }
     ]
    }

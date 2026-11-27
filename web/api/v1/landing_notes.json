@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T09:01:12Z",
+ "generated_at": "2026-11-27T06:34:23Z",
  "label": "From the landings' reports",
  "source": "Landing and skipper posts on SanDiegoFishReports.com / SoCalFishReports.com",
  "note": "Automatic summaries; sizes, bait and tackle are quote-checked. Photos link to the landing's report and are not re-hosted.",
@@ -246,6 +246,56 @@
       "https://media.fishreports.com/photos/img-20261121-6942ccc2.jpg",
       "https://media.fishreports.com/photos/img-20261121-17f871fd.jpg"
      ]
+    },
+    {
+     "date": "2026-11-15",
+     "trip_length": null,
+     "anglers": 23,
+     "title": "Still really good sign around",
+     "url": "https://socalfishreports.com/fish_reports/247222/still-really-good-sign-around.php",
+     "by": "Shawn Steward",
+     "landing": "Channel Islands Sportfishing",
+     "region": "oc_la",
+     "boat": "Aloha Spirit",
+     "skipper_note": "Fished without bait today; still good sign around with mixed bag of species.",
+     "size": [],
+     "catch": [
+      {
+       "name": "skipjack",
+       "count": 22
+      },
+      {
+       "name": "black skipjack",
+       "count": 2
+      },
+      {
+       "name": "bonito",
+       "count": 26
+      },
+      {
+       "name": "rockfish",
+       "count": 124
+      },
+      {
+       "name": "whitefish",
+       "count": 119
+      },
+      {
+       "name": "lingcod",
+       "count": 1
+      }
+     ],
+     "bait": null,
+     "bait_on_board": false,
+     "tackle": [],
+     "conditions": "No bait available; still good fish sign around.",
+     "quote": "Made the best of what we could without bait today. Still really good sign around.",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261115-7b5a3fca.jpg",
+      "https://media.fishreports.com/photos/img-20261115-803756e8.jpg",
+      "https://media.fishreports.com/photos/img-20261115-ff19d7c5.jpg",
+      "https://media.fishreports.com/photos/img-20261115-e188886e.jpg"
+     ]
     }
    ]
   },
@@ -443,6 +493,35 @@
     {
      "date": "2026-11-25",
      "trip_length": "1/2 Day",
+     "anglers": null,
+     "title": "Thursday's report........",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247484/thursdays-report.php",
+     "by": "Big Hungry",
+     "landing": "Point Loma Sportfishing",
+     "region": "san_diego",
+     "boat": "Daily Double",
+     "skipper_note": "Yesterday's trip returned with 49 Yellowfin Tuna & 12 Skipjack Tuna; also catching Yellowtail, Bonito, Sand Bass, Barracuda, Rockfish.",
+     "size": [],
+     "catch": [
+      {
+       "name": "yellowfin",
+       "count": 49
+      },
+      {
+       "name": "skipjack",
+       "count": 12
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "Yesterday's trip returned with 49 Yellowfin Tuna & 12 Skipjack Tuna.",
+     "photos": []
+    },
+    {
+     "date": "2026-11-25",
+     "trip_length": "1/2 Day",
      "anglers": 45,
      "title": "Wednesday Evening @ PLSF",
      "url": "https://www.sandiegofishreports.com/fish_reports/247466/wednesday-evening-plsf.php",
@@ -629,43 +708,6 @@
      "tackle": [],
      "conditions": null,
      "quote": "Sunday's trip returned with 95 Yellowfin Tuna, 12 Bullet Tuna, 10 Skipjack Tuna and 2…",
-     "photos": []
-    },
-    {
-     "date": "2026-11-22",
-     "trip_length": "1/2 Day",
-     "anglers": 22,
-     "title": "Sunday Afternoon @ PLSF",
-     "url": "https://www.sandiegofishreports.com/fish_reports/247393/sunday-afternoon-plsf.php",
-     "by": "Big Hungry",
-     "landing": "Point Loma Sportfishing",
-     "region": "san_diego",
-     "boat": "Daily Double",
-     "skipper_note": "Variety of fish on recent half-day trips including Yellowtail, Bonito, Skipjack, Yellowfin, Sand Bass, Barracuda, Rockfish.",
-     "size": [],
-     "catch": [
-      {
-       "name": "yellowfin tuna",
-       "count": 95
-      },
-      {
-       "name": "bullet tuna",
-       "count": 12
-      },
-      {
-       "name": "skipjack tuna",
-       "count": 10
-      },
-      {
-       "name": "barred sand bass",
-       "count": 2
-      }
-     ],
-     "bait": null,
-     "bait_on_board": null,
-     "tackle": [],
-     "conditions": null,
-     "quote": "Daily Double 1/2 Day AM with 22 Angler with 95 Yellowfin Tuna, 12 Bullet Tuna,…",
      "photos": []
     }
    ]
@@ -1220,6 +1262,26 @@
    "region": "san_diego",
    "notes": [
     {
+     "date": "2026-11-26",
+     "trip_length": "1.5 Day",
+     "anglers": null,
+     "title": "Thursday's report........",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247484/thursdays-report.php",
+     "by": "Big Hungry",
+     "landing": "Point Loma Sportfishing",
+     "region": "san_diego",
+     "boat": "New Lo-An",
+     "skipper_note": "December 1.5 day offshore trips targeting Tuna, Yellowtail, Dorado, and Wahoo; $600 includes meals and Mexican permits.",
+     "size": [],
+     "catch": [],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "This trip is heading offshore for Tuna, Yellowtail, Dorado and Wahoo.",
+     "photos": []
+    },
+    {
      "date": "2026-11-21",
      "trip_length": "1.5 Day",
      "anglers": null,
@@ -1318,26 +1380,6 @@
      "conditions": null,
      "quote": "This trip is heading offshore for Tuna, Yellowtail, Dorado and Wahoo.",
      "photos": []
-    },
-    {
-     "date": "2026-11-18",
-     "trip_length": "2 Day",
-     "anglers": null,
-     "title": "Tuesday @ PLSF",
-     "url": "https://www.sandiegofishreports.com/fish_reports/247253/tuesday-plsf.php",
-     "by": "Big Hungry",
-     "landing": "Point Loma Sportfishing",
-     "region": "san_diego",
-     "boat": "New Lo-An",
-     "skipper_note": "2-day trip heading offshore targeting Tuna, Yellowtail, Dorado, and Wahoo; departs 10AM, $828 includes meals.",
-     "size": [],
-     "catch": [],
-     "bait": null,
-     "bait_on_board": null,
-     "tackle": [],
-     "conditions": null,
-     "quote": "This trip is heading offshore for Tuna, Yellowtail, Dorado and Wahoo.",
-     "photos": []
     }
    ]
   },
@@ -1379,6 +1421,46 @@
      ],
      "conditions": null,
      "quote": "Be sure to come prepared with 20-30# Flyline or small jigs if you are on…",
+     "photos": []
+    },
+    {
+     "date": "2026-11-15",
+     "trip_length": "1/2 Day",
+     "anglers": null,
+     "title": "Sunday Recap",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247218/sunday-recap.php",
+     "by": "Seaforth Staff",
+     "landing": "Seaforth Sportfishing",
+     "region": "san_diego",
+     "boat": "New Seaforth",
+     "skipper_note": "Morning half day: 1 yellowtail, 26 calico bass kept (100 released), 2 sand bass, 2 white seabass.",
+     "size": [],
+     "catch": [
+      {
+       "name": "yellowtail",
+       "count": 1
+      },
+      {
+       "name": "calico bass",
+       "count": 26
+      },
+      {
+       "name": "sand bass",
+       "count": 2
+      },
+      {
+       "name": "white seabass",
+       "count": 2
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [
+      "20-25lb setup",
+      "hooks #4-2/0"
+     ],
+     "conditions": null,
+     "quote": "A 20-25lb setup would be recommended for these fish along with hooks from #4-2/0.",
      "photos": []
     }
    ]
@@ -1580,6 +1662,35 @@
      "tackle": [],
      "conditions": null,
      "quote": "The Pacific Queen returned from a 3 day trip with 126 Yellowfin Tuna, 7 Yellowtail,…",
+     "photos": []
+    },
+    {
+     "date": "2026-11-14",
+     "trip_length": "3 Day",
+     "anglers": 24,
+     "title": "Sunday",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247213/sunday.php",
+     "by": "Fishermans Landing Staff",
+     "landing": "Fisherman's Landing",
+     "region": "san_diego",
+     "boat": "Pacific Queen",
+     "skipper_note": "Called in mid-trip on 3-day with 106 yellowfin and 2 yellowtail for 24 anglers.",
+     "size": [],
+     "catch": [
+      {
+       "name": "yellowfin",
+       "count": 106
+      },
+      {
+       "name": "yellowtail",
+       "count": 2
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "The Pacific Queen called in on a 3 day trip with 106 Yellowfin Tuna and…",
      "photos": []
     }
    ]
@@ -2565,6 +2676,47 @@
      "conditions": null,
      "quote": "The Tomahawk called 20 Yellowfin Tuna, 44 trophy sizes Bonito up to 10lbs , 2…",
      "photos": []
+    },
+    {
+     "date": "2026-11-12",
+     "trip_length": "3/4 Day",
+     "anglers": 19,
+     "title": "Sunday",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247213/sunday.php",
+     "by": "Fishermans Landing Staff",
+     "landing": "Fisherman's Landing",
+     "region": "san_diego",
+     "boat": "Tomahawk",
+     "skipper_note": "Returned 3/4-day with 10 bonito, 6 yellowfin, 10 skipjack, 2 calico bass, and 4 sand bass for 19 anglers.",
+     "size": [],
+     "catch": [
+      {
+       "name": "bonito",
+       "count": 10
+      },
+      {
+       "name": "yellowfin",
+       "count": 6
+      },
+      {
+       "name": "skipjack",
+       "count": 10
+      },
+      {
+       "name": "calico bass",
+       "count": 2
+      },
+      {
+       "name": "sand bass",
+       "count": 4
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "The Tomahawk returned with 10 Bonito, 6 Yellowfin, 10 Skipjack, 2 Calico Bass, and 4…",
+     "photos": []
     }
    ]
   },
@@ -2667,6 +2819,55 @@
     "url": "https://www.sandiegofishreports.com/fish_reports/247456/wednesday.php"
    },
    "notes": [
+    {
+     "date": "2026-11-26",
+     "trip_length": "1.5 Day",
+     "anglers": null,
+     "title": "Thursday's report........",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247484/thursdays-report.php",
+     "by": "Big Hungry",
+     "landing": "Point Loma Sportfishing",
+     "region": "san_diego",
+     "boat": "New Lo-An",
+     "skipper_note": "December 1.5 day offshore trips targeting Tuna, Yellowtail, Dorado, and Wahoo; $600 includes meals and Mexican permits.",
+     "size": [],
+     "catch": [],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "This trip is heading offshore for Tuna, Yellowtail, Dorado and Wahoo.",
+     "photos": []
+    },
+    {
+     "date": "2026-11-25",
+     "trip_length": "1/2 Day",
+     "anglers": null,
+     "title": "Thursday's report........",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247484/thursdays-report.php",
+     "by": "Big Hungry",
+     "landing": "Point Loma Sportfishing",
+     "region": "san_diego",
+     "boat": "Daily Double",
+     "skipper_note": "Yesterday's trip returned with 49 Yellowfin Tuna & 12 Skipjack Tuna; also catching Yellowtail, Bonito, Sand Bass, Barracuda, Rockfish.",
+     "size": [],
+     "catch": [
+      {
+       "name": "yellowfin",
+       "count": 49
+      },
+      {
+       "name": "skipjack",
+       "count": 12
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "Yesterday's trip returned with 49 Yellowfin Tuna & 12 Skipjack Tuna.",
+     "photos": []
+    },
     {
      "date": "2026-11-25",
      "trip_length": "Full Day",
@@ -3007,93 +3208,6 @@
      "conditions": null,
      "quote": "The Pacific Queen called in with 129 Yellowfin Tuna (25-75lbs.), 85 Yellowtail and 1 White…",
      "photos": []
-    },
-    {
-     "date": "2026-11-24",
-     "trip_length": "3/4 Day",
-     "anglers": 45,
-     "title": "Wednesday",
-     "url": "https://www.sandiegofishreports.com/fish_reports/247456/wednesday.php",
-     "by": "Fishermans Landing Staff",
-     "landing": "Fisherman's Landing",
-     "region": "san_diego",
-     "boat": "Dolphin",
-     "skipper_note": "Called in with 231 yellowfin tuna, 19 skipjack, and 8 bonito on 3/4 day trip, 45 anglers.",
-     "size": [],
-     "catch": [
-      {
-       "name": "yellowfin",
-       "count": 231
-      },
-      {
-       "name": "skipjack",
-       "count": 19
-      },
-      {
-       "name": "bonito",
-       "count": 8
-      }
-     ],
-     "bait": "sardine",
-     "bait_on_board": true,
-     "tackle": [
-      "25lb/30lb flyline",
-      "reverse dropper loop setups",
-      "40lb fluorocarbon leaders",
-      "Yo-Yo jigs (JRI 66)"
-     ],
-     "conditions": null,
-     "quote": "The Dolphin just called in with 231 Yellowfin Tuna, 19 Skipjack and 8 Bonito for…",
-     "photos": []
-    },
-    {
-     "date": "2026-11-24",
-     "trip_length": "5 Day",
-     "anglers": 16,
-     "title": "Wednesday",
-     "url": "https://www.sandiegofishreports.com/fish_reports/247456/wednesday.php",
-     "by": "Fishermans Landing Staff",
-     "landing": "Fisherman's Landing",
-     "region": "san_diego",
-     "boat": "Constitution",
-     "skipper_note": "Called in with 76 yellowfin to 70 lbs, 38 yellowtail, 2 dorado, 45 skipjack on 5-day trip.",
-     "size": [
-      {
-       "name": "yellowfin",
-       "count": 76,
-       "max_lb": 70.0,
-       "min_lb": null
-      }
-     ],
-     "catch": [
-      {
-       "name": "yellowfin",
-       "count": 76
-      },
-      {
-       "name": "yellowtail",
-       "count": 38
-      },
-      {
-       "name": "dorado",
-       "count": 2
-      },
-      {
-       "name": "skipjack",
-       "count": 45
-      }
-     ],
-     "bait": "sardine",
-     "bait_on_board": true,
-     "tackle": [
-      "25lb/30lb flyline",
-      "reverse dropper loop setups",
-      "40lb fluorocarbon leaders",
-      "Yo-Yo jigs (JRI 66)"
-     ],
-     "conditions": null,
-     "quote": "The Constitution called in with 76 Yellowfin up to 70 pounds, 38 Yellowtail, 2 Dorado…",
-     "photos": []
     }
    ]
   },
@@ -3337,6 +3451,129 @@
       "https://media.fishreports.com/photos/img-20261121-6942ccc2.jpg",
       "https://media.fishreports.com/photos/img-20261121-17f871fd.jpg"
      ]
+    },
+    {
+     "date": "2026-11-15",
+     "trip_length": null,
+     "anglers": null,
+     "title": "Sunday funday!",
+     "url": "https://socalfishreports.com/fish_reports/247221/sunday-funday!.php",
+     "by": "Enterprise Sportfishing",
+     "landing": "Pierpoint Landing",
+     "region": "oc_la",
+     "boat": null,
+     "skipper_note": "Anchor fishing produced skipjack, yellowtail, Spanish jack, bass, barracuda, whitefish, and bottom fish.",
+     "size": [],
+     "catch": [],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": "Pleasant day, anchor fishing",
+     "quote": "Pleasant day anchor fishing for skipjack yellowtail Spanish jack bass barracuda and plenty of whitefish",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261115-92bcc93b.jpeg",
+      "https://media.fishreports.com/reports/img-20261115-3a412f5d.jpeg"
+     ]
+    },
+    {
+     "date": "2026-11-15",
+     "trip_length": null,
+     "anglers": 23,
+     "title": "Still really good sign around",
+     "url": "https://socalfishreports.com/fish_reports/247222/still-really-good-sign-around.php",
+     "by": "Shawn Steward",
+     "landing": "Channel Islands Sportfishing",
+     "region": "oc_la",
+     "boat": "Aloha Spirit",
+     "skipper_note": "Fished without bait today; still good sign around with mixed bag of species.",
+     "size": [],
+     "catch": [
+      {
+       "name": "skipjack",
+       "count": 22
+      },
+      {
+       "name": "black skipjack",
+       "count": 2
+      },
+      {
+       "name": "bonito",
+       "count": 26
+      },
+      {
+       "name": "rockfish",
+       "count": 124
+      },
+      {
+       "name": "whitefish",
+       "count": 119
+      },
+      {
+       "name": "lingcod",
+       "count": 1
+      }
+     ],
+     "bait": null,
+     "bait_on_board": false,
+     "tackle": [],
+     "conditions": "No bait available; still good fish sign around.",
+     "quote": "Made the best of what we could without bait today. Still really good sign around.",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261115-7b5a3fca.jpg",
+      "https://media.fishreports.com/photos/img-20261115-803756e8.jpg",
+      "https://media.fishreports.com/photos/img-20261115-ff19d7c5.jpg",
+      "https://media.fishreports.com/photos/img-20261115-e188886e.jpg"
+     ]
+    },
+    {
+     "date": "2026-11-15",
+     "trip_length": "Overnight",
+     "anglers": 30,
+     "title": "Overnight Sponsor Trip Recap",
+     "url": "https://socalfishreports.com/fish_reports/247322/overnight-sponsor-trip-recap.php",
+     "by": "Toronado Sportfishing",
+     "landing": "Pierpoint Landing",
+     "region": "oc_la",
+     "boat": null,
+     "skipper_note": "Hook and Destroy OC Fishing Club sponsored overnight trip produced a mixed bag of bottom fish and pelagics.",
+     "size": [],
+     "catch": [
+      {
+       "name": "red snapper",
+       "count": 48
+      },
+      {
+       "name": "rockfish",
+       "count": 209
+      },
+      {
+       "name": "whitefish",
+       "count": 28
+      },
+      {
+       "name": "calico bass",
+       "count": 2
+      },
+      {
+       "name": "bonito",
+       "count": 10
+      },
+      {
+       "name": "skipjack",
+       "count": 1
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "30 anglers 48 red snapper 209 rockfish 28 whitefish 2 calico bass 10 bonito 1…",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261118-40d44d2e.jpeg",
+      "https://media.fishreports.com/photos/img-20261118-1165a379.jpeg",
+      "https://media.fishreports.com/photos/img-20261118-6c5a69f2.jpeg",
+      "https://media.fishreports.com/photos/img-20261118-2007a985.jpeg"
+     ]
     }
    ]
   }
@@ -3411,6 +3648,16 @@
    "quote": "Saturday's trip need a few more reservations to run.",
    "url": "https://www.sandiegofishreports.com/fish_reports/247393/sunday-afternoon-plsf.php",
    "title": "Sunday Afternoon @ PLSF"
+  },
+  {
+   "boat": "Daily Double",
+   "landing": "Point Loma Sportfishing",
+   "region": "san_diego",
+   "trip_date": "2026-11-28",
+   "trip_length": "1/2 Day",
+   "quote": "Daily Double still needs a few more reservations for Saturday's trip to run.",
+   "url": "https://www.sandiegofishreports.com/fish_reports/247484/thursdays-report.php",
+   "title": "Thursday's report........"
   },
   {
    "boat": "Aloha Spirit",
