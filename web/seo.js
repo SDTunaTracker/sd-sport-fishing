@@ -17,8 +17,8 @@
       desc:  'Today\'s fish counts from H&M, Fisherman\'s, Seaforth, Point Loma, and Oceanside landings, checked hourly: bluefin, yellowfin, yellowtail and dorado by boat.'
     },
     surf: {
-      title: 'San Diego Surf Forecast by Break: Model Forecast' + SFX,
-      desc:  'Surf height, wind, tide and a 0–5 rating for 12 San Diego breaks, from the Scripps CDIP nearshore wave model, plus the NWS rip current risk.'
+      title: 'Surftracker: San Diego Surf Report & Forecast by Break' + SFX,
+      desc:  'Surf height, wind, tide and a 0–5 model rating for San Diego County breaks, from the Scripps CDIP nearshore wave model, plus the NWS rip current risk. Free, no ads, and it shows its own accuracy.'
     },
     pick: {
       title: 'Pick My Trip: the Best San Diego Fishing Trip to Book This Week' + SFX,

@@ -655,6 +655,12 @@ function AppFooter({ regions } = {}) {
              className="app-footer-link">Contact</a>
           <span className="app-footer-sep">·</span>
           <a href="/privacy/" className="app-footer-link">Privacy</a>
+          {(!regions || (window.getEffectiveRegion && window.getEffectiveRegion(regions) === 'san_diego')) && (
+            <React.Fragment>
+              <span className="app-footer-sep">·</span>
+              <a href="/sd/surf" className="app-footer-link app-footer-quiet">Surftracker</a>
+            </React.Fragment>
+          )}
         </nav>
       </div>
     </footer>

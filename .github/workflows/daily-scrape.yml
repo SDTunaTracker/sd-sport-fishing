@@ -202,6 +202,20 @@ jobs:
           python -m src.surf.runs || echo "::warning::surf run archive failed"
           python -m src.surf.forecast || echo "::warning::surf forecast failed"
 
+      - name: More surf spots (Surftracker, twice a day)
+        # src/surf/spots.py: ~50 more San Diego County spots with default
+        # settings, forecast by the same model (~4 CDIP requests each, ~4 min
+        # cold). Runs on the daily full run and at 02 UTC (evening PT) only,
+        # never every hour. Writes web/api/v1/surf_spots.json. Never fails the run.
+        continue-on-error: true
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "${{ steps.mode.outputs.mode }}" = "full" ] || [ "$HOUR" = "02" ] || [ ! -f web/api/v1/surf_spots.json ]; then
+            python -m src.surf.spots || echo "::warning::surf spots failed"
+          else
+            echo "Skipping surf spots (hour=$HOUR, mode=${{ steps.mode.outputs.mode }})"
+          fi
+
       - name: Fetch currents grid (full mode, Copernicus Marine)
         # Real currents for the Charts map (src/currents_cmems.py). Skips until
         # the owner adds the two COPERNICUSMARINE_* secrets; the map keeps its
@@ -248,7 +262,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
-          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/api/v1/bait_now.json web/api/v1/surf.json web/api/v1/buoys.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/api/v1/bait_now.json web/api/v1/surf.json web/api/v1/surf_spots.json web/api/v1/buoys.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           # Per-region data files: data-region-oc_la.js, ... (src/export.py) and
           # data-region-sfbay.js (src/export_sfbay.py).
           if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi

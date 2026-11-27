@@ -40,6 +40,7 @@ import requests
 
 from . import cdip as C
 from .breaks import BREAKS
+from .extras import enrich
 from .physics import (M_TO_FT, bj_profile, break_spectrum, break_wave, deep_water_height,
                       komar_gaughan, spectral_hs)
 
@@ -426,7 +427,7 @@ def build(now: datetime | None = None) -> dict:
             buoys[s] = buoy_now(s)
         except Exception:  # noqa: BLE001
             buoys[s] = None
-    return {
+    return enrich({
         "generatedAt": now.isoformat(timespec="minutes"), "staleAfterHours": 12,
         "label": "Model forecast",
         "method": "CDIP MOP nearshore wave model (ECMWF and WW3 forced, blended and bias-corrected at the "
@@ -439,7 +440,7 @@ def build(now: datetime | None = None) -> dict:
         "verification": VERIFICATION, "breaks": breaks,
         "tides": {"station": TIDE_STATION, "name": "La Jolla", "hilo": hilo},
         "nws": srf, "buoys": buoys,
-    }
+    }, tide_h, now)   # extras.py: display-only fields
 
 
 def write(path: Path = OUT) -> int:

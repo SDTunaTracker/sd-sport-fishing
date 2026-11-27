@@ -1695,7 +1695,7 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 
 function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirMode,
                       onBase, onCond, onTides, onBoats, onSstMode, onDirMode, showBuoys, onBuoys,
-                      spotCount, showSpots, onSpots, spotWindow, onSpotWindow }) {
+                      spotCount, showSpots, onSpots, spotWindow, onSpotWindow, onSurf }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
     { id: 'chlorophyll', icon: '🌿', label: 'Chlorophyll' },
@@ -1750,6 +1750,10 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
             );
           })}
         </div>
+        {onSurf ? (
+          <a className="layer-surf-link" href="/sd/surf"
+            onClick={function(e) { e.preventDefault(); onSurf(); }}>Surf forecast →</a>
+        ) : null}
       </div>
       {onDirMode && (condLayers.wind || condLayers.waves || condLayers.currents) && (
         <div className="layer-group">
@@ -2746,6 +2750,9 @@ function ChartsView({ navigate, settings, regions }) {
     loadForumSpots().then(function(g) { if (live) setSpotsGeo(g); });
     return function() { live = false; };
   }, []);
+  // Quiet way in to the San Diego surf forecast (owner: keep /sd/surf low-key,
+  // reachable from Charts only; no nav or home entry).
+  var surfLink = (effRegion === 'san_diego' && navigate) ? function() { navigate('surf'); } : null;
   var regionSpots14 = React.useMemo(function() { return forumSpotsForRegion(spotsGeo, effRegion, 14); }, [spotsGeo, effRegion]);
   var regionSpots = React.useMemo(function() { return forumSpotsForRegion(spotsGeo, effRegion, spotWindow); }, [spotsGeo, effRegion, spotWindow]);
   // Turning the layer on frames the region's spots, so small (1–2 nm) areas are
@@ -2918,6 +2925,7 @@ function ChartsView({ navigate, settings, regions }) {
             onSstMode={setSstMode} onDirMode={setDirMode}
             spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
             spotWindow={spotWindow} onSpotWindow={setSpotWindow}
+            onSurf={surfLink}
           />}
         </div>
 
@@ -3056,6 +3064,17 @@ function ChartsView({ navigate, settings, regions }) {
               onSstMode={setSstMode} onDirMode={setDirMode}
               spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
               spotWindow={spotWindow} onSpotWindow={setSpotWindow}
+              onSurf={surfLink && function() {
+                // closeSheet() may pop the sheet's history entry (async), so
+                // navigate only after that popstate lands.
+                if (window.history.state && window.history.state.ttLayersSheet) {
+                  window.addEventListener('popstate', function go() {
+                    window.removeEventListener('popstate', go);
+                    setTimeout(surfLink, 0);
+                  });
+                  window.history.back();
+                } else { setSheetOpen(false); surfLink(); }
+              }}
             />
             {/* Phones: waypoints live here, not floating over the map controls. */}
             <div className="layer-group-label wp-sheet-label">Your map</div>
