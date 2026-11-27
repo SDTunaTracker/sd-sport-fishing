@@ -85,6 +85,23 @@ _SD_FALLBACK_SCRIPT = (
 )
 
 
+# Starts data-history.js before the stylesheets on pages that show every year
+# (same script as in web/index.html; tests/test_region_files.py keeps the two
+# and app.jsx HISTORY_FREE_VIEWS in step).
+HISTORY_EARLY_JS = r"""<script>
+  (function () {
+    var m = /^\/sd\/([^\/]+)/.exec(location.pathname);
+    if (!m || /^(home|today|charts|forecast|surf|pick|account|settings)$/.test(m[1])) return;
+    var s = document.createElement('script');
+    s.id = 'tt-history-early'; s.async = true; s.src = 'data-history.js';
+    s.onload = function () { window.__ttHistEarly = 1; };
+    s.onerror = function () { window.__ttHistEarly = 2; };
+    document.head.appendChild(s);
+  })();
+</script>
+"""
+
+
 def _safe_dir(name: str) -> str:
     """Remove chars that are problematic as directory names on any OS."""
     bad = r'/\:*?"<>|'
@@ -523,7 +540,7 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#17332C">
 <base href="/">
-<title>{_esc(title)}</title>
+{HISTORY_EARLY_JS if app else ""}<title>{_esc(title)}</title>
 <meta name="description" content="{_esc(desc)}">
 {robots}<link rel="canonical" href="{canonical_full}">
 <meta property="og:type"        content="website">

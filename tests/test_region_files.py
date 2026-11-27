@@ -177,3 +177,15 @@ def test_live_data_js_history_file_matches():
     meta = json.loads(m.group(1))
     text = (WEB / meta["file"]).read_text(encoding="utf-8")
     assert f'window.SD_HISTORY = {{"v":"{meta["v"]}"' in text
+
+
+def test_early_history_script_matches_app_history_free_views():
+    """index.html, the generated pages and app.jsx agree on which views skip history."""
+    from src import generate_pages as G
+    app = (WEB / "app.jsx").read_text(encoding="utf-8")
+    m = re.search(r"const HISTORY_FREE_VIEWS = \{([^}]*)\}", app)
+    free = set(re.findall(r"(\w+):\s*1", m.group(1)))
+    idx = (WEB / "index.html").read_text(encoding="utf-8")
+    assert G.HISTORY_EARLY_JS.strip() in idx
+    listed = set(re.search(r"/\^\(([a-z|]+)\)\$/", G.HISTORY_EARLY_JS).group(1).split("|"))
+    assert free <= listed and listed - free <= {"settings"}   # settings = old alias of account

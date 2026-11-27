@@ -437,8 +437,18 @@ function App() {
     if (window.L && window.L.velocityLayer) { warmData(); return; }
     var ric = window.requestIdleCallback || function(fn) { return setTimeout(fn, 1500); };
     var cancel = window.cancelIdleCallback || clearTimeout;
-    var id = ric(function() { _ensureChartsLoaded(); warmData(); }, { timeout: 4000 });
-    return function() { try { cancel(id); } catch (e) {} };
+    // Not before the page's load event: that waits for data-history.js, and
+    // the prewarm's ~250 KB (Leaflet, tiles, SST grid) would otherwise share a
+    // phone's bandwidth with it (measured: history finished 10.1 s -> later).
+    var id = null, gone = false;
+    var start = function() { if (!gone) id = ric(function() { _ensureChartsLoaded(); warmData(); }, { timeout: 4000 }); };
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+    return function() {
+      gone = true;
+      window.removeEventListener('load', start);
+      try { if (id != null) cancel(id); } catch (e) {}
+    };
   }, []);
 
   // Fire page view tracking on every route change.
