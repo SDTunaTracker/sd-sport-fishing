@@ -54,6 +54,7 @@ TIDE_STATION = "9410230"
 # Face range around the breaking-wave height H (E9: no 1.27 "sets" multiplier
 # on the top; sets are mentioned in words instead).
 RANGE = (0.85, 1.15)
+SETS_RATIO = 1.27
 # Breaking: Battjes–Janssen random-wave energy balance on a plane slope (E12),
 # slope by break type [D], scaled by the E8 spectral/bulk ratio.
 SLOPE = {"beach": 1 / 50, "reef": 1 / 30, "shores": 1 / 50}
@@ -83,12 +84,25 @@ VERIFICATION = {
                    "rating: no observations yet. Treat them as model estimates.",
     "scale": "On small days our surf heights run about 20% above NWS surf forecasts; the Scripps "
              "Pier wave sensor (wave height just outside the surf zone) supports ours.",
-    "observed": "Breaking surf height, big days: 56 lifeguard and official high-surf reports (NWS storm reports, 2016–2026) "
-                "matched our heights (median ratio 0.99; we reached at least 80% of the reported size "
-                "on 93%). Small days: our heights track the Scripps Pier wave sensor (CDIP 073) "
+    "observed": "Breaking surf height, big days: 55 lifeguard and official high-surf reports (NWS storm reports, 2016–2026) "
+                "matched our heights (median ratio 1.0; typical error 2.2 ft, within 1.5 ft on 62%). Small days: our heights track the Scripps Pier wave sensor (CDIP 073) "
                 "closely over 1,538 small mornings (rank correlation 0.94). Small-day face heights "
                 "are not yet checked against people's observations.",
     "leadNote": "Scores are short-lead. Skill by forecast day is being collected.",
+    # Public scorecard (round 11). Breaking surf height only, vs people's observed
+    # reports; NWS = the Surf Zone Forecast issued before each report, same days.
+    "scorecard": {
+        "truth": "55 observed breaking-surf reports: lifeguards and NWS storm reports, 2016–2026, "
+                 "mostly 6 ft and bigger. Not used to fit the model.",
+        "rows": [
+            {"who": "Surftracker", "biasFt": -0.6, "rmseFt": 2.2, "within1_5": 0.62},
+            {"who": "NWS Surf Zone Forecast (middle of its range)", "biasFt": -1.5, "rmseFt": 2.9,
+             "within1_5": 0.47},
+        ],
+        "notYet": ["Small days (under 6 ft): only 4 observed reports so far",
+                   "Rating (Poor to Good): no observed surf quality yet",
+                   "Accuracy by forecast day for surf height: being collected since Nov 26, 2026"],
+    },
     "wind": "Wind model chosen against the Scripps Pier anemometer (NOAA LJPC1): over 2026 "
             "mornings it got the wind type (glassy, offshore, cross or onshore) right about two "
             "times in three, with a typical speed error of 2.6 kt. Wind at other breaks is not "
@@ -388,6 +402,10 @@ def break_forecast(b: dict, wind: dict, tide_h: dict, now: datetime) -> dict:
             # Unrounded mid face height: whole-foot bands hide day-to-day changes
             # (round 8: a +7% Saturday rise drew the same 3–5 ft bar as Friday).
             "faceMidFt": round(max(0.0, h_ft), 1),
+            # "Sets to X" (round 11): the bigger waves, H1/10 = 1.27 x the breaking
+            # height (Rayleigh). Matches NWS San Diego's own "sets to" numbers on the
+            # 55 observed big days (bias -0.1 ft); show it when above the band top.
+            "setsFt": int(round(max(0.0, h_ft) * SETS_RATIO)),
             "hsM": round(hs, 2), "tpS": round(tp, 1), "dpDeg": round(dp),
             "hbM": round(hb, 2), "kgM": round(kg, 2),
             "windKt": None if wnd[0] is None else round(wnd[0]),
