@@ -85,6 +85,8 @@ SPOTS: list[tuple] = [
     ("pappys-point", "Pappy's Point", 32.7334, -117.2573, "reef", "gnis"),
     ("abs", "Ab's", 32.7284, -117.2567, "reef", "gnis"),
     ("ratkay-point", "Ratkay Point", 32.7256, -117.2584, "reef", "gnis"),
+    ("ralphs", "Ralph's", 32.6705, -117.2333, "reef", "local",
+     "Boat access only (Navy shoreline). Big-wave reef inside the tip of Point Loma; experts only."),
     # Coronado / Silver Strand / Imperial Beach
     ("coronado-north-beach", "Coronado (North Beach)", 32.6862, -117.1925, "beach", "gnis"),
     ("coronado-central", "Coronado Central Beach", 32.6842, -117.1870, "beach", "gnis"),
@@ -119,7 +121,12 @@ AREAS = (  # (south limit latitude, area); first match from the north
 )
 
 
-def area_of(lat: float) -> str:
+AREA_OVERRIDE = {"ralphs": "PB–Point Loma"}   # south of the latitude split but on Point Loma
+
+
+def area_of(lat: float, sid: str | None = None) -> str:
+    if sid in AREA_OVERRIDE:
+        return AREA_OVERRIDE[sid]
     return next(a for lim, a in AREAS if lat > lim)
 
 
@@ -188,7 +195,7 @@ def build(now: datetime | None = None) -> dict:
             e = energy_kj(h.get("hsM"), h.get("tpS"))
             if e is not None:
                 h["energyKj"] = e
-        r.update({"defaults": True, "area": area_of(b["lat"]), "src": b["src"],
+        r.update({"defaults": True, "area": area_of(b["lat"], b["id"]), "src": b["src"],
                   "tideWindow": list(b["tide"]), "swellWindow": list(b["swell"])})
         if b.get("note"):
             r["note"] = b["note"]
