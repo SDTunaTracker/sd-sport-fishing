@@ -165,6 +165,17 @@ def page_date(html: str) -> date | None:
     return datetime.strptime(m.group(1), "%B %d, %Y").date()
 
 
+NOT_POSTED = "not_posted"   # norcal_fetch_log.error: the day had no counts yet when fetched
+
+
+def not_posted_yet(html: str, expected: date) -> bool:
+    """True when the site served an earlier day's full page: counts for
+    `expected` aren't up yet (e.g. today, early in the day). Not a layout
+    change; the next run fetches the day again."""
+    pd = page_date(html)
+    return pd is not None and pd < expected
+
+
 def parse_day(html: str, expected: date, source_url: str | None = None) -> tuple[list[dict], bool]:
     """Parse one boats.php page. Returns (trips, no_counts_flag).
 
@@ -177,6 +188,9 @@ def parse_day(html: str, expected: date, source_url: str | None = None) -> tuple
         fallback = _FALLBACK_H1.search(html)
         if pd is None and fallback:
             return [], True
+        if not_posted_yet(html, expected):
+            log.info("norcal: %s not posted yet (site shows %s)", expected, pd)
+            return [], False
         log.warning("norcal: page date %s != requested %s, skipping", pd, expected)
         return [], False
     source_url = source_url or DAY_URL.format(d=expected.isoformat())
@@ -291,7 +305,7 @@ def scrape_days(conn: sqlite3.Connection, days: list[date], fetcher: Fetcher | N
                 today: date | None = None) -> dict:
     """Fetch, parse and store each day. Raises SourceBlocked immediately."""
     fetcher = fetcher or Fetcher()
-    stats = {"days": 0, "inserted": 0, "rows": 0, "no_count_days": 0, "cached": 0, "errors": 0}
+    stats = {"days": 0, "inserted": 0, "rows": 0, "no_count_days": 0, "not_posted": 0, "cached": 0, "errors": 0}
     for d in days:
         try:
             html, cached = fetcher.get_day(d, today=today)
@@ -312,7 +326,9 @@ def scrape_days(conn: sqlite3.Connection, days: list[date], fetcher: Fetcher | N
         stats["rows"] += len(trips)
         stats["no_count_days"] += int(no_counts)
         stats["inserted"] += insert_trips(conn, trips, today=today)
-        log_fetch(conn, d, 200, len(trips), no_counts)
+        pending = not trips and not no_counts and not_posted_yet(html, d)
+        stats["not_posted"] += int(pending)
+        log_fetch(conn, d, 200, len(trips), no_counts, NOT_POSTED if pending else None)
         conn.commit()
     return stats
 

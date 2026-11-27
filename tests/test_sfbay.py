@@ -160,6 +160,16 @@ def test_owner_pinned_boats_stay_ranked():
     assert six["argo"] is False and six["scallywag"] is False and six["small"] is True
 
 
+def test_sixpack_judged_on_recent_trips_when_boat_is_active():
+    trips = ([{"boat_slug": "reused", "date": "2012-07-15", "anglers": 60}] +
+             [{"boat_slug": "reused", "date": f"2024-0{m}-01", "anglers": 5} for m in range(1, 5)] +
+             [{"boat_slug": "oldbig", "date": "2008-06-01", "anglers": 30}] +
+             [{"boat_slug": "oldsmall", "date": f"2010-0{m}-01", "anglers": 6} for m in range(1, 5)])
+    six = N.classify_sixpacks(trips)
+    assert six["reused"] is True        # big pre-2019 trips don't count for an active boat
+    assert six["oldbig"] is False and six["oldsmall"] is True
+
+
 def test_recent_day_updates_counts_in_place():
     conn = _db()
     trips, _ = S.parse_day(PAGE, DAY)
@@ -214,6 +224,21 @@ def test_health_no_alert_on_no_trip_days():
         S.log_fetch(conn, date(2026, 11, 25) - timedelta(days=i), 200, 0, True)
     conn.execute("UPDATE norcal_fetch_log SET fetched_at = ?", (now.isoformat(),))
     assert H.check(conn, today=date(2026, 11, 25), now=now) == []
+
+
+def test_today_not_posted_yet_is_not_a_layout_alert(tmp_path):
+    # Early in the day the site serves the latest posted day's full page (here
+    # July 18) for today's URL (July 19). That must not raise sfbay:parse.
+    conn = _db()
+    today = DAY + timedelta(days=1)
+    assert S.not_posted_yet(PAGE, today) and not S.not_posted_yet(PAGE, DAY)
+    f = S.Fetcher(cache_dir=tmp_path, min_delay=0, max_delay=0)
+    f.session.get = lambda *a, **k: _Resp(200, PAGE)
+    st = S.scrape_days(conn, [today], fetcher=f, today=today)
+    assert st["not_posted"] == 1 and st["rows"] == 0
+    assert conn.execute("SELECT status, error FROM norcal_fetch_log").fetchone() == (200, "not_posted")
+    now = datetime(2026, 7, 19, 18, tzinfo=timezone.utc)
+    assert H.check(conn, today=today, now=now) == []
 
 
 def test_health_flags_layout_change_and_stale_fetch():
