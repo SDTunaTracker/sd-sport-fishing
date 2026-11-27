@@ -2,16 +2,18 @@
 
 Writes web/api/v1/paddle_spots.json. For each paddle spot, hour by hour:
 wind (speed, gust, direction; ECMWF via forecast.wind_hourly, unchanged), tide
-(NOAA predictions: San Diego Bay 9410170 for bay spots, La Jolla 9410230
-elsewhere), and for open-coast spots the surf at the matching surf spot
-(read from surf.json / surf_spots.json, written earlier in the same run).
+(forecast.tides: San Diego Bay 9410170 for bay spots, La Jolla 9410230
+elsewhere), NOAA tidal current predictions at the San Diego Bay Entrance
+(forecast.currents, PCT0031) for the spots near it, the latest CDIP water
+temperature (extras.water_temp), and for open-coast spots the surf at the
+matching surf spot (surf.json / surf_spots.json, written earlier in the run).
 
 The paddle rating is a transparent rule of thumb, not a fitted or verified
 model: wind (sustained and gusts; offshore wind at an open beach is flagged
 because it pushes paddlers out to sea), surf to launch through (coast spots),
-and a falling tide near a harbour or lagoon mouth (strong outgoing flow).
-No tidal-current data is used yet; water temperature is shown as comfort and
-wetsuit advice on the page, not scored.
+predicted tidal current at the bay entrance (Shelter Island, La Playa), and a
+falling tide near other harbour or lagoon mouths. Water temperature is comfort
+and wetsuit advice on the page, not scored.
 
 Run:  python -m src.surf.paddle
 """
@@ -19,11 +21,9 @@ from __future__ import annotations
 
 import json
 import logging
-import time
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
-import requests
 
 from . import cdip as C
 
@@ -49,10 +49,10 @@ PADDLE_SPOTS = [
      "Launch at Kellogg Park; the caves and Cove are a common out-and-back."),
     ("la-jolla-cove-paddle", "La Jolla Cove", 32.8504, -117.2730, "coast", LA_JOLLA, "la-jolla-cove", False,
      "Ecological reserve; stay clear of the cliffs when there is swell."),
-    ("crown-point", "Crown Point Shores (Mission Bay)", 32.7853, -117.2320, "bay", LA_JOLLA, None, False, None),
-    ("de-anza-cove", "De Anza Cove (Mission Bay)", 32.7953, -117.2125, "bay", LA_JOLLA, None, False, None),
-    ("fiesta-island", "Fiesta Island (Mission Bay)", 32.7785, -117.2213, "bay", LA_JOLLA, None, False, None),
-    ("bonita-cove", "Bonita Cove (Mission Bay)", 32.7689, -117.2481, "bay", LA_JOLLA, None, True,
+    ("crown-point", "Crown Point Shores (Mission Bay)", 32.7853, -117.2320, "bay", SD_BAY, None, False, None),
+    ("de-anza-cove", "De Anza Cove (Mission Bay)", 32.7953, -117.2125, "bay", SD_BAY, None, False, None),
+    ("fiesta-island", "Fiesta Island (Mission Bay)", 32.7785, -117.2213, "bay", SD_BAY, None, False, None),
+    ("bonita-cove", "Bonita Cove (Mission Bay)", 32.7689, -117.2481, "bay", SD_BAY, None, True,
      "Near the Mission Bay entrance channel: outgoing tide and boat wakes."),
     ("shelter-island-paddle", "Shelter Island", 32.7113, -117.2300, "bay", SD_BAY, None, True,
      "Busy boat channel; stay on the shore side."),
@@ -60,6 +60,12 @@ PADDLE_SPOTS = [
      "Near the bay entrance: outgoing tide and boat traffic."),
     ("glorietta-bay", "Glorietta Bay (Coronado)", 32.6753, -117.1691, "bay", SD_BAY, None, False, None),
 ]
+
+# NOAA tidal current predictions, San Diego Bay Entrance: scored where it matters,
+# shown as indicative at Glorietta Bay; none exists for Mission Bay.
+CURRENT_STATION = "PCT0031"
+CURRENT_SCORED = {"shelter-island-paddle", "la-playa"}
+CURRENT_SHOWN = CURRENT_SCORED | {"glorietta-bay"}
 
 GOOD, OK, HARD = 2, 1, 0
 LEVEL = {GOOD: "Good", OK: "OK", HARD: "Hard"}
@@ -74,36 +80,24 @@ def _angdiff(a: float, b: float) -> float:
     return (a - b + 540) % 360 - 180
 
 
-def _get_json(url: str, params: dict, attempts: int = 3) -> dict:
-    last = None
-    for i in range(attempts):
-        try:
-            r = requests.get(url, params=params, timeout=40)
-            r.raise_for_status()
-            return r.json()
-        except (requests.RequestException, ValueError) as e:
-            last = e
-            time.sleep(2 * (i + 1))
-    raise last
-
-
-def tide_station(station: str, start: datetime, days: int = 7) -> tuple[dict[int, float], list[dict]]:
-    """NOAA CO-OPS predictions for one station (forecast.tides() is fixed to La Jolla)."""
-    base = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
-    common = {"product": "predictions", "application": "Tunatracker", "station": station,
-              "begin_date": start.strftime("%Y%m%d"), "range": 24 * (days + 1), "datum": "MLLW",
-              "time_zone": "gmt", "units": "english", "format": "json"}
-    parse = lambda t: datetime.strptime(t, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
-    hourly = {int(parse(p["t"]).timestamp()): float(p["v"])
-              for p in _get_json(base, {**common, "interval": "h"}).get("predictions", [])}
-    hilo = [{"t": parse(p["t"]).isoformat(timespec="minutes"), "ft": round(float(p["v"]), 1), "type": p.get("type")}
-            for p in _get_json(base, {**common, "interval": "hilo"}).get("predictions", [])]
-    return hourly, hilo
+def current_at(events: list[dict], ep: int) -> dict | None:
+    """Predicted current at an hour, eased between NOAA max/slack events.
+    {"kt", "type": flood|ebb|slack, "towardDeg"}; None outside the events."""
+    ev = sorted(((datetime.fromisoformat(e["t"]).timestamp(), e) for e in events), key=lambda x: x[0])
+    signed = lambda e: e["kt"] if e["type"] == "flood" else -e["kt"] if e["type"] == "ebb" else 0.0
+    for (t0, e0), (t1, e1) in zip(ev, ev[1:]):
+        if t0 <= ep <= t1:
+            f = (ep - t0) / max(1.0, t1 - t0)
+            v = signed(e0) + (signed(e1) - signed(e0)) * (1 - math.cos(math.pi * f)) / 2
+            kind = "slack" if abs(v) < 0.2 else "flood" if v > 0 else "ebb"
+            src = next((e for e in (e1, e0) if e["type"] == kind), None)
+            return {"kt": round(abs(v), 1), "type": kind, "towardDeg": src.get("towardDeg") if src else None}
+    return None
 
 
 # ── the rule of thumb ────────────────────────────────────────────────────
 def rate_hour(kind: str, wind: tuple | None, tide_ft: float | None, tide_next: float | None,
-              surf: dict | None, normal: float | None, mouth: bool) -> dict:
+              surf: dict | None, normal: float | None, mouth: bool, current: dict | None = None) -> dict:
     """One hour's paddle rating: {"level": 0-2 | None, "label", "reason"}."""
     if not wind or wind[0] is None or wind[1] is None:
         return {"level": None, "label": None, "reason": "No wind forecast for this hour."}
@@ -132,7 +126,15 @@ def rate_hour(kind: str, wind: tuple | None, tide_ft: float | None, tide_next: f
         if sl < GOOD:
             issues.append((sl, f"{surf['faceFt'][0]}–{hi} ft surf to launch through"))
         level = min(level, sl)
-    if mouth and tide_ft is not None and tide_next is not None and tide_next - tide_ft <= -0.6:
+    if current is not None:
+        kt = current["kt"]
+        if current["type"] == "ebb" and kt >= 2.0:
+            level = HARD
+            issues.append((HARD, f"ebb current about {kt} kt"))
+        elif (current["type"] == "ebb" and kt >= 1.0) or (current["type"] == "flood" and kt >= 1.5):
+            level = min(level, OK)
+            issues.append((OK, f"{current['type']} current about {kt} kt"))
+    elif mouth and tide_ft is not None and tide_next is not None and tide_next - tide_ft <= -0.6:
         level = min(level, OK)   # an ebb alone makes it harder going, not "Hard"
         issues.append((OK, "strong outgoing tide near the mouth"))
     if issues:
@@ -197,7 +199,7 @@ def _nearest_surf(ref: dict | None, ep: int) -> dict | None:
 
 def build(now: datetime | None = None) -> dict:
     from . import forecast as F
-    from .extras import sun_days
+    from .extras import sun_days, water_temp
 
     now = now or datetime.now(timezone.utc)
     cfgs = [{"id": s[0], "name": s[1], "lat": s[2], "lon": s[3]} for s in PADDLE_SPOTS]
@@ -206,14 +208,25 @@ def build(now: datetime | None = None) -> dict:
     except Exception as e:  # noqa: BLE001
         log.warning("paddle wind failed: %s", e)
         winds = [{} for _ in cfgs]
+    winds, wind_note = F.with_wind_fallback(cfgs, winds, OUT, key="spots")
     start = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
     tides = {}
     for st in (LA_JOLLA, SD_BAY):
         try:
-            tides[st] = tide_station(st, start)
+            tides[st] = F.tides(start, station=st)
         except Exception as e:  # noqa: BLE001
             log.warning("paddle tides %s failed: %s", st, e)
             tides[st] = ({}, [])
+    try:
+        cur_events = F.currents(start, station=CURRENT_STATION)
+    except Exception as e:  # noqa: BLE001
+        log.warning("paddle currents failed: %s", e)
+        cur_events = []
+    try:
+        wt = water_temp(now)
+    except Exception as e:  # noqa: BLE001
+        log.warning("paddle water temp failed: %s", e)
+        wt = None
     refs = _surf_refs()
     sun = sun_days(now - timedelta(days=1))
     t0 = int(now.replace(minute=0, second=0, microsecond=0).timestamp()) - 3600
@@ -227,27 +240,32 @@ def build(now: datetime | None = None) -> dict:
         for ep in range(t0, t1, 3600):
             wind = w.get(ep)
             surf = _nearest_surf(ref, ep)
-            r = rate_hour(kind, wind, th.get(ep), th.get(ep + 3600), surf, normal, mouth)
+            cur = current_at(cur_events, ep) if sid in CURRENT_SHOWN else None
+            r = rate_hour(kind, wind, th.get(ep), th.get(ep + 3600), surf, normal, mouth,
+                          cur if sid in CURRENT_SCORED else None)
             h = {"t": C.to_iso(ep), "windKt": round(wind[0]) if wind else None,
                  "windFrom": round(wind[1]) if wind else None,
                  "windGustKt": round(wind[2]) if wind and wind[2] is not None else None,
                  "tideFt": round(th[ep], 2) if ep in th else None, **r}
+            if cur:
+                h["current"] = cur
             if surf:
                 h.update(faceFt=surf["faceFt"], hsM=surf.get("hsM"), tpS=surf.get("tpS"), dpDeg=surf.get("dpDeg"))
             hours.append(h)
         spot = {"id": sid, "name": name, "lat": lat, "lon": lon, "kind": kind, "mouth": mouth,
                 "tideStation": st, "surfRef": ref_id if ref else None, "shoreNormal": normal,
+                "currentStation": CURRENT_STATION if sid in CURRENT_SHOWN else None,
+                "currentScored": sid in CURRENT_SCORED,
                 "hours": hours, "best": best_windows(hours, sun)}
         if note:
             spot["note"] = note
         spots.append(spot)
     return {
         "generatedAt": now.isoformat(timespec="minutes"), "staleAfterHours": 30, "label": "Rule of thumb",
-        "about": "Paddle rating: a rule of thumb from wind and gusts, surf to launch through (open beaches) and a "
-                 "falling tide near harbour or lagoon mouths. Not verified against paddler reports. No tidal-current "
-                 "data yet.",
-        "sources": "Wind: ECMWF via Open-Meteo. Tides: NOAA CO-OPS 9410230 La Jolla, 9410170 San Diego Bay. "
-                   "Surf: Surftracker model (CDIP MOP). Spot positions: © OpenStreetMap contributors (ODbL).",
+        "windNote": wind_note, "waterTemp": wt,
+        "sources": "Wind: ECMWF via Open-Meteo. Tides and currents: NOAA CO-OPS predictions. Water: CDIP. "
+                   "Surf: Surftracker model. Spot positions: © OpenStreetMap contributors.",
+        "currentStationName": "San Diego Bay Entrance",
         "tides": {st: {"name": TIDE_NAMES[st], "hourly": [[C.to_iso(t), round(v, 2)] for t, v in sorted(tides[st][0].items())],
                        "hilo": tides[st][1]} for st in tides},
         "sun": sun,

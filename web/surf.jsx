@@ -611,8 +611,10 @@ function SurfWave({ size }) {
 }
 
 function SurftrackerHeader({ sub, navigate }) {
-  const paddle = sub === 'paddle';
-  const tabs = paddle ? [['paddle', 'Paddle report']] : [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map'], ['cams', 'Cams']];
+  const paddle = sub === 'paddle' || sub === 'races';
+  const tabs = paddle
+    ? [['paddle', 'Paddle report']].concat(window.PaddleRaces ? [['races', 'Races']] : [])
+    : [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map'], ['cams', 'Cams']];
   const active = sub === 'break' ? 'forecast' : sub;
   return (
     <header className="st-header">
@@ -1050,10 +1052,9 @@ function SurfEssentials({ data, b, h, ms, compact, nowLabel, region }) {
     return (
       <span className="sf-es-mini">
         {compact !== 'ws' && tide != null && <span title={`Tide at La Jolla${nextTxt ? '; next ' + nextTxt : ''}`}>Tide {tide.toFixed(1)}{rising ? '↑' : '↓'}</span>}
-        <span className={wcls} title={wNote || ''}>{hasWind ? <>{arr(h.windFrom)}{h.windKt} kt{h.windGustKt ? ` g${h.windGustKt}` : ''}{h.windType ? ' ' + h.windType : ''}</> : 'Wind —'}</span>
+        <span className={wcls} title={wNote || ''}>{hasWind ? <>{arr(h.windFrom)}{h.windKt} kt{h.windGustKt ? ` g${h.windGustKt}` : ''} {h.windType}</> : 'Wind —'}</span>
         {compact !== 'ws' && wt && <span title={`CDIP buoy ${wt.station}`}>{wt.f}°F</span>}
-        {compact === 'pc' && h.faceFt ? <span title="Surf at the beach (face height)">Surf {h.faceFt[0]}–{h.faceFt[1]} ft</span>
-          : swellFt && <span title="Swell just offshore (not surf height)">Swell {swellFt} ft {Math.round(h.tpS)} s</span>}
+        {swellFt && <span title="Swell just offshore (not surf height)">Swell {swellFt} ft {Math.round(h.tpS)} s</span>}
       </span>
     );
   }
@@ -1069,7 +1070,7 @@ function SurfEssentials({ data, b, h, ms, compact, nowLabel, region }) {
       {!region && <div className={`sf-es-tile ${wcls}`}>
         <span className="sf-es-k">Wind</span>
         <b>{hasWind ? <>{arr(h.windFrom)}{h.windKt} kt</> : '—'} {hasWind && h.windGustKt != null && <small>gusts {h.windGustKt}</small>}</b>
-        <span className="sf-es-s">{hasWind ? `from ${sfDir(h.windFrom)}${h.windType ? ` · ${h.windType}${b ? ' here' : ''}` : ''}` : 'No wind forecast'}</span>
+        <span className="sf-es-s">{hasWind ? `from ${sfDir(h.windFrom)} · ${h.windType}${b ? ' here' : ''}` : 'No wind forecast'}</span>
         <span className="sf-es-src">{wNote || 'ECMWF model'}</span>
       </div>}
       <div className="sf-es-tile">
@@ -1081,8 +1082,8 @@ function SurfEssentials({ data, b, h, ms, compact, nowLabel, region }) {
       {!region && <div className="sf-es-tile sf-es-swell">
         <span className="sf-es-k">Swell</span>
         <b>{swellFt ? <>{arr(h.dpDeg)}{swellFt} ft</> : '—'} {swellFt && <small>{Math.round(h.tpS)} s</small>}</b>
-        <span className="sf-es-s">{swellFt ? `from ${sfDir(h.dpDeg)} ${Math.round(h.dpDeg)}°` : b && b.kind && b.kind !== 'coast' ? 'Sheltered: no ocean swell' : ''}</span>
-        <span className="sf-es-src">{h && h.faceFt ? `Surf ${h.faceFt[0]}–${h.faceFt[1]} ft (face)` : ''}</span>
+        <span className="sf-es-s">{swellFt ? `from ${sfDir(h.dpDeg)} ${Math.round(h.dpDeg)}°` : ''}</span>
+        <span className="sf-es-src">{h ? `Surf ${h.faceFt[0]}–${h.faceFt[1]} ft (face)` : ''}</span>
       </div>}
     </div>
   );
@@ -1253,11 +1254,6 @@ function SurfCompass({ b, sun, title, data }) {
           </button>
         ))}
       </div>
-      <p className="st-fine">
-        Arrows show where swell and wind come from, pointing at the break; the shaded fan is the swell window this beach is
-        open to. Swell is the model's swell just offshore (CDIP MOP point, refraction included); surf is breaking face height.
-        Wind colours: green offshore or glassy, amber cross or light onshore, red onshore. No current data yet, so no current arrow.
-      </p>
     </section>
   );
 }
@@ -1350,7 +1346,6 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         <div className="st-panel">
           <div className="sf-sec-h">Wind · {dayObj ? dayObj.label : ''}</div>
           <SurfWind steps={steps} sun={data.sun}/>
-          <p className="st-fine">Green: glassy or offshore. Amber: cross or light onshore. Red: onshore. Arrows point where the wind blows.</p>
         </div>
         <div className="st-panel">
           <div className="sf-sec-h">Tide · La Jolla{!b.defaults && b.tideWindow ? ` · best ${b.tideWindow[0]} to ${b.tideWindow[1]} ft` : ''}</div>
@@ -1396,10 +1391,8 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
       <div className="st-panel">
         <div className="sf-sec-h">Details</div>
         <p className="st-fine">
-          Forecast at CDIP MOP point {b.mop} ({b.mopDepthM} m deep), then a breaking model to the beach.
-          {ref && ref.kgM ? ` Model breaker-height check: Hb ${ref.hbM.toFixed(1)} m (Komar–Gaughan ${ref.kgM.toFixed(1)} m), an internal step, not the surf height shown.` : ''}
-          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now, wave height offshore (not surf height): ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
-          {' '}Energy is the swell's power at the model point (about 100 kJ is small, 200–1000 kJ punchy).
+          Model point {b.mop} ({b.mopDepthM} m)
+          {buoy ? ` · Buoy ${buoy.station}: swell ${buoy.hsFt} ft · ${Math.round(buoy.tpS)} s ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}` : ''}
         </p>
       </div>
       {near.length > 0 && (
@@ -1582,186 +1575,23 @@ function SurfBreakCams({ spot, navigate }) {
   );
 }
 
-// ── Paddle mode (/sd/surf/paddle[/<spot>]) ────────────────────────────────
-// Stand-up paddling: api/v1/paddle_spots.json (src/surf/paddle.py). The
-// Good / OK / Hard rating is a rule of thumb from wind and gusts, surf to
-// launch through (open beaches) and a falling tide near harbour or lagoon
-// mouths; it is labelled as such. Water temperature is comfort advice only.
-const SF_PADDLE_KIND = { bay: 'Bay', harbour: 'Harbour', lagoon: 'Lagoon', coast: 'Beach' };
-function usePaddle() {
-  const [st, setSt] = useSfState({ data: null, error: false });
-  useSfEffect(() => {
-    let alive = true;
-    fetch('/api/v1/paddle_spots.json?h=' + new Date().toISOString().slice(0, 13))
-      .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then(d => { if (alive) setSt({ data: d, error: false }); })
-      .catch(() => { if (alive) setSt({ data: null, error: true }); });
-    return () => { alive = false; };
-  }, []);
-  return st;
-}
-function sfPaddleCold(f) {
-  if (f == null) return null;
-  if (f >= 70) return 'Warm: boardshorts or a spring suit is fine for falls';
-  if (f >= 64) return 'Spring suit or 2 mm if you expect to fall in';
-  if (f >= 58) return '3/2 wetsuit if you expect to fall in';
-  return 'Cold: full wetsuit, dress for immersion';
-}
-// Wind relative to the beach for open-coast spots (same sectors as the surf model); bays get none.
-function sfPaddleWindType(h, normal) {
-  if (h.windKt == null || h.windFrom == null) return 'unknown';
-  if (normal == null) return h.windKt < 4 ? 'glassy' : '';
-  if (h.windKt < 4) return 'glassy';
-  const rel = Math.abs(sfAngDiff(h.windFrom, normal + 180));
-  return rel <= 45 ? 'offshore' : rel < 135 ? 'cross' : 'onshore';
-}
-function sfPaddleNow(hours) {
-  const now = Date.now();
-  return hours.find(h => Date.parse(h.t) + 3600e3 > now) || hours[hours.length - 1];
-}
-function sfPaddleKey(label) { return label ? label.toLowerCase() : 'none'; }
-function sfPaddleWin(w) {
-  if (!w) return null;
-  return `${sfLocal(w.from, { hour: 'numeric' })}–${sfLocal(w.to, { hour: 'numeric' })}`;
-}
-function SurfPaddlePill({ label }) {
-  return <span className={`sf-pd-pill sf-pd-${sfPaddleKey(label)}`}>{label || '—'}</span>;
-}
-function sfPaddleDataFor(surf, paddle, s) {
-  // the shape SurfEssentials reads: tide from this spot's own station, water from the CDIP buoy
-  return { tides: (paddle.tides || {})[s.tideStation] || surf.tides, waterTemp: surf.waterTemp, nws: surf.nws, windNote: surf.windNote };
-}
-function sfPaddleH(h, s) {
-  return h ? Object.assign({}, h, { windType: sfPaddleWindType(h, s.shoreNormal) }) : h;
-}
-
-function SurfPaddlePage({ ctx, navigate }) {
-  const { data } = ctx;
-  const { data: pd, error } = usePaddle();
-  if (error) return <div className="sf-wrap"><h1 className="sf-title">Paddle report</h1><p className="sf-muted">The paddle forecast is unavailable right now.</p></div>;
-  if (!pd) return <div className="sf-wrap"><h1 className="sf-title">Paddle report</h1><p className="sf-muted">Loading paddle forecast…</p></div>;
-  const rows = pd.spots.map(s => {
-    const h = sfPaddleNow(s.hours);
-    const today = s.best && s.best.find(w => Date.parse(w.to) > Date.now());
-    return { s, h, today, rank: h && h.level != null ? h.level : -1 };
-  }).sort((a, b) => b.rank - a.rank || (b.today ? b.today.level : -1) - (a.today ? a.today.level : -1));
-  const wt = data.waterTemp;
-  return (
-    <div className="sf-wrap">
-      <SurfTopBar title="Paddle report" data={pd}>
-        <span className="sf-chip sf-chip-warn" title={pd.about}>Rule of thumb</span>
-      </SurfTopBar>
-      <SurfEssentials data={data} region nowLabel="now"/>
-      {wt && <p className="sf-pd-cold"><b>Water {wt.f}°F:</b> {sfPaddleCold(wt.f)}.</p>}
-      <section className="st-sec" aria-labelledby="sf-pd-h">
-        <div className="st-sec-head">
-          <h2 className="st-h2" id="sf-pd-h">Where to paddle now</h2>
-          <span className="sf-muted">Good / OK / Hard from wind and gusts, surf to launch through and tide at harbour and lagoon mouths.</span>
-        </div>
-        <ol className="sf-pd-list">
-          {rows.map(({ s, h, today }) => (
-            <li key={s.id}>
-              <a className="sf-pd-row" {...sfLinkProps(navigate, { sub: 'paddle', spot: s.id })}>
-                <span className="sf-pd-name">{s.name}<i>{SF_PADDLE_KIND[s.kind]}{s.tideStation === '9410170' ? ' · SD Bay tide' : ''}</i></span>
-                <SurfPaddlePill label={h && h.label}/>
-                <span className="sf-pd-why">{h ? h.reason : ''}</span>
-                <span className="sf-pd-meta">
-                  {h && <SurfEssentials data={sfPaddleDataFor(data, pd, s)} h={sfPaddleH(h, s)} ms={Date.parse(h.t)} compact={s.kind === 'coast' ? 'pc' : 'pb'}/>}
-                  {today && <small>Best {sfLocal(today.from, { weekday: 'short' })} {sfPaddleWin(today)} · {today.label}</small>}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </section>
-      <p className="st-fine">{pd.about} {pd.sources}</p>
-    </div>
-  );
-}
-
-function SurfPaddleSpot({ ctx, navigate, spot }) {
-  const { data } = ctx;
-  const { data: pd, error } = usePaddle();
-  const [day, setDay] = useSfState(null);
-  useSfEffect(() => { window.scrollTo(0, 0); }, [spot]);
-  if (error) return <div className="sf-wrap"><p className="sf-muted">The paddle forecast is unavailable right now.</p></div>;
-  if (!pd) return <div className="sf-wrap"><p className="sf-muted">Loading paddle forecast…</p></div>;
-  const s = pd.spots.find(x => x.id === spot);
-  if (!s) return <div className="sf-wrap"><h1 className="sf-title">Spot not found</h1><p className="sf-muted"><a {...sfLinkProps(navigate, { sub: 'paddle' })}>All paddle spots →</a></p></div>;
-  const h = sfPaddleH(sfPaddleNow(s.hours), s);
-  const dd = sfPaddleDataFor(data, pd, s);
-  const days = (s.best || []).filter(w => Date.parse(w.to) > Date.now() - 12 * 3600e3);
-  const dk = day || (days[0] && days[0].date);
-  const sun = (pd.sun || []).find(x => x.date === dk);
-  const steps = s.hours.filter(x => sun && Date.parse(x.t) >= Date.parse(sun.sunrise) - 3600e3 && Date.parse(x.t) <= Date.parse(sun.sunset));
-  const ref = s.surfRef && (ctx.all || []).find(b => b.id === s.surfRef);
-  return (
-    <div className="sf-wrap st-break">
-      <a className="st-crumb" {...sfLinkProps(navigate, { sub: 'paddle' })}>← All paddle spots</a>
-      <div className="sf-top">
-        <h1 className="sf-title">{s.name}</h1>
-        <span className="sf-chip sf-chip-warn" title={pd.about}>Rule of thumb</span>
-      </div>
-      <p className="sf-muted st-sub">{SF_PADDLE_KIND[s.kind]} · tide: NOAA {(pd.tides[s.tideStation] || {}).name || s.tideStation}
-        {s.shoreNormal != null ? ` · faces ${sfDir(s.shoreNormal)}` : ' · sheltered from ocean swell'}
-        {' · updated '}{sfLocal(pd.generatedAt, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</p>
-      <div className={`sf-pd-now sf-pd-${sfPaddleKey(h && h.label)}`}>
-        <span className="sf-es-k">Paddle now</span>
-        <b><SurfPaddlePill label={h && h.label}/> {h ? h.reason : ''}</b>
-        {data.waterTemp && <span className="sf-es-s">Water {data.waterTemp.f}°F: {sfPaddleCold(data.waterTemp.f)}.</span>}
-      </div>
-      <SurfEssentials data={dd} b={s} h={h} ms={h ? Date.parse(h.t) : null} nowLabel="now"/>
-      {s.note && <p className="sf-pd-note" role="note">{s.note}</p>}
-      {ref && <p className="sf-muted">Surf at this beach: <a {...sfLinkProps(navigate, { sub: 'break', spot: ref.id })}>{ref.name} surf forecast →</a></p>}
-
-      <div className="st-panel">
-        <div className="sf-sec-h">Best paddle window by day</div>
-        <ul className="sf-pd-days">
-          {days.map(w => (
-            <li key={w.date}>
-              <button type="button" className={`sf-pd-day${w.date === dk ? ' on' : ''}`} onClick={() => setDay(w.date)}>
-                <span className="sf-pd-d">{sfLocal(w.from, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                <SurfPaddlePill label={w.label}/>
-                <span className="sf-pd-t">{sfPaddleWin(w)}</span>
-                <span className="sf-pd-r">{w.reason}{w.worseAfter ? ` Worse after ${sfLocal(w.to, { hour: 'numeric' })}.` : ''}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="st-panel">
-        <div className="sf-sec-h">Hour by hour · {sun ? sfLocal(sun.sunrise, { weekday: 'long' }) : ''} (daylight)</div>
-        <div className="sf-pd-hours" role="table" aria-label={`${s.name} paddle conditions by hour`}>
-          {steps.map(x => (
-            <div key={x.t} role="row" className="sf-pd-hr">
-              <span className="sf-pd-hr-t">{sfLocal(x.t, { hour: 'numeric' })}</span>
-              <SurfPaddlePill label={x.label}/>
-              <span className="sf-pd-hr-w">{x.windKt != null ? `${sfDir(x.windFrom)} ${x.windKt} kt${x.windGustKt != null ? ` g${x.windGustKt}` : ''}` : '—'}</span>
-              <span className="sf-pd-hr-x">{x.tideFt != null ? `tide ${x.tideFt.toFixed(1)}` : ''}{x.faceFt ? ` · surf ${x.faceFt[0]}–${x.faceFt[1]}` : ''}</span>
-              <span className="sf-pd-hr-r">{x.reason}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <p className="st-fine">{pd.about} {pd.sources}</p>
-    </div>
-  );
-}
-
 function SurfView({ navigate, sub, spot }) {
   const ctx = useSurfAll();
   const [favs, toggleFav] = useSurfFavs();
   const [spotsTried, setSpotsTried] = useSfState(false);
   useSfEffect(() => { const t = setTimeout(() => setSpotsTried(true), 4000); return () => clearTimeout(t); }, []);
   const { data, error } = ctx;
+  if (sub === 'paddle' && window.PaddleView) {
+    return <window.PaddleView spot={spot}
+                              link={id => sfLinkProps(navigate, id ? { sub: 'paddle', spot: id } : { sub: 'paddle' })}
+                              surfLink={id => sfLinkProps(navigate, { sub: 'break', spot: id })}/>;
+  }
   if (error) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
   if (!data) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">Loading surf forecast…</p></div>;
   const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
   const page = sub === 'forecast' ? <SurfForecastPage {...props}/>
     : sub === 'map' ? <SurfMapPage {...props}/>
     : sub === 'cams' ? <SurfCamsPage {...props} camId={spot}/>
-    : sub === 'paddle' ? (spot ? <SurfPaddleSpot {...props} spot={spot}/> : <SurfPaddlePage {...props}/>)
     : sub === 'break' && spot ? <SurfBreakPage {...props} spot={spot}/>
     : <SurfReport {...props}/>;
   // NWS surf alerts banner (surf-nws.jsx) above every Surftracker tab.

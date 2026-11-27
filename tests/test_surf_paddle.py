@@ -58,3 +58,31 @@ def test_paddle_spots_are_unique_and_coast_spots_name_a_surf_spot():
         assert s[4] in ("bay", "harbour", "lagoon", "coast")
         assert (s[6] in surf_ids) if s[4] == "coast" else s[6] is None
         assert 32.5 < s[2] < 33.3 and -117.45 < s[3] < -117.1
+
+
+EV = [{"t": "2026-11-28T00:00+00:00", "type": "slack", "kt": 0.0, "towardDeg": None},
+      {"t": "2026-11-28T03:00+00:00", "type": "ebb", "kt": 2.4, "towardDeg": 173},
+      {"t": "2026-11-28T06:00+00:00", "type": "slack", "kt": 0.0, "towardDeg": None}]
+
+
+def _ep(iso):
+    from datetime import datetime
+    return int(datetime.fromisoformat(iso).timestamp())
+
+
+def test_current_at_eases_from_slack_to_max_ebb():
+    assert P.current_at(EV, _ep("2026-11-28T00:00+00:00"))["type"] == "slack"
+    mid = P.current_at(EV, _ep("2026-11-28T01:30+00:00"))
+    assert mid["type"] == "ebb" and 1.0 <= mid["kt"] <= 1.4 and mid["towardDeg"] == 173
+    peak = P.current_at(EV, _ep("2026-11-28T03:00+00:00"))
+    assert peak["kt"] == 2.4
+    assert P.current_at(EV, _ep("2026-11-28T09:00+00:00")) is None
+
+
+def test_ebb_current_scores_at_bay_entrance_spots():
+    hard = P.rate_hour("bay", (4, 300, 5), 4.0, 3.2, None, None, True, {"kt": 2.2, "type": "ebb", "towardDeg": 173})
+    assert hard["label"] == "Hard" and "ebb current about 2.2 kt" in hard["reason"].lower()
+    ok = P.rate_hour("bay", (4, 300, 5), 4.0, 3.2, None, None, True, {"kt": 1.1, "type": "ebb", "towardDeg": 173})
+    assert ok["label"] == "OK" and "outgoing tide" not in ok["reason"]   # real current replaces the tide proxy
+    calm = P.rate_hour("bay", (4, 300, 5), 4.0, 3.2, None, None, True, {"kt": 0.3, "type": "flood", "towardDeg": 355})
+    assert calm["label"] == "Good"
