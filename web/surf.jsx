@@ -350,7 +350,8 @@ function SurfStrip({ b, days, dayKey, sun, onDay }) {
             <span className="sf-bars">
               {steps.map(h => {
                 const night = !sfIsDay(h.t, sun);
-                const mid = (h.faceFt[0] + h.faceFt[1]) / 2;
+                // faceMidFt (round 8) is the unrounded mid face; older files fall back to the band mid
+                const mid = h.faceMidFt != null ? h.faceMidFt : (h.faceFt[0] + h.faceFt[1]) / 2;
                 const pMid = Math.min(100, mid / scaleFt * 100);
                 const pHi = Math.min(100, h.faceFt[1] / scaleFt * 100);
                 const key = sfRateKey(h.label);
