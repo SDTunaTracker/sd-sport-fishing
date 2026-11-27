@@ -38,6 +38,12 @@ function sfFracClock(f) {
 const SF_COMPASS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 function sfDir(d) { return d == null ? '' : SF_COMPASS[Math.round(((d % 360) + 360) % 360 / 22.5) % 16]; }
 
+// "Sets to X ft": hours[].setsFt is the H1/10 bigger-waves height (1.27 x breaking
+// height), the same statistic as NWS San Diego's "with sets to X ft". Shown only
+// when it tops the band.
+function sfSets(h) { return h && h.setsFt != null && h.faceFt && h.setsFt > h.faceFt[1] ? h.setsFt : null; }
+function sfSetsTxt(h, unit) { const x = sfSets(h); return x == null ? '' : ` · sets to ${x}${unit === false ? '' : ' ft'}`; }
+
 function sfBand(lo, hi) {
   const m = (lo + hi) / 2;
   if (m < 1) return 'flat';
@@ -319,7 +325,7 @@ function SurfMap({ breaks, best, open, onPick }) {
         iconSize: b.defaults ? [11, 11] : [16, 16], iconAnchor: b.defaults ? [5.5, 5.5] : [8, 8],
       });
       L.marker([b.lat, b.lon], { icon, title: b.name, keyboard: true, zIndexOffset: open === b.id ? 1000 : 0 })
-        .bindTooltip(`<b>${b.name}</b> surf ${txt} ft${bw ? ' · ' + sfTitle(bw.h.label) : ''}${b.defaults ? ' · default settings' : ''}`,
+        .bindTooltip(`<b>${b.name}</b> surf ${txt} ft${bw ? sfSetsTxt(bw.h, false) : ''}${bw ? ' · ' + sfTitle(bw.h.label) : ''}${b.defaults ? ' · default settings' : ''}`,
                      { direction: 'left', offset: [-8, 0], className: 'sf-tip' })
         .on('click', () => onPick(b.id))
         .addTo(layer.current);
@@ -408,7 +414,7 @@ function SurfStrip({ b, days, dayKey, sun, onDay }) {
                 const key = sfRateKey(h.label);
                 return (
                   <span key={h.t} className={`sf-bar${night ? ' night' : ''}`}
-                        title={`${sfLocal(h.t, { weekday: 'short', hour: 'numeric' })} · ${h.faceFt[0]}–${h.faceFt[1]} ft · ${sfTitle(h.label)}${h.windKt != null ? ` · wind ${h.windKt} kt ${h.windType}` : ''}`}>
+                        title={`${sfLocal(h.t, { weekday: 'short', hour: 'numeric' })} · ${h.faceFt[0]}–${h.faceFt[1]} ft${sfSetsTxt(h, false)} · ${sfTitle(h.label)}${h.windKt != null ? ` · wind ${h.windKt} kt ${h.windType}` : ''}`}>
                     <span className={`sf-bar-hi sf-c-${key}`} style={{ height: pHi + '%' }}/>
                     <span className={`sf-bar-mid sf-c-${key}`} style={{ height: Math.max(pMid, mid > 0 ? 3 : 0) + '%' }}/>
                   </span>
@@ -435,7 +441,7 @@ function SurfSlot({ h, label, def }) {
       <span className="sf-face" title="Surf height: breaking wave face at the beach">{lo === hi ? lo : `${lo}–${hi}`}<small> ft</small>
         {h.energyKj != null && <em className="sf-kj" title="Wave energy at the model point, kJ (Surf-forecast.com scale: about 100 small, 200–1000 punchy)">{h.energyKj} kJ</em>}
       </span>
-      <span className="sf-band">{sfBand(lo, hi)}</span>
+      <span className="sf-band">{sfBand(lo, hi)}{sfSets(h) != null && <span className="sf-sets"> · sets to {sfSets(h)} ft</span>}</span>
       <span className={sfRatingClass(h.label)}>{sfTitle(h.label)}{h.faded ? ' · wind' : ''}</span>
       {def && <span className="sf-def-tag" title="Generic break settings, not tuned for this spot; rating capped at Fair">default settings</span>}
     </div>
@@ -454,7 +460,7 @@ function SurfBest({ bw, isToday, dayLabel }) {
       <span className="sf-best-k">{isToday ? 'Best window today' : `Best window ${dayLabel}`}</span>
       <span className="sf-best-t">{when}</span>
       <span className="sf-best-d">
-        {h.faceFt[0]}–{h.faceFt[1]} ft · <b>{sfTitle(h.label)}</b>
+        {h.faceFt[0]}–{h.faceFt[1]} ft{sfSetsTxt(h, false)} · <b>{sfTitle(h.label)}</b>
         {h.windKt != null ? ` · ${h.windKt} kt ${h.windType}` : ''}
         {h.tideFt != null ? ` · tide ${h.tideFt} ft` : ''}
       </span>
@@ -509,7 +515,7 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
             {steps.map(h => (
               <div key={h.t} className={`sf-step${sfIsDay(h.t, sun) ? '' : ' night'}`} role="row">
                 <span>{sfClock(h.t)}</span>
-                <span>{h.faceFt[0]}–{h.faceFt[1]} ft</span>
+                <span>{h.faceFt[0]}–{h.faceFt[1]} ft{sfSets(h) != null && <small className="sf-sets"> · sets {sfSets(h)}</small>}</span>
                 <span>{h.energyKj != null ? h.energyKj : '—'}</span>
                 <span>{h.windKt == null ? '—' : `${h.windKt} kt ${sfDir(h.windFrom)}`}</span>
                 <span>{h.tideFt == null ? '—' : h.tideFt}</span>
@@ -805,7 +811,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
               return (
                 <a key={b.id} className={`st-card st-card-${h ? sfRateKey(h.label) : 'none'}`} {...sfLinkProps(navigate, { sub: 'break', spot: b.id })}>
                   <span className="st-card-name">{b.name}</span>
-                  <span className="st-card-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
+                  <span className="st-card-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small>{sfSets(h) != null && <small className="st-sets">sets to {sfSets(h)} ft</small>}</span>
                   <span className={h ? sfRatingClass(h.label) : 'sf-rate'}>{h ? sfTitle(h.label) : '—'}</span>
                   {bw && bw.h.score >= 0.5 && <span className="st-card-bw">Best {sfFracClock(bw.from)}–{sfFracClock(bw.to)}</span>}
                 </a>
@@ -833,7 +839,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
                   <span className="st-rank-name">{b.name}
                     <i>{b.area}{b.defaults ? <em className="sf-def"> · default settings</em> : null}</i>
                   </span>
-                  <span className="st-rank-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
+                  <span className="st-rank-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small>{sfSets(h) != null && <small className="st-sets">sets to {sfSets(h)} ft</small>}</span>
                   <span className="st-rank-r">
                     {h ? <span className={sfRatingClass(h.label)}>{sfTitle(h.label)}</span> : '—'}
                     {!dark && next && h && sfRateKey(next.label) !== sfRateKey(h.label)
@@ -1062,7 +1068,7 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
           {steps.map(h => (
             <div key={h.t} className={`sf-step${sfIsDay(h.t, data.sun) ? '' : ' night'}`} role="row">
               <span>{sfClock(h.t)}</span>
-              <span>{h.faceFt[0]}–{h.faceFt[1]} ft</span>
+              <span>{h.faceFt[0]}–{h.faceFt[1]} ft{sfSets(h) != null && <small className="sf-sets"> · sets {sfSets(h)}</small>}</span>
               <span>{h.energyKj != null ? h.energyKj : '—'}</span>
               <span>{h.windKt == null ? '—' : `${h.windKt} kt ${sfDir(h.windFrom)}`}</span>
               <span>{h.tideFt == null ? '—' : h.tideFt}</span>
