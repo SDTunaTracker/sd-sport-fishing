@@ -574,20 +574,10 @@ function ReturnVisitToast({ navigate }) {
 function TodayView({ navigate, settings, regions }) {
   const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
 
-  // Today v2 (web/home.jsx → TodayReport): the date is the title, a one-line
-  // summary, a quiet species strip, then the ranked boat list. It shares the
-  // "vs usual" logic and row details with Home's counts block. No season
-  // leaderboard here (Home rail + Analytics have it), just a link.
-  // Simple answers (web/picker.jsx): plain "best trip" answers first, with a
-  // Simple / Detailed switch; Detailed is the full Today v2 report.
-  if (window.THTodayReport && window.TodaySimple) {
-    return (
-      <React.Fragment>
-        <ReturnVisitToast navigate={navigate}/>
-        <window.TodaySimple navigate={navigate} settings={settings} regions={regions} Report={window.THTodayReport}/>
-      </React.Fragment>
-    );
-  }
+  // Today (web/home.jsx → TodayReport) is the day report: the date is the
+  // title, a one-line summary, today's conditions, a quiet species strip,
+  // then every boat ranked. "Where to fish this week" lives on Home only
+  // (owner, 2026-11-27: each page holds its own purpose); Today links to it.
   if (window.THTodayReport) {
     return (
       <React.Fragment>
