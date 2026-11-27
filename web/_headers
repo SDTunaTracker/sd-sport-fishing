@@ -1,10 +1,10 @@
 /data.js
   Cache-Control: no-cache, must-revalidate
 
-# Older trips. Always requested as data-history.js?v=<content hash> (web/region-data.js),
-# so a cached copy never goes stale: a new file means a new URL.
+# Older trips (web/region-data.js). Revalidated with an ETag, so a repeat
+# visit costs a 304; a stale copy is detected by version and re-fetched.
 /data-history.js
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: no-cache, must-revalidate
 
 /data-region-*
   Cache-Control: no-cache, must-revalidate

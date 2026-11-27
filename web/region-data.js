@@ -120,20 +120,37 @@
     if (historyLoaded()) return Promise.resolve();
     if (hist.pending) return hist.pending;
     var m = histMeta();
-    hist.pending = new Promise(function (resolve, reject) {
-      if (window.SD_HISTORY && window.SD_HISTORY.v === m.v) {
-        try { mergeHistory(); resolve(); } catch (e) { reject(e); }
-        return;
-      }
+    function fresh() { return window.SD_HISTORY && window.SD_HISTORY.v === m.v; }
+    function fetchScript(src, resolve, reject) {
       var s = document.createElement('script');
-      s.src = m.file + '?v=' + encodeURIComponent(m.v || '');
+      s.src = src;
       s.async = true;
-      s.onload = function () {
-        try { mergeHistory(); resolve(); } catch (e) { reject(e); }
-      };
+      s.onload = function () { resolve(); };
       s.onerror = function () { reject(new Error('could not load ' + m.file)); };
       document.head.appendChild(s);
-    }).catch(function (e) {
+    }
+    // Plain URL first (revalidated with an ETag, so a repeat visit is a 304).
+    // index.html may already have started it in parallel with data.js on pages
+    // that need it (#tt-history-early). If what arrives is an older version
+    // (a stale cache), fetch once more with the version in the URL.
+    function plain() {
+      return new Promise(function (resolve, reject) {
+        var early = document.getElementById('tt-history-early');
+        if (early && window.__ttHistEarly === 1) return resolve();
+        if (early && !window.__ttHistEarly) {
+          early.addEventListener('load', function () { resolve(); });
+          early.addEventListener('error', function () { fetchScript(m.file, resolve, reject); });
+          return;
+        }
+        fetchScript(m.file, resolve, reject);
+      });
+    }
+    hist.pending = (fresh() ? Promise.resolve() : plain().then(function () {
+      if (fresh()) return;
+      return new Promise(function (resolve, reject) {
+        fetchScript(m.file + '?v=' + encodeURIComponent(m.v || ''), resolve, reject);
+      });
+    })).then(function () { mergeHistory(); }).catch(function (e) {
       hist.pending = null;   // allow a retry
       throw e;
     });

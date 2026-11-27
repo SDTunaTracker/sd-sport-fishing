@@ -886,9 +886,9 @@ _COLS_DECODER_JS = (
 # the current season). Older trips go to web/data-history.js, which
 # web/region-data.js starts loading right after data.js. Views that need every
 # year (Boats, boat/landing pages, Analytics, ...) wait for it; app.jsx lists
-# the ones that don't. The file name carries no hash, the URL does
-# (?v=<content hash> from SD.META.HISTORY), so it can be cached for a year and
-# only changes when old trips do. app.json and the generated pages still get
+# the ones that don't. index.html starts the download in parallel with data.js
+# on pages that need it. It's revalidated by ETag (a 304 on repeat visits);
+# SD.META.HISTORY.v tells the loader when a cached copy is out of date. app.json and the generated pages still get
 # every trip: only the data.js text is split.
 HISTORY_FILE = "data-history.js"
 
