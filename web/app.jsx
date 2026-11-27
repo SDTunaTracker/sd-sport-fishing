@@ -1,6 +1,17 @@
 // Main app — routing and tweaks wiring
 const { useState: useS, useEffect: useE } = React;
 
+// Run fn after the browser has painted the current frame (so a tap's pressed /
+// active state shows first). rAF alone runs before the paint; the timeout
+// covers background tabs, where rAF doesn't fire.
+function ttAfterPaint(fn) {
+  let done = false;
+  const go = () => { if (!done) { done = true; fn(); } };
+  requestAnimationFrame(() => setTimeout(go, 0));
+  setTimeout(go, 120);
+}
+window.ttAfterPaint = ttAfterPaint;
+
 // Lazy-load Leaflet + leaflet-velocity only when the charts route is first entered.
 // The script tags in index.html use type="text/javascript-deferred" so browsers
 // skip execution; we inject them dynamically here on first visit to charts.
@@ -153,6 +164,30 @@ function RegionLoading({ regions, error, onRetry, history }) {
       <div className="region-loading-title"><span className="region-loading-spinner" aria-hidden="true"></span>Loading {history ? 'past seasons of ' : ''}{label} fish counts…</div>
       <div className="region-loading-sub">{history ? 'Older trips download once, then stay on this device.' : 'One-time download for this region.'}</div>
       {window.SkeletonRows && <SkeletonRows count={6}/>}
+    </div>
+  );
+}
+
+// Views kept mounted by App's keep-alive. Hidden ones are display:none and
+// never re-render; the active one re-renders only when its props (or the
+// region-data tick) change, not on every App render (tab highlight, busy bar).
+const KEEP_ALIVE_MAX = 6;
+function _shallowSame(a, b) {
+  const ka = Object.keys(a), kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  for (const k of ka) if (a[k] !== b[k]) return false;
+  return true;
+}
+// Inner part: renders the view. Skips while hidden, and on show when nothing
+// it reads changed, so switching back to a kept tab only flips display.
+const KeptInner = React.memo(function KeptInner({ type, props }) {
+  return React.createElement(type, props);
+}, (prev, next) => next.hidden || (prev.type === next.type && prev.tick === next.tick
+  && _shallowSame(prev.props, next.props)));
+function KeptView({ active, type, props, tick }) {
+  return (
+    <div className="tt-kept" style={active ? undefined : { display: 'none' }}>
+      <KeptInner type={type} props={props} tick={tick} hidden={!active}/>
     </div>
   );
 }
@@ -382,9 +417,9 @@ function App() {
       // Same page (e.g. back out of the Charts layers sheet's history entry,
       // or navigate()'s belt-and-braces popstate): keep the same route object
       // so the whole app doesn't re-render. That cost ~0.5 s on a mid phone.
-      setRoute(prev => (prev && prev.view === parsed.view &&
+      React.startTransition(() => setRoute(prev => (prev && prev.view === parsed.view &&
         JSON.stringify(prev.params || {}) === JSON.stringify(parsed.params || {}))
-        ? prev : { view: parsed.view, params: parsed.params });
+        ? prev : { view: parsed.view, params: parsed.params }));
       if (parsed.hashRegions) {
         setRegions(prev => {
           const same = parsed.hashRegions.length === prev.length &&
@@ -491,34 +526,62 @@ function App() {
   // Admin moved to /owner/admin/ behind Cloudflare Access (no client-side password,
   // no admin data in data.js). Old #admin / /sd/admin links redirect there.
   // Must be after all hooks (React rules: no conditional hooks).
+  // Tab switching (see navigate() below). Hooks live here, above the admin
+  // early return.
+  const [pendingRoute, setPendingRoute] = useS(null);
+  const keepAlive = React.useRef(new Map());   // App's keep-alive (KeptView)
+  // One function for every render, so views kept mounted (KeepAlive) don't
+  // re-render just because App did.
+  const navigateRef = React.useRef(null);
+  const stableNavigate = React.useCallback((v, p) => navigateRef.current(v, p), []);
+  // When the new view has committed: drop the pending highlight and the bar,
+  // and show it from the top (not on the first render).
+  const routeSeen = React.useRef(false);
+  React.useLayoutEffect(() => {
+    setPendingRoute(null);
+    setNavBusy(false);
+    window.clearTimeout(window.__ttNavBusyTimer);
+    if (routeSeen.current) window.scrollTo({ top: 0, behavior: 'instant' });
+    routeSeen.current = true;
+  }, [route]);
+
   if (route.view === 'admin') { window.location.replace('/owner/admin/'); return null; }
 
+  // Tab and page switches answer the tap in the next frame: navigate() first
+  // sets only pendingRoute (the tab highlight) and the top progress bar, the
+  // browser paints that, and only then is the new view rendered, as a React
+  // transition so a long render yields to further taps. Measured on a 4x
+  // throttled phone, the tap used to wait for the whole new view (up to
+  // seconds on Boats or Analytics) before anything on screen changed.
   const navigate = (view, params = {}) => {
     const nextPath = pathFromRoute(view, params, regions);
     const changing = nextPath !== window.location.pathname || view !== route.view;
     if (changing) {
-      // Flash a top progress bar so mobile users know the tap registered
-      // while the new page renders. Timer restarts on rapid re-taps.
+      setPendingRoute({ view, params });
       setNavBusy(true);
       window.clearTimeout(window.__ttNavBusyTimer);
-      window.__ttNavBusyTimer = window.setTimeout(() => setNavBusy(false), 500);
+      // Safety net only; the route effect below clears it when the view commits.
+      window.__ttNavBusyTimer = window.setTimeout(() => setNavBusy(false), 8000);
     }
     if (window.location.pathname !== nextPath) {
       history.pushState(null, '', nextPath); // pushState does not fire popstate
       // Charts' "Exit map" goes back only when the previous entry is ours.
       window.__ttInAppNavs = (window.__ttInAppNavs || 0) + 1;
+    }
+    ttAfterPaint(() => {
       // Belt-and-suspenders: some mobile browsers dropped the setRoute() call
-      // below when it came right after a preventDefault()+pushState on an
-      // <a href> touch click, leaving the URL updated but the view stale
-      // until a manual refresh. Firing popstate manually makes the router's
-      // onPop handler (which also calls setRoute via applyParsed) run as a
-      // second, independent path so the view can't stay behind the URL.
+      // when it came right after a preventDefault()+pushState on an <a href>
+      // touch click, leaving the URL updated but the view stale until a
+      // manual refresh. Firing popstate makes the router's onPop handler
+      // (applyParsed) a second, independent path, so the view can't stay
+      // behind the URL. Both now run after the tap's feedback has painted.
       try { window.dispatchEvent(new PopStateEvent('popstate')); }
       catch (e) { /* PopStateEvent unsupported on very old browsers; ignore */ }
-    }
-    setRoute({ view, params });
-    window.scrollTo({ top: 0, behavior: 'instant' });
+      React.startTransition(() => setRoute(prev => (prev && prev.view === view &&
+        JSON.stringify(prev.params || {}) === JSON.stringify(params || {})) ? prev : { view, params }));
+    });
   };
+  navigateRef.current = navigate;
 
   // Map nav tab id -> navigate() view
   const navMap = {
@@ -532,25 +595,25 @@ function App() {
   const isSurf = route.view === 'surf' && !isSfbay;
   let content;
   if (isSfbay && route.view !== 'account') {
-    content = <SFBayView view={route.view} params={route.params || {}} navigate={navigate}/>;
+    content = <SFBayView view={route.view} params={route.params || {}} navigate={stableNavigate}/>;
   } else if (route.view === 'home') {
-    content = <HomeView navigate={navigate} settings={settings} regions={regions}/>;
+    content = <HomeView navigate={stableNavigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'today') {
-    content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
+    content = <TodayView navigate={stableNavigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'surf' && window.SurfView) {
-    content = <SurfView navigate={navigate} sub={route.params.sub || 'report'} spot={route.params.spot || ''}/>;
+    content = <SurfView navigate={stableNavigate} sub={route.params.sub || 'report'} spot={route.params.spot || ''}/>;
   } else if (route.view === 'pick' && window.PickTripView) {
-    content = <PickTripView navigate={navigate} regions={regions}/>;
+    content = <PickTripView navigate={stableNavigate} regions={regions}/>;
   } else if (route.view === 'analytics') {
-    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions} subtab={route.params.subtab || 'overview'}/>;
+    content = <AnalyticsView filters={filters} setFilters={setFilters} navigate={stableNavigate} tweaks={tweaks} settings={settings} regions={regions} subtab={route.params.subtab || 'overview'}/>;
   } else if (route.view === 'boats') {
-    content = <BoatsView filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} settings={settings} regions={regions}/>;
+    content = <BoatsView filters={filters} setFilters={setFilters} navigate={stableNavigate} tweaks={tweaks} settings={settings} regions={regions}/>;
   } else if (route.view === 'boat') {
-    content = <BoatDetail filters={filters} setFilters={setFilters} navigate={navigate} boat={route.params.boat} regions={regions}/>;
+    content = <BoatDetail filters={filters} setFilters={setFilters} navigate={stableNavigate} boat={route.params.boat} regions={regions}/>;
   } else if (route.view === 'landing') {
-    content = <LandingDetail filters={filters} setFilters={setFilters} navigate={navigate} landing={route.params.landing} regions={regions}/>;
+    content = <LandingDetail filters={filters} setFilters={setFilters} navigate={stableNavigate} landing={route.params.landing} regions={regions}/>;
   } else if (route.view === 'tripplanner') {
-    content = <TripPlanner filters={filters} setFilters={setFilters} navigate={navigate} tweaks={tweaks} regions={regions}/>;
+    content = <TripPlanner filters={filters} setFilters={setFilters} navigate={stableNavigate} tweaks={tweaks} regions={regions}/>;
   } else if (route.view === 'forecast') {
     // Forecast page soft-retired (2026-09-06). Rewrite the URL hash to
     // #charts and render Charts. Route entry + ForecastView import kept
@@ -559,15 +622,15 @@ function App() {
       try { window.history.replaceState(null, '', '#charts'); } catch (e) {}
     }
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
+      ? <ChartsView navigate={stableNavigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'charts') {
     content = chartsReady
-      ? <ChartsView navigate={navigate} settings={settings} regions={regions}/>
+      ? <ChartsView navigate={stableNavigate} settings={settings} regions={regions}/>
       : <div className="charts-map-loading"><div className="charts-map-loading-text">Loading map…</div></div>;
   } else if (route.view === 'account') {
     content = <MyAccountView settings={settings} onSettingsChange={onSettingsChange}
-                              regions={regions} onRegionsDirect={setRegionsDirect} navigate={navigate}/>;
+                              regions={regions} onRegionsDirect={setRegionsDirect} navigate={stableNavigate}/>;
   }
 
   if (!regionDataReady && route.view !== 'account' && route.view !== 'surf') {
@@ -578,21 +641,47 @@ function App() {
                              onRetry={() => setHistoryRetry(t => t + 1)}/>;
   }
 
-  const headerActive = route.view === 'boat' ? 'boats'
-    : route.view === 'pick' ? 'today'
-    : (isSfbay && route.view === 'home') ? 'today'
-    : route.view === 'landing' ? (isSfbay ? 'landings' : 'analytics')
-    : route.view;
+  // The header highlights the tab being opened right away (pendingRoute),
+  // before the view itself has rendered.
+  const shown = pendingRoute || route;
+  const headerActive = shown.view === 'boat' ? 'boats'
+    : shown.view === 'pick' ? 'today'
+    : (isSfbay && shown.view === 'home') ? 'today'
+    : shown.view === 'landing' ? (isSfbay ? 'landings' : 'analytics')
+    : shown.view;
+
+  // Keep the last few views mounted (hidden) so switching back is instant:
+  // no recompute over every trip, no new Leaflet map. Loading panels, the
+  // account page and SF Bay render as before.
+  const keepKey = (content && typeof content.type === 'function'
+    && content.type !== RegionLoading
+    && !(typeof MyAccountView !== 'undefined' && content.type === MyAccountView)
+    && !(typeof SFBayView !== 'undefined' && content.type === SFBayView))
+    // Region and settings are part of the key: several views compute things
+    // once per mount (useMemo with []), so a different region or new settings
+    // gets a fresh instance, as a remount always did.
+    ? [route.view, JSON.stringify(route.params || {}), regions.join(','), JSON.stringify(settings)].join(' ') : null;
+  if (keepKey) {
+    const m = keepAlive.current;
+    m.delete(keepKey);
+    m.set(keepKey, { type: content.type, props: content.props });
+    while (m.size > KEEP_ALIVE_MAX) m.delete(m.keys().next().value);
+  }
+  // Kept views stay mounted (hidden) even while a loading panel or an
+  // uncached page (Account) is showing.
+  const mainBody = [...keepAlive.current.entries()].map(([k, v]) => (
+    <KeptView key={k} active={k === keepKey} type={v.type} props={v.props} tick={regionDataTick}/>));
+  if (!keepKey && content) mainBody.push(<React.Fragment key="tt-uncached">{content}</React.Fragment>);
 
   return (
     <React.Fragment>
       <div className={`tt-nav-progress${navBusy ? ' on' : ''}`} aria-hidden="true"/>
       {isSurf && window.SurftrackerHeader
-        ? <SurftrackerHeader sub={route.params.sub || 'report'} navigate={navigate}/>
+        ? <SurftrackerHeader sub={(shown.view === 'surf' ? shown.params : route.params).sub || 'report'} navigate={stableNavigate}/>
         : <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
                      hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
                      regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>}
-      <main className={`main-content${isSurf ? ' st-main' : ''}`} data-screen-label={route.view}>{content}</main>
+      <main className={`main-content${isSurf ? ' st-main' : ''}`} data-screen-label={route.view}>{mainBody}</main>
       {isSurf && window.SurftrackerFooter ? <SurftrackerFooter navigate={navigate}/>
         : isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
 

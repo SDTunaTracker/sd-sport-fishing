@@ -129,12 +129,11 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
 
   function handleNavItem(id) {
     setMenuState('closed');
-    // Yield one frame so the drawer visibly closes before the target route's
-    // (often heavy) first render blocks the main thread. Without this, React
-    // batches setMenuState with the target's setRoute + initial render into a
-    // single commit — the drawer stays on screen until the new page is fully
-    // mounted, and on mobile the tap feels dead until it suddenly jumps.
-    requestAnimationFrame(() => { onNavigate && onNavigate(id); });
+    // navigate() (app.jsx) only sets the tab highlight and progress bar now
+    // and renders the new page after the browser has painted, so the drawer
+    // closes in the same quick frame. (The old requestAnimationFrame here ran
+    // before that paint, so the drawer stayed up until the page rendered.)
+    onNavigate && onNavigate(id);
   }
 
   const currentChoice =
