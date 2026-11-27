@@ -13,7 +13,8 @@ Per break (src/surf/breaks.py), every 3 h for ~6 days:
      is the Battjes–Janssen random-wave max Hs (E12) × the spectral/bulk
      ratio (E8); face range 0.85–1.15 × that (no scale, round 6), in feet.
      Komar–Gaughan is reported as a cross-check.
-  4. Wind: Open-Meteo hourly 10 m wind (NOAA HRRR / GFS blend, `gfs_seamless`).
+  4. Wind: Open-Meteo hourly 10 m wind, ECMWF IFS 0.25° (round 7: best of four
+     models against the Scripps Pier anemometer); `gfs_seamless` as fallback.
   5. Tide: NOAA CO-OPS 9410230 La Jolla, hourly predictions + highs/lows.
   6. Rating 0–5 (methods note §5), capped at the break's potential and at
      FAIR–GOOD (3.74): a model can't call GOOD or EPIC without an observation.
@@ -83,6 +84,10 @@ VERIFICATION = {
                 "closely over 1,538 small mornings (rank correlation 0.94). Small-day face heights "
                 "are not yet checked against people's observations.",
     "leadNote": "Scores are short-lead. Skill by forecast day is being collected.",
+    "wind": "Wind model chosen against the Scripps Pier anemometer (NOAA LJPC1): over 2026 "
+            "mornings it got the wind type (glassy, offshore, cross or onshore) right about two "
+            "times in three, with a typical speed error of 2.6 kt. Wind at other breaks is not "
+            "checked.",
 }
 
 LABELS = ((0.5, "FLAT"), (1.5, "POOR"), (2.25, "POOR–FAIR"), (3.0, "FAIR"), (3.75, "FAIR–GOOD"),
@@ -128,14 +133,35 @@ def mop_series(point: str, kind: str, since: datetime) -> dict[int, tuple[float,
             if fl == 1 and 0 < hs < 20}
 
 
+# Round 7 (B5-1): vs NDBC LJPC1, TEST 2026 dawn hours, ECMWF IFS 0.25° got the
+# rating's wind category right 66% of the time vs 55% for gfs_seamless (chosen on
+# 2025 TRAIN, better in 22 of 23 months). Fallback keeps the page up if it fails.
+WIND_MODELS = ("ecmwf_ifs025", "gfs_seamless")
+
+
 def wind_hourly(breaks: list[dict]) -> list[dict[int, tuple[float, float, float]]]:
     """Per break {epoch hour: (speed kt, from deg, gust kt)} from Open-Meteo."""
+    last = None
+    for model in WIND_MODELS:
+        try:
+            out = _wind_hourly(breaks, model)
+            if any(out):
+                return out
+        except Exception as e:  # noqa: BLE001
+            last = e
+            log.warning("surf wind %s failed: %s", model, e)
+    if last:
+        raise last
+    return [{} for _ in breaks]
+
+
+def _wind_hourly(breaks: list[dict], model: str) -> list[dict[int, tuple[float, float, float]]]:
     js = _get_json("https://api.open-meteo.com/v1/forecast", {
         "latitude": ",".join(str(b["lat"]) for b in breaks),
         "longitude": ",".join(str(b["lon"]) for b in breaks),
         "hourly": "wind_speed_10m,wind_direction_10m,wind_gusts_10m",
         "wind_speed_unit": "kn", "timezone": "GMT", "forecast_days": 7, "past_days": 1,
-        "models": "gfs_seamless",
+        "models": model,
     })
     js = js if isinstance(js, list) else [js]
     out = []
@@ -406,9 +432,9 @@ def build(now: datetime | None = None) -> dict:
         "method": "CDIP MOP nearshore wave model (ECMWF and WW3 forced, blended and bias-corrected at the "
                   "buoys), then a random-wave shoaling and breaking model (Battjes–Janssen) from the "
                   "model's 10 m point to the beach, using each swell's own period and direction. "
-                  "Wind: Open-Meteo (NOAA HRRR/GFS). "
+                  "Wind: ECMWF IFS via Open-Meteo. "
                   "Tide: NOAA La Jolla 9410230.",
-        "credits": [C.CREDIT, "Wind: Open-Meteo.com (CC BY 4.0), NOAA HRRR/GFS",
+        "credits": [C.CREDIT, "Wind: Open-Meteo.com (CC BY 4.0), ECMWF IFS open data (CC BY 4.0)",
                     "Tides: NOAA CO-OPS", "Surf Zone Forecast: National Weather Service San Diego"],
         "verification": VERIFICATION, "breaks": breaks,
         "tides": {"station": TIDE_STATION, "name": "La Jolla", "hilo": hilo},
