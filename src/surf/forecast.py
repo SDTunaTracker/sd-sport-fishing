@@ -410,6 +410,7 @@ def break_forecast(b: dict, wind: dict, tide_h: dict, now: datetime) -> dict:
             "hbM": round(hb, 2), "kgM": round(kg, 2),
             "windKt": None if wnd[0] is None else round(wnd[0]),
             "windFrom": None if wnd[1] is None else round(wnd[1]),
+            "windGustKt": None if len(wnd) < 3 or wnd[2] is None else round(wnd[2]),
             "tideFt": None if tide_ft is None else round(tide_ft, 1),
             "conf": "high" if lead < 48 else "medium" if lead < 120 else "low", **r,
         }
