@@ -197,3 +197,15 @@ def test_sets_ratio_is_h1_10_and_scorecard_is_breaking_height():
     assert whos[0] == "Surftracker" and any("NWS" in w for w in whos)
     for r in card["rows"]:
         assert set(r) >= {"biasFt", "rmseFt", "within1_5"} and 0 <= r["within1_5"] <= 1
+
+
+def test_break_forecast_emits_wind_gusts(monkeypatch):
+    from datetime import datetime, timezone
+    from src.surf import forecast as F
+    t = 1795800000 - 1795800000 % 10800
+    monkeypatch.setattr(F, "mop_meta", lambda p: (270.0, 10.0))
+    monkeypatch.setattr(F, "mop_series", lambda p, k, s: {t: (1.0, 14.0, 270.0), t + 10800: (1.0, 14.0, 270.0)})
+    monkeypatch.setattr(F, "breaking_ratios", lambda *a, **k: {})
+    wind = {t: (6.0, 90.0, 11.6), t + 10800: (5.0, 80.0, None)}
+    out = F.break_forecast(BY_ID["ocean-beach"], wind, {}, datetime.fromtimestamp(t, timezone.utc))
+    assert [h["windGustKt"] for h in out["hours"]] == [12, None]
