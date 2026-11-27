@@ -46,6 +46,10 @@
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 
+/api/v1/met_grid.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
 /api/v1/buoys.json
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate

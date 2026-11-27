@@ -304,12 +304,64 @@ function _fetchWindGrid() {
     });
 }
 
+// ── Server-built wind/swell grids ─────────────────────────────────────────────
+// The hourly scrape writes web/api/v1/met_grid.json (src/met_grid.py) from the
+// same Open-Meteo data on the same grid, so the first Wind/Swell toggle reads
+// one small file from the CDN instead of waiting on Open-Meteo. Hour i of the
+// file is start + i h. Anything unexpected (missing, stale, other grid) falls
+// back to the direct Open-Meteo fetch below.
+var _metGridP = null;
+function _metGrid() {
+  if (!_metGridP) {
+    _metGridP = _withTimeout(fetch('/api/v1/met_grid.json', { cache: 'no-cache' }).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }), 4000, 'met grid').catch(function(e) { _metGridP = null; throw e; });
+  }
+  return _metGridP;
+}
+function _metHour(g) {
+  var G = g && g.grid;
+  if (!G || G.nx !== _WIND_NX || G.ny !== _WIND_NY || G.lo1 !== _WIND_LO1 || G.la1 !== _WIND_LA1
+      || G.dx !== _WIND_DX || G.dy !== _WIND_DY) throw new Error('met grid: different grid');
+  var i = Math.floor((Date.now() - Date.parse(g.start)) / 3600000);
+  if (!(i >= 0 && i < g.wind.speed.length)) throw new Error('met grid: no frame for this hour');
+  return i;
+}
+// Speeds/heights + "from" directions -> leaflet-velocity u/v (null = 0, as before).
+function _metUV(spd, dir) {
+  var u = [], v = [];
+  for (var k = 0; k < spd.length; k++) {
+    var s = spd[k] || 0, rad = (dir[k] || 0) * Math.PI / 180;
+    u.push(-(s * Math.sin(rad)));
+    v.push(-(s * Math.cos(rad)));
+  }
+  return [
+    { header: _buildWindHeader({ parameterNumber: 2 }), data: u },
+    { header: _buildWindHeader({ parameterNumber: 3 }), data: v },
+  ];
+}
+function _metWindGrid() {
+  return _metGrid().then(function(g) {
+    var i = _metHour(g);
+    return _metUV(g.wind.speed[i], g.wind.dir[i]);
+  });
+}
+function _metSwellGrid() {
+  return _metGrid().then(function(g) {
+    var i = _metHour(g), per = g.swell.period[i] || [], pSum = 0, pCnt = 0;
+    for (var k = 0; k < per.length; k++) if (per[k] > 0) { pSum += per[k]; pCnt++; }
+    return { velocityData: _metUV(g.swell.height[i], g.swell.dir[i]), avgPeriod: pCnt > 0 ? pSum / pCnt : 0 };
+  });
+}
+
 function getCachedWindGrid() {
   try {
     var c = JSON.parse(localStorage.getItem(_WIND_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _WIND_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _withTimeout(_fetchWindGrid(), 6000, 'wind')
+  return _metWindGrid()
+    .catch(function() { return _withTimeout(_fetchWindGrid(), 6000, 'wind'); })
     .then(function(data) {
       try { localStorage.setItem(_WIND_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
       return data;
@@ -525,7 +577,9 @@ function getCachedSwellGrid() {
     var c = JSON.parse(localStorage.getItem(_SWELL_CACHE_KEY) || 'null');
     if (c && Date.now() - c.ts < _SWELL_CACHE_TTL) return Promise.resolve(c.data);
   } catch(e) {}
-  return _withTimeout(_fetchSwellGrid(), 6000, 'swell').then(function(data) {
+  return _metSwellGrid().catch(function() {
+    return _withTimeout(_fetchSwellGrid(), 6000, 'swell');
+  }).then(function(data) {
     try { localStorage.setItem(_SWELL_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
     return data;
   });
