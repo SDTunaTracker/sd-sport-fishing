@@ -381,6 +381,9 @@ def break_forecast(b: dict, wind: dict, tide_h: dict, now: datetime) -> dict:
         row = {
             "t": C.to_iso(t),
             "faceFt": [max(0, math.floor(lo_ft)), max(0, math.ceil(hi_ft))],
+            # Unrounded mid face height: whole-foot bands hide day-to-day changes
+            # (round 8: a +7% Saturday rise drew the same 3–5 ft bar as Friday).
+            "faceMidFt": round(max(0.0, h_ft), 1),
             "hsM": round(hs, 2), "tpS": round(tp, 1), "dpDeg": round(dp),
             "hbM": round(hb, 2), "kgM": round(kg, 2),
             "windKt": None if wnd[0] is None else round(wnd[0]),

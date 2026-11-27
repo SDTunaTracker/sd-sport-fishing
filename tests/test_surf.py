@@ -179,3 +179,10 @@ def test_wind_falls_back_to_gfs_when_ecmwf_fails(monkeypatch):
     out = F.wind_hourly([{"lat": 0, "lon": 0}])
     assert calls == ["ecmwf_ifs025", "gfs_seamless"]
     assert out == [{0: (5.0, 270.0, 8.0)}]
+
+
+def test_face_mid_is_unrounded_and_inside_band():
+    from src.surf.forecast import RANGE
+    lo, hi = 3.84 * RANGE[0], 3.84 * RANGE[1]
+    band = [max(0, math.floor(lo)), max(0, math.ceil(hi))]
+    assert band[0] <= round(3.84, 1) <= band[1]
