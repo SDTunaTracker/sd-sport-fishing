@@ -2,8 +2,11 @@
 """
 Verify that all JSX files in web/ are referenced in web/index.html,
 that version strings are recent (within 7 days), that no file
-exceeds the Cloudflare Pages 25 MiB per-file limit, and that no web
-file still contains git merge-conflict markers.
+exceeds the Cloudflare Pages 25 MiB per-file limit, that no web
+file still contains git merge-conflict markers, and that every shipped
+script (web/*.js, web/dist/*.js) parses (scripts/check-js-syntax.mjs), and
+that the pre-rendered pages use index.html's ?v= tags
+(scripts/sync-page-versions.py --check).
 
 Run before committing or as part of CI pre-flight.
 Exit code 0 = all good. Exit code 1 = problems found.
@@ -77,6 +80,28 @@ for fpath in sorted(web.rglob("*")):
         line = body.count(chr(10), 0, m.start()) + 1
         conflicted.append((fpath.relative_to(web.parent), line))
 
+# ── 5. Every shipped script must parse (web/*.js, web/dist/*.js) ─────────────
+# A syntax error in one file silently blanks every page that needs it (boat
+# pages, 2026-11-26). scripts/check-js-syntax.mjs prints the file, line and
+# caret; Node is required (the hook already needs it for esbuild).
+import shutil, subprocess
+syntax_fail = None
+node = shutil.which("node")
+if not node:
+    syntax_fail = "node not found on PATH, so the JS syntax check could not run. Install Node or add it to PATH."
+else:
+    r = subprocess.run([node, os.path.join(here, "check-js-syntax.mjs")], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if r.returncode != 0:
+        syntax_fail = (r.stderr or r.stdout).rstrip()
+
+# ── 6. Generated pages must use index.html's ?v= tags ────────────────────────
+# Pre-rendered pages copy the tags only when generate_pages.py runs, so after
+# a fix they can keep loading the broken file. bump-versions.py syncs them;
+# this catches anything that slipped past it.
+pv = subprocess.run([sys.executable, os.path.join(here, "sync-page-versions.py"), "--check"],
+                    capture_output=True, text=True, encoding="utf-8", errors="replace")
+page_versions_fail = pv.stdout.rstrip() if pv.returncode != 0 else None
+
 # ── Report ────────────────────────────────────────────────────────────────────
 fail = False
 
@@ -111,7 +136,21 @@ if conflicted:
     print("  Fix: resolve the conflict (keep both sides' <script> tags), then commit again.")
     fail = True
 
+if syntax_fail:
+    # The report has ❌/✗/… in it; a cp1252 Windows console can't encode
+    # those and would crash here instead of showing the error.
+    try:
+        sys.stdout.reconfigure(errors="replace")
+    except AttributeError:
+        pass
+    print(syntax_fail)
+    fail = True
+
+if page_versions_fail:
+    print(page_versions_fail)
+    fail = True
+
 if not fail:
-    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits, no conflict markers.")
+    print(f"OK: all {len(jsx_files)} JSX files referenced, versions fresh, files within size limits, no conflict markers, all scripts parse, generated pages in sync.")
 
 sys.exit(1 if fail else 0)

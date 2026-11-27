@@ -112,3 +112,13 @@ if bumped:
         print(f"Wrote {html}")
 else:
     print("No source files staged or modified today — nothing to bump.")
+
+# The pre-rendered pages (web/sd/boat/*/index.html, ...) carry copies of
+# index.html's ?v= tags; keep them equal so they never load an old file.
+# Runs even when nothing was bumped here (index.html may have changed by hand
+# or in a merge). --stage adds the rewritten pages to this commit.
+if not dry_run:
+    sync = [sys.executable, os.path.join(here, "sync-page-versions.py"), "--stage"]
+    if subprocess.run(sync).returncode != 0:
+        print("sync-page-versions.py failed.")
+        sys.exit(1)
