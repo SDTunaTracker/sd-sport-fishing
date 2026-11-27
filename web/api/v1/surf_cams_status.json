@@ -1,23 +1,35 @@
 {
- "generatedAt": "2026-11-27T22:43:29Z",
+ "generatedAt": "2026-11-27T23:00:13Z",
  "staleAfterHours": 72,
  "method": "YouTube oEmbed (exists and embeddable) plus a thumbnail check (not removed). No API key; cannot tell a live stream from an ended one that stays up as a recording.",
  "cams": {
   "oceanside-rooftop": {
-   "checkedAt": "2026-11-27T22:43:29Z",
-   "lastSeen": "2026-11-27T22:43:29Z",
+   "checkedAt": "2026-11-27T23:00:13Z",
+   "lastSeen": "2026-11-27T23:00:13Z",
    "title": "The Rooftop Bar (Fixed Wide West) | Oceanside, CA | San Diego Web Cam",
    "status": "online"
   },
+  "oceanside-rooftop-rotating": {
+   "checkedAt": "2026-11-27T23:00:13Z",
+   "lastSeen": "2026-11-27T23:00:13Z",
+   "title": "The Rooftop Bar | Oceanside, CA | San Diego Web Cam",
+   "status": "online"
+  },
   "beacons": {
-   "checkedAt": "2026-11-27T22:43:29Z",
-   "lastSeen": "2026-11-27T22:43:29Z",
+   "checkedAt": "2026-11-27T23:00:13Z",
+   "lastSeen": "2026-11-27T23:00:13Z",
    "title": "\ud83d\udd34 LIVE Beacon\u2019s Beach Surf Cam | King Tide | Encinitas, California",
    "status": "online"
   },
+  "moonlight": {
+   "checkedAt": "2026-11-27T23:00:13Z",
+   "lastSeen": "2026-11-27T23:00:13Z",
+   "imageUpdated": "2026-11-27T23:00:00Z",
+   "status": "online"
+  },
   "scripps-inn": {
-   "checkedAt": "2026-11-27T22:43:29Z",
-   "lastSeen": "2026-11-27T22:43:29Z",
+   "checkedAt": "2026-11-27T23:00:13Z",
+   "lastSeen": "2026-11-27T23:00:13Z",
    "title": "La Jolla Beach LIVE Cam | Oceanfront Webcam at Scripps Inn, San Diego, California",
    "status": "online"
   }

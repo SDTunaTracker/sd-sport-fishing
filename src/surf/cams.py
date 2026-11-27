@@ -27,7 +27,8 @@ from __future__ import annotations
 import json
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import requests
@@ -47,9 +48,39 @@ def _iso(t: datetime) -> str:
     return t.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+SKYLINE_STALE = timedelta(hours=6)
+
+
+def check_skyline(cam: dict, prev: dict, now: datetime, get=requests.get) -> dict:
+    """SkylineWebcams: their Embed code is a live still (embed.skylinewebcams.com/img/<id>.jpg)
+    linking to their player. Online = a real image whose Last-Modified is recent; an unknown
+    id returns a ~300-byte placeholder with no Last-Modified."""
+    out = {"checkedAt": _iso(now), "lastSeen": prev.get("lastSeen")}
+    try:
+        r = get(cam["skyline"]["image"], headers=HEADERS, timeout=20)
+    except requests.RequestException as e:
+        return dict(prev, checkedAt=_iso(now), checkError=f"image request failed: {type(e).__name__}") if prev.get("status")             else dict(out, status="unknown", checkError=f"image request failed: {type(e).__name__}")
+    if r.status_code == 404 or (r.status_code == 200 and len(r.content or b"") < 2000):
+        return dict(out, status="offline", reason="This cam has been removed from SkylineWebcams.")
+    if r.status_code != 200:
+        return dict(prev, checkedAt=_iso(now), checkError=f"image HTTP {r.status_code}") if prev.get("status")             else dict(out, status="unknown", checkError=f"image HTTP {r.status_code}")
+    try:
+        mod = parsedate_to_datetime((r.headers or {}).get("Last-Modified", ""))
+    except (TypeError, ValueError, IndexError):
+        mod = None
+    if mod is not None:
+        out["imageUpdated"] = _iso(mod)
+        if now - mod > SKYLINE_STALE:
+            return dict(out, status="offline", reason="The camera's picture hasn't updated recently.")
+    out.update(status="online", lastSeen=_iso(now))
+    return out
+
+
 def check_cam(cam: dict, prev: dict | None, now: datetime, get=requests.get) -> dict:
     """Return this cam's new status entry. `get` is injectable for tests."""
     prev = prev or {}
+    if cam.get("source") == "skyline":
+        return check_skyline(cam, prev, now, get=get)
     vid = cam["youtube"]
     out = {"checkedAt": _iso(now), "lastSeen": prev.get("lastSeen")}
 
