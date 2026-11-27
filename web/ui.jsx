@@ -244,10 +244,11 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
              onClick={closeMenu}>
           <div className="mobile-menu" onClick={e => e.stopPropagation()}>
             <div className="mobile-menu-head">
-              <div className="mm-logo">
+              <a className="mm-logo" href={hrefFor ? hrefFor('home') : '/'} aria-label={`${BRAND_NAME} home`}
+                 onClick={spaLinkHandler(() => handleNavItem('home'))}>
                 <BrandMark size={24}/>
                 <span>{BRAND_NAME}</span>
-              </div>
+              </a>
               <span className="mm-close" onClick={closeMenu}>
                 <i className="fa-solid fa-xmark"></i>
               </span>
