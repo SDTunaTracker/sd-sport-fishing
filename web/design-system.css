@@ -1466,3 +1466,56 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 @media (max-width: 560px) {
   .st-rank-w .sf-es-mini { justify-content: flex-end; }
 }
+
+/* Surftracker Surf / Paddle toggle and Paddle mode */
+.st-mode { flex: none; display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255,255,255,.12); }
+.st-mode-b { font: 600 13px/1 var(--sans); color: rgba(255,255,255,.85); text-decoration: none; padding: 8px 12px; border-radius: 999px; }
+.st-mode-b.on { background: #9EE3DA; color: #0E4A50; }
+.st-mode-b:hover:not(.on) { background: rgba(255,255,255,.12); color: #fff; }
+.sf-pd-pill { display: inline-block; font: 700 12px/1 var(--sans); padding: 5px 9px; border-radius: 999px; background: var(--band); color: var(--muted); white-space: nowrap; }
+.sf-pd-good { background: var(--good-50); color: #1F6A3A; } .sf-pd-ok { background: var(--warn-50); color: #8A5D0E; } .sf-pd-hard { background: var(--bad-50); color: #96322A; }
+.sf-pd-cold { margin: -4px 0 14px; font: 400 13.5px/1.45 var(--sans); color: var(--ink-2); }
+.sf-pd-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.sf-pd-list li + li { border-top: 1px solid var(--line); }
+.sf-pd-row { display: grid; grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1.6fr) minmax(0, 1.3fr); gap: 6px 14px; align-items: center;
+  padding: 11px 14px; text-decoration: none; color: inherit; }
+.sf-pd-row:hover { background: var(--band); }
+.sf-pd-name { font: 600 14.5px/1.25 var(--sans); color: var(--ink); min-width: 0; }
+.sf-pd-name i { display: block; font: 400 12px/1.35 var(--sans); font-style: normal; color: var(--faint); }
+.sf-pd-why { font: 400 13px/1.4 var(--sans); color: var(--ink-2); }
+.sf-pd-meta { display: flex; flex-direction: column; gap: 2px; font: 400 12px/1.35 var(--sans); color: var(--muted); }
+.sf-pd-now { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; margin: 0 0 12px; background: var(--surface);
+  border: 1px solid var(--line); border-left: 4px solid var(--line-2); border-radius: var(--radius-md); }
+.sf-pd-now b { font: 600 15px/1.4 var(--sans); color: var(--ink); }
+.sf-pd-now.sf-pd-good { border-left-color: #2F8A4E; background: var(--surface); } .sf-pd-now.sf-pd-ok { border-left-color: #C98A1B; background: var(--surface); }
+.sf-pd-now.sf-pd-hard { border-left-color: #C0453A; background: var(--surface); }
+.sf-pd-days { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sf-pd-day { width: 100%; display: grid; grid-template-columns: 110px auto 90px minmax(0, 1fr); gap: 4px 12px; align-items: center; text-align: left;
+  padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; background: var(--band); cursor: pointer; font: 400 13px/1.4 var(--sans); color: var(--ink-2); }
+.sf-pd-day.on { border-color: #2C5DA8; background: #EAF0FA; }
+.sf-pd-d { font-weight: 600; color: var(--ink); }
+.sf-pd-t { font-variant-numeric: tabular-nums; font-weight: 600; }
+.sf-pd-r { color: var(--muted); }
+.sf-pd-hours { display: grid; gap: 4px; }
+.sf-pd-hr { display: grid; grid-template-columns: 52px auto 120px 140px minmax(0, 1fr); gap: 4px 12px; align-items: center; padding: 6px 4px;
+  border-bottom: 1px solid var(--line); font: 400 13px/1.4 var(--sans); color: var(--ink-2); }
+.sf-pd-hr-t { color: var(--muted); font-variant-numeric: tabular-nums; }
+.sf-pd-hr-r { color: var(--muted); font-size: 12.5px; }
+@media (max-width: 760px) {
+  .st-mode { order: 2; margin-left: auto; }
+  .st-back { margin-left: 8px !important; }
+  .sf-pd-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .sf-pd-why, .sf-pd-meta { grid-column: 1 / -1; }
+  .sf-pd-day { grid-template-columns: 1fr auto; }
+  .sf-pd-t { justify-self: start; }
+  .sf-pd-r { grid-column: 1 / -1; }
+  .sf-pd-hr { grid-template-columns: 46px auto minmax(0, 1fr); }
+  .sf-pd-hr-x { grid-column: 3; }
+  .sf-pd-hr-r { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .st-back-l { display: none; }
+  .st-back { padding: 7px 11px; }
+  .st-mode-b { padding: 7px 10px; font-size: 12.5px; }
+}
+.sf-pd-note { margin: 0 0 10px; padding: 9px 12px; border-radius: var(--radius-sm); background: var(--band); font: 400 13.5px/1.45 var(--sans); color: var(--ink-2); }
