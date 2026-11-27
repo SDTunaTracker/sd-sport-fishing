@@ -55,6 +55,10 @@ def test_region_file_defines_its_data_and_hash_is_content_based():
     m = re.search(r'\(window\.SD_REGIONS = window\.SD_REGIONS \|\| \{\}\)\["oc_la"\] = (.*);\n$', text)
     assert m, text[:200]
     payload = json.loads(m.group(1))
+    # Trip arrays are written as columns (see test_columnar_* below).
+    assert payload["TRIPS"]["$c"] == 1
+    for k in E.COLUMNAR_KEYS:
+        payload[k] = E.decode_columnar(payload[k])
     assert {t["id"] for t in payload["TRIPS"]} == {2, 3}
     assert [t["id"] for t in payload["HALF_DAY_TRIPS"]] == [10]
     # Schedule rows have no region field: mapped through the landing's trips / LANDINGS_META.
@@ -97,3 +101,39 @@ def test_live_data_js_lists_existing_region_files():
         pytest.skip("data.js predates the per-region split")
     for reg, f in json.loads(m.group(1)).items():
         assert (WEB / f["file"]).exists(), f"data.js lists {f['file']} but it is missing"
+
+
+# ── Columnar trip arrays (src/export.py encode_columnar) ──────────────────────
+def _mixed_rows():
+    rows = [_trip(i, "san_diego", "H&M Landing", date=f"2026-11-{10 + i % 5:02d}") for i in range(1, 30)]
+    rows[3]["fullCatch"] = {"Yellowfin": 1, "Rockfish": 4}
+    rows[7]["Rockfish"] = 4
+    rows[9]["rawText"] = "some text"
+    rows[11]["anglers"] = None
+    rows[12]["tripLengthDays"] = 0.75
+    return rows
+
+
+def test_columnar_round_trip_is_lossless():
+    rows = _mixed_rows()
+    enc = E.encode_columnar(rows)
+    assert enc["$c"] == 1 and enc["n"] == len(rows)
+    assert "s" in enc["v"]["fullCatch"] and "z" in enc["v"]["id"] and "d" in enc["v"]["landing"]
+    assert E.decode_columnar(json.loads(json.dumps(enc))) == rows
+
+
+def test_columnar_js_decoder_matches_python(tmp_path):
+    """The decoder appended to data.js rebuilds the same rows in a browser."""
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    rows = _mixed_rows()
+    payload = {"TRIPS": rows, "HALF_DAY_TRIPS": [], "META": {}}
+    js = "var window={};\nwindow.SD = " + json.dumps(E._compact(payload)) + ";\n" + E._COLS_DECODER_JS
+    js += "process.stdout.write(JSON.stringify(window.SD));\n"
+    f = tmp_path / "d.js"
+    f.write_text(js, encoding="utf-8")
+    out = json.loads(subprocess.run([node, str(f)], capture_output=True, text=True, check=True).stdout)
+    assert out["TRIPS"] == rows and out["HALF_DAY_TRIPS"] == []

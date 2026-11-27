@@ -30,6 +30,12 @@
     var r = window.SD_REGIONS && window.SD_REGIONS[id];
     if (!r) throw new Error('region file for ' + id + ' did not define its data');
     var SD = window.SD;
+    // Region files write TRIPS / HALF_DAY_TRIPS as columns (src/export.py
+    // encode_columnar); data.js defines the decoder.
+    if (window.__ttRows) {
+      r.TRIPS = window.__ttRows(r.TRIPS);
+      r.HALF_DAY_TRIPS = window.__ttRows(r.HALF_DAY_TRIPS);
+    }
     ['TRIPS', 'HALF_DAY_TRIPS', 'BOATS', 'SCHEDULE'].forEach(function (k) {
       if (r[k] && r[k].length) SD[k] = (SD[k] || []).concat(r[k]);
     });
