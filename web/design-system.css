@@ -157,7 +157,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .multiselect-trigger:hover { border-color: var(--faint); }
 .multiselect-panel { border-radius: 12px; border-color: var(--line); box-shadow: var(--shadow-lg); padding: 6px; }
 .multiselect-panel .ms-row { border-radius: 8px; font-size: 13.5px; padding: 8px 10px; }
-.boats-search-input { min-height: 40px; border-radius: 999px; padding-left: 36px; font-size: 14px; }
+/* Wrapper class lifts specificity over the generic input[type="text"] padding, which hid the first letter behind the icon. */
+.boats-search-input-wrap .boats-search-input { min-height: 40px; border-radius: 999px; padding-left: 36px; font-size: 14px; }
 .boats-search-icon { left: 14px; }
 
 /* ── Chips / pills / tags ─────────────────────────────────────────────────── */
