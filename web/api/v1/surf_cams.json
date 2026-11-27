@@ -1,5 +1,5 @@
 {
-  "about": "Hand-edited list of live cams for Surftracker (/sd/surf/cams). Only YouTube streams whose operators allow embedding, checked 2026-11-27 (shared notes: surftracker-cams.md). Never add Surfline-owned cams, HDOnTap streams without permission, or Earth Watch Live until its ownership is confirmed. Fields: id (unique), name, kind ('surf' or 'harbour'), area, youtube (video id), operator {name, url}, covers (spot ids in view: their break pages get a 'Live cam' link), near (nearest breaks, not in view), note (optional). src/surf/cams.py checks each cam daily and writes surf_cams_status.json.",
+  "about": "Hand-edited list of live cams for Surftracker (/sd/surf/cams). Surf cams only: every cam must show a surf break (owner rule, 2026-11-27; harbour and bay cams were removed). Only YouTube streams whose operators allow embedding, checked 2026-11-27 (shared notes: surftracker-cams.md). Never add Surfline-owned cams, HDOnTap streams without permission, or Earth Watch Live until its ownership is confirmed. Fields: id (unique), name, kind ('surf'), area, youtube (video id), operator {name, url}, covers (spot ids in view: their break pages get a 'Live cam' link), near (nearest breaks, not in view), note (optional). src/surf/cams.py checks each cam daily and writes surf_cams_status.json.",
   "cams": [
     {
       "id": "oceanside-rooftop",
@@ -7,21 +7,19 @@
       "kind": "surf",
       "area": "North County",
       "youtube": "OYqo4dqYjh0",
-      "operator": { "name": "San Diego Web Cam (The Rooftop Bar)", "url": "https://www.youtube.com/@SanDiegoWebCam" },
-      "covers": ["oceanside-pier", "tyson-street", "wisconsin-street"],
-      "near": ["oceanside-harbor"],
+      "operator": {
+        "name": "San Diego Web Cam (The Rooftop Bar)",
+        "url": "https://www.youtube.com/@SanDiegoWebCam"
+      },
+      "covers": [
+        "oceanside-pier",
+        "tyson-street",
+        "wisconsin-street"
+      ],
+      "near": [
+        "oceanside-harbor"
+      ],
       "note": "Fixed wide view over the pier and beach from The Rooftop Bar."
-    },
-    {
-      "id": "oceanside-harbor",
-      "name": "Oceanside Harbor",
-      "kind": "surf",
-      "area": "North County",
-      "youtube": "Cp39ybasNfQ",
-      "operator": { "name": "America's Boating Club Oceanside", "url": "https://www.youtube.com/@AmericasBoatingClubOceanside" },
-      "covers": ["oceanside-harbor"],
-      "near": ["tyson-street", "oceanside-pier"],
-      "note": "Pans the harbour mouth and north jetty on a schedule, so some hours show boats rather than surf. Donation-funded."
     },
     {
       "id": "beacons",
@@ -29,9 +27,19 @@
       "kind": "surf",
       "area": "North County",
       "youtube": "vOoB84309bs",
-      "operator": { "name": "The Saylor Adventures", "url": "https://www.youtube.com/@The_Saylor_Adventures" },
-      "covers": ["beacons", "grandview", "stone-steps"],
-      "near": ["moonlight", "swamis"],
+      "operator": {
+        "name": "The Saylor Adventures",
+        "url": "https://www.youtube.com/@The_Saylor_Adventures"
+      },
+      "covers": [
+        "beacons",
+        "grandview",
+        "stone-steps"
+      ],
+      "near": [
+        "moonlight",
+        "swamis"
+      ],
       "note": "New, privately run stream: it may move to a new video now and then."
     },
     {
@@ -40,53 +48,20 @@
       "kind": "surf",
       "area": "Del Mar–La Jolla",
       "youtube": "crL2-5Cw2VI",
-      "operator": { "name": "Scripps Inn (via Ozolio)", "url": "https://www.youtube.com/@ozolio_plus" },
-      "covers": ["la-jolla-cove", "boomer-beach", "wipeout-beach", "marine-street"],
-      "near": ["windansea", "la-jolla-shores"]
-    },
-    {
-      "id": "shelter-island-n",
-      "name": "Shelter Island (north)",
-      "kind": "harbour",
-      "area": "San Diego Bay",
-      "youtube": "ct7IRmzDggk",
-      "operator": { "name": "San Diego Web Cam", "url": "https://www.youtube.com/@SanDiegoWebCam" },
-      "covers": [],
-      "near": ["ocean-beach", "sunset-cliffs"],
-      "note": "Looks over the Shelter Island channel by the Point Loma landings. No surf in view."
-    },
-    {
-      "id": "harbor-island",
-      "name": "Harbor Island",
-      "kind": "harbour",
-      "area": "San Diego Bay",
-      "youtube": "iaBfYxbmwXA",
-      "operator": { "name": "San Diego Web Cam (Tom Ham's Lighthouse)", "url": "https://www.youtube.com/@SanDiegoWebCam" },
-      "covers": [],
-      "near": ["coronado-north-beach", "ocean-beach"],
-      "note": "San Diego Bay. No surf in view."
-    },
-    {
-      "id": "harbor-island-s",
-      "name": "Harbor Island (south)",
-      "kind": "harbour",
-      "area": "San Diego Bay",
-      "youtube": "fc58f5x18-w",
-      "operator": { "name": "San Diego Web Cam (Tom Ham's Lighthouse)", "url": "https://www.youtube.com/@SanDiegoWebCam" },
-      "covers": [],
-      "near": ["coronado-north-beach", "ocean-beach"],
-      "note": "Looks toward the harbour entrance. No surf in view."
-    },
-    {
-      "id": "bay-east",
-      "name": "San Diego Bay East",
-      "kind": "harbour",
-      "area": "San Diego Bay",
-      "youtube": "OAk3giBu5_k",
-      "operator": { "name": "San Diego Web Cam (Mike Hess Brewing)", "url": "https://www.youtube.com/@SanDiegoWebCam" },
-      "covers": [],
-      "near": ["coronado-north-beach", "coronado-central"],
-      "note": "Bay view. No surf in view."
+      "operator": {
+        "name": "Scripps Inn (via Ozolio)",
+        "url": "https://www.youtube.com/@ozolio_plus"
+      },
+      "covers": [
+        "la-jolla-cove",
+        "boomer-beach",
+        "wipeout-beach",
+        "marine-street"
+      ],
+      "near": [
+        "windansea",
+        "la-jolla-shores"
+      ]
     }
   ]
 }

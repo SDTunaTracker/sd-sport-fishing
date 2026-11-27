@@ -1205,7 +1205,7 @@ function SurfCamCard({ cam, status, playing, onPlay, focus, names, navigate }) {
           {!off && <> · <a href={watch} target="_blank" rel="noopener noreferrer">YouTube ↗</a></>}
         </div>
         {cam.covers.length > 0 && <div className="st-cam-spots"><span>In view:</span> {spotLinks(cam.covers)}</div>}
-        {cam.near.length > 0 && <div className="st-cam-spots"><span>{cam.kind === 'harbour' ? 'Nearest breaks (not in view):' : 'Nearby:'}</span> {spotLinks(cam.near)}</div>}
+        {cam.near.length > 0 && <div className="st-cam-spots"><span>Nearby:</span> {spotLinks(cam.near)}</div>}
         {cam.note && <p className="st-cam-note">{cam.note}</p>}
       </div>
     </li>
@@ -1220,20 +1220,19 @@ function SurfCamsPage({ ctx, navigate, camId }) {
   (ctx.all || []).forEach(b => { names[b.id] = b.name; });
   if (!cams) return <div className="sf-wrap"><h1 className="sf-title">Live cams</h1><p className="sf-muted">Loading cams…</p></div>;
   if (error || !cams.length) return <div className="sf-wrap"><h1 className="sf-title">Live cams</h1><p className="sf-muted">The cam list is unavailable right now.</p></div>;
-  const surf = cams.filter(c => c.kind === 'surf');
-  const harbour = cams.filter(c => c.kind !== 'surf');
+  const surf = cams.filter(c => c.kind === 'surf');   // owner rule: surf breaks only, no harbour/bay cams
   const areas = SF_AREAS.map(a => a[1]).filter(a => surf.some(c => c.area === a));
   surf.forEach(c => { if (areas.indexOf(c.area) < 0) areas.push(c.area); });
   const card = c => (
     <SurfCamCard key={c.id} cam={c} status={status} names={names} navigate={navigate} focus={camId === c.id}
                  playing={playing === c.id} onPlay={() => setPlaying(c.id)}/>
   );
-  const nOff = cams.filter(c => sfCamOffline(status, c.id)).length;
+  const nOff = surf.filter(c => sfCamOffline(status, c.id)).length;
   return (
     <div className="sf-wrap st-cams">
       <div className="sf-top">
         <h1 className="sf-title">Live cams</h1>
-        <span className="sf-chip">{cams.length - nOff} of {cams.length} online</span>
+        <span className="sf-chip">{surf.length - nOff} of {surf.length} online</span>
       </div>
       <p className="sf-muted st-sub">Live streams run by local businesses and clubs, shown through YouTube's own player. Tap a picture to play; only one plays at a time.</p>
 
@@ -1247,21 +1246,11 @@ function SurfCamsPage({ ctx, navigate, camId }) {
         ))}
       </section>
 
-      {harbour.length > 0 && (
-        <section className="st-sec" aria-labelledby="st-cams-bay">
-          <div className="st-sec-head">
-            <h2 className="st-h2" id="st-cams-bay">Harbour and bay cams</h2>
-            <span className="sf-chip">No surf in view</span>
-          </div>
-          <ul className="st-cam-grid">{harbour.map(card)}</ul>
-        </section>
-      )}
-
       <p className="st-fine">
         Each cam belongs to its operator; follow the links to support them. We check every cam once a day and mark it
         offline if its video has been removed or no longer allows embedding. If a stream has just ended, the player may
-        show a recording until the operator restarts it. No Surftracker coverage yet for
-        Imperial Beach, Coronado, Sunset Cliffs, Blacks, Torrey Pines or Del Mar.
+        show a recording until the operator restarts it. More surf cams coming; none yet for Imperial Beach, Coronado,
+        Ocean Beach, Pacific Beach, Sunset Cliffs, Blacks, Torrey Pines, Del Mar or Cardiff.
       </p>
     </div>
   );
