@@ -151,16 +151,6 @@
     return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' });
   }
 
-  function DeltaCell({ pct }) {
-    if (pct == null) return <span className="th-delta muted">—</span>;
-    const up = pct >= 0;
-    return (
-      <span className={`th-delta ${up ? 'up' : 'down'}`}>
-        {up ? '▲ +' : '▼ −'}{Math.abs(pct)}%
-      </span>
-    );
-  }
-
   // ── Trend bars (shared: band + expanded rows) ─────────────────────────────
   function TrendBars({ bars, height }) {
     const max = Math.max(0.01, ...bars.map(b => (b.val == null ? 0 : b.val)));
@@ -187,88 +177,48 @@
     return window.getLandingsForRegion(window.getEffectiveRegion(regions));
   }
 
-  function ConditionsBand({ trend, regions }) {
+  // Observed conditions for Today's report (water, wind, moon). San Diego
+  // only; forecasts stay R&D and are not shown (owner rule).
+  function condParts(regions) {
     const fc = isOclaOnly(regions) ? null : (window.SD && window.SD.FORECAST && window.SD.FORECAST.today);
-    const sstRaw = fc && (fc.sst_nearshore != null ? fc.sst_nearshore : fc.sst_offshore);
-    const sstF = sstRaw != null ? Math.round(sstRaw) : null;
-    const windKt = fc && fc.wind_speed != null ? Math.round(fc.wind_speed) : null;
-    const windDir = (fc && fc.wind_direction) || '';
-    const moonPct = fc && fc.moon_phase != null ? Math.round(fc.moon_phase) : null;
-    const moonName = (fc && fc.moon_phase_name) || null;
-
-    return (
-      <div className="th-condband">
-        {fc && <div className="th-cond-left">
-          {/* Observed conditions only. The old forecast score chip ("GOOD")
-              and its call ("solid yellowfin opportunity") are gone: forecasts
-              are R&D only and not shown to users (owner rule). */}
-          <div className="th-cond-stats">
-            <span><b>{sstF != null ? `${sstF}°F` : '—'}</b> water</span>
-            <span><b>{windKt != null ? `${windKt} kt ${windDir}` : '—'}</b> wind</span>
-            <span><b>{moonPct != null ? `${moonPct}%` : '—'}</b> moon{moonName ? ` · ${moonName.toLowerCase()}` : ''}</span>
-          </div>
-        </div>}
-        <div className="th-cond-trend">
-          <div className="th-trend-head">
-            <span className="th-lbl">Fleet catch rate · last 30 days</span>
-            {trend.today != null && (
-              <span className={`th-trend-val ${trend.pct != null && trend.pct >= 0 ? 'up' : 'down'}`}>
-                {fmt.tpa(trend.today)} fish per angler
-                {trend.pct != null && ` · ${trend.pct >= 0 ? '▲' : '▼'} ${Math.abs(trend.pct)}% ${trend.pct >= 0 ? 'above' : 'below'} average`}
-              </span>
-            )}
-          </div>
-          <TrendBars bars={trend.days.map(d => ({ val: d.val, today: d.date === trend.days[29].date }))} height={36}/>
-        </div>
-      </div>
-    );
+    if (!fc) return null;
+    const sstRaw = fc.sst_nearshore != null ? fc.sst_nearshore : fc.sst_offshore;
+    const parts = [];
+    if (sstRaw != null) parts.push(['water', `${Math.round(sstRaw)}°F`]);
+    // wind_direction comes as degrees ("333"); show a compass point.
+    const wd = fc.wind_direction;
+    const dir = wd == null || wd === '' ? '' : (isNaN(+wd) ? String(wd)
+      : ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(((+wd % 360) + 360) % 360 / 45) % 8]);
+    if (fc.wind_speed != null) parts.push(['wind', `${Math.round(fc.wind_speed)} kt${dir ? ' ' + dir : ''}`]);
+    if (fc.moon_phase != null) parts.push(['moon', `${Math.round(fc.moon_phase)}%`, fc.moon_phase_name ? fc.moon_phase_name.toLowerCase() : '']);
+    return parts.length ? parts : null;
   }
 
-  // ── Expandable counts table ───────────────────────────────────────────────
+  // ── Home: latest counts, every boat in one list ──────────────────────────
+  // Home is "where to fish this week" and the way into the site; Today is the
+  // full day report (owner, 2026-11-27: each page holds its own purpose).
+  // Owner, 2026-11-27: "I want to see all boats that have reported fish
+  // counts on one area", so Home lists every boat that reported for the
+  // latest day in compact rows (catch + fish per angler). Today keeps the
+  // date stepper, landing filters, row history and what's still fishing.
+  // Season leaders live here; Today links to the leaderboard.
   function CountsSection({ navigate, settings, regions }) {
     const metric = thUseMetric(regions, settings);
     const TODAY = getTodayISO();
-    const [openBoat, setOpenBoat] = useState(null);
-    const [landing, setLanding] = useState('all');
-
     const allTrips = useMemo(() => regionTrips(regions), [regions, settings]);
-
-    const dates = useMemo(() => {
-      const set = [...new Set(allTrips.map(t => t.date))];
-      return set.sort().reverse();
+    const latest = useMemo(() => {
+      const ds = [...new Set(allTrips.map(t => t.date))].sort().reverse();
+      return ds.includes(TODAY) ? TODAY : (ds[0] || TODAY);
     }, [allTrips]);
-    const [selectedDate, setSelectedDate] = useState(
-      () => (dates.includes(TODAY) ? TODAY : (dates[0] || TODAY))
-    );
-    const dateIdx = dates.indexOf(selectedDate);
-    const isToday = selectedDate === TODAY;
+    const isToday = latest === TODAY;
 
-    const ratingData = useMemo(() => SDA.fishingRating(selectedDate, regions), [selectedDate, regions, settings]);
-    const returned = isToday ? ratingData.boats.filter(b => !b.isPreliminary) : ratingData.boats;
-
-    const landings = useMemo(() => {
-      const eff = window.getEffectiveRegion ? window.getEffectiveRegion(regions) : 'san_diego';
-      return (window.getLandingsForRegion && window.getLandingsForRegion(eff)) || [];
-    }, [regions]);
-
-    // The day's counts table lists boats by the catch it shows (fish per
-    // angler); fishingRating's own order is the tuna ranking.
-    const visible = returned.filter(b => landing === 'all' || b.landing === landing)
-      .sort((x, y) => thFish(y) / Math.max(1, y.anglers) - thFish(x) / Math.max(1, x.anglers));
-
-    const totals = useMemo(() => thTotals(visible), [visible, metric.allSpecies, settings]);
-
-    const trend = useMemo(() => fleetTrend(allTrips, selectedDate), [allTrips, selectedDate, metric.allSpecies, settings]);
-
-    // Season rank map (current year, min 5 trips)
-    const rankMap = useMemo(() => {
-      const year = String(window.TT_DATES.getPacificYear());
-      const yearTrips = allTrips.filter(t => String(t.year) === year);
-      const { rows } = SDA.boatLeaderboard(yearTrips, 'all', 5);
-      const m = {};
-      rows.forEach((r, i) => { m[r.boat] = { rank: i + 1, total: rows.length, trips: r.tripCount, best: r.bestTrip }; });
-      return m;
-    }, [allTrips]);
+    const ratingData = useMemo(() => SDA.fishingRating(latest, regions), [latest, regions, settings]);
+    const ranked = useMemo(() => (isToday ? ratingData.boats.filter(b => !b.isPreliminary) : ratingData.boats.slice())
+      .sort((x, y) => thFish(y) / Math.max(1, y.anglers) - thFish(x) / Math.max(1, x.anglers)),
+      [ratingData, isToday, metric.allSpecies, settings]);
+    const totals = useMemo(() => thTotals(ranked), [ranked, metric.allSpecies, settings]);
+    const species = (metric.allSpecies ? totals.ranked.slice(0, 4).map(r => r[0])
+      : (thCustom() || ['Bluefin', 'Yellowtail', 'Yellowfin', 'Dorado'])).filter(sp => (totals.bySp[sp] || 0) > 0);
 
     const seasonLeaders = useMemo(() => {
       const trips = SDA.filterTrips(DEFAULT_FILTERS, regions);
@@ -276,133 +226,51 @@
       return rows.filter(r => r.tripCount >= 5).slice(0, 4);
     }, [regions, settings]);
 
-    const stillFishing = (isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [])
-      .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
-    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
+    const stillN = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || [])
+      .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); }).length : 0;
+    const n = ranked.length;
+    const todayHref = window.ttPathFromRoute ? window.ttPathFromRoute('today', {}, regions) : '/sd/today';
+    const goToday = (e) => { if (navigate) { e.preventDefault(); navigate('today'); } };
 
     return (
-      <React.Fragment>
-        <ConditionsBand trend={trend} regions={regions}/>
-
-        <div className="th-wrap">
-          {/* Title row: date stepper + landing chips */}
-          <div className="th-titlerow">
-            <h2 className="th-title">{isToday ? "Today's counts" : 'Counts'}</h2>
-            <div className="th-datestep">
-              <button aria-label="Earlier day" disabled={dateIdx >= dates.length - 1}
-                      onClick={() => { setSelectedDate(dates[dateIdx + 1]); setOpenBoat(null); }}>‹</button>
-              <span>{fmtDayLabel(selectedDate)}</span>
-              <button aria-label="Later day" disabled={dateIdx <= 0}
-                      onClick={() => { setSelectedDate(dates[dateIdx - 1]); setOpenBoat(null); }}>›</button>
+      <div className="th-wrap hc">
+        <div className="th-grid hc-grid">
+          <section className="hc-main" aria-labelledby="hc-title">
+            <div className="hc-head">
+              <h2 className="th-title" id="hc-title">{isToday ? "Today's counts" : 'Latest counts'}</h2>
+              <span className="hc-date">{fmtDayLabel(latest)}</span>
             </div>
-            <div className="th-spacer"/>
-            {landings.length > TH_CHIP_MAX && (
-              <select className="th-landsel" aria-label="Landing" value={landing}
-                      onChange={e => { setLanding(e.target.value); setOpenBoat(null); }}>
-                <option value="all">All landings</option>
-                {landings.map(l => <option key={l} value={l}>{thShort(l)}</option>)}
-              </select>
-            )}
-            <div className={`th-chiprow${landings.length > TH_CHIP_MAX ? ' th-chiprow-many' : ''}`}>
-              <button className={`th-chip${landing === 'all' ? ' on' : ''}`}
-                      onClick={() => { setLanding('all'); setOpenBoat(null); }}>All</button>
-              {landings.map(l => (
-                <button key={l} className={`th-chip${landing === l ? ' on' : ''}`}
-                        onClick={() => { setLanding(l); setOpenBoat(null); }}>{thShort(l)}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Species totals */}
-          <div className="th-totals">
-            <div className="th-total"><b>{fmt.n(totals.total)}</b><span>total fish</span></div>
-            {metric.allSpecies ? (
+            {n === 0 ? (
+              <p className="hc-sum">No boats have reported yet today. Counts usually arrive in the afternoon.</p>
+            ) : (
               <React.Fragment>
-                <div className="th-total"><b>{fmt.n(totals.trophy)}</b><span>trophy fish</span></div>
-                {totals.ranked.slice(0, 4).map(([sp, n]) => (
-                  <div key={sp} className="th-total"><b>{fmt.n(n)}</b><span>{sp.toLowerCase()}</span></div>
-                ))}
+                <p className="hc-sum">
+                  <b>{n} boat{n === 1 ? '' : 's'}</b> brought in <b>{fmt.n(totals.total)} fish</b>
+                  {species.length ? ': ' + species.map(sp => `${fmt.n(totals.bySp[sp] || 0)} ${sp.toLowerCase()}`).join(', ') : ''}.
+                </p>
+                <ol className="hc-list" aria-label="Boats that reported, by fish per angler">
+                  {ranked.map((b, i) => {
+                    const fa = b.anglers > 0 ? thFish(b) / b.anglers : 0;
+                    return (
+                      <li key={`${b.boat}|${b.landing}`}>
+                        <button className="hc-row" onClick={() => navigate('boat', { boat: b.boat })}>
+                          <span className="hc-rank">{i + 1}</span>
+                          <span className="hc-boat"><b>{b.boat}</b><i>{thShort(b.landing)} · {b.tripLength}</i></span>
+                          <span className="hc-catch">{thCatchLine(b)}</span>
+                          <span className="hc-fa"><b>{fa.toFixed(2)}</b><i>per angler</i></span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
               </React.Fragment>
-            ) : (thCustom() || ['Bluefin', 'Yellowtail', 'Yellowfin', 'Dorado']).map(sp => (
-              <div key={sp} className="th-total"><b>{fmt.n(totals.bySp[sp] || 0)}</b><span>{sp.toLowerCase()}</span></div>
-            ))}
-            <div className="th-spacer"/>
-            <div className="th-totals-note">{visible.length} boat{visible.length === 1 ? '' : 's'} reported · Click any boat for its recent history &amp; next departure</div>
-          </div>
+            )}
+            <a className="hc-more" href={todayHref} onClick={goToday}>
+              Other days, landing filters{stillN ? `, ${stillN} still fishing` : ''} and each boat's history on Today's report<span aria-hidden="true">{' →'}</span>
+            </a>
+          </section>
 
-          {/* Table + rail */}
-          <div className="th-grid">
-            <div className="th-table">
-              <div className="th-thead">
-                <span/><span>Boat</span><span>Trip</span><span>Catch</span>
-                <span className="r">Anglers</span><span className="r">Total</span>
-                <span className="r">Fish/Angler</span><span className="r">Vs usual</span>
-              </div>
-              {visible.length === 0 && (
-                <div className="th-empty">{isToday ? 'No reports yet today — check back later.' : 'No reports for this date.'}</div>
-              )}
-              {visible.map((b) => {
-                const total = thFish(b);
-                const fa = b.anglers > 0 ? total / b.anglers : 0;
-                const pct = boatDelta(b, allTrips, selectedDate);
-                const key = `${b.boat}|${b.landing}`;
-                const open = openBoat === key;
-                const hist = open ? boatHistory(b, allTrips, selectedDate) : null;
-                const rank = rankMap[b.boat];
-                const dep = open ? nextDeparture(b.boat) : null;
-                return (
-                  <div key={key} className={`th-rowwrap${open ? ' open' : ''}`}>
-                    <div className="th-row" onClick={() => setOpenBoat(open ? null : key)}>
-                      <span className={`th-chev${open ? ' on' : ''}`}>{open ? '▾' : '▸'}</span>
-                      <span className="th-boat"><b>{b.boat}</b><i>{thShort(b.landing)}</i></span>
-                      <span className="th-trip">{b.tripLength}</span>
-                      <span className="th-catch">{thCatchLine(b)}</span>
-                      <span className="r th-num muted">{fmt.n(b.anglers)}</span>
-                      <span className="r th-num total">{fmt.n(total)}</span>
-                      <span className="r th-num">{fa.toFixed(2)}</span>
-                      <span className="r"><DeltaCell pct={pct}/></span>
-                    </div>
-                    {open && (
-                      <div className="th-expand">
-                        <div className="th-expand-hist">
-                          <div className="th-expand-histhead">
-                            <span className="th-lbl">Last 10 same-length trips · fish per angler</span>
-                            {hist.avg != null && <span className="th-usually">usually <b>{hist.avg.toFixed(2)}</b></span>}
-                          </div>
-                          <TrendBars bars={hist.bars} height={40}/>
-                          <div className="th-expand-axis"><span>{fmtDayLabel(hist.startDate)}</span><span>{isToday ? 'TODAY' : fmtDayLabel(selectedDate)}</span></div>
-                          <div className="th-expand-stats">
-                            {rank && <span>Season rank <b>#{rank.rank} of {rank.total}</b></span>}
-                            {rank && <span>Trips <b>{rank.trips}</b></span>}
-                          </div>
-                        </div>
-                        <div className="th-expand-dep">
-                          <span className="th-lbl">Next departure</span>
-                          {dep ? (
-                            <React.Fragment>
-                              <div className="th-dep-line">{dep.tripLength} · {fmtDep(dep.departureAt)}{dep.price ? ` · $${dep.price}` : ''}</div>
-                              {dep.spots != null && <div className="th-dep-spots">{dep.spots} spots left</div>}
-                            </React.Fragment>
-                          ) : (
-                            <div className="th-dep-line muted">No upcoming trips listed</div>
-                          )}
-                          <div className="th-expand-cta">
-                            <button className="th-btn primary" onClick={(e) => { e.stopPropagation(); navigate('tripplanner'); }}>Book →</button>
-                            <button className="th-btn" onClick={(e) => { e.stopPropagation(); navigate('boat', { boat: b.boat }); }}>Boat page</button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              <div className="th-foot">
-                <span>“Vs usual” compares this trip’s catch rate to the boat’s own same-length trips over the last 30 days.</span>
-                <div className="th-spacer"/>
-                <button className="th-link" onClick={() => navigate('analytics', { subtab: 'overview' })}>Full season analytics →</button>
-              </div>
-            </div>
-
+          {seasonLeaders.length > 0 && (
             <div className="th-rail">
               <div className="th-card">
                 <div className="th-card-head"><span className="th-lbl">Season leaders</span><span className="th-lbl-soft">tuna per angler, per day</span></div>
@@ -414,47 +282,19 @@
                   </div>
                 ))}
               </div>
-
-              {stillFishing.length > 0 && (
-                <div className="th-card">
-                  <div className="th-card-head"><span className="th-lbl">Still fishing</span></div>
-                  {stillFishing.map((t, i) => {
-                    const parts = Object.entries(t.catch || {}).filter(([, n]) => n > 0).map(([sp, n]) => `${n} ${sp}`);
-                    return (
-                      <div key={i} className="th-sf">
-                        <span><b>{t.boat}</b><i>{thShort(t.landing)} · {t.tripLength}</i></span>
-                        <span className="th-sf-catch">{parts.join(', ') || 'No count yet'}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {topTrip && (
-                <div className="th-card book">
-                  <span className="th-lbl light">Top trip to book</span>
-                  <div className="th-book-boat">{topTrip.boat} · {topTrip.tripLength}</div>
-                  <div className="th-book-meta">
-                    {topTrip.departureAt ? `Departs ${fmtDep(topTrip.departureAt)}` : ''}
-                    {topTrip.price ? ` · $${topTrip.price}` : ''}
-                    {topTrip.openSpots != null ? ` · ${topTrip.openSpots} spots` : ''}
-                  </div>
-                  <button className="th-btn primary" onClick={() => navigate('tripplanner')}>Book this trip →</button>
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
-      </React.Fragment>
+      </div>
     );
   }
 
   // ── Today's report (v2) ───────────────────────────────────────────────────
   // Calm, data-first page: the date is the title, one sentence summarises the
   // day, species totals are a quiet strip (zero species hidden), then a ranked
-  // boat list. Reuses the counts helpers above so "vs usual", the fleet trend
-  // and the expandable row details match Home exactly. No season leaderboard
-  // here (it lives on Home and Analytics) — just a link to it.
+  // boat list. It is the only page with the date stepper, filters and row
+  // details; Home lists the latest day's boats and links here. No season leaderboard (Home and
+  // Analytics have it) and no booking card (Home has it), just links.
   const TD2_SPECIES = { Yellowfin: '#C9A227', Bluefin: '#2F5D8A', Yellowtail: '#4F8A5B', Dorado: '#2F7F86' };
 
   function fmtLongDay(iso) {
@@ -515,7 +355,6 @@
 
     const stillFishing = (isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || []) : [])
       .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
-    const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
 
     // The forecast label/summary ("Conditions excellent", "...opportunity")
     // are no longer shown: forecasts are R&D only (owner rule).
@@ -526,6 +365,7 @@
     }) : null;
 
     const regionLabel = (regions && window.getRegionSubtitle) ? window.getRegionSubtitle(regions) : 'San Diego';
+    const cond = condParts(regions);
     const boatsN = visible.length;
     const step = (i) => { setSelectedDate(dates[i]); setOpenBoat(null); };
 
@@ -556,6 +396,12 @@
                 )}
               </React.Fragment>)}
         </p>
+        {dateIdx === 0 && cond && (
+          <p className="td2-cond" aria-label="Conditions now">
+            <span className="td2-cond-lbl">Now</span>
+            {cond.map(([k, v, extra]) => <span key={k}><b>{v}</b> {k}{extra ? ` · ${extra}` : ''}</span>)}
+          </p>
+        )}
 
         <div className="td2-strip">
           <div className="td2-stat"><b>{fmt.n(totals.total)}</b><span>total fish</span></div>
@@ -666,18 +512,13 @@
                 })}
               </div>
             )}
-            {topTrip && (
-              <div className="td2-book">
-                <p className="td2-eyebrow">Book next</p>
-                <div className="td2-book-boat">{topTrip.boat} · {topTrip.tripLength}</div>
-                <div className="td2-book-meta">
-                  {topTrip.departureAt ? `Departs ${fmtDep(topTrip.departureAt)}` : ''}
-                  {topTrip.price ? ` · $${topTrip.price}` : ''}
-                  {topTrip.openSpots != null ? ` · ${topTrip.openSpots} spots left` : ''}
-                </div>
-                <button className="td2-book-btn" onClick={() => navigate('tripplanner')}>Book this trip →</button>
-              </div>
-            )}
+            {/* Booking lives on Home ("Where to fish this week"); the day
+                report links there instead of repeating it. */}
+            <div className="td2-plan">
+              <p className="td2-eyebrow">Planning a trip?</p>
+              <p className="td2-plan-txt">The best boats to book this week, what's biting and water temps.</p>
+              <button className="td2-plan-btn" onClick={() => navigate('home')}>Where to fish this week →</button>
+            </div>
             <button className="td2-link" onClick={() => navigate('analytics', { subtab: 'overview' })}>See the season leaderboard →</button>
           </aside>
         </div>
@@ -741,7 +582,6 @@
   }
 
   // Override the home view. (Remove HomeView from dashboard.jsx once verified.)
-  // THCountsSection is also Today's report, so both pages share one date
-  // control, one row design and the same "vs usual" comparison.
+  // THCountsSection is Home's short counts summary; THTodayReport is Today.
   Object.assign(window, { HomeView: HomeViewV2, THBottomNav: BottomNav, THCountsSection: CountsSection, THTodayReport: TodayReport });
 })();
