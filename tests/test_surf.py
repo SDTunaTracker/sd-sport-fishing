@@ -186,3 +186,14 @@ def test_face_mid_is_unrounded_and_inside_band():
     lo, hi = 3.84 * RANGE[0], 3.84 * RANGE[1]
     band = [max(0, math.floor(lo)), max(0, math.ceil(hi))]
     assert band[0] <= round(3.84, 1) <= band[1]
+
+
+def test_sets_ratio_is_h1_10_and_scorecard_is_breaking_height():
+    from src.surf.forecast import RANGE, SETS_RATIO, VERIFICATION
+    assert SETS_RATIO == 1.27 and SETS_RATIO > RANGE[1]        # sets sit above the band top
+    card = VERIFICATION["scorecard"]
+    assert "breaking" in card["truth"].lower() or "surf" in card["truth"].lower()
+    whos = [r["who"] for r in card["rows"]]
+    assert whos[0] == "Surftracker" and any("NWS" in w for w in whos)
+    for r in card["rows"]:
+        assert set(r) >= {"biasFt", "rmseFt", "within1_5"} and 0 <= r["within1_5"] <= 1

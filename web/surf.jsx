@@ -1116,6 +1116,7 @@ function SurfAbout({ data, extra, compact }) {
       {!compact && <p>{data.method}</p>}
       <div className="sf-checked">
         {v.observed && <p><b>Surf height vs observed breaking surf:</b> {v.observed}</p>}
+        {window.SurfScorecard && <window.SurfScorecard card={v.scorecard}/>}
         <p>
           <b>Secondary check, swell model:</b> {v.what}. Over {v.testPeriod}, its wave-height error was{' '}
           {v.hsRmseM ? `${(v.hsRmseM.blend * SF_FT).toFixed(1)} ft (RMS)` : '—'}, better than{' '}

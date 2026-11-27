@@ -1356,3 +1356,12 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .sfn-h { font: 600 12px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
 .sfn-p { margin: 0 0 8px; font: 400 14px/1.55 var(--sans); color: var(--ink-2); }
 .sfn-src a { color: var(--sea); }
+/* ── Surftracker: accuracy scorecard (surf-scorecard.jsx) ── */
+.sfs { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); padding: 10px 12px; margin: 8px 0 12px; }
+.sfs-h { font: 600 12px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+.sfs-t { width: 100%; border-collapse: collapse; font: 400 13.5px/1.4 var(--sans); color: var(--ink-2); }
+.sfs-t th, .sfs-t td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.sfs-t th[scope="row"], .sfs-t thead th:first-child { text-align: left; font-weight: 500; }
+.sfs-t thead th { font: 600 11.5px/1.3 var(--sans); color: var(--muted); }
+.sfs-note { margin: 6px 0 0; font: 400 12px/1.45 var(--sans); color: var(--muted); }
+@media (max-width: 480px) { .sfs-t { font-size: 12.5px; } .sfs-t th, .sfs-t td { padding: 4px 3px; } }
