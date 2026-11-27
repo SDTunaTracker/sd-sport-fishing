@@ -282,6 +282,8 @@ function SurfMap({ breaks, best, open, onPick }) {
   const box = useSfRef(null);
   const map = useSfRef(null);
   const layer = useSfRef(null);
+  const labels = useSfRef(null);
+  const placeRef = useSfRef(null);   // latest placeLabels (fresh breaks/best/open) for map events
   const [failed, setFailed] = useSfState(false);
   useSfEffect(() => {
     let alive = true;
@@ -295,7 +297,10 @@ function SurfMap({ breaks, best, open, onPick }) {
       fit();
       setTimeout(fit, 250);   // the grid cell settles its height after first paint
       map.current = m;
+      m.createPane('sfLabels').style.zIndex = 590;   // under the pins (600), over tiles
       layer.current = L.layerGroup().addTo(m);
+      labels.current = L.layerGroup().addTo(m);
+      m.on('zoomend moveend resize', () => placeRef.current && placeRef.current());
       draw();
     }).catch(() => { if (alive) setFailed(true); });
     return () => { alive = false; if (map.current) { map.current.remove(); map.current = null; } };
@@ -319,7 +324,53 @@ function SurfMap({ breaks, best, open, onPick }) {
         .on('click', () => onPick(b.id))
         .addTo(layer.current);
     });
+    placeLabels();
   }
+  // Spot names next to the pins once zoomed in: tuned breaks from zoom 11, every
+  // spot from 12. Greedy placement (right, left, above, below the pin) that
+  // never covers a pin or another label; a name with no free spot is skipped
+  // until the map is zoomed further in.
+  function placeLabels() {
+    const L = window.L, m = map.current;
+    if (!L || !m || !labels.current) return;
+    labels.current.clearLayers();
+    const z = m.getZoom();
+    if (z < 11) return;
+    const size = m.getSize();
+    const font = '600 12px ' + getComputedStyle(box.current).fontFamily;
+    const ctx = (placeLabels.cv || (placeLabels.cv = document.createElement('canvas'))).getContext('2d');
+    ctx.font = font;
+    const pts = breaks.map(b => ({ b, p: m.latLngToContainerPoint([b.lat, b.lon]), r: b.defaults ? 6.5 : 9 }))
+      .filter(o => o.p.x > -60 && o.p.y > -30 && o.p.x < size.x + 60 && o.p.y < size.y + 30);
+    const boxes = pts.map(o => ({ x0: o.p.x - o.r, y0: o.p.y - o.r, x1: o.p.x + o.r, y1: o.p.y + o.r }));
+    // the zoom buttons and the tile credits are obstacles too
+    const mr = box.current.getBoundingClientRect();
+    box.current.querySelectorAll('.leaflet-control').forEach(c => {
+      const r = c.getBoundingClientRect();
+      if (r.width) boxes.push({ x0: r.left - mr.left - 3, y0: r.top - mr.top - 3, x1: r.right - mr.left + 3, y1: r.bottom - mr.top + 3 });
+    });
+    const hit = (r, list) => list.some(q => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0);
+    const rank = o => (o.b.id === open ? 0 : 10) + (o.b.defaults ? 5 : 0)
+      - ['flat', 'poor', 'poor-fair', 'fair', 'fair-good', 'good'].indexOf(best[o.b.id] ? sfRateKey(best[o.b.id].h.label) : 'flat') / 10;
+    const placed = [];
+    pts.filter(o => z >= 12 || !o.b.defaults).sort((a, c) => rank(a) - rank(c)).forEach(o => {
+      const w = Math.ceil(ctx.measureText(o.b.name).width) + 10, h = 18, { x, y } = o.p, g = o.r + 3;
+      const spots = [[x + g, y - h / 2], [x - g - w, y - h / 2], [x - w / 2, y - g - h], [x - w / 2, y + g]];
+      for (const [x0, y0] of spots) {
+        const r = { x0, y0, x1: x0 + w, y1: y0 + h };
+        if (r.x0 < 2 || r.y0 < 2 || r.x1 > size.x - 2 || r.y1 > size.y - 2) continue;
+        if (hit(r, boxes) || hit(r, placed)) continue;
+        placed.push({ x0: x0 - 2, y0: y0 - 2, x1: r.x1 + 2, y1: r.y1 + 2 });
+        L.marker([o.b.lat, o.b.lon], {
+          pane: 'sfLabels', keyboard: false, interactive: true,
+          icon: L.divIcon({ className: 'sf-lbl-wrap', iconSize: [w, h], iconAnchor: [x - x0, y - y0],
+                            html: `<span class="sf-lbl${o.b.defaults ? ' def' : ''}">${o.b.name.replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';')}</span>` }),
+        }).on('click', () => onPick(o.b.id)).addTo(labels.current);
+        break;
+      }
+    });
+  }
+  placeRef.current = placeLabels;
   useSfEffect(() => { draw(); }, [breaks, best, open]);
   if (failed) return null;
   return (
