@@ -9,6 +9,9 @@ Inputs (all already in data/paddies.db):
                         places, coordinates, offsets, fleet / kelp / paddy
   * forum_boat_reports.spots — older trip-report rows extracted before
                         forum_locations existed (names only)
+  * paddy_sources.raw_text — every stored post and reply, scanned by code for
+                        posted positions (coords.find_coords). No model call,
+                        so posts past the extract cap still get their pins.
 
 Outputs:
   * forum_spot_reports (table, rebuilt every run from the append-only inputs
@@ -70,7 +73,7 @@ QUALITY_ORDER = ["wide_open", "good", "fair", "slow", "none"]
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS forum_spot_reports (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
-    origin           TEXT NOT NULL,     -- paddy_mention | trip_location | trip_spot
+    origin           TEXT NOT NULL,     -- paddy_mention | trip_location | trip_spot | text_scan
     origin_id        INTEGER,
     source_id        TEXT NOT NULL,
     feed_id          TEXT,
@@ -94,7 +97,8 @@ CREATE TABLE IF NOT EXISTS forum_spot_reports (
     precision_nm     REAL,
     species          TEXT,              -- JSON [species]
     quality          TEXT,              -- wide_open | good | fair | slow | none
-    water_temp_f     REAL
+    water_temp_f     REAL,
+    tuna_count       INTEGER            -- tuna the post states for this mention (NULL = not stated)
 );
 CREATE INDEX IF NOT EXISTS idx_fsr_date ON forum_spot_reports(report_date);
 """
@@ -189,7 +193,7 @@ def _row(**kw) -> dict:
                 boat=None, trip_date=None, published_at=None, fetched_at=None, report_date=None,
                 kind=None, name_raw=None, place_id=None, place_name=None, geocode="unresolved",
                 geocode_confidence=None, lat_exact=None, lon_exact=None, lat_pub=None, lon_pub=None,
-                precision_nm=None, species="[]", quality=None, water_temp_f=None)
+                precision_nm=None, species="[]", quality=None, water_temp_f=None, tuna_count=None)
     base.update(kw)
     base["report_date"] = base["trip_date"] or _date(base["published_at"])
     return base
@@ -218,6 +222,20 @@ def _has_table(conn, name: str) -> bool:
     return conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)).fetchone() is not None
 
 
+TUNA_SPECIES = {"bluefin", "yellowfin", "albacore", "bigeye"}
+
+
+def stated_tuna(payload: dict) -> int | None:
+    """The tuna count a bite mention states, or None. Only a count whose species
+    are all tuna is used: "12 fish, yellowfin and yellowtail" can't be split."""
+    count, species = payload.get("count"), set(payload.get("species") or [])
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+        return None
+    if not species or not species <= TUNA_SPECIES:
+        return None
+    return count
+
+
 def _from_mentions(conn, gaz: Gazetteer) -> list[dict]:
     if not _has_table(conn, "report_mentions"):
         return []
@@ -237,8 +255,17 @@ def _from_mentions(conn, gaz: Gazetteer) -> list[dict]:
                     name_raw=r["bank"],
                     species=json.dumps(sorted(set(p.get("species") or []))),
                     quality=OUTCOME_TO_QUALITY.get(p.get("outcome")),
-                    water_temp_f=p.get("water_temp_f") if isinstance(p.get("water_temp_f"), (int, float)) else None)
+                    water_temp_f=p.get("water_temp_f") if isinstance(p.get("water_temp_f"), (int, float)) else None,
+                    tuna_count=stated_tuna(p) if r["type"] == "bite" else None)
         conf = float(r["confidence"] or 0.7)
+        if kind == "coords" and r["lat"] is None:
+            # The extractor kept the posted text but an older parser couldn't read
+            # it ("N32 50.639 W117 31.854", "32 40.5 / 117 30.2"). Read it again here.
+            parsed = coords_mod.parse_coords(p.get("raw") or "")
+            if parsed and coords_mod.in_pin_area(parsed["lat"], parsed["lon"]):
+                base.update(_exact_fields(parsed["lat"], parsed["lon"], gaz, "coords", conf))
+                rows.append(base)
+                continue
         # lat/lon with precision 'bank' is just the bank centre; anything else is a
         # posted position (GPS numbers or an offset), which must be coarsened.
         if r["lat"] is not None and r["lon"] is not None and r["precision"] != "bank":
@@ -302,19 +329,99 @@ def _from_trip_spots(conn, gaz: Gazetteer, skip_sources: set[str]) -> list[dict]
     return rows
 
 
+# Species words as posters write them; only the public set (PUBLIC_SPECIES).
+SPECIES_WORDS = [
+    ("yellowfin", re.compile(r"\b(yellowfin|yellow fin|yft|yf)\b", re.I)),
+    ("bluefin", re.compile(r"\b(bluefin|blue fin|bft|bf)\b", re.I)),
+    ("yellowtail", re.compile(r"\b(yellowtail|yellows|yt|forktails?)\b", re.I)),
+    ("dorado", re.compile(r"\b(dorado|mahi|dodo|dodos)\b", re.I)),
+    ("skipjack", re.compile(r"\b(skipjack|skippies|skippy)\b", re.I)),
+    ("bigeye", re.compile(r"\b(bigeye|big eye)\b", re.I)),
+    ("albacore", re.compile(r"\b(albacore|albies?)\b", re.I)),
+]
+
+
+def species_in_text(text: str | None) -> list[str]:
+    return [name for name, rx in SPECIES_WORDS if text and rx.search(text)]
+
+
+def _same_point(a: dict, lat: float, lon: float, tol: float = 0.01) -> bool:
+    return (a["lat_exact"] is not None and abs(a["lat_exact"] - lat) <= tol
+            and abs(a["lon_exact"] - lon) <= tol)
+
+
+def _from_text_scan(conn, gaz: Gazetteer, have: list[dict]) -> list[dict]:
+    """Positions written in any stored post (first posts and replies), read by
+    code alone: no model call, so posts past the extract cap still get pins.
+    Skips positions the extractors already turned into rows."""
+    if not _has_table(conn, "paddy_sources"):
+        return []
+    by_source = defaultdict(list)
+    for r in have:
+        by_source[r["source_id"]].append(r)
+    rows = []
+    for s in conn.execute("SELECT id, feed_id, url, title, published_at, fetched_at, raw_text "
+                          "FROM paddy_sources"):
+        found = coords_mod.find_coords(s["raw_text"] or "")
+        if not found:
+            continue
+        species = json.dumps(species_in_text(s["raw_text"]))
+        for i, p in enumerate(found):
+            if any(_same_point(h, p["lat"], p["lon"]) for h in by_source[s["id"]]):
+                continue
+            base = _row(origin="text_scan", origin_id=i, source_id=s["id"], feed_id=s["feed_id"],
+                        url=s["url"], title=s["title"], published_at=s["published_at"],
+                        fetched_at=s["fetched_at"], kind="coords", species=species)
+            base.update(_exact_fields(p["lat"], p["lon"], gaz, "coords", 0.8))
+            rows.append(base)
+    return rows
+
+
+def _posted_on_land(r: dict) -> bool:
+    """A posted point inside the SoCal / northern Baja band but east of the coast
+    is a typo or a misread. Long-range points further south pass through."""
+    if r["geocode"] != "coords" or r["lat_exact"] is None:
+        return False
+    lat, lon = r["lat_exact"], r["lon_exact"]
+    in_band = coords_mod.PIN_LAT_MIN <= lat <= coords_mod.PIN_LAT_MAX
+    return in_band and lon >= coords_mod.coast_lon(lat)
+
+
+def _fill_post_species(conn, rows: list[dict]) -> None:
+    """A posted position rarely names the fish in the same sentence; give it the
+    species the rest of that post reported."""
+    post = defaultdict(set)
+    for r in rows:
+        post[r["source_id"]].update(json.loads(r["species"] or "[]"))
+    texts = {}
+    if _has_table(conn, "paddy_sources"):
+        need = {r["source_id"] for r in rows if r["kind"] == "coords"}
+        for sid in need:
+            t = conn.execute("SELECT raw_text FROM paddy_sources WHERE id = ?", (sid,)).fetchone()
+            texts[sid] = t[0] if t else None
+    for r in rows:
+        if r["kind"] == "coords" and r["lat_exact"] is not None and json.loads(r["species"] or "[]") == []:
+            names = post[r["source_id"]] or set(species_in_text(texts.get(r["source_id"])))
+            r["species"] = json.dumps(sorted(names))
+
+
 COLUMNS = ["origin", "origin_id", "source_id", "feed_id", "url", "title", "boat", "trip_date",
            "published_at", "fetched_at", "report_date", "kind", "name_raw", "place_id", "place_name",
            "geocode", "geocode_confidence", "lat_exact", "lon_exact", "lat_pub", "lon_pub",
-           "precision_nm", "species", "quality", "water_temp_f"]
+           "precision_nm", "species", "quality", "water_temp_f", "tuna_count"]
 
 
 def rebuild(conn: sqlite3.Connection, gaz: Gazetteer | None = None) -> dict:
     gaz = gaz or Gazetteer()
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    if "tuna_count" not in {r[1] for r in conn.execute("PRAGMA table_info(forum_spot_reports)")}:
+        conn.execute("ALTER TABLE forum_spot_reports ADD COLUMN tuna_count INTEGER")
     loc_rows, loc_sources = _from_locations(conn, gaz)
     rows = _from_mentions(conn, gaz) + loc_rows + _from_trip_spots(conn, gaz, loc_sources)
-    rows = [r for r in rows if r["report_date"]]
+    rows += _from_text_scan(conn, gaz, rows)
+    _fill_post_species(conn, rows)
+    rows = [r for r in rows if r["report_date"] and not _posted_on_land(r)]
     conn.execute("DELETE FROM forum_spot_reports")
     conn.executemany(
         f"INSERT INTO forum_spot_reports ({', '.join(COLUMNS)}) VALUES ({', '.join('?' * len(COLUMNS))})",
@@ -374,6 +481,10 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
     for r in rows:
         groups[_cell_key(r)].append(r)
     photo_counts = _photo_counts(conn)
+    # tuna each post states in total (any bite mention, placed or not)
+    post_tuna = {sid: total for sid, total in conn.execute(
+        "SELECT source_id, SUM(tuna_count) FROM forum_spot_reports "
+        "WHERE tuna_count IS NOT NULL GROUP BY source_id")}
 
     features = []
     for key, rs in groups.items():
@@ -405,6 +516,16 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
                               "feed": r["feed_id"], "photos": photo_counts.get(r["source_id"], 0)})
             if len(links) >= MAX_SOURCES_PER_SPOT:
                 break
+        # Stated tuna only, never estimated. A posted pin carries its whole post's
+        # count; a named spot sums the bite mentions placed at that spot.
+        if position == "posted":
+            tuna_by_src = {s: post_tuna[s] for s in srcs_14 if s in post_tuna}
+        else:
+            tuna_by_src = {}
+            for r in rs:
+                if r["tuna_count"] is not None and r["report_date"] >= cutoff_short:
+                    tuna_by_src[r["source_id"]] = tuna_by_src.get(r["source_id"], 0) + r["tuna_count"]
+        tuna_7d = {s: n for s, n in tuna_by_src.items() if s in srcs_7}
         features.append({
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [first["lon_pub"], first["lat_pub"]]},
@@ -415,7 +536,12 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
                 "precision_nm": max(r["precision_nm"] or COORD_PRECISION_NM for r in rs),
                 "reports_7d": len(srcs_7), "reports_14d": len(srcs_14),
                 "last_report": first["report_date"],
-                "species": dict(species.most_common()),
+                # newest post time behind this point; the chart ages pins out from it
+                "posted_at": max((r["published_at"] or "" for r in rs), default="") or None,
+                "species": dict(species.most_common()),   # mentions per species, not fish
+                "tuna_7d": sum(tuna_7d.values()) if tuna_7d else None,
+                "tuna_reports_7d": len(tuna_7d),
+                "tuna": (sum(tuna_by_src.values()) if tuna_by_src else None) if position == "posted" else None,
                 "quality": {q: quality[q] for q in QUALITY_ORDER if quality[q]},
                 "kinds": dict(kinds.most_common()),
                 "water_temp_f": {"min": min(temps), "max": max(temps)} if temps else None,
@@ -431,7 +557,9 @@ def build_geojson(conn: sqlite3.Connection, gaz: Gazetteer | None = None,
         "window_days": window_days, "short_window_days": SHORT_WINDOW_DAYS,
         "note": ("position 'posted' = coordinates printed in the thread; 'estimate' = worked out "
                  "from 'N miles off X'; 'spot' = the named spot's centre. precision_nm says how far "
-                 "to trust each point. Follow the links for the original posts."),
+                 "to trust each point. Follow the links for the original posts. species counts "
+                 "mentions, not fish; tuna_7d / tuna are tuna counts the posts state (bluefin, "
+                 "yellowfin, albacore, bigeye), null when no post states one."),
         "attribution": "Spot list courtesy SWYC Anglers",
         "regions_note": "properties.region: san_diego | oc_la | both, from where the point is.",
         "features": features,
