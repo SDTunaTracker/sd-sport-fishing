@@ -278,6 +278,18 @@ def run(target_date: date | None, export_only: bool, hourly: bool = False) -> in
                 summary_lines.append(f"  OC/LA conditions: {sum(added.values())} point-days written")
         except Exception as e:
             summary_lines.append(f"  OC/LA conditions ERROR (non-fatal): {e}")
+        # Trip-day marine conditions (NWS zones + alerts, tides, NDBC/CDIP buoys).
+        # Each source has its own refresh interval inside src.marine.
+        try:
+            from . import marine
+            res = marine.refresh(conn)
+            if res:
+                summary_lines.append("  Marine: " + "; ".join(f"{k} {v}" for k, v in res.items()))
+            # Charts buoy pins + 48 h history (web/api/v1/buoys.json).
+            n_live = marine.write_buoys_json(conn)
+            summary_lines.append(f"  Buoys JSON: {n_live} of {len(marine.BUOY_PINS)} with data")
+        except Exception as e:
+            summary_lines.append(f"  Marine conditions ERROR (non-fatal): {e}")
         conn.commit()  # chlorophyll below opens its own connection
 
         # Chlorophyll-a — VIIRS NOAA-20 daily (~8-day lag). Full runs always;

@@ -114,6 +114,18 @@
     );
   }
 
+  // NWS sea-conditions forecast for the trip (TTPicker answer .sea). A rough
+  // day (seas 8 ft+) gets a flag; an advisory already has its own line above.
+  function Sea({ a }) {
+    if (!a.sea || !a.sea.line) return null;
+    return (
+      <p className={`pk-sea${a.sea.rough ? ' rough' : ''}`}>
+        {a.sea.rough && !a.advisory && <b>Rough seas forecast. </b>}
+        <span className="pk-sea-src">NWS forecast{a.sea.atDeparture ? ' at departure' : ''}:</span> {a.sea.line}
+      </p>
+    );
+  }
+
   // ── Pick my trip ────────────────────────────────────────────────────────────
   // startEmpty (Today): no trip type chosen until the visitor picks one, so the
   // card doesn't repeat the answers already shown above it.
@@ -237,6 +249,7 @@
                   <div className="pk-meta">{best.dateLabel} · {best.tripLength} · {best.landing}</div>
                   <p className="pk-why">{best.reason}</p>
                   <Advisory a={best}/>
+                  <Sea a={best}/>
                 </div>
                 <div className="pk-best-side">
                   <dl className="pk-facts">
@@ -258,6 +271,7 @@
                           <span className="pk-alt-meta">{a.dateLabel} · {[money(a.price), seatsText(a.openSpots)].filter(Boolean).join(' · ')}</span>
                           <span className="pk-alt-why">{a.samples ? `${rate(a.rate)} ${a.noun}/angler lately (fleet ${rate(a.fleetRate)})${a.samples < 3 ? ', few trips' : ''}` : 'No recent trips of this type'}</span>
                           {a.advisory && <span className="pk-alt-adv">{a.advisory.event}</span>}
+                          {a.sea && a.sea.line && <span className={`pk-alt-sea${a.sea.rough ? ' rough' : ''}`}>NWS forecast: {a.sea.line}{a.sea.rough && !a.advisory ? ' (rough)' : ''}</span>}
                         </div>
                         <BookLink a={a}/>
                       </li>
@@ -340,6 +354,7 @@
                   <span className="ta-meta">{a.dateLabel}{a.price != null ? ` · ${money(a.price)}` : ''}{a.openSpots != null ? ` · ${seatsText(a.openSpots)}` : ''}</span>
                 </div>
                 <div className="ta-why">{shortWhy(a)}{a.advisory ? ` · ${a.advisory.event}` : ''}</div>
+                {a.sea && a.sea.line && <div className={`ta-sea${a.sea.rough ? ' rough' : ''}`}>NWS forecast: {a.sea.line}{a.sea.rough && !a.advisory ? ' · rough' : ''}</div>}
                 <BookLink a={a}/>
               </li>
             );

@@ -1694,6 +1694,10 @@ body.compact .dt td { padding: 7px 12px; }
 .tp-card-tpa                { font: 400 12px/16px var(--ss-font-sans); color: var(--tb-slate); }
 .tp-card-trip-count         { font: 400 11px/16px var(--ss-font-sans); color: #94A3B8; }
 .tp-card-capacity-hint      { font: 400 11px/14px var(--ss-font-sans); color: var(--tb-gray-2); }
+/* NWS sea-conditions forecast line on trip cards (web/marine.js) */
+.tp-card-sea                { font: 400 11.5px/15px var(--ss-font-sans); color: var(--tb-gray-2); margin-top: 4px; }
+.tp-card-sea-src            { font-weight: 600; }
+.tp-card-sea.rough          { color: #B7791F; }
 /* Capacity bar */
 .tp-card-cap-row            { display: flex; align-items: center; gap: 8px; }
 .tp-card-cap-bar-wrap       { display: none; }
@@ -7178,3 +7182,32 @@ a.bv-title:hover { text-decoration: underline; text-underline-offset: 3px; }
 .tpk-cite { font-size: 9px; color: var(--tb-gray-3); margin-left: 2px; }
 .tpk-sources { margin-top: 6px; font: 400 11px/15px var(--ss-font-sans); color: var(--tb-gray-3); }
 .tpk-sources a { color: inherit; text-decoration: underline; }
+
+/* Boat page: next trips with the NWS sea-conditions forecast (drilldown.jsx BoatSeaPanel) */
+.dd-sea { list-style: none; margin: 0; padding: 0; }
+.dd-sea li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--ss-border-2); font: 400 13px/18px var(--ss-font-sans); }
+.dd-sea-when { font-weight: 600; color: var(--tb-ink); }
+.dd-sea-line { color: var(--tb-gray-2); }
+.dd-sea li.rough .dd-sea-line { color: #B7791F; font-weight: 600; }
+.dd-sea-foot { padding: 8px 16px 12px; font: 400 11.5px/16px var(--ss-font-sans); color: var(--tb-gray-2); }
+
+/* Charts: buoy pins (charts.jsx buildBuoysLayer) and their popups */
+.buoy-pin { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.buoy-dot { width: 14px; height: 14px; border-radius: 50%; background: #F59E0B; border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.45); flex: none; }
+.buoy-val { font: 700 11px/1 var(--ss-font-sans); color: #fff; background: rgba(15,23,42,.78);
+  padding: 2px 5px; border-radius: 4px; }
+.buoy-pin.stale .buoy-dot { background: #94A3B8; }
+.buoy-pin.stale .buoy-val { color: #CBD5E1; }
+.buoy-popup .leaflet-popup-content { margin: 10px 12px; }
+.buoy-pop { font: 400 12.5px/1.45 var(--ss-font-sans); color: #0F172A; min-width: 180px; }
+.buoy-pop-h { margin-bottom: 4px; }
+.buoy-pop-h span { color: #64748B; font-size: 11px; }
+.buoy-pop-r b { font-weight: 700; }
+.buoy-spark { margin-top: 6px; }
+.buoy-spark svg { display: block; max-width: 100%; height: auto; }
+.buoy-spark-h { font: 600 10.5px/1.3 var(--ss-font-sans); color: #475569; text-transform: uppercase; letter-spacing: .03em; }
+.buoy-spark-h span { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.buoy-pop-t { margin-top: 6px; font-size: 11px; color: #64748B; }
+.buoy-pop-t.stale { color: #B7791F; font-weight: 600; }
