@@ -36,7 +36,9 @@
 //       their own limit rate in .rate: pass metric: 'limitRate'.
 //     Each answer: { boat, landing, tripLength, departureAt, returnAt, dateLabel,
 //       price, openSpots, rate, fleetRate, samples, windowDays, beatFleet, noun,
-//       metric, bookingUrl, sourceId, advisory|null, reason }
+//       metric, bookingUrl, sourceId, advisory|null, sea|null, reason }
+//     sea: NWS forecast for the trip { line, rough, atDeparture, zones, seasFt, windKt }
+//       (web/marine.js); rough = advisory or seas 8 ft+. A flag only, never scored.
 //   whatsBiting(query, data?) -> { region, days, trips, anglers,
 //       items: [{ species, fish, perAngler, tripsWithCatch, change|null }] }
 //   presets(now?) -> { weekend: {from,to,label}, next7: {from,to,label} }
@@ -200,6 +202,21 @@
     if (isNaN(d)) return '';
     try { return d.toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric' }); }
     catch (e) { return String(iso).slice(0, 10); }
+  }
+
+  // NWS sea-conditions forecast for the trip (web/marine.js). Shown as a
+  // warning line, never scored: a rough day (advisory, or seas 8 ft+) is
+  // flagged, not ranked down.
+  function marineLib() {
+    if (root && root.TTMarine) return root.TTMarine;
+    try { return typeof require === 'function' ? require('./marine.js') : null; } catch (e) { return null; }
+  }
+  function seaFor(marine, trip, now) {
+    var M = marineLib();
+    if (!M || !marine) return null;
+    var c = M.forTrip(marine, trip, now);
+    return c ? { line: M.line(c), rough: c.rough, atDeparture: c.atDeparture, zones: c.zones,
+                 seasFt: c.seasFt, windKt: c.windKt } : null;
   }
 
   // Small-craft advisory overlapping the trip, from NWS alerts (warning only).
@@ -391,6 +408,7 @@
         bookingUrl: D.bookingUrl(s.trip),
         sourceId: s.trip.sourceId || null,
         advisory: advisoryFor(marine, s.trip, now),
+        sea: seaFor(marine, s.trip, now),
         reason: reasonFor(s, noun, metric, idx),
       };
     });

@@ -404,6 +404,21 @@ function PackListSection({ trip }) {
   );
 }
 
+// "NWS forecast: Seas 3–4 ft · wind <10 kt", amber on a rough day (advisory
+// or seas 8 ft+). Attributed to NWS, never folded into any score.
+function SeaLine({ sea }) {
+  const M = window.TTMarine;
+  const zone = sea.zones.length === 1 ? M.ZONES[sea.zones[0]] : null;
+  return (
+    <div className={`tp-card-sea${sea.rough ? ' rough' : ''}`}
+         title={`National Weather Service coastal waters forecast${zone ? `, ${zone.range}` : ''}`}>
+      <span className="tp-card-sea-src">NWS forecast{sea.atDeparture ? ' at departure' : ''}:</span>{' '}
+      {M.line(sea)}
+      {sea.advisory ? ` · ${sea.advisory.event}` : sea.rough ? ' · rough' : ''}
+    </div>
+  );
+}
+
 function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const [noteOpen, setNoteOpen] = useState(false);
 
@@ -421,6 +436,9 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
   const avgTpa = avgTpaByKey ? avgTpaByKey[tpaKey] : null;
 
   const isPast = dep.getTime() < Date.now();
+  // NWS sea-conditions forecast for this trip's window (web/marine.js); null
+  // when the trip is beyond the forecast or the forecast is stale.
+  const sea = !isPast && window.TTMarine ? window.TTMarine.forTrip(window.SD && window.SD.MARINE, s) : null;
 
   const trackClick = () => {
     if (window.TTTrack) TTTrack.tripClick({ ...s, moonPhase: moon.phase }, context || {});
@@ -502,6 +520,7 @@ function TripCard({ s, avgTpaByKey, context, onReview, navigate }) {
           <TimeRow label="Dep" dt={dep}/>
           {ret && <TimeRow label="Ret" dt={ret} isReturn/>}
         </div>
+        {sea && <SeaLine sea={sea}/>}
         <div className="tp-card-wr-row">
           <span className="tp-card-stat-label"><MetricLabel {...METRIC_DEFINITIONS.winRate} /></span>
           <WinRateBadge wr={s._winRate}/>
