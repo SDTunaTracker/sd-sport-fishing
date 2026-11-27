@@ -171,6 +171,7 @@ def build(now: datetime | None = None) -> dict:
     except Exception as e:  # noqa: BLE001
         log.warning("spots wind failed: %s", e)
         winds = [{} for _ in cfgs]
+    winds, wind_note = F.with_wind_fallback(cfgs, winds, OUT, key="spots")
     try:
         tide_h, _ = F.tides(now.replace(hour=0, minute=0) - timedelta(days=1))
     except Exception as e:  # noqa: BLE001
@@ -193,7 +194,7 @@ def build(now: datetime | None = None) -> dict:
             r["note"] = b["note"]
         spots.append(r)
     return {"generatedAt": now.isoformat(timespec="minutes"), "staleAfterHours": 30,
-            "label": "Model forecast", "settings": "default",
+            "label": "Model forecast", "settings": "default", "windNote": wind_note,
             "about": "More San Diego County spots, forecast with the same model as the main breaks but "
                      "with default settings (break type, tide and swell windows not yet tuned per spot).",
             "sources": "Spot names and positions: USGS GNIS (public domain), © OpenStreetMap "
