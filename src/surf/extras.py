@@ -83,7 +83,7 @@ def water_temp(now: datetime) -> dict | None:
     return None
 
 
-def enrich(payload: dict, tide_hourly: dict[int, float], now: datetime) -> dict:
+def _breaks_extras(payload: dict) -> None:
     for br in payload.get("breaks", []):
         cfg = BY_ID.get(br["id"], {})
         if "tide" in cfg:
@@ -94,12 +94,22 @@ def enrich(payload: dict, tide_hourly: dict[int, float], now: datetime) -> dict:
             e = energy_kj(h.get("hsM"), h.get("tpS"))
             if e is not None:
                 h["energyKj"] = e
-    payload.setdefault("tides", {})["hourly"] = [[C.to_iso(t), round(v, 2)]
-                                                for t, v in sorted(tide_hourly.items())]
-    payload["sun"] = sun_days(now - timedelta(days=1))
-    try:
-        payload["waterTemp"] = water_temp(now)
-    except Exception as e:  # noqa: BLE001
-        log.warning("water temp failed: %s", e)
-        payload["waterTemp"] = None
+
+
+def enrich(payload: dict, tide_hourly: dict[int, float], now: datetime) -> dict:
+    """Add the display-only fields. Never raises: each step is guarded on its
+    own, so a failure here can't stop surf.json being written (the page treats
+    every one of these fields as optional)."""
+    steps = (
+        ("break extras", lambda: _breaks_extras(payload)),
+        ("tide curve", lambda: payload.setdefault("tides", {}).__setitem__(
+            "hourly", [[C.to_iso(t), round(v, 2)] for t, v in sorted((tide_hourly or {}).items())])),
+        ("sun times", lambda: payload.__setitem__("sun", sun_days(now - timedelta(days=1)))),
+        ("water temp", lambda: payload.__setitem__("waterTemp", water_temp(now))),
+    )
+    for name, fn in steps:
+        try:
+            fn()
+        except Exception as e:  # noqa: BLE001
+            log.warning("surf extras: %s failed: %s", name, e)
     return payload
