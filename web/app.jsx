@@ -131,13 +131,18 @@ function pathFromRoute(view, params = {}, regions = ['san_diego']) {
 }
 window.ttPathFromRoute = pathFromRoute;
 
-// Shown while a region's data file (web/region-data.js) loads on first use.
-function RegionLoading({ regions, error, onRetry }) {
+// Views that only read recent trips (30-120 day windows, this season), all of
+// which data.js carries. Every other view waits for data-history.js.
+const HISTORY_FREE_VIEWS = { home: 1, today: 1, charts: 1, forecast: 1, surf: 1, pick: 1, account: 1 };
+
+// Shown while a region's data file (web/region-data.js) loads on first use,
+// and (history) while San Diego's older seasons load.
+function RegionLoading({ regions, error, onRetry, history }) {
   const label = window.getRegionSubtitle ? window.getRegionSubtitle(regions) : 'this region';
   if (error) {
     return (
       <div className="region-loading" role="alert">
-        <div className="region-loading-title">Couldn't load {label} fish counts.</div>
+        <div className="region-loading-title">Couldn't load {history ? 'past seasons of ' : ''}{label} fish counts.</div>
         <div className="region-loading-sub">Check your connection and try again.</div>
         <button className="btn primary" onClick={onRetry}>Try again</button>
       </div>
@@ -145,8 +150,8 @@ function RegionLoading({ regions, error, onRetry }) {
   }
   return (
     <div className="region-loading" role="status" aria-live="polite" aria-busy="true">
-      <div className="region-loading-title"><span className="region-loading-spinner" aria-hidden="true"></span>Loading {label} fish counts…</div>
-      <div className="region-loading-sub">One-time download for this region.</div>
+      <div className="region-loading-title"><span className="region-loading-spinner" aria-hidden="true"></span>Loading {history ? 'past seasons of ' : ''}{label} fish counts…</div>
+      <div className="region-loading-sub">{history ? 'Older trips download once, then stay on this device.' : 'One-time download for this region.'}</div>
       {window.SkeletonRows && <SkeletonRows count={6}/>}
     </div>
   );
@@ -256,6 +261,28 @@ function App() {
       setRegionDataTick(t => t + 1);
     }).catch(e => setRegionLoadError((e && e.message) || String(e)));
   }, [regions, regionDataReady, regionDataTick]);
+
+  // Older San Diego trips (data-history.js) download right after data.js.
+  // Views in HISTORY_FREE_VIEWS render without them; the rest show
+  // RegionLoading until they're merged. Either way SD_PROC_TRIPS is re-derived
+  // once they arrive, so every page ends up with every year.
+  const [historyTick, setHistoryTick] = useS(0);
+  const [historyRetry, setHistoryRetry] = useS(0);
+  const [historyError, setHistoryError] = useS(null);
+  const historyReady = !window.ttRegionData || !window.ttRegionData.historyLoaded
+    || window.ttRegionData.historyLoaded();
+  useE(() => {
+    if (!window.ttRegionData || !window.ttRegionData.ensureHistory) return;
+    let live = true;
+    setHistoryError(null);
+    window.ttRegionData.ensureHistory().then(() => {
+      if (!live) return;
+      // Skip the re-derive when history was merged before the first one ran.
+      if (window.SD_PROC_SRC_LEN !== window.SD.TRIPS.length) SDA.preprocessTrips(loadSettings());
+      setHistoryTick(t => t + 1);
+    }).catch(e => { if (live) setHistoryError((e && e.message) || String(e)); });
+    return () => { live = false; };
+  }, [historyRetry]);
 
   function onSettingsChange(next) {
     saveSettings(next);
@@ -536,6 +563,9 @@ function App() {
   if (!regionDataReady && route.view !== 'account' && route.view !== 'surf') {
     content = <RegionLoading regions={regions} error={regionLoadError}
                              onRetry={() => setRegionDataTick(t => t + 1)}/>;
+  } else if (!historyReady && !HISTORY_FREE_VIEWS[route.view] && regions.includes('san_diego')) {
+    content = <RegionLoading regions={regions} history error={historyError}
+                             onRetry={() => setHistoryRetry(t => t + 1)}/>;
   }
 
   const headerActive = route.view === 'boat' ? 'boats'

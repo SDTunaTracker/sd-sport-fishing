@@ -293,6 +293,8 @@ jobs:
           # Per-region data files: data-region-oc_la.js, ... (src/export.py) and
           # data-region-sfbay.js (src/export_sfbay.py).
           if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi
+          # San Diego trips before January 1 of last year (src/export.py history_js).
+          if [ -f web/data-history.js ]; then git add web/data-history.js; fi
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

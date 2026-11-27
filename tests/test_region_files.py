@@ -83,7 +83,7 @@ def test_size_guard_raises(tmp_path, monkeypatch):
         E._check_file_size(f)
 
 
-@pytest.mark.parametrize("path", [WEB / "data.js", *sorted(WEB.glob("data-region-*.js"))],
+@pytest.mark.parametrize("path", [WEB / "data.js", WEB / E.HISTORY_FILE, *sorted(WEB.glob("data-region-*.js"))],
                          ids=lambda p: p.name)
 def test_live_data_files_under_cloudflare_limit(path):
     if not path.exists():
@@ -137,3 +137,43 @@ def test_columnar_js_decoder_matches_python(tmp_path):
     f.write_text(js, encoding="utf-8")
     out = json.loads(subprocess.run([node, str(f)], capture_output=True, text=True, check=True).stdout)
     assert out["TRIPS"] == rows and out["HALF_DAY_TRIPS"] == []
+
+
+# ── Trip history split (src/export.py data_js_texts) ──────────────────────────
+def test_history_cutoff_is_january_first_of_last_year():
+    from datetime import date
+    assert E.history_cutoff(date(2026, 11, 27)) == "2025-01-01"
+    assert E.history_cutoff(date(2027, 1, 1)) == "2026-01-01"
+
+
+def test_data_js_keeps_recent_trips_and_history_file_has_the_rest():
+    from datetime import date
+    old = [_trip(i, "san_diego", "H&M Landing", date="2024-06-01") for i in (1, 2)]
+    new = [_trip(i, "san_diego", "H&M Landing", date=d) for i, d in ((3, "2025-01-01"), (4, "2026-11-20"))]
+    payload = {"TRIPS": old + new, "HALF_DAY_TRIPS": [], "META": {"tripCount": 4}}
+    js, hist = E.data_js_texts(payload, today=date(2026, 11, 27))
+    sd = json.loads(re.search(r"^window\.SD = (.*);\n", js, re.M).group(1))
+    assert [t["id"] for t in E.decode_columnar(sd["TRIPS"])] == [3, 4]
+    assert sd["META"]["tripCount"] == 4            # full count, as before
+    h = sd["META"]["HISTORY"]
+    assert h["file"] == "data-history.js" and h["before"] == "2025-01-01" and h["tripCount"] == 2
+    body = json.loads(re.search(r"^window\.SD_HISTORY = (.*);\n", hist, re.M).group(1))
+    assert body["v"] == h["v"] and body["before"] == "2025-01-01"
+    assert [t["id"] for t in E.decode_columnar(body["TRIPS"])] == [1, 2]
+    assert payload["TRIPS"] == old + new           # app.json still sees every trip
+    # Same rows, same version: browsers keep their cached copy.
+    _, hist2 = E.data_js_texts(dict(payload, TRIPS=old + new + [_trip(5, "san_diego", "H&M Landing", date="2026-11-21")]),
+                               today=date(2026, 11, 27))
+    assert hist2 == hist
+
+
+def test_live_data_js_history_file_matches():
+    data_js = WEB / "data.js"
+    if not data_js.exists():
+        pytest.skip("data.js not generated")
+    m = re.search(r'"HISTORY":(\{[^}]*\})', data_js.read_text(encoding="utf-8"))
+    if not m:
+        pytest.skip("data.js predates the history split")
+    meta = json.loads(m.group(1))
+    text = (WEB / meta["file"]).read_text(encoding="utf-8")
+    assert f'window.SD_HISTORY = {{"v":"{meta["v"]}"' in text

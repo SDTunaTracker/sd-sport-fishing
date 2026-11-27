@@ -93,7 +93,65 @@
   // Region ids as the app stores them; 'all_socal' style ids are not used here.
   function ids(regionIds) { return (regionIds || []).filter(needsLoad); }
 
+  // ── San Diego trip history (data-history.js) ────────────────────────────
+  // data.js carries trips from SD.META.HISTORY.before on; older ones live in
+  // data-history.js (src/export.py history_js). It starts loading as soon as
+  // this file runs, so pages that need every year (app.jsx decides) wait for
+  // as little as possible. Merging prepends the rows to SD.TRIPS and fires
+  // 'tt-region-data' with {region: 'history'}.
+  var hist = { loaded: false, pending: null };
+  function histMeta() { return meta().HISTORY || null; }
+  function historyLoaded() { return !histMeta() || hist.loaded; }
+
+  function mergeHistory() {
+    var h = window.SD_HISTORY, m = histMeta();
+    if (!h || h.v !== m.v) throw new Error('trip history file is missing or out of date');
+    var rows = (window.__ttRows ? window.__ttRows(h.TRIPS) : h.TRIPS) || [];
+    var SD = window.SD;
+    SD.TRIPS = rows.concat(SD.TRIPS || []);
+    // Region files merged first put their own old rows in already.
+    if (Object.keys(loaded).length) SD.TRIPS.sort(byDateThenId);
+    delete window.SD_HISTORY;
+    hist.loaded = true;
+    try { window.dispatchEvent(new CustomEvent('tt-region-data', { detail: { region: 'history' } })); } catch (e) {}
+  }
+
+  function ensureHistory() {
+    if (historyLoaded()) return Promise.resolve();
+    if (hist.pending) return hist.pending;
+    var m = histMeta();
+    hist.pending = new Promise(function (resolve, reject) {
+      if (window.SD_HISTORY && window.SD_HISTORY.v === m.v) {
+        try { mergeHistory(); resolve(); } catch (e) { reject(e); }
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = m.file + '?v=' + encodeURIComponent(m.v || '');
+      s.async = true;
+      s.onload = function () {
+        try { mergeHistory(); resolve(); } catch (e) { reject(e); }
+      };
+      s.onerror = function () { reject(new Error('could not load ' + m.file)); };
+      document.head.appendChild(s);
+    }).catch(function (e) {
+      hist.pending = null;   // allow a retry
+      throw e;
+    });
+    return hist.pending;
+  }
+
+  // Start the download now (in parallel with the app's own scripts). A failed
+  // first try is retried by app.jsx through ensureHistory().
+  if (typeof document !== 'undefined' && document.head && histMeta()) {
+    ensureHistory().catch(function () {});
+  }
+
   window.ttRegionData = {
+    // Every year of San Diego trips is in SD.TRIPS.
+    historyLoaded: historyLoaded,
+    ensureHistory: ensureHistory,
+    // Merge window.SD_HISTORY evaluated some other way (Node VM harnesses).
+    adoptHistory: function () { if (!historyLoaded()) mergeHistory(); },
     isLoaded: function (regionIds) { return ids(regionIds).length === 0; },
     ensure: function (regionIds) { return Promise.all(ids(regionIds).map(load)); },
     // Merge a region file that was evaluated some other way (no <script> tag),
