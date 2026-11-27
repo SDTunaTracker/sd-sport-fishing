@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T06:34:24Z",
+ "generated_at": "2026-11-27T12:58:24Z",
  "label": "What's working, from BloodyDecks trip reports and the landings' reports",
  "note": "Automatic summaries of recent public forum posts; follow the links for details.",
  "classes": {
@@ -7,7 +7,7 @@
    "label": "Half & 3/4 day",
    "headline": "Pt Loma · 25lb/30lb flyline",
    "window_days": 21,
-   "report_count": 33,
+   "report_count": 34,
    "top_spots": [
     "Pt Loma"
    ],
@@ -235,7 +235,7 @@
      "conditions": null,
      "region": "oc_la",
      "source": "forum",
-     "photos": 0,
+     "photos": 2,
      "reply": false
     },
     {
@@ -469,7 +469,7 @@
      "conditions": "Good weather early; rough seas and long uphill run back.",
      "region": "san_diego",
      "source": "forum",
-     "photos": 0,
+     "photos": 12,
      "reply": false
     },
     {
@@ -500,7 +500,7 @@
     "label": "Half & 3/4 day",
     "headline": "Pt Loma · 25lb/30lb flyline",
     "window_days": 21,
-    "report_count": 32,
+    "report_count": 33,
     "top_spots": [
      "Pt Loma"
     ],
@@ -943,7 +943,7 @@
       "conditions": "Good weather early; rough seas and long uphill run back.",
       "region": "san_diego",
       "source": "forum",
-      "photos": 0,
+      "photos": 12,
       "reply": false
      },
      {
@@ -1059,7 +1059,7 @@
       "conditions": null,
       "region": "oc_la",
       "source": "forum",
-      "photos": 0,
+      "photos": 2,
       "reply": false
      },
      {

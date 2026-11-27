@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T06:34:23Z",
+ "generated_at": "2026-11-27T12:58:24Z",
  "label": "From the landings' reports",
  "source": "Landing and skipper posts on SanDiegoFishReports.com / SoCalFishReports.com",
  "note": "Automatic summaries; sizes, bait and tackle are quote-checked. Photos link to the landing's report and are not re-hosted.",
@@ -296,6 +296,48 @@
       "https://media.fishreports.com/photos/img-20261115-ff19d7c5.jpg",
       "https://media.fishreports.com/photos/img-20261115-e188886e.jpg"
      ]
+    },
+    {
+     "date": "2026-11-13",
+     "trip_length": "Full Day",
+     "anglers": 12,
+     "title": "Aloha Spirit Fish Count",
+     "url": "https://socalfishreports.com/fish_reports/247208/aloha-spirit-fish-count.php",
+     "by": "Shawn Steward",
+     "landing": "Channel Islands Sportfishing",
+     "region": "oc_la",
+     "boat": "Aloha Spirit",
+     "skipper_note": "Cancelled tomorrow due to weather; space available all next week.",
+     "size": [],
+     "catch": [
+      {
+       "name": "whitefish",
+       "count": 120
+      },
+      {
+       "name": "rockfish",
+       "count": 110
+      },
+      {
+       "name": "skipjack",
+       "count": 21
+      },
+      {
+       "name": "sheephead",
+       "count": 2
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": "Weather cancellation issued for 11/14.",
+     "quote": "We are cancelled tomorrow due to weather",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261114-f1df718c.jpg",
+      "https://media.fishreports.com/photos/img-20261114-763ad358.jpg",
+      "https://media.fishreports.com/photos/img-20261114-c1703915.jpg",
+      "https://media.fishreports.com/photos/img-20261114-ebd1897f.jpg"
+     ]
     }
    ]
   },
@@ -482,6 +524,52 @@
      "tackle": [],
      "conditions": null,
      "quote": "The Constitution called in with 76 Yellowfin up to 70 pounds, 38 Yellowtail, 2 Dorado…",
+     "photos": []
+    }
+   ]
+  },
+  "Cortez": {
+   "landing": "Seaforth Sportfishing",
+   "region": "san_diego",
+   "notes": [
+    {
+     "date": "2026-11-13",
+     "trip_length": "2.5 Day",
+     "anglers": null,
+     "title": "Friday Recap",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247201/friday-recap.php",
+     "by": "Seaforth Staff",
+     "landing": "Seaforth Sportfishing",
+     "region": "san_diego",
+     "boat": "Cortez",
+     "skipper_note": "Returned from 2.5 day with 9 bluefin, 111 yellowfin up to 70 lbs, and 8 yellowtail.",
+     "size": [
+      {
+       "name": "yellowfin",
+       "count": 111,
+       "max_lb": 70.0,
+       "min_lb": null
+      }
+     ],
+     "catch": [
+      {
+       "name": "bluefin",
+       "count": 9
+      },
+      {
+       "name": "yellowfin",
+       "count": 111
+      },
+      {
+       "name": "yellowtail",
+       "count": 8
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "The Cortez on a 2.5 day returned with 9 Bluefin Tuna, 111 Yellowfin Tuna( up…",
      "photos": []
     }
    ]
@@ -1065,6 +1153,31 @@
       "https://media.fishreports.com/photos/img-20261115-a06c8b20.jpg",
       "https://media.fishreports.com/reports/img-20261115-358a843d.jpg"
      ]
+    },
+    {
+     "date": "2026-11-13",
+     "trip_length": "10 Day",
+     "anglers": null,
+     "title": "Youngs Tackle 10 Day",
+     "url": "http://www.longrangesportfishing.net/reports/247203/youngs-tackle-10-day.php",
+     "by": "Brian Pifer",
+     "landing": "Independence Sportfishing",
+     "region": "san_diego",
+     "boat": "Independence",
+     "skipper_note": "Caught quality yellowfin and did productive grouper drifts down south; now heading north for wahoo.",
+     "size": [],
+     "catch": [],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "We wrapped up our time down south by putting a few more quality yellowfin tuna…",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261113-88a49c73.jpg",
+      "https://media.fishreports.com/photos/img-20261113-04ec4a8b.jpg",
+      "https://media.fishreports.com/photos/img-20261113-5646d26c.jpg",
+      "https://media.fishreports.com/photos/img-20261113-01bf5e19.jpg"
+     ]
     }
    ]
   },
@@ -1246,6 +1359,26 @@
      "region": "san_diego",
      "boat": "Mission Belle",
      "skipper_note": "Option to fish offshore for tuna or Coronado Islands for yellowtail; passport required.",
+     "size": [],
+     "catch": [],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "Depending on fishing conditions, they have the option of fishing offshore for tuna or at…",
+     "photos": []
+    },
+    {
+     "date": "2026-11-14",
+     "trip_length": "Full Day",
+     "anglers": null,
+     "title": "Saturday Update",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247206/saturday-update.php",
+     "by": "Big Hungry",
+     "landing": "Point Loma Sportfishing",
+     "region": "san_diego",
+     "boat": "Mission Belle",
+     "skipper_note": "Option to fish offshore for tuna or at Coronado Islands for Yellowtail; passport required.",
      "size": [],
      "catch": [],
      "bait": null,
@@ -2717,6 +2850,47 @@
      "conditions": null,
      "quote": "The Tomahawk returned with 10 Bonito, 6 Yellowfin, 10 Skipjack, 2 Calico Bass, and 4…",
      "photos": []
+    },
+    {
+     "date": "2026-11-12",
+     "trip_length": "3/4 Day",
+     "anglers": 19,
+     "title": "Saturday",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247204/saturday.php",
+     "by": "Fishermans Landing Staff",
+     "landing": "Fisherman's Landing",
+     "region": "san_diego",
+     "boat": "Tomahawk",
+     "skipper_note": "Returned with mixed bag: 10 bonito, 6 yellowfin, 10 skipjack, 2 calico bass, 4 sand bass.",
+     "size": [],
+     "catch": [
+      {
+       "name": "bonito",
+       "count": 10
+      },
+      {
+       "name": "yellowfin",
+       "count": 6
+      },
+      {
+       "name": "skipjack",
+       "count": 10
+      },
+      {
+       "name": "calico bass",
+       "count": 2
+      },
+      {
+       "name": "sand bass",
+       "count": 4
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": null,
+     "photos": []
     }
    ]
   },
@@ -2772,6 +2946,43 @@
      "tackle": [],
      "conditions": null,
      "quote": "The Tribute on their 1.5 day returned with 44 Skipjack Tuna",
+     "photos": []
+    },
+    {
+     "date": "2026-11-13",
+     "trip_length": "1.5 Day",
+     "anglers": null,
+     "title": "Friday Recap",
+     "url": "https://www.sandiegofishreports.com/fish_reports/247201/friday-recap.php",
+     "by": "Seaforth Staff",
+     "landing": "Seaforth Sportfishing",
+     "region": "san_diego",
+     "boat": "Tribute",
+     "skipper_note": "Returned from 1.5 day with bluefin, yellowfin, whitefish, and sheephead.",
+     "size": [],
+     "catch": [
+      {
+       "name": "bluefin",
+       "count": 29
+      },
+      {
+       "name": "yellowfin",
+       "count": 20
+      },
+      {
+       "name": "whitefish",
+       "count": 50
+      },
+      {
+       "name": "sheephead",
+       "count": 31
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": null,
+     "quote": "The Tribute returned from their 1.5 day with 29 Bluefin Tuna, 20 Yellowfin Tuna, 50…",
      "photos": []
     }
    ]
@@ -3573,6 +3784,48 @@
       "https://media.fishreports.com/photos/img-20261118-1165a379.jpeg",
       "https://media.fishreports.com/photos/img-20261118-6c5a69f2.jpeg",
       "https://media.fishreports.com/photos/img-20261118-2007a985.jpeg"
+     ]
+    },
+    {
+     "date": "2026-11-13",
+     "trip_length": "Full Day",
+     "anglers": 12,
+     "title": "Aloha Spirit Fish Count",
+     "url": "https://socalfishreports.com/fish_reports/247208/aloha-spirit-fish-count.php",
+     "by": "Shawn Steward",
+     "landing": "Channel Islands Sportfishing",
+     "region": "oc_la",
+     "boat": "Aloha Spirit",
+     "skipper_note": "Cancelled tomorrow due to weather; space available all next week.",
+     "size": [],
+     "catch": [
+      {
+       "name": "whitefish",
+       "count": 120
+      },
+      {
+       "name": "rockfish",
+       "count": 110
+      },
+      {
+       "name": "skipjack",
+       "count": 21
+      },
+      {
+       "name": "sheephead",
+       "count": 2
+      }
+     ],
+     "bait": null,
+     "bait_on_board": null,
+     "tackle": [],
+     "conditions": "Weather cancellation issued for 11/14.",
+     "quote": "We are cancelled tomorrow due to weather",
+     "photos": [
+      "https://media.fishreports.com/photos/img-20261114-f1df718c.jpg",
+      "https://media.fishreports.com/photos/img-20261114-763ad358.jpg",
+      "https://media.fishreports.com/photos/img-20261114-c1703915.jpg",
+      "https://media.fishreports.com/photos/img-20261114-ebd1897f.jpg"
      ]
     }
    ]

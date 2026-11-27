@@ -1,6 +1,6 @@
 {
  "type": "FeatureCollection",
- "generated_at": "2026-11-27T06:34:24Z",
+ "generated_at": "2026-11-27T12:58:25Z",
  "label": "Recent forum reports by spot",
  "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
  "window_days": 14,
@@ -150,7 +150,7 @@
       "title": "11-15-26 Wahoo hell Yeah !!",
       "date": "2026-11-15",
       "feed": "bd-socal-offshore",
-      "photos": 0
+      "photos": 5
      }
     ]
    }
@@ -368,7 +368,7 @@
       "title": "Small YFT Dbl Rigs",
       "date": "2026-11-22",
       "feed": "bd-socal-offshore",
-      "photos": 0
+      "photos": 2
      }
     ]
    }
@@ -409,7 +409,7 @@
       "title": "Secret spot lobster",
       "date": "2026-11-22",
       "feed": "bd-socal-offshore",
-      "photos": 0
+      "photos": 2
      }
     ]
    }

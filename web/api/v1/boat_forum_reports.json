@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T06:34:24Z",
+ "generated_at": "2026-11-27T12:58:24Z",
  "source": "BloodyDecks (bdoutdoors.com) forum trip reports",
  "label": "From BloodyDecks trip reports",
  "note": "Summaries of public forum posts, extracted automatically. Not verified reviews; follow the links for the original posts.",
@@ -151,15 +151,15 @@
   "Constitution": {
    "landing": "Fisherman's Landing",
    "region": "san_diego",
-   "report_count": 2,
+   "report_count": 3,
    "aspects": {
     "overall": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 1,
      "neg": 0
     },
     "captain": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 0,
      "neg": 1
     },
@@ -169,7 +169,7 @@
      "neg": 1
     },
     "galley": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 0,
      "neg": 1
     },
@@ -179,7 +179,7 @@
      "neg": 0
     },
     "fish_finding": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     }
@@ -277,6 +277,52 @@
       "anglers": 21,
       "catch": {
        "Bluefin": 78
+      }
+     },
+     "match_confidence": 1.0,
+     "photos": 0,
+     "reply": false
+    },
+    {
+     "title": "Constitution 2 Day - 6/5/26 to 6/7/26",
+     "url": "https://www.bdoutdoors.com/forums/threads/constitution-2-day-6-5-26-to-6-7-26.866469/",
+     "published_at": "2026-06-07T20:26:54+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-06-05",
+     "trip_length": "2 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "galley": 1,
+      "fish_finding": 2
+     },
+     "would_rebook": null,
+     "quotes": {
+      "overall": "It almost felt like a private charter as everyone was on the same page.",
+      "captain": "Captain Kamren was super enthusiastic, stopping to fish like 95% of the patties",
+      "galley": "Great food and great people.",
+      "fish_finding": "I believe this resulted in our trip being one of the highliners of the 2…"
+     },
+     "catch_summary": "67 yellowtail, ~100 assorted rockfish (giant reds, bocaccio, misc); high hook-up-to-landing ratio noted.",
+     "tackle": [
+      "25 lb rig (poor results on big yellows)",
+      "30 lb rig - yellowtail",
+      "SPJ red 300g jig - rockfish",
+      "nose/shoulder hooked baits - yellowtail"
+     ],
+     "spots": [
+      "outer banks",
+      "high spot"
+     ],
+     "region": "san_diego",
+     "landing_count": {
+      "date": "2026-06-07",
+      "landing": "Fisherman's Landing",
+      "trip_length": "2 Day",
+      "anglers": 20,
+      "catch": {
+       "Yellowtail": 67,
+       "Rockfish": 105
       }
      },
      "match_confidence": 1.0,
@@ -2521,7 +2567,7 @@
       }
      },
      "match_confidence": 1.0,
-     "photos": 0,
+     "photos": 5,
      "reply": false
     }
    ]
@@ -3422,7 +3468,7 @@
       }
      },
      "match_confidence": 0.95,
-     "photos": 0,
+     "photos": 1,
      "reply": false
     },
     {
@@ -4977,7 +5023,7 @@
       }
      },
      "match_confidence": 1.0,
-     "photos": 0,
+     "photos": 2,
      "reply": false
     },
     {
@@ -5486,7 +5532,7 @@
      "region": "san_diego",
      "landing_count": null,
      "match_confidence": 0.95,
-     "photos": 0,
+     "photos": 12,
      "reply": false
     },
     {
