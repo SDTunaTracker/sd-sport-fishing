@@ -1376,3 +1376,64 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .st-cam-sky .st-cam-live { pointer-events: none; }
 .st-cam-sky-go { position: absolute; right: 8px; bottom: 8px; pointer-events: none; font: 600 11.5px/1 var(--sans); color: #fff;
   background: rgba(14, 42, 46, .78); border-radius: 999px; padding: 6px 9px; }
+
+/* Surftracker spot compass: fixed map + dial overlay, scrubber, hourly strip */
+.sf-cp-stage { position: relative; height: 320px; border-radius: var(--radius-md); overflow: hidden; background: var(--band); border: 1px solid var(--line); }
+.sf-cp-map { position: absolute; inset: 0; z-index: 0; }
+.sf-cp-map .leaflet-control-attribution { font-size: 9.5px; }
+.sf-cp-svg { position: absolute; inset: 0; z-index: 500; pointer-events: none; }
+.sf-cp-ring { fill: rgba(255, 255, 255, .28); stroke: rgba(23, 51, 44, .35); stroke-width: 1.2; }
+.sf-cp-tick { stroke: rgba(23, 51, 44, .45); stroke-width: 1; }
+.sf-cp-card { font: 700 11px var(--sans); fill: var(--ink-2); }
+.sf-cp-fan { fill: rgba(46, 125, 140, .16); stroke: rgba(46, 125, 140, .45); stroke-width: 1; }
+.sf-cp-normal { stroke: rgba(46, 125, 140, .7); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.sf-cp-normal-t { font: 600 11px var(--sans); fill: #1F6470; paint-order: stroke; stroke: rgba(255, 255, 255, .9); stroke-width: 3px; }
+.sf-cp-svg text { paint-order: stroke; stroke: rgba(255, 255, 255, .92); stroke-width: 3.5px; stroke-linejoin: round; }
+.sf-cp-svg g text { font: 700 12.5px var(--sans); }
+.sf-cp-svg g text.sub { font: 500 11px var(--sans); }
+.sf-cp-swell line { stroke: #2C5DA8; stroke-width: 5; stroke-linecap: round; }
+.sf-cp-swell polygon { fill: #2C5DA8; } .sf-cp-swell text { fill: #1E4580; }
+.sf-cp-wind line { stroke-width: 4; stroke-linecap: round; stroke-dasharray: 8 5; }
+.sf-cp-w-good line { stroke: #2F8A4E; } .sf-cp-w-good polygon { fill: #2F8A4E; } .sf-cp-w-good text { fill: #1F6A3A; }
+.sf-cp-w-ok line { stroke: #C98A1B; } .sf-cp-w-ok polygon { fill: #C98A1B; } .sf-cp-w-ok text { fill: #8A5D0E; }
+.sf-cp-w-bad line { stroke: #C0453A; } .sf-cp-w-bad polygon { fill: #C0453A; } .sf-cp-w-bad text { fill: #96322A; }
+.sf-cp-w-none line { stroke: #7B8781; } .sf-cp-w-none polygon { fill: #7B8781; } .sf-cp-w-none text { fill: #56625C; }
+.sf-cp-spot { fill: var(--ink); stroke: #fff; stroke-width: 2.5; }
+.sf-cp-line { margin: 10px 0 6px; font: 400 14px/1.45 var(--sans); color: var(--ink); }
+.sf-cp-surf { color: var(--muted); }
+.sf-cp-scrub { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; }
+.sf-cp-scrub input[type=range] { flex: 1; min-width: 0; accent-color: #2C5DA8; }
+.sf-cp-scrub button { flex: none; min-width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--surface);
+  color: var(--ink); font: 600 16px/1 var(--sans); cursor: pointer; }
+.sf-cp-scrub button:disabled { opacity: .4; cursor: default; }
+.sf-cp-scrub .sf-cp-now { font-size: 13px; padding: 0 12px; }
+.sf-cp-strip { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 4px; }
+.sf-cp-col { flex: 1 0 52px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: var(--radius-sm);
+  background: var(--band); border: 1px solid transparent; font: 400 12px/1.5 var(--sans); color: var(--ink-2); cursor: pointer; text-align: center; }
+.sf-cp-col.night { opacity: .6; }
+.sf-cp-col.on { border-color: #2C5DA8; background: #EAF0FA; opacity: 1; }
+.sf-cp-col span { display: block; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sf-cp-col span:first-child { color: var(--muted); }
+.sf-cp-head { flex: 0 0 64px; cursor: default; background: none; align-items: flex-start; color: var(--muted); font-size: 11px; }
+.sf-cp-col span.sf-cp-w-good { color: #1F6A3A; font-weight: 600; } .sf-cp-col span.sf-cp-w-ok { color: #8A5D0E; font-weight: 600; }
+.sf-cp-col span.sf-cp-w-bad { color: #96322A; font-weight: 600; }
+.sf-cp-arr { display: inline-block; font-style: normal; margin-right: 2px; }
+.st-map-compass { margin-top: 12px; }
+.st-map-compass-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 0 0 8px; }
+.st-map-compass-h .st-h2 { margin: 0; }
+.st-map-compass-h .st-more { margin: 0 0 0 auto; }
+@media (max-width: 560px) {
+  .sf-cp-stage { height: 300px; }
+  .sf-cp-line { font-size: 13.5px; }
+}
+.sf-cp-legend { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 8px 0 0; }
+.sf-cp-chip { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px/1.2 var(--sans); padding: 5px 9px; border-radius: 999px;
+  background: var(--band); color: var(--ink-2); }
+.sf-cp-chip i { display: inline-block; width: 16px; height: 0; border-top: 3px solid currentColor; }
+.sf-cp-chip.sf-cp-swell { color: #1E4580; background: #EAF0FA; }
+.sf-cp-chip.sf-cp-wind i { border-top-style: dashed; }
+.sf-cp-chip.sf-cp-w-good { color: #1F6A3A; background: var(--good-50); } .sf-cp-chip.sf-cp-w-ok { color: #8A5D0E; background: var(--warn-50); }
+.sf-cp-chip.sf-cp-w-bad { color: #96322A; background: var(--bad-50); } .sf-cp-chip.sf-cp-w-none { color: #56625C; }
+.sf-cp-chip.sf-cp-face { color: #1F6470; background: rgba(46, 125, 140, .12); }
+.sf-cp-chip.sf-cp-face i { border-top-style: dotted; }
+.sf-cp-chip.sf-cp-nowind { color: var(--muted); font-weight: 500; }

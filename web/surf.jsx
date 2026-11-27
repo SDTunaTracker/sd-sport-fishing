@@ -284,7 +284,7 @@ function sfEnsureLeaflet() {
   return _sfLeaflet;
 }
 
-function SurfMap({ breaks, best, open, onPick }) {
+function SurfMap({ breaks, best, open, onPick, cap }) {
   const box = useSfRef(null);
   const map = useSfRef(null);
   const layer = useSfRef(null);
@@ -382,7 +382,7 @@ function SurfMap({ breaks, best, open, onPick }) {
   return (
     <section className="sf-map-wrap" aria-label="Map of surf breaks">
       <div className="sf-map" ref={box}/>
-      <div className="sf-map-cap">Coloured by each break's best model rating for the day. Tap a dot to open the break.</div>
+      <div className="sf-map-cap">{cap || "Coloured by each break's best model rating for the day. Tap a dot to open the break."}</div>
     </section>
   );
 }
@@ -923,6 +923,10 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
 function SurfMapPage({ ctx, navigate }) {
   const { data, all, days } = ctx;
   const [day, setDay] = useSfState(null);
+  const [sel, setSel] = useSfState(null);
+  const selRef = useSfRef(null);
+  const selB = sel && all.find(b => b.id === sel);
+  useSfEffect(() => { if (sel && selRef.current) selRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [sel]);
   useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
   const best = useSfMemo(() => {
     const out = {};
@@ -934,9 +938,20 @@ function SurfMapPage({ ctx, navigate }) {
       <SurfTopBar title="Surf map" data={data}/>
       <SurfDays days={days} day={day} setDay={setDay}/>
       <div className="st-bigmap">
-        <SurfMap breaks={all} best={best} open={null} onPick={id => navigate('surf', { sub: 'break', spot: id })}/>
+        <SurfMap breaks={all} best={best} open={sel} onPick={id => setSel(id)}
+                 cap="Coloured by each break's best model rating for the day. Tap a dot or name for its spot compass."/>
       </div>
       <SurfLegend/>
+      {selB && (
+        <div className="st-panel st-map-compass" ref={selRef}>
+          <div className="st-map-compass-h">
+            <h2 className="st-h2">{selB.name}</h2>
+            <a className="sf-go" {...sfLinkProps(navigate, { sub: 'break', spot: selB.id })}>Full forecast →</a>
+            <button type="button" className="st-more" onClick={() => setSel(null)} aria-label="Close spot compass">Close</button>
+          </div>
+          <SurfCompass b={selB} sun={data.sun} title="Spot compass · swell and wind at this beach"/>
+        </div>
+      )}
       <div className="st-maplist">
         {SF_AREAS.map(([, a]) => {
           const list = all.filter(b => b.area === a);
@@ -964,6 +979,182 @@ function SurfMapPage({ ctx, navigate }) {
       </div>
       <p className="sf-muted">* Default settings: generic break settings, rating capped at Fair until the spot is tuned.</p>
     </div>
+  );
+}
+
+// ── Spot compass: how swell and wind meet this beach, hour by hour ───────
+// A small fixed map centred on the spot, the beach's facing direction as a
+// shaded fan, and arrows for swell (from the MOP point just offshore) and
+// wind (coloured offshore / cross / onshore for this beach). A scrubber steps
+// through the forecast hours; the strip below lists wind, gusts and swell.
+// No current arrow: we have no nearshore current data yet, so none is drawn.
+const SF_WIND_TXT = {
+  glassy: 'light, close to glassy', offshore: 'offshore', cross: 'cross-shore', 'light onshore': 'light onshore',
+  bumpy: 'onshore, bumpy', onshore: 'onshore', 'blown out': 'strong onshore, blown out',
+};
+function sfAngDiff(a, b) { return ((a - b + 540) % 360) - 180; }
+function sfSwellTxt(dp, normal) {
+  const d = Math.abs(sfAngDiff(dp, normal));
+  if (d <= 25) return 'straight in';
+  if (d <= 50) return 'angled in';
+  if (d <= 75) return 'wrapping in, partly shadowed';
+  return 'mostly blocked';
+}
+function sfCompassLine(h, b) {
+  const parts = [];
+  if (h.windKt == null || h.windFrom == null) parts.push('No wind forecast for this hour');
+  else parts.push(`Wind ${sfDir(h.windFrom)} ${h.windKt} kt${h.windGustKt ? ` (gusts ${h.windGustKt})` : ''} → ${SF_WIND_TXT[h.windType] || h.windType} here`);
+  if (h.dpDeg != null && h.tpS != null)
+    parts.push(`swell ${sfDir(h.dpDeg)} ${Math.round(h.tpS)} s → ${sfSwellTxt(h.dpDeg, b.shoreNormal)} for this ${sfDir(b.shoreNormal)}-facing beach`);
+  return parts.join('; ') + '.';
+}
+function sfNearestStep(hours) {
+  const now = Date.now();
+  let best = 0, bd = Infinity;
+  hours.forEach((h, i) => { const d = Math.abs(Date.parse(h.t) - now); if (d < bd) { bd = d; best = i; } });
+  return best;
+}
+function useSfBox(ref) {
+  const [sz, setSz] = useSfState({ w: 0, h: 0 });
+  useSfEffect(() => {
+    if (!ref.current) return;
+    const upd = () => { const r = ref.current.getBoundingClientRect(); setSz({ w: Math.round(r.width), h: Math.round(r.height) }); };
+    upd();
+    const ro = window.ResizeObserver ? new ResizeObserver(upd) : null;
+    if (ro) ro.observe(ref.current); else window.addEventListener('resize', upd);
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', upd); };
+  }, []);
+  return sz;
+}
+
+function SurfCompassDial({ b, h, w, hgt }) {
+  const R = Math.max(40, Math.min(w, hgt - 52) / 2 - 10);   // keep the ring clear of the tile credits
+  const pt = (deg, r) => [Math.sin(deg * Math.PI / 180) * r, -Math.cos(deg * Math.PI / 180) * r];
+  const n = b.shoreNormal;
+  const win = b.swellWindow || [n - 60, n + 60];
+  const [a0, a1] = [win[0], win[0] + ((win[1] - win[0] + 360) % 360 || 360)];
+  const [fx0, fy0] = pt(a0, R * 0.96), [fx1, fy1] = pt(a1, R * 0.96);
+  const fan = `M0 0 L${fx0} ${fy0} A${R * 0.96} ${R * 0.96} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${fx1} ${fy1} Z`;
+  const arrow = (from, r1, r0, cls) => {
+    const [x1, y1] = pt(from, r1), [x0, y0] = pt(from, r0);
+    const ang = Math.atan2(y0 - y1, x0 - x1);
+    const hx = (sz, t) => `${x0 - Math.cos(ang) * sz + Math.cos(ang + Math.PI / 2) * t},${y0 - Math.sin(ang) * sz + Math.sin(ang + Math.PI / 2) * t}`;
+    return (
+      <g className={cls}>
+        <line x1={x1} y1={y1} x2={x0 - Math.cos(ang) * 10} y2={y0 - Math.sin(ang) * 10}/>
+        <polygon points={`${x0},${y0} ${hx(14, 7)} ${hx(14, -7)}`}/>
+      </g>
+    );
+  };
+  const wcls = h && h.windKt != null ? 'sf-cp-wind sf-cp-w-' + sfWindClass(h.windType) : '';
+  return (
+    <svg className="sf-cp-svg" width={w} height={hgt} viewBox={`${-w / 2} ${-hgt / 2} ${w} ${hgt}`} aria-hidden="true">
+      <circle className="sf-cp-ring" r={R}/>
+      {Array.from({ length: 36 }, (_, i) => {
+        const [x1, y1] = pt(i * 10, R), [x0, y0] = pt(i * 10, R - (i % 9 === 0 ? 9 : 4));
+        return <line key={i} className="sf-cp-tick" x1={x1} y1={y1} x2={x0} y2={y0}/>;
+      })}
+      {['N', 'E', 'S', 'W'].map((c, i) => {
+        const [x, y] = pt(i * 90, R - 18);
+        return <text key={c} className="sf-cp-card" x={x} y={y + 4} textAnchor="middle">{c}</text>;
+      })}
+      <path className="sf-cp-fan" d={fan}/>
+      <line className="sf-cp-normal" x1="0" y1="0" x2={pt(n, R * 0.96)[0]} y2={pt(n, R * 0.96)[1]}/>
+      {h && h.dpDeg != null && arrow(h.dpDeg, R * 0.9, R * 0.12, 'sf-cp-swell')}
+      {h && h.windKt != null && h.windFrom != null && arrow(h.windFrom, R * 0.66, R * 0.1, wcls)}
+      <circle className="sf-cp-spot" r="6"/>
+    </svg>
+  );
+}
+
+function SurfCompass({ b, sun, title }) {
+  const box = useSfRef(null);
+  const mapEl = useSfRef(null);
+  const map = useSfRef(null);
+  const [failed, setFailed] = useSfState(false);
+  const hours = b.hours || [];
+  const [i, setI] = useSfState(() => sfNearestStep(hours));
+  useSfEffect(() => { setI(sfNearestStep(hours)); }, [b.id]);
+  const { w, h: hgt } = useSfBox(box);
+  useSfEffect(() => {
+    let alive = true;
+    sfEnsureLeaflet().then(L => {
+      if (!alive || !mapEl.current) return;
+      if (!map.current) {
+        const m = L.map(mapEl.current, { zoomControl: false, attributionControl: true, dragging: false, scrollWheelZoom: false,
+                                         doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false });
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 16, attribution: 'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors',
+        }).addTo(m);
+        map.current = m;
+      }
+      map.current.invalidateSize();
+      map.current.setView([b.lat, b.lon], 14, { animate: false });
+    }).catch(() => { if (alive) setFailed(true); });
+    return () => { alive = false; };
+  }, [b.id, w, hgt]);
+  useSfEffect(() => () => { if (map.current) { map.current.remove(); map.current = null; } }, []);
+  const cur = hours[Math.min(i, hours.length - 1)];
+  if (!cur) return null;
+  const dk = sfDayKey(cur.t);
+  const steps = hours.map((x, k) => ({ x, k })).filter(o => sfDayKey(o.x.t) === dk);
+  const hasGust = hours.some(x => x.windGustKt != null);
+  const when = sfLocal(cur.t, { weekday: 'short', hour: 'numeric' });
+  const arrowStyle = deg => ({ transform: `rotate(${(deg + 180) % 360}deg)` });
+  return (
+    <section className="sf-cp" aria-label={`${b.name} spot compass`}>
+      {title && <div className="sf-sec-h">{title}</div>}
+      <div className="sf-cp-stage" ref={box}>
+        {!failed && <div className="sf-cp-map" ref={mapEl}/>}
+        {w > 0 && <SurfCompassDial b={b} h={cur} w={w} hgt={hgt}/>}
+      </div>
+      <div className="sf-cp-legend">
+        {cur.dpDeg != null && cur.hsM != null && (
+          <span className="sf-cp-chip sf-cp-swell"><i aria-hidden="true"/>Swell {(cur.hsM * SF_FT).toFixed(1)} ft · {Math.round(cur.tpS)} s from {sfDir(cur.dpDeg)} {Math.round(cur.dpDeg)}°</span>
+        )}
+        {cur.windKt != null && cur.windFrom != null ? (
+          <span className={`sf-cp-chip sf-cp-wind sf-cp-w-${sfWindClass(cur.windType)}`}><i aria-hidden="true"/>Wind {cur.windKt}{cur.windGustKt ? `–${cur.windGustKt}` : ''} kt from {sfDir(cur.windFrom)} · {cur.windType}</span>
+        ) : <span className="sf-cp-chip sf-cp-nowind">No wind forecast</span>}
+        <span className="sf-cp-chip sf-cp-face"><i aria-hidden="true"/>Beach faces {sfDir(b.shoreNormal)} {Math.round(b.shoreNormal)}°</span>
+      </div>
+      <p className="sf-cp-line"><b>{when}:</b> {sfCompassLine(cur, b)}{' '}
+        <span className="sf-cp-surf">Surf {cur.faceFt[0]}–{cur.faceFt[1]} ft (face){sfSetsTxt(cur)}.</span></p>
+      <div className="sf-cp-scrub">
+        <button type="button" onClick={() => setI(Math.max(0, i - 1))} disabled={i <= 0} aria-label="Earlier">‹</button>
+        <input type="range" min="0" max={hours.length - 1} value={i} onChange={e => setI(Number(e.target.value))}
+               aria-label="Forecast time" aria-valuetext={when}/>
+        <button type="button" onClick={() => setI(Math.min(hours.length - 1, i + 1))} disabled={i >= hours.length - 1} aria-label="Later">›</button>
+        <button type="button" className="sf-cp-now" onClick={() => setI(sfNearestStep(hours))}>Now</button>
+      </div>
+      <div className="sf-cp-strip" role="table" aria-label={`${b.name}, ${sfLocal(cur.t, { weekday: 'long' })}, wind and swell by time`}>
+        <div className="sf-cp-col sf-cp-head" role="row">
+          <span role="rowheader">{sfLocal(cur.t, { weekday: 'short' })}</span>
+          <span role="rowheader">Wind kt</span>
+          {hasGust && <span role="rowheader">Gusts</span>}
+          <span role="rowheader">Swell ft</span>
+          <span role="rowheader">Period</span>
+          <span role="rowheader">Surf</span>
+        </div>
+        {steps.map(({ x, k }) => (
+          <button type="button" key={x.t} role="row" onClick={() => setI(k)}
+                  className={`sf-cp-col${k === i ? ' on' : ''}${sfIsDay(x.t, sun) ? '' : ' night'}`}>
+            <span>{sfClock(x.t)}</span>
+            <span className={x.windKt != null ? 'sf-cp-w-' + sfWindClass(x.windType) : ''}>
+              {x.windFrom != null && <i className="sf-cp-arr" style={arrowStyle(x.windFrom)}>↑</i>}{x.windKt != null ? x.windKt : '—'}
+            </span>
+            {hasGust && <span>{x.windGustKt != null ? x.windGustKt : '—'}</span>}
+            <span>{x.dpDeg != null && <i className="sf-cp-arr" style={arrowStyle(x.dpDeg)}>↑</i>}{x.hsM != null ? (x.hsM * SF_FT).toFixed(1) : '—'}</span>
+            <span>{x.tpS != null ? Math.round(x.tpS) + ' s' : '—'}</span>
+            <span>{x.faceFt[0]}–{x.faceFt[1]}</span>
+          </button>
+        ))}
+      </div>
+      <p className="st-fine">
+        Arrows show where swell and wind come from, pointing at the break; the shaded fan is the swell window this beach is
+        open to. Swell is the model's swell just offshore (CDIP MOP point, refraction included); surf is breaking face height.
+        Wind colours: green offshore or glassy, amber cross or light onshore, red onshore. No current data yet, so no current arrow.
+      </p>
+    </section>
   );
 }
 
@@ -1045,6 +1236,9 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         <div className="sf-sec-h">7-day outlook</div>
         <SurfStrip b={b} days={days} dayKey={dk} sun={data.sun} onDay={setDay}/>
         <SurfLegend/>
+      </div>
+      <div className="st-panel" id="compass">
+        <SurfCompass b={b} sun={data.sun} title="Spot compass · swell and wind at this beach"/>
       </div>
 
       <div className="st-two">
