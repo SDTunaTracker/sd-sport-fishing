@@ -72,14 +72,18 @@ SMOOTH_STEPS = 5             # ≈ 12 h centered at 3-hourly steps
 # Held-out (TEST 2025-04..2025-11) Hs scores at the buoys, from surf-accuracy-log.md
 # round 1. Short-lead only; lead-resolved scores come from src/surf/runs.py.
 VERIFICATION = {
-    "what": "Wave height (Hs) at the CDIP buoys, MOP blend vs buoy observations",
+    # Standing rule: every height shown is breaking face height at the beach, and
+    # accuracy is stated against observed breaking surf first. Buoy wave height
+    # (Hs) is only a labelled secondary check of the swell model.
+    "what": "Swell model (wave height offshore, not surf height) vs the CDIP buoys",
     "testPeriod": "2025-04-01 to 2026-11-26 (held out; never used for tuning)",
     "hsRmseM": {"rawEcmwf": 0.136, "blend": 0.126},
     "beats": ["24 h persistence at all 8 buoys", "plain shoaling without island sheltering (RMSE ~1 m)"],
-    "notVerified": "Face height and rating: no surf observations yet. Treat them as model estimates.",
-    "scale": "On small days our heights run about 20% above NWS surf forecasts; the Scripps Pier "
-             "wave sensor supports ours.",
-    "observed": "Big days: 56 lifeguard and official high-surf reports (NWS storm reports, 2016–2026) "
+    "notVerified": "Small-day surf height (under about 6 ft) against people's observations, and the "
+                   "rating: no observations yet. Treat them as model estimates.",
+    "scale": "On small days our surf heights run about 20% above NWS surf forecasts; the Scripps "
+             "Pier wave sensor (wave height just outside the surf zone) supports ours.",
+    "observed": "Breaking surf height, big days: 56 lifeguard and official high-surf reports (NWS storm reports, 2016–2026) "
                 "matched our heights (median ratio 0.99; we reached at least 80% of the reported size "
                 "on 93%). Small days: our heights track the Scripps Pier wave sensor (CDIP 073) "
                 "closely over 1,538 small mornings (rank correlation 0.94). Small-day face heights "

@@ -434,7 +434,7 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
       </div>
       {ref && (
         <div className="sf-break-sub">
-          Swell {(ref.hsM * SF_FT).toFixed(1)} ft @ {Math.round(ref.tpS)} s {sfDir(ref.dpDeg)} ({ref.dpDeg}°)
+          Swell (offshore, not surf height) {(ref.hsM * SF_FT).toFixed(1)} ft @ {Math.round(ref.tpS)} s {sfDir(ref.dpDeg)} ({ref.dpDeg}°)
           {am && am.windKt != null ? ` · AM wind ${am.windKt} kt ${am.windType}` : ''}
           {pm && pm.windKt != null ? ` · PM ${pm.windKt} kt ${pm.windType}` : ''}
           {ref.conf !== 'high' ? ` · ${ref.conf} confidence` : ''}
@@ -478,7 +478,7 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
             MOP point {b.mop} at {b.mopDepthM} m, beach faces {Math.round(b.shoreNormal)}°.
             {b.swellWindow ? ` Works best on swell from ${b.swellWindow[0]}° to ${b.swellWindow[1]}°.` : ''}
             {ref && ref.kgM ? ` Model breaker-height check: Hb ${ref.hbM.toFixed(1)} m (Komar–Gaughan ${ref.kgM.toFixed(1)} m), an internal step, not the surf height shown.` : ''}
-            {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: swell ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
+            {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now, wave height offshore (not surf height): ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
             {' '}Energy is the swell's power at the model point (Surf-forecast.com scale: about 100 kJ is small, 200–1000 kJ punchy).
           </div>
         </div>
@@ -1019,7 +1019,7 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         </div>
         {ref && (
           <p className="st-fine">
-            Swell at the model point: {(ref.hsM * SF_FT).toFixed(1)} ft @ {Math.round(ref.tpS)} s from {sfDir(ref.dpDeg)} ({ref.dpDeg}°)
+            Swell at the model point (not surf height): {(ref.hsM * SF_FT).toFixed(1)} ft @ {Math.round(ref.tpS)} s from {sfDir(ref.dpDeg)} ({ref.dpDeg}°)
             {ref.energyKj != null ? `, ${ref.energyKj} kJ` : ''}.
             {ref.conf !== 'high' ? ` ${ref.conf[0].toUpperCase() + ref.conf.slice(1)} confidence this far out.` : ''}
             {ref.modelsDisagree ? ' The two wave models disagree for this time.' : ''}
@@ -1040,7 +1040,7 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         <p className="st-fine">
           Forecast at CDIP MOP point {b.mop} ({b.mopDepthM} m deep), then a breaking model to the beach.
           {ref && ref.kgM ? ` Model breaker-height check: Hb ${ref.hbM.toFixed(1)} m (Komar–Gaughan ${ref.kgM.toFixed(1)} m), an internal step, not the surf height shown.` : ''}
-          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: swell ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
+          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now, wave height offshore (not surf height): ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
           {' '}Energy is the swell's power at the model point (about 100 kJ is small, 200–1000 kJ punchy).
         </p>
       </div>
@@ -1062,16 +1062,16 @@ function SurfAbout({ data, extra, compact }) {
       <h2>How this forecast works</h2>
       {!compact && <p>{data.method}</p>}
       <div className="sf-checked">
+        {v.observed && <p><b>Surf height vs observed breaking surf:</b> {v.observed}</p>}
         <p>
-          <b>What we've checked:</b> {v.what}. Over {v.testPeriod}, the blended model's swell-height (Hs) error at the buoys was{' '}
+          <b>Secondary check, swell model:</b> {v.what}. Over {v.testPeriod}, its wave-height error was{' '}
           {v.hsRmseM ? `${(v.hsRmseM.blend * SF_FT).toFixed(1)} ft (RMS)` : '—'}, better than{' '}
-          {(v.beats || []).join(' and ')}. {v.leadNote}
+          {(v.beats || []).join(' and ')}. This is wave height at the buoys, not surf height. {v.leadNote}
         </p>
-        {v.observed && <p><b>Against observed surf:</b> {v.observed}</p>}
         {v.wind && <p><b>Wind:</b> {v.wind}</p>}
         <p><b>Not yet checked:</b> {v.notVerified} {v.scale} Ratings top out at Fair–Good: a model alone can't call a day Good or Epic.</p>
       </div>
-      <p className="sf-muted">Surf height is the face height of the bigger waves; occasional sets run larger. Best window is the highest-rated daylight 3-hour model step. Sun times are for La Jolla; water temperature is the latest CDIP buoy reading.{extra ? ' Spots marked "default settings" use the same model with generic break settings that are not yet tuned for that spot, and they update about twice a day.' : ''} Always check the NWS rip current risk and conditions on the beach.</p>
+      <p className="sf-muted">Surf height is the breaking face height at the beach; occasional sets run larger. Swell and buoy figures are wave heights offshore, shown for context. Best window is the highest-rated daylight 3-hour model step. Sun times are for La Jolla; water temperature is the latest CDIP buoy reading.{extra ? ' Spots marked "default settings" use the same model with generic break settings that are not yet tuned for that spot, and they update about twice a day.' : ''} Always check the NWS rip current risk and conditions on the beach.</p>
       <p className="sf-credits">{(data.credits || []).concat(data.waterTemp ? [`Water temperature: CDIP buoy ${data.waterTemp.station}`] : [], ['Map tiles: Esri, © OpenStreetMap contributors'], extra && extra.sources ? [extra.sources] : []).join(' · ')}</p>
     </section>
   );
