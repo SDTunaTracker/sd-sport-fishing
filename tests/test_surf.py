@@ -123,3 +123,25 @@ def test_run_created_parse_and_archive_schema(tmp_path):
     c.execute("INSERT INTO surf_runs VALUES ('BP201','ecmwf_fc','2026-11-27T03:28','2026-11-28T03:00',23.5,1.2,14,270)")
     c.execute("INSERT OR IGNORE INTO surf_runs VALUES ('BP201','ecmwf_fc','2026-11-27T03:28','2026-11-28T03:00',23.5,9,9,9)")
     assert c.execute("SELECT COUNT(*), MAX(hs) FROM surf_runs").fetchone() == (1, 1.2)
+
+
+def test_spectral_breaking_matches_bulk_for_a_narrow_spectrum_and_drops_for_mixed():
+    # One energetic 14 s band from the beach normal ≈ bulk break_wave with Tp = 14 s.
+    f, df = [1 / 14, 1 / 7], [0.005, 0.005]
+    e_narrow = [(1.0 / 4) ** 2 / 0.005, 0.0]                  # Hm0 = 1.0 m all in the 14 s band
+    hb_s, _ = P.break_spectrum(f, df, e_narrow, [260, 260], 260, 10, 0.78)
+    hb_b, _, _ = P.break_wave(1.0, 14, 260, 260, 10, 0.78)
+    assert math.isclose(hb_s, hb_b, rel_tol=0.03)
+    # Same Hm0 split between 14 s and 7 s: short waves shoal less, so Hb is lower.
+    e_mixed = [e_narrow[0] / 2, e_narrow[0] / 2]
+    assert P.spectral_hs(f, df, e_mixed) == P.spectral_hs(f, df, e_narrow)
+    assert P.break_spectrum(f, df, e_mixed, [260, 260], 260, 10, 0.78)[0] < hb_s
+    # Energy from behind the beach is dropped.
+    assert P.break_spectrum(f, df, e_narrow, [80, 80], 260, 10, 0.78) == (0.0, 0.0)
+
+
+def test_parse_grid_opendap_ascii():
+    from src.surf import cdip as C
+    txt = ("waveEnergyDensity.waveEnergyDensity[2][3]\n[0], 0.1, 0.2, 0.3\n[1], 1.0, 2.0, 3.0\n\n"
+           "waveEnergyDensity.waveTime[2]\n1, 2\n")
+    assert C.parse_grid(txt, "waveEnergyDensity") == [[0.1, 0.2, 0.3], [1.0, 2.0, 3.0]]

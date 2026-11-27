@@ -104,3 +104,57 @@ def komar_gaughan(H0: float, T: float) -> float:
 
 
 M_TO_FT = 3.28084
+
+
+from functools import lru_cache
+
+
+@lru_cache(maxsize=200000)
+def _cc(T: float, h: float) -> tuple[float, float]:
+    """(celerity, group speed) cached on (period, depth rounded to cm)."""
+    return celerity(T, h), group_speed(T, h)
+
+
+def spectral_hs(freqs, dfs, energy) -> float:
+    """Hm0 = 4·sqrt(Σ E·df)."""
+    m0 = sum(e * d for e, d in zip(energy, dfs) if e and e > 0)
+    return 4 * math.sqrt(m0) if m0 > 0 else 0.0
+
+
+def break_spectrum(freqs, dfs, energy, dirs, normal: float | None, h1: float, gamma: float,
+                   dh: float = 0.05) -> tuple[float, float]:
+    """Breaking height from a frequency spectrum at depth h1 (experiment E8).
+
+    Each band is shoaled (Ks² = Cg1/Cg) and refracted (Kr² = cos α1/cos α,
+    Snell per band) with its OWN frequency and direction; the shoaled bulk
+    Hm0(h) = 4·sqrt(Σ E_i(h) df_i) is tested against γ·h. Bands arriving from
+    behind the beach (|α| >= 90°) carry no energy. Returns (Hb, hb).
+    """
+    bands = []
+    for f, d, e, th in zip(freqs, dfs, energy, dirs):
+        if not (e and e > 0 and f > 0):
+            continue
+        a1 = 0.0 if (normal is None or th is None or math.isnan(th)) else (th - normal + 180) % 360 - 180
+        if abs(a1) >= 90:
+            continue
+        T = 1.0 / f
+        c1, cg1 = _cc(T, round(h1, 2))
+        bands.append((T, e * d, cg1, math.sin(math.radians(a1)) / c1, math.cos(math.radians(a1))))
+    if not bands:
+        return 0.0, 0.0
+    hs1 = 4 * math.sqrt(sum(b[1] for b in bands))
+    if hs1 >= gamma * h1:
+        return hs1, h1
+    h = h1
+    H = hs1
+    while h > dh:
+        h = round(h - dh, 2)
+        m0 = 0.0
+        for T, ed, cg1, s1, cos1 in bands:
+            c, cg = _cc(T, h)
+            sa = max(-1.0, min(1.0, s1 * c))
+            m0 += ed * (cg1 / cg) * (cos1 / math.sqrt(1 - sa * sa))
+        H = 4 * math.sqrt(m0)
+        if H >= gamma * h:
+            return H, h
+    return H, h

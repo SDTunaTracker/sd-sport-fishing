@@ -136,3 +136,36 @@ def to_iso(t: float) -> str:
 def save_json(obj, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, separators=(",", ":")), encoding="utf-8")
+
+
+def parse_grid(text: str, var: str) -> list[list[float]]:
+    """OPeNDAP .ascii body for a [time][freq] grid -> rows of floats."""
+    i = text.find(f"{var}.{var}[")
+    if i < 0:
+        return []
+    rows = []
+    for line in text[i:].splitlines()[1:]:
+        m = re.match(r"^\[\d+\],\s*(.*)$", line)
+        if not m:
+            break
+        rows.append([float(x) for x in m.group(1).split(",")])
+    return rows
+
+
+def spectra(url: str, since: datetime | None = None, max_age_s: float = 1800) -> dict:
+    """{waveTime, waveFrequency, waveBandwidth, waveEnergyDensity[t][f],
+    waveMeanDirection[t][f], waveFlagPrimary} for times >= since."""
+    t_all = parse_ascii(_get(f"{url}.ascii?waveTime", max_age_s)).get("waveTime", [])
+    rng = _idx_range(t_all, since.timestamp() if since else None, None)
+    if rng is None:
+        return {"waveTime": []}
+    a, b = rng
+    meta = parse_ascii(_get(f"{url}.ascii?waveFrequency,waveBandwidth", 7 * 86400))
+    txt = _get(f"{url}.ascii?waveEnergyDensity[{a}:1:{b}][0:1:{len(meta['waveFrequency']) - 1}],"
+               f"waveMeanDirection[{a}:1:{b}][0:1:{len(meta['waveFrequency']) - 1}],"
+               f"waveFlagPrimary[{a}:1:{b}]", max_age_s)
+    return {"waveTime": t_all[a:b + 1], "waveFrequency": meta["waveFrequency"],
+            "waveBandwidth": meta["waveBandwidth"],
+            "waveEnergyDensity": parse_grid(txt, "waveEnergyDensity"),
+            "waveMeanDirection": parse_grid(txt, "waveMeanDirection"),
+            "waveFlagPrimary": parse_ascii(txt).get("waveFlagPrimary", [])}

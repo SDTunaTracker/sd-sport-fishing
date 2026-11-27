@@ -6,8 +6,10 @@ Per break (src/surf/breaks.py), every 3 h for ~6 days:
      verified on held-out buoy data; see surf-accuracy-log.md). Past the
      ECMWF horizon, WW3 alone (scaled), flagged low confidence.
   2. Smooth Hs/Tp over ~12 h (5 steps) before the breaking step.
-  3. Breaking step: shoal + refract from the MOP depth (~10 m) until
-     H >= γ·h (physics.break_wave). Face range [Hb, 1.27·Hb] × c_b, in feet.
+  3. Breaking step: each band of the MOP spectrum shoaled + refracted with
+     its own frequency and direction from the MOP depth (~10 m) until
+     Hm0 >= γ·h (physics.break_spectrum, experiment E8); bulk Hs/Tp
+     (physics.break_wave) only without a spectrum. Face range [Hb, 1.27·Hb] × c_b, in feet.
      Komar–Gaughan is reported as a cross-check.
   4. Wind: Open-Meteo hourly 10 m wind (NOAA HRRR / GFS blend, `gfs_seamless`).
   5. Tide: NOAA CO-OPS 9410230 La Jolla, hourly predictions + highs/lows.
@@ -35,7 +37,8 @@ import requests
 
 from . import cdip as C
 from .breaks import BREAKS
-from .physics import M_TO_FT, break_wave, deep_water_height, komar_gaughan
+from .physics import (M_TO_FT, break_spectrum, break_wave, deep_water_height, komar_gaughan,
+                      spectral_hs)
 
 log = logging.getLogger(__name__)
 
@@ -264,11 +267,36 @@ def _smooth(vals: list[float | None], n: int) -> list[float | None]:
     return out
 
 
+def breaking_ratios(point: str, kind: str, since: datetime, normal: float, h1: float,
+                    gamma: float) -> dict[int, float]:
+    """{time: Hb / Hm0} from the MOP spectrum (E8: each band shoaled and
+    refracted with its own frequency and direction). Applied to the
+    bias-corrected Hs, so the correction and the breaking step stay separate."""
+    s = C.spectra(C.mop_url(point, kind), since=since)
+    out = {}
+    for i, t in enumerate(s.get("waveTime", [])):
+        if i >= len(s["waveEnergyDensity"]) or (s["waveFlagPrimary"] and s["waveFlagPrimary"][i] != 1):
+            continue
+        E, D = s["waveEnergyDensity"][i], s["waveMeanDirection"][i]
+        m = spectral_hs(s["waveFrequency"], s["waveBandwidth"], E)
+        if m <= 0.05:
+            continue
+        hb, _ = break_spectrum(s["waveFrequency"], s["waveBandwidth"], E, D, normal, h1, gamma)
+        out[int(t)] = hb / m
+    return out
+
+
 def break_forecast(b: dict, wind: dict, tide_h: dict, now: datetime) -> dict:
     normal, h1 = mop_meta(b["mop"])
     since = now - timedelta(hours=3)
     ec, ww = mop_series(b["mop"], "ecmwf_fc", since), mop_series(b["mop"], "forecast", since)
     cal = CAL["sites"].get(b["buoy"], {"a_ec": 1.0, "a_ww": 1.25, "w_ec": 1.0})
+    ratios: dict[int, float] = {}
+    for kind in ("forecast", "ecmwf_fc"):            # ECMWF wins where both exist
+        try:
+            ratios.update(breaking_ratios(b["mop"], kind, since, normal, h1, b["gamma"]))
+        except Exception as e:  # noqa: BLE001 — fall back to the bulk step
+            log.info("surf spectrum %s %s failed: %s", b["mop"], kind, e)
     steps = sorted(set(ec) | set(ww))
     hs_l, tp_l, dp_l, src_l, dis_l = [], [], [], [], []
     for t in steps:
@@ -286,7 +314,11 @@ def break_forecast(b: dict, wind: dict, tide_h: dict, now: datetime) -> dict:
     hours = []
     for i, t in enumerate(steps):
         hs, tp, dp = hs_s[i], tp_s[i], dp_l[i]
-        hb, hb_depth, _ = break_wave(hs, tp, dp, normal, h1, b["gamma"])
+        r = ratios.get(t)
+        if r is not None and hs < b["gamma"] * h1:
+            hb = hs * r                                   # E8 spectral breaking step
+        else:
+            hb, _, _ = break_wave(hs, tp, dp, normal, h1, b["gamma"])
         lead = (t - now.timestamp()) / 3600
         si = next(v for lim, v in LEAD_SI if lead < lim)
         lo_ft = hb * b["cal"] * M_TO_FT * (1 - si)
