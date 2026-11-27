@@ -1170,8 +1170,9 @@ function SurfCamCard({ cam, status, playing, onPlay, focus, names, navigate }) {
   const off = sfCamOffline(status, cam.id);
   const ref = useSfRef(null);
   useSfEffect(() => { if (focus && ref.current) ref.current.scrollIntoView({ block: 'center' }); }, [focus]);
-  const yt = encodeURIComponent(cam.youtube);
-  const watch = `https://www.youtube.com/watch?v=${yt}`;
+  const sky = cam.source === 'skyline' && cam.skyline;
+  const yt = encodeURIComponent(cam.youtube || '');
+  const watch = sky ? sky.page : `https://www.youtube.com/watch?v=${yt}`;
   const spotLinks = ids => ids.filter(id => names[id]).map((id, i) => (
     <React.Fragment key={id}>{i ? ', ' : ''}<a {...sfLinkProps(navigate, { sub: 'break', spot: id })}>{names[id]}</a></React.Fragment>
   ));
@@ -1183,7 +1184,14 @@ function SurfCamCard({ cam, status, playing, onPlay, focus, names, navigate }) {
             <b>Cam offline</b>
             <span>{off.reason}</span>
             {off.lastSeen && <span>Last seen live {sfLocal(off.lastSeen, { month: 'short', day: 'numeric' })}.</span>}
-            <a href={cam.operator.url} target="_blank" rel="noopener noreferrer">Check {cam.operator.name.replace(/ \(.*\)$/, '')} on YouTube ↗</a>
+            <a href={cam.operator.url} target="_blank" rel="noopener noreferrer">Check {cam.operator.name.replace(/ \(.*\)$/, '')}{sky ? '' : ' on YouTube'} ↗</a>
+          </div>
+        ) : sky ? (
+          // SkylineWebcams' own Embed code, unmodified (their terms): a live still that links to their player.
+          <div className="st-cam-sky">
+            <div className="st-cam-sky-embed" dangerouslySetInnerHTML={{ __html: sky.embedHtml }}/>
+            <span className="st-cam-live">Live</span>
+            <span className="st-cam-sky-go" aria-hidden="true">Watch on SkylineWebcams ↗</span>
           </div>
         ) : playing ? (
           <iframe src={`https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&mute=1&playsinline=1&rel=0`}
@@ -1202,7 +1210,7 @@ function SurfCamCard({ cam, status, playing, onPlay, focus, names, navigate }) {
         <div className="st-cam-name">{cam.name}</div>
         <div className="st-cam-by">
           Cam by <a href={cam.operator.url} target="_blank" rel="noopener noreferrer">{cam.operator.name}</a>
-          {!off && <> · <a href={watch} target="_blank" rel="noopener noreferrer">YouTube ↗</a></>}
+          {!off && !sky && <> · <a href={watch} target="_blank" rel="noopener noreferrer">YouTube ↗</a></>}
         </div>
         {cam.covers.length > 0 && <div className="st-cam-spots"><span>In view:</span> {spotLinks(cam.covers)}</div>}
         {cam.near.length > 0 && <div className="st-cam-spots"><span>Nearby:</span> {spotLinks(cam.near)}</div>}
@@ -1234,7 +1242,7 @@ function SurfCamsPage({ ctx, navigate, camId }) {
         <h1 className="sf-title">Live cams</h1>
         <span className="sf-chip">{surf.length - nOff} of {surf.length} online</span>
       </div>
-      <p className="sf-muted st-sub">Live streams run by local businesses and clubs, shown through YouTube's own player. Tap a picture to play; only one plays at a time.</p>
+      <p className="sf-muted st-sub">Live surf cams run by local businesses and people, shown through their own players. Tap a picture to play; only one plays at a time.</p>
 
       <section className="st-sec" aria-labelledby="st-cams-surf">
         <h2 className="st-h2" id="st-cams-surf">Surf cams</h2>

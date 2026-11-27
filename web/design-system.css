@@ -1369,3 +1369,10 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 /* Surftracker "sets to X ft" (H1/10, NWS-style) beside the surf band */
 .sf-sets { color: var(--muted); font-weight: 500; white-space: nowrap; }
 .st-sets { display: block; margin-top: 2px; font: 500 11.5px/1.2 var(--sans); color: var(--muted); white-space: nowrap; }
+
+/* Surftracker cams: SkylineWebcams card (their embed code, unmodified, sized to the frame) */
+.st-cam-sky, .st-cam-sky-embed, .st-cam-sky-embed a { position: absolute; inset: 0; display: block; }
+.st-cam-sky-embed img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.st-cam-sky .st-cam-live { pointer-events: none; }
+.st-cam-sky-go { position: absolute; right: 8px; bottom: 8px; pointer-events: none; font: 600 11.5px/1 var(--sans); color: #fff;
+  background: rgba(14, 42, 46, .78); border-radius: 999px; padding: 6px 9px; }
