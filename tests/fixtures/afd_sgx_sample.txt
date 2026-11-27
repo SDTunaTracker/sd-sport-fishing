@@ -1,0 +1,167 @@
+
+000
+FXUS66 KSGX 272122
+AFDSGX
+
+Area Forecast Discussion
+National Weather Service San Diego CA
+122 PM PST Fri Nov 27 2026
+
+.KEY MESSAGES...
+
+- Dry weather with a cooling trend will occur through the weekend.
+
+- A strengthening low pressure storm system accompanied by a weak
+  to moderate strength atmospheric river will bring widespread 
+  heavier rain, high elevation snow, and windy conditions next 
+  Tuesday into Wednesday.
+
+- Chances for light precipitation and cooler weather continue into
+  later next week as another weather system nears the region.
+
+&&
+
+.DISCUSSION...FOR EXTREME SOUTHWESTERN CALIFORNIA INCLUDING ORANGE...
+SAN DIEGO...WESTERN RIVERSIDE AND SOUTHWESTERN SAN BERNARDINO 
+COUNTIES...
+
+A ridge of high pressure remains stretched over our region southward 
+across the E Pac. This will give one last very warm day west of
+the mountains today. High clouds will move in more on Saturday as
+the ridge breaks down some and a low pressure system skirts by to
+the north. This will allow for cooling, mainly across the western
+valleys with highs lowering into the 70s to near 80 degrees. 
+Cooling spreads further inland toward the mountains by Sunday as 
+zonal flow takes over the region, with highs staying in the 50s 
+and 60s across the mountains. This will be accompanied by greater 
+onshore flow and elevated breezes across the mountains and deserts.
+
+As the low pressure system to the north moves ashore, increased 
+moisture with the associated trough will begin to bring a greater 
+chance for light showers to form over Southern California by late 
+Sunday night into Monday morning. Model data is in consensus that 
+most of this precipitation will be light for areas from the coast to 
+the coastal slopes (most areas receiving near one quarter of an inch 
+of rain or less). Temperatures will continue to cool within 5 
+degrees of normal as cloudier skies and light showers move in. 
+
+As this occurs, a low pressure system off the coast will greatly 
+deepen as it moves in from the north and west. The system will draw 
+in large amounts of moisture from the southwest and west, 
+developing into an atmospheric river. Model consistency with this 
+particular storm system is quite impressive this far out, in terms
+of timing and becoming more consistent with precipitation totals.
+As we look at timing, heavier showers will begin to move into the
+area sometime late Monday night or Tuesday morning. Models have 
+shown subtle increases in IVT values from past runs with 
+increasing confidence in seeing a weak to locally moderate 
+atmospheric river event. The system is expected to move through 
+the area, mainly from northwest to southeast on Tuesday, ending 
+sometime Wednesday morning or afternoon. From run to run, model 
+ensembles continue to hone in on heavier precipitation to move in 
+over the region. This, along with increased instability and warmer
+ocean temperatures, will contribute to a greater chance for 
+thunderstorms to occur as well. If these events do unfold, there 
+will be an increased risk of flash flooding impacts. Since we are 
+still this far out in time from the event, changes in the track 
+and strength of the system are still possible, which may have 
+large effects on precipitation totals and overall impacts. The 
+enhanced upper level jet associated with the system will also 
+bring increased winds across the area, but confidence in exact 
+speeds remains low, though the most impactful winds look to be 
+near the coastal areas.
+
+In terms of how much rain and mountain snow we will see is still 
+uncertain, though confidence is increasing in bouts of heavy 
+rainfall coming to fruition. GEFS members are drier than EPS 
+members, but still wet overall, showing a general 1"+ to locally 
+near 3" totals for areas west of the mountains, highest across the
+LA basin. The deserts look to get in on the rainfall too, but 
+models show a bit more of a spread in these areas, as we usually 
+see in these events. Right now, the lower deserts have a good 
+chance to see near one half inch in total, though some areas may 
+see over one inch. Higher totals look likely across areas of the 
+high desert as well. As is per usual with these types of systems, 
+snow levels will start on the higher side, then fall as the system
+passes through. This is still quite preliminary, but snow levels 
+will start somewhere over 8,000 feet Tuesday morning, lowering in 
+the vicinity over 6,000 feet, which will give the chance for snow 
+showers across the mountain villages of the San Bernardino 
+Mountains. Again, expect these rainy, windy and snowy details to 
+change in the coming days. All those across our forecast area 
+should use this time to continue to monitor the weather forecast 
+and prepare for flooding and wind impacts.
+
+As the storm system moves out of the area on Wednesday, a weak ridge 
+may form in its place, as tropical moisture to the south lingers. 
+This should bring a brief reprieve from the wet weather later on 
+Wednesday into early Thursday of next week. Model ensembles continue 
+to point to a troughing pattern maintaining itself across California 
+as we slide into the latter part of next week. Long-range models 
+show the potential for a weak area of low pressure to near the 
+region by this time, which may bring the chance for more cooler 
+and wetter weather.
+
+&&
+
+.AVIATION... 
+271700Z...VFR prevailing with SKC-SCT250 through this evening. 
+Increasing amounts of high-level clouds this evening will likely 
+prevent any widespread low-level cloud cover for coastal regions, 
+but patchy, intermittently impactful cigs are possible tonight (40% 
+chance vcnty KSAN 06-12Z, 25% vcnty chance KSNA 03-14Z).
+
+&&
+
+.MARINE...
+No hazardous marine conditions expected through Monday. Winds become 
+southwesterly early Tuesday morning, increasing through the day. 
+While there is some uncertainty when it comes to exact wind speeds, 
+widespread gusts 30 to 35 knots are likely Tuesday morning through 
+Wednesday morning, along with steep, choppy, high seas. There is a 
+40-50% chance for storm-force wind gusts Tuesday morning and 
+afternoon.
+
+&&
+
+.BEACHES...
+High tide peaks this morning at 10 AM around 7.57-7.7 ft MLLW. High 
+tides will continue to decrease through the weekend, with high tide 
+around 7 ft MLLW Saturday, falling below 7 ft on Sunday. Forecast 
+tides have been adjusted 1.01 to 1.07 feet above baseline 
+astronomical predictions based on trends in recent observations. 
+
+A long period west swell of 3-4 ft at 14-15 seconds continues to 
+generate breaking waves of 3-5 feet, with local sets up to 6 feet on 
+exposed west-facing beaches today. The period increases to 16-17 
+seconds Saturday, increasing breaking waves to 4-7 ft with sets up 
+to 8 feet on exposed west-facing beaches and near piers for 
+Saturday, highest in the morning and early afternoon. 
+
+The combination tides above 7 feet and elevated surf will result in 
+moderate coastal flooding during the this morning high tide, with 
+minor to locally moderate coastal flooding on Saturday morning. A 
+Coastal Flood Warning remains in effect through early this 
+afternoon, with a Beach Hazards Statement in effect early this 
+afternoon into Saturday afternoon.
+
+&&
+
+.SKYWARN... 
+Skywarn activation is not requested. However weather spotters are
+encouraged to report significant weather conditions.
+
+&&
+
+.SGX WATCHES/WARNINGS/ADVISORIES...
+CA...Beach Hazards Statement through Saturday afternoon for Orange 
+     County Coastal Areas-San Diego County Coastal Areas.
+
+PZ...None.
+
+&&
+
+$$
+
+PUBLIC...APR
+AVIATION/MARINE/BEACHES...CSP
