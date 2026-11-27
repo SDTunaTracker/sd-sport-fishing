@@ -1437,3 +1437,32 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .sf-cp-chip.sf-cp-face { color: #1F6470; background: rgba(46, 125, 140, .12); }
 .sf-cp-chip.sf-cp-face i { border-top-style: dotted; }
 .sf-cp-chip.sf-cp-nowind { color: var(--muted); font-weight: 500; }
+
+/* Surftracker four essentials: tide, wind, water, swell */
+.sf-es { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 6px 0 12px; }
+.sf-es.sf-es-region { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 520px; }
+.sf-es-tile { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--line); border-left: 4px solid var(--line-2); border-radius: var(--radius-md); }
+.sf-es-k { font: 600 11px/1.2 var(--sans); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.sf-es-tile b { font: 700 20px/1.15 var(--sans); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sf-es-tile b small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.sf-es-s { font: 500 12.5px/1.35 var(--sans); color: var(--ink-2); }
+.sf-es-src { font: 400 11px/1.3 var(--sans); color: var(--faint); }
+.sf-es-arr { display: inline-block; font-style: normal; margin-right: 3px; font-size: .85em; }
+.sf-es-spark { display: block; margin: 2px 0; }
+.sf-es-spark path { fill: none; stroke: #2E7D8C; stroke-width: 1.6; }
+.sf-es-spark circle { fill: #2E7D8C; stroke: #fff; stroke-width: 1.5; }
+.sf-es-tile.sf-es-w-good { border-left-color: #2F8A4E; } .sf-es-tile.sf-es-w-ok { border-left-color: #C98A1B; }
+.sf-es-tile.sf-es-w-bad { border-left-color: #C0453A; }
+.sf-es-w-good .sf-es-s { color: #1F6A3A; } .sf-es-w-ok .sf-es-s { color: #8A5D0E; } .sf-es-w-bad .sf-es-s { color: #96322A; }
+.sf-es-tile.sf-es-swell { border-left-color: #2C5DA8; }
+.sf-es-mini { display: flex; flex-wrap: wrap; gap: 2px 8px; font: 500 11.5px/1.35 var(--sans); color: var(--ink-2); }
+.sf-es-mini .sf-es-w-good { color: #1F6A3A; } .sf-es-mini .sf-es-w-ok { color: #8A5D0E; } .sf-es-mini .sf-es-w-bad { color: #96322A; }
+.sf-cp .sf-es { margin: 4px 0 8px; }
+.sf-cp-note { color: var(--warn); font-size: 12.5px; }
+@media (max-width: 760px) {
+  .sf-es { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .st-rank-w .sf-es-mini { justify-content: flex-end; }
+}

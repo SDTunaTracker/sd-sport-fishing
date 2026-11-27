@@ -759,6 +759,7 @@ function SurfTopBar({ title, data, children }) {
         {children}
       </div>
       {stale && <p className="sf-stale">This forecast is {Math.round(ageH)} hours old. It may be out of date.</p>}
+      {sfWindNote(data) && <p className="sf-stale sf-windnote">{sfWindNote(data)}</p>}
     </React.Fragment>
   );
 }
@@ -797,6 +798,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf report" data={data}/>
+      <SurfEssentials data={data} region nowLabel="now"/>
       <SurfNws nws={data.nws}/>
       {window.SurfNwsNotes && <window.SurfNwsNotes notes={data.nwsNotes}/>}
 
@@ -813,6 +815,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
                   <span className="st-card-name">{b.name}</span>
                   <span className="st-card-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small>{sfSets(h) != null && <small className="st-sets">sets to {sfSets(h)} ft</small>}</span>
                   <span className={h ? sfRatingClass(h.label) : 'sf-rate'}>{h ? sfTitle(h.label) : '—'}</span>
+                  {h && <SurfEssentials data={data} h={h} compact/>}
                   {bw && bw.h.score >= 0.5 && <span className="st-card-bw">Best {sfFracClock(bw.from)}–{sfFracClock(bw.to)}</span>}
                 </a>
               );
@@ -845,7 +848,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
                     {!dark && next && h && sfRateKey(next.label) !== sfRateKey(h.label)
                       ? <small className="st-rank-next">→ {sfTitle(next.label)}</small> : null}
                   </span>
-                  <span className="st-rank-w">{h && h.windKt != null ? `${h.windKt} kt ${h.windType}` : ''}
+                  <span className="st-rank-w">{h ? <SurfEssentials data={data} h={h} compact="ws"/> : ''}
                     {!dark && bw && bw.h.score >= 0.5 ? <small>Best {sfFracClock(bw.from)}–{sfFracClock(bw.to)}</small> : null}
                     {dark && bw ? <small>{sfFracClock(bw.from)}–{sfFracClock(bw.to)}</small> : null}
                   </span>
@@ -949,7 +952,7 @@ function SurfMapPage({ ctx, navigate }) {
             <a className="sf-go" {...sfLinkProps(navigate, { sub: 'break', spot: selB.id })}>Full forecast →</a>
             <button type="button" className="st-more" onClick={() => setSel(null)} aria-label="Close spot compass">Close</button>
           </div>
-          <SurfCompass b={selB} sun={data.sun} title="Spot compass · swell and wind at this beach"/>
+          <SurfCompass b={selB} sun={data.sun} data={data} title="Spot compass · swell and wind at this beach"/>
         </div>
       )}
       <div className="st-maplist">
@@ -978,6 +981,103 @@ function SurfMapPage({ ctx, navigate }) {
         })}
       </div>
       <p className="sf-muted">* Default settings: generic break settings, rating capped at Fair until the spot is tuned.</p>
+    </div>
+  );
+}
+
+// ── The four essentials: tide, wind, water temp, swell ──────────────────
+// What surfers and paddlers check first. Shown at the top of every break
+// page, in the spot compass (for the scrubbed hour) and, compact, on Report
+// cards. Tide: NOAA La Jolla. Water: latest CDIP buoy reading. Wind and swell:
+// the model hour. Swell is labelled swell; surf stays breaking face height.
+function sfTideAt(tides, ms) {
+  const pts = tides && tides.hourly;
+  if (!pts || pts.length < 2) return null;
+  for (let k = 1; k < pts.length; k++) {
+    const t1 = Date.parse(pts[k][0]);
+    if (t1 >= ms) {
+      const t0 = Date.parse(pts[k - 1][0]);
+      if (t0 > ms) return null;
+      const f = (ms - t0) / Math.max(1, t1 - t0);
+      return pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * f;
+    }
+  }
+  return null;
+}
+function sfTideNext(tides, ms) {
+  return ((tides && tides.hilo) || []).find(x => Date.parse(x.t) > ms) || null;
+}
+function sfWindNote(data) {
+  return data && data.windNote ? 'Wind from the last update; live wind unavailable.' : null;
+}
+
+function SurfTideSpark({ tides, ms }) {
+  const pts = (tides && tides.hourly) || [];
+  const t0 = ms - 6 * 3600e3, t1 = ms + 18 * 3600e3;
+  const seg = pts.filter(p => { const t = Date.parse(p[0]); return t >= t0 && t <= t1; });
+  if (seg.length < 3) return null;
+  const vs = seg.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs);
+  const W = 92, H = 26, x = t => (t - t0) / (t1 - t0) * W, y = v => H - 3 - (v - lo) / Math.max(0.1, hi - lo) * (H - 6);
+  const d = seg.map((p, k) => `${k ? 'L' : 'M'}${x(Date.parse(p[0])).toFixed(1)} ${y(p[1]).toFixed(1)}`).join(' ');
+  const now = sfTideAt(tides, ms);
+  return (
+    <svg className="sf-es-spark" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+      <path d={d}/>
+      {now != null && <circle cx={x(ms)} cy={y(now)} r="3"/>}
+    </svg>
+  );
+}
+
+function SurfEssentials({ data, b, h, ms, compact, nowLabel, region }) {
+  const at = ms || Date.now();
+  const tide = sfTideAt(data.tides, at);
+  const rising = tide != null && sfTideAt(data.tides, at + 30 * 60e3) > tide;
+  const next = sfTideNext(data.tides, at);
+  const wt = data.waterTemp;
+  const nwsWater = data.nws && data.nws.periods && data.nws.periods[0] && data.nws.periods[0].water;
+  const wNote = sfWindNote(data);
+  const hasWind = h && h.windKt != null && h.windFrom != null;
+  const wcls = hasWind ? 'sf-es-w-' + sfWindClass(h.windType) : '';
+  const arr = deg => <i className="sf-es-arr" style={{ transform: `rotate(${(deg + 180) % 360}deg)` }} aria-hidden="true">↑</i>;
+  const swellFt = h && h.hsM != null ? (h.hsM * SF_FT).toFixed(1) : null;
+  const nextTxt = next ? `${next.type === 'H' ? 'High' : 'Low'} ${next.ft} ft ${sfLocal(next.t, { hour: 'numeric', minute: '2-digit' })}` : '';
+  if (compact) {
+    return (
+      <span className="sf-es-mini">
+        {compact !== 'ws' && tide != null && <span title={`Tide at La Jolla${nextTxt ? '; next ' + nextTxt : ''}`}>Tide {tide.toFixed(1)}{rising ? '↑' : '↓'}</span>}
+        <span className={wcls} title={wNote || ''}>{hasWind ? <>{arr(h.windFrom)}{h.windKt} kt{h.windGustKt ? ` g${h.windGustKt}` : ''} {h.windType}</> : 'Wind —'}</span>
+        {compact !== 'ws' && wt && <span title={`CDIP buoy ${wt.station}`}>{wt.f}°F</span>}
+        {swellFt && <span title="Swell just offshore (not surf height)">Swell {swellFt} ft {Math.round(h.tpS)} s</span>}
+      </span>
+    );
+  }
+  return (
+    <div className={region ? 'sf-es sf-es-region' : 'sf-es'} role="group" aria-label="Tide, wind, water temperature and swell">
+      <div className="sf-es-tile">
+        <span className="sf-es-k">Tide{nowLabel ? ` · ${nowLabel}` : ''}</span>
+        <b>{tide != null ? `${tide.toFixed(1)} ft` : '—'} {tide != null && <small>{rising ? '↑ rising' : '↓ falling'}</small>}</b>
+        <SurfTideSpark tides={data.tides} ms={at}/>
+        <span className="sf-es-s">{nextTxt ? `Next: ${nextTxt}` : ''}</span>
+        <span className="sf-es-src">NOAA La Jolla</span>
+      </div>
+      {!region && <div className={`sf-es-tile ${wcls}`}>
+        <span className="sf-es-k">Wind</span>
+        <b>{hasWind ? <>{arr(h.windFrom)}{h.windKt} kt</> : '—'} {hasWind && h.windGustKt != null && <small>gusts {h.windGustKt}</small>}</b>
+        <span className="sf-es-s">{hasWind ? `from ${sfDir(h.windFrom)} · ${h.windType}${b ? ' here' : ''}` : 'No wind forecast'}</span>
+        <span className="sf-es-src">{wNote || 'ECMWF model'}</span>
+      </div>}
+      <div className="sf-es-tile">
+        <span className="sf-es-k">Water</span>
+        <b>{wt ? `${wt.f}°F` : nwsWater ? nwsWater.replace(' degrees', '°F') : '—'}</b>
+        <span className="sf-es-s">{wt ? sfWetsuit(wt.f) : ''}</span>
+        <span className="sf-es-src">{wt ? `CDIP buoy ${wt.station}, ${sfLocal(wt.t, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}` : nwsWater ? 'NWS surf zone forecast' : ''}</span>
+      </div>
+      {!region && <div className="sf-es-tile sf-es-swell">
+        <span className="sf-es-k">Swell</span>
+        <b>{swellFt ? <>{arr(h.dpDeg)}{swellFt} ft</> : '—'} {swellFt && <small>{Math.round(h.tpS)} s</small>}</b>
+        <span className="sf-es-s">{swellFt ? `from ${sfDir(h.dpDeg)} ${Math.round(h.dpDeg)}°` : ''}</span>
+        <span className="sf-es-src">{h ? `Surf ${h.faceFt[0]}–${h.faceFt[1]} ft (face)` : ''}</span>
+      </div>}
     </div>
   );
 }
@@ -1067,7 +1167,7 @@ function SurfCompassDial({ b, h, w, hgt }) {
   );
 }
 
-function SurfCompass({ b, sun, title }) {
+function SurfCompass({ b, sun, title, data }) {
   const box = useSfRef(null);
   const mapEl = useSfRef(null);
   const map = useSfRef(null);
@@ -1104,21 +1204,19 @@ function SurfCompass({ b, sun, title }) {
   return (
     <section className="sf-cp" aria-label={`${b.name} spot compass`}>
       {title && <div className="sf-sec-h">{title}</div>}
+      {data && <SurfEssentials data={data} b={b} h={cur} ms={Date.parse(cur.t)} nowLabel={when}/>}
       <div className="sf-cp-stage" ref={box}>
         {!failed && <div className="sf-cp-map" ref={mapEl}/>}
         {w > 0 && <SurfCompassDial b={b} h={cur} w={w} hgt={hgt}/>}
       </div>
-      <div className="sf-cp-legend">
-        {cur.dpDeg != null && cur.hsM != null && (
-          <span className="sf-cp-chip sf-cp-swell"><i aria-hidden="true"/>Swell {(cur.hsM * SF_FT).toFixed(1)} ft · {Math.round(cur.tpS)} s from {sfDir(cur.dpDeg)} {Math.round(cur.dpDeg)}°</span>
-        )}
-        {cur.windKt != null && cur.windFrom != null ? (
-          <span className={`sf-cp-chip sf-cp-wind sf-cp-w-${sfWindClass(cur.windType)}`}><i aria-hidden="true"/>Wind {cur.windKt}{cur.windGustKt ? `–${cur.windGustKt}` : ''} kt from {sfDir(cur.windFrom)} · {cur.windType}</span>
-        ) : <span className="sf-cp-chip sf-cp-nowind">No wind forecast</span>}
-        <span className="sf-cp-chip sf-cp-face"><i aria-hidden="true"/>Beach faces {sfDir(b.shoreNormal)} {Math.round(b.shoreNormal)}°</span>
+      <div className="sf-cp-legend" aria-hidden="true">
+        <span className="sf-cp-chip sf-cp-swell"><i/>Swell</span>
+        <span className={`sf-cp-chip sf-cp-wind sf-cp-w-${cur.windKt != null ? sfWindClass(cur.windType) : 'none'}`}><i/>Wind</span>
+        <span className="sf-cp-chip sf-cp-face"><i/>Beach faces {sfDir(b.shoreNormal)} {Math.round(b.shoreNormal)}°</span>
       </div>
       <p className="sf-cp-line"><b>{when}:</b> {sfCompassLine(cur, b)}{' '}
-        <span className="sf-cp-surf">Surf {cur.faceFt[0]}–{cur.faceFt[1]} ft (face){sfSetsTxt(cur)}.</span></p>
+        <span className="sf-cp-surf">Surf {cur.faceFt[0]}–{cur.faceFt[1]} ft (face){sfSetsTxt(cur)}.</span>
+        {data && sfWindNote(data) && <span className="sf-cp-note"> {sfWindNote(data)}</span>}</p>
       <div className="sf-cp-scrub">
         <button type="button" onClick={() => setI(Math.max(0, i - 1))} disabled={i <= 0} aria-label="Earlier">‹</button>
         <input type="range" min="0" max={hours.length - 1} value={i} onChange={e => setI(Number(e.target.value))}
@@ -1221,6 +1319,7 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
       </div>
       <p className="sf-muted st-sub">{b.area} · {b.type === 'reef' ? 'reef' : 'beach'} · faces {sfDir(b.shoreNormal)} ({Math.round(b.shoreNormal)}°)
         · updated {sfLocal(data.generatedAt, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</p>
+      <SurfEssentials data={data} b={b} h={b.hours[sfNearestStep(b.hours)]} nowLabel="now"/>
       {b.note && <div className="sf-note st-note" role="note">{b.note}</div>}
       <SurfBreakCams spot={b.id} navigate={navigate}/>
 
@@ -1238,7 +1337,7 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         <SurfLegend/>
       </div>
       <div className="st-panel" id="compass">
-        <SurfCompass b={b} sun={data.sun} title="Spot compass · swell and wind at this beach"/>
+        <SurfCompass b={b} sun={data.sun} data={data} title="Spot compass · swell and wind at this beach"/>
       </div>
 
       <div className="st-two">
