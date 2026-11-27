@@ -97,6 +97,30 @@ function sfBestWindow(hours, dayKey, sun) {
   return { h: best, from: a, to: Math.max(b, a + 0.5) };
 }
 
+// More county spots (src/surf/spots.py, default settings), optional: the page
+// works without it and drops it when it is older than its staleAfterHours.
+function useSurfSpots() {
+  const [spots, setSpots] = useSfState(null);
+  useSfEffect(() => {
+    let alive = true;
+    const hour = Math.floor(Date.now() / 3600000);
+    fetch('/api/v1/surf_spots.json?h=' + hour)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (!alive || !d || !Array.isArray(d.spots)) return;
+        const ageH = (Date.now() - Date.parse(d.generatedAt)) / 3600000;
+        if (ageH <= (d.staleAfterHours || 30)) setSpots(d);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  return spots;
+}
+
+// Areas, north to south (same limits as src/surf/spots.py AREAS).
+const SF_AREAS = [[32.975, 'North County'], [32.81, 'Del Mar–La Jolla'], [32.70, 'PB–Point Loma'], [-90, 'Coronado–Imperial Beach']];
+function sfArea(lat) { return SF_AREAS.find(a => lat > a[0])[1]; }
+
 function useSurfData() {
   const [state, setState] = useSfState({ data: null, error: false });
   useSfEffect(() => {
@@ -226,7 +250,7 @@ function SurfConditions({ data, dayKey }) {
         <div className="sf-tile" title={wt ? `CDIP buoy ${wt.station}, ${sfLocal(wt.t, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}` : ''}>
           <span>Water</span>
           <b>{wt ? `${wt.f}°F` : nwsWater ? nwsWater.replace(' degrees', '°F') : '—'}</b>
-          <i>{wt ? `buoy ${wt.station}` : nwsWater ? 'NWS' : ''}</i>
+          <i>{wt ? `${sfWetsuit(wt.f)} · buoy ${wt.station}` : nwsWater ? 'NWS' : ''}</i>
         </div>
       </div>
       <div className="sf-cond-tide">
@@ -286,17 +310,17 @@ function SurfMap({ breaks, best, open, onPick }) {
       const txt = bw ? (bw.h.faceFt[0] === bw.h.faceFt[1] ? bw.h.faceFt[0] : bw.h.faceFt[0] + '–' + bw.h.faceFt[1]) : '·';
       const icon = L.divIcon({
         className: 'sf-pin-wrap',
-        html: `<span class="sf-pin sf-pin-${key}${open === b.id ? ' on' : ''}"></span>`,
-        iconSize: [16, 16], iconAnchor: [8, 8],
+        html: `<span class="sf-pin sf-pin-${key}${b.defaults ? ' def' : ''}${open === b.id ? ' on' : ''}"></span>`,
+        iconSize: b.defaults ? [11, 11] : [16, 16], iconAnchor: b.defaults ? [5.5, 5.5] : [8, 8],
       });
       L.marker([b.lat, b.lon], { icon, title: b.name, keyboard: true, zIndexOffset: open === b.id ? 1000 : 0 })
-        .bindTooltip(`<b>${b.name}</b> ${txt} ft${bw ? ' · ' + sfTitle(bw.h.label) : ''}`,
+        .bindTooltip(`<b>${b.name}</b> ${txt} ft${bw ? ' · ' + sfTitle(bw.h.label) : ''}${b.defaults ? ' · default settings' : ''}`,
                      { direction: 'left', offset: [-8, 0], className: 'sf-tip' })
         .on('click', () => onPick(b.id))
         .addTo(layer.current);
     });
   }
-  useSfEffect(() => { draw(); }, [best, open]);
+  useSfEffect(() => { draw(); }, [breaks, best, open]);
   if (failed) return null;
   return (
     <section className="sf-map-wrap" aria-label="Map of surf breaks">
@@ -350,7 +374,7 @@ function SurfStrip({ b, days, dayKey, sun, onDay }) {
   );
 }
 
-function SurfSlot({ h, label }) {
+function SurfSlot({ h, label, def }) {
   if (!h) return <div className="sf-slot sf-slot-empty"><span className="sf-slot-lbl">{label}</span>—</div>;
   const [lo, hi] = h.faceFt;
   return (
@@ -361,6 +385,7 @@ function SurfSlot({ h, label }) {
       </span>
       <span className="sf-band">{sfBand(lo, hi)}</span>
       <span className={sfRatingClass(h.label)}>{sfTitle(h.label)}{h.faded ? ' · wind' : ''}</span>
+      {def && <span className="sf-def-tag" title="Generic break settings, not tuned for this spot; rating capped at Fair">default settings</span>}
     </div>
   );
 }
@@ -385,7 +410,7 @@ function SurfBest({ bw, isToday, dayLabel }) {
   );
 }
 
-function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, onToggle, onDay }) {
+function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, onToggle, onDay, fav, onFav, navigate }) {
   const am = sfPick(b.hours, dayKey, 7);
   const pm = sfPick(b.hours, dayKey, 13);
   const ref = am || pm;
@@ -394,11 +419,14 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
   return (
     <li className={`sf-break${open ? ' open' : ''}`} id={`sf-${b.id}`}>
       <button className="sf-break-head" onClick={onToggle} aria-expanded={open}>
-        <span className="sf-break-name">{b.name}<i>{b.type === 'reef' ? 'reef' : 'beach'} · faces {sfDir(b.shoreNormal)}</i></span>
-        <SurfSlot h={am} label="Morning"/>
-        <SurfSlot h={pm} label="Afternoon"/>
+        <span className="sf-break-name">{b.name}
+          <i>{b.type === 'reef' ? 'reef' : 'beach'} · faces {sfDir(b.shoreNormal)}</i>
+        </span>
+        <SurfSlot h={am} label="Morning" def={b.defaults}/>
+        <SurfSlot h={pm} label="Afternoon" def={b.defaults}/>
         <span className="sf-chev" aria-hidden="true">{open ? '–' : '+'}</span>
       </button>
+      {b.note && <div className="sf-note" role="note">{b.note}</div>}
       <div className="sf-break-glance">
         <SurfBest bw={bw} isToday={isToday} dayLabel={dayLabel}/>
         <SurfStrip b={b} days={days} dayKey={dayKey} sun={sun} onDay={onDay}/>
@@ -414,6 +442,10 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
       )}
       {open && (
         <div className="sf-detail">
+          <div className="sf-actions">
+            {onFav && <SurfStar on={fav} onClick={() => onFav(b.id)} name={b.name}/>}
+            {navigate && <a className="sf-go" {...sfLinkProps(navigate, { sub: 'break', spot: b.id })}>Open {b.name} →</a>}
+          </div>
           <div className="sf-detail-tide">
             <div className="sf-sec-h">Tide · best for this break {b.tideWindow ? `${b.tideWindow[0]} to ${b.tideWindow[1]} ft` : ''}</div>
             <SurfTide tides={tides} dayKey={dayKey} sun={sun} win={b.tideWindow} marks={steps.map(h => sfFrac(h.t))}/>
@@ -433,6 +465,14 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
               </div>
             ))}
           </div>
+          {b.defaults && (
+            <div className="sf-def-box">
+              <b>Default settings.</b> This spot uses the same wave model as the main breaks, but with generic
+              settings: its break type is a guess, any tide is scored the same, and its swell window
+              ({b.swellWindow ? `${Math.round(((b.swellWindow[0] % 360) + 360) % 360)}° to ${Math.round(((b.swellWindow[1] % 360) + 360) % 360)}°` : 'generic'}) comes from the
+              direction the beach faces. Its rating is capped at Fair until the spot is tuned against observations.
+            </div>
+          )}
           <div className="sf-detail-notes">
             MOP point {b.mop} at {b.mopDepthM} m, beach faces {Math.round(b.shoreNormal)}°.
             {b.swellWindow ? ` Works best on swell from ${b.swellWindow[0]}° to ${b.swellWindow[1]}°.` : ''}
@@ -477,11 +517,118 @@ function SurfLegend() {
   );
 }
 
-function SurfView({ navigate }) {
-  const { data, error } = useSurfData();
-  const [day, setDay] = useSfState(null);
-  const [open, setOpen] = useSfState(null);
 
+// ════════════════════════════════════════════════════════════════════════
+// Surftracker: the discreet surf mode of the site (/sd/surf/*). Its own
+// header, nav (Report · Forecast · Map) and footer, with a way back to
+// Tunatracker. Reached only from a quiet link on Charts and in the footer.
+// ════════════════════════════════════════════════════════════════════════
+
+function sfPath(params) {
+  const fn = window.ttPathFromRoute;
+  return fn ? fn('surf', params || {}) : '/sd/surf';
+}
+// <a> props for in-app links: real hrefs (open in new tab, crawlable), SPA nav on click.
+function sfLinkProps(navigate, params) {
+  return {
+    href: sfPath(params),
+    onClick: e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+      e.preventDefault();
+      navigate('surf', params);
+    },
+  };
+}
+
+function SurfWave({ size }) {
+  const z = size || 22;
+  return (
+    <svg width={z} height={z} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2 15c2.2 0 3.3-1.6 4.5-3.4C8 9.3 9.6 6.5 13.4 6.5c3.1 0 5 2 5 4.3 0 1.8-1.3 3-2.9 3-1.2 0-2.1-.8-2.1-1.9"
+            fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M2 19.5c1.7 0 2.6-.9 3.8-.9s2.1.9 3.8.9 2.6-.9 3.8-.9 2.1.9 3.8.9 2.6-.9 3.8-.9"
+            fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function SurftrackerHeader({ sub, navigate }) {
+  const tabs = [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map']];
+  const active = sub === 'break' ? 'forecast' : sub;
+  return (
+    <header className="st-header">
+      <div className="st-head-inner">
+        <a className="st-brand" {...sfLinkProps(navigate, { sub: 'report' })} aria-label="Surftracker home">
+          <span className="st-brand-mark"><SurfWave size={22}/></span>
+          <span className="st-brand-text">Surftracker<small>San Diego</small></span>
+        </a>
+        <nav className="st-nav" aria-label="Surftracker">
+          {tabs.map(([id, label]) => (
+            <a key={id} className={`st-tab${active === id ? ' on' : ''}`} aria-current={active === id ? 'page' : undefined}
+               {...sfLinkProps(navigate, { sub: id })}>{label}</a>
+          ))}
+        </nav>
+        <a className="st-back" href="/sd/today"
+           onClick={e => { if (e.metaKey || e.ctrlKey) return; e.preventDefault(); navigate('today'); }}>
+          <span aria-hidden="true">←</span> Tunatracker
+        </a>
+      </div>
+    </header>
+  );
+}
+
+function SurftrackerFooter({ navigate }) {
+  return (
+    <footer className="st-footer">
+      <div className="st-foot-inner">
+        <span><b>Surftracker</b> is the surf side of Tunatracker: free, no ads, and it shows how accurate it is.</span>
+        <span className="st-foot-links">
+          <a href="/sd/today" onClick={e => { e.preventDefault(); navigate('today'); }}>← Back to Tunatracker</a>
+          <span aria-hidden="true">·</span>
+          <a href="/privacy/">Privacy</a>
+        </span>
+      </div>
+    </footer>
+  );
+}
+window.SurftrackerHeader = SurftrackerHeader;
+window.SurftrackerFooter = SurftrackerFooter;
+
+// ── favourites ("My spots"), per viewer, in this browser only ───────────
+const SF_FAV_KEY = 'tt_surf_favs';
+function useSurfFavs() {
+  const [favs, setFavs] = useSfState(() => {
+    try { const v = JSON.parse(localStorage.getItem(SF_FAV_KEY) || '[]'); return Array.isArray(v) ? v : []; }
+    catch (e) { return []; }
+  });
+  const toggle = id => setFavs(f => {
+    const next = f.indexOf(id) >= 0 ? f.filter(x => x !== id) : f.concat([id]);
+    try { localStorage.setItem(SF_FAV_KEY, JSON.stringify(next)); } catch (e) {}
+    return next;
+  });
+  return [favs, toggle];
+}
+function SurfStar({ on, onClick, name, compact }) {
+  return (
+    <button type="button" className={`sf-star${on ? ' on' : ''}${compact ? ' compact' : ''}`} aria-pressed={!!on}
+            aria-label={on ? `Remove ${name} from my spots` : `Add ${name} to my spots`}
+            onClick={e => { e.stopPropagation(); e.preventDefault(); onClick(); }}>
+      <span aria-hidden="true">{on ? '★' : '☆'}</span>{compact ? null : (on ? ' My spot' : ' Add to my spots')}
+    </button>
+  );
+}
+
+// ── shared data: main breaks + county spots, day list ─────────────────
+function useSurfAll() {
+  const { data, error } = useSurfData();
+  const extra = useSurfSpots();
+  const all = useSfMemo(() => {
+    if (!data) return [];
+    const have = {};
+    const list = data.breaks.map(b => { have[b.id] = 1; return Object.assign({}, b, { area: sfArea(b.lat), key: true }); });
+    ((extra && extra.spots) || []).forEach(b => { if (!have[b.id]) list.push(Object.assign({}, b, { area: b.area || sfArea(b.lat) })); });
+    return list.sort((a, b) => b.lat - a.lat);
+  }, [data, extra]);
   const days = useSfMemo(() => {
     if (!data || !data.breaks[0]) return [];
     const now = Date.now() - 3 * 3600000;
@@ -493,91 +640,455 @@ function SurfView({ navigate }) {
     });
     return keys.map(k => {
       const h = data.breaks[0].hours.find(x => sfDayKey(x.t) === k);
-      return {
-        key: k,
-        label: sfLocal(h.t, { weekday: 'short', month: 'short', day: 'numeric' }),
-        dn: sfLocal(h.t, { day: 'numeric' }),
-        wd: sfLocal(h.t, { weekday: 'short' }),
-      };
+      return { key: k, label: sfLocal(h.t, { weekday: 'short', month: 'short', day: 'numeric' }),
+               dn: sfLocal(h.t, { day: 'numeric' }), wd: sfLocal(h.t, { weekday: 'short' }) };
     });
   }, [data]);
+  return { data, error, extra, all, days };
+}
 
-  useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
+function sfWetsuit(f) {
+  if (f == null) return null;
+  if (f >= 72) return 'Boardshorts or a spring suit';
+  if (f >= 66) return 'Spring suit or 2 mm';
+  if (f >= 61) return '3/2 full suit';
+  if (f >= 56) return '4/3 full suit';
+  return '5/4 with booties';
+}
 
-  const best = useSfMemo(() => {
-    const out = {};
-    if (data && day) data.breaks.forEach(b => { out[b.id] = sfBestWindow(b.hours, day, data.sun); });
-    return out;
-  }, [data, day]);
+// The step nearest to now (within ~1.5 h) and the one after it.
+function sfNowNext(hours) {
+  const t = Date.now();
+  let i = -1, best = 1e15;
+  hours.forEach((h, k) => { const d = Math.abs(Date.parse(h.t) - t); if (d < best) { best = d; i = k; } });
+  if (i < 0 || best > 1.6 * 3600000) return [null, null];
+  return [hours[i], hours[i + 1] || null];
+}
 
-  if (error) return <div className="sf-wrap"><h1 className="sf-title">San Diego surf</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
-  if (!data) return <div className="sf-wrap"><h1 className="sf-title">San Diego surf</h1><p className="sf-muted">Loading surf forecast…</p></div>;
+function sfIsDarkNow(sun) {
+  return !sfIsDay(new Date().toISOString(), sun);
+}
 
+function SurfAreaChips({ value, onChange, counts, withKey, total }) {
+  const opts = (withKey ? [['key', 'Main breaks']] : []).concat(SF_AREAS.map(a => [a[1], a[1]]), [['all', 'All']]);
+  return (
+    <div className="sf-areas" role="tablist" aria-label="Area">
+      {opts.map(([id, lbl]) => (
+        <button key={id} type="button" role="tab" aria-selected={value === id} className={`sf-area${value === id ? ' on' : ''}`}
+                onClick={() => onChange(id)}>
+          {lbl}{counts ? <span className="sf-area-n"> {id === 'all' ? total : id === 'key' ? counts.key : (counts[id] || 0)}</span> : null}
+        </button>
+      ))}
+    </div>
+  );
+}
+function sfInArea(b, area) { return area === 'all' || (area === 'key' ? b.key : b.area === area); }
+function sfCounts(all) {
+  const c = { key: 0 };
+  all.forEach(b => { c[b.area] = (c[b.area] || 0) + 1; if (b.key) c.key += 1; });
+  return c;
+}
+
+function SurfTopBar({ title, data, children }) {
   const ageH = (Date.now() - Date.parse(data.generatedAt)) / 3600000;
   const stale = ageH > (data.staleAfterHours || SF_STALE_H);
-  const v = data.verification || {};
-  const dayObj = days.find(d => d.key === day);
-  const pick = id => {
-    setOpen(id);
-    setTimeout(() => {
-      const el = document.getElementById('sf-' + id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 30);
-  };
-
   return (
-    <div className="sf-wrap">
+    <React.Fragment>
       <div className="sf-top">
-        <h1 className="sf-title">San Diego surf</h1>
+        <h1 className="sf-title">{title}</h1>
         <span className="sf-chip">Model forecast</span>
         <span className="sf-muted">Updated {sfLocal(data.generatedAt, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</span>
+        {children}
       </div>
       {stale && <p className="sf-stale">This forecast is {Math.round(ageH)} hours old. It may be out of date.</p>}
+    </React.Fragment>
+  );
+}
 
+function SurfDays({ days, day, setDay }) {
+  return (
+    <div className="sf-days" role="tablist" aria-label="Day">
+      {days.map(d => (
+        <button key={d.key} role="tab" aria-selected={day === d.key}
+                className={`sf-day${day === d.key ? ' on' : ''}`} onClick={() => setDay(d.key)}>{d.label}</button>
+      ))}
+    </div>
+  );
+}
+
+// ── Report: where to surf now, my spots, conditions ─────────────────────
+function SurfReport({ ctx, navigate, favs, toggleFav }) {
+  const { data, all, days, extra } = ctx;
+  const [area, setArea] = useSfState('all');
+  const [more, setMore] = useSfState(false);
+  const today = days[0] ? days[0].key : null;
+  const dark = sfIsDarkNow(data.sun);
+  // After dark, rank by tomorrow's best daylight window instead of "now".
+  const tomorrow = days[1] ? days[1].key : null;
+  const rows = all.filter(b => sfInArea(b, area)).map(b => {
+    const [now, next] = sfNowNext(b.hours);
+    const bwToday = today ? sfBestWindow(b.hours, today, data.sun) : null;
+    const bwTom = tomorrow ? sfBestWindow(b.hours, tomorrow, data.sun) : null;
+    const rankBy = dark ? (bwTom ? bwTom.h.score : -1)
+      : Math.max(now ? now.score : -1, next ? next.score - 0.05 : -1);
+    return { b, now, next, bw: dark ? bwTom : bwToday, rankBy };
+  }).sort((x, y) => y.rankBy - x.rankBy || y.b.lat - x.b.lat);
+  const shown = more ? rows : rows.slice(0, 12);
+  const mine = favs.map(id => all.find(b => b.id === id)).filter(Boolean);
+  const counts = sfCounts(all);
+  return (
+    <div className="sf-wrap">
+      <SurfTopBar title="Surf report" data={data}/>
       <SurfNws nws={data.nws}/>
 
-      <div className="sf-days" role="tablist" aria-label="Day">
-        {days.map(d => (
-          <button key={d.key} role="tab" aria-selected={day === d.key}
-                  className={`sf-day${day === d.key ? ' on' : ''}`} onClick={() => setDay(d.key)}>{d.label}</button>
-        ))}
-      </div>
+      {mine.length > 0 && (
+        <section className="st-sec" aria-label="My spots">
+          <h2 className="st-h2">My spots</h2>
+          <div className="st-cards">
+            {mine.map(b => {
+              const [now] = sfNowNext(b.hours);
+              const bw = today ? sfBestWindow(b.hours, today, data.sun) : null;
+              const h = now || (bw && bw.h);
+              return (
+                <a key={b.id} className={`st-card st-card-${h ? sfRateKey(h.label) : 'none'}`} {...sfLinkProps(navigate, { sub: 'break', spot: b.id })}>
+                  <span className="st-card-name">{b.name}</span>
+                  <span className="st-card-h">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
+                  <span className={h ? sfRatingClass(h.label) : 'sf-rate'}>{h ? sfTitle(h.label) : '—'}</span>
+                  {bw && bw.h.score >= 0.5 && <span className="st-card-bw">Best {sfFracClock(bw.from)}–{sfFracClock(bw.to)}</span>}
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
+      <section className="st-sec" aria-labelledby="st-now-h">
+        <div className="st-sec-head">
+          <h2 className="st-h2" id="st-now-h">{dark ? 'Best bets for tomorrow' : 'Where to surf now'}</h2>
+          <span className="sf-muted">{dark
+            ? `Ranked by each spot's best daylight window ${days[1] ? days[1].wd : 'tomorrow'}.`
+            : 'Ranked by the model rating now and over the next 3 hours.'}</span>
+        </div>
+        {extra && <SurfAreaChips value={area} onChange={id => { setArea(id); setMore(false); }} counts={counts} total={all.length}/>}
+        <ol className="st-rank">
+          {shown.map(({ b, now, next, bw }, i) => {
+            const h = dark ? (bw && bw.h) : now;
+            return (
+              <li key={b.id} className="st-rank-row">
+                <a className="st-rank-link" {...sfLinkProps(navigate, { sub: 'break', spot: b.id })}>
+                  <span className="st-rank-n">{i + 1}</span>
+                  <span className="st-rank-name">{b.name}
+                    <i>{b.area}{b.defaults ? <em className="sf-def"> · default settings</em> : null}</i>
+                  </span>
+                  <span className="st-rank-h">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
+                  <span className="st-rank-r">
+                    {h ? <span className={sfRatingClass(h.label)}>{sfTitle(h.label)}</span> : '—'}
+                    {!dark && next && h && sfRateKey(next.label) !== sfRateKey(h.label)
+                      ? <small className="st-rank-next">→ {sfTitle(next.label)}</small> : null}
+                  </span>
+                  <span className="st-rank-w">{h && h.windKt != null ? `${h.windKt} kt ${h.windType}` : ''}
+                    {!dark && bw && bw.h.score >= 0.5 ? <small>Best {sfFracClock(bw.from)}–{sfFracClock(bw.to)}</small> : null}
+                    {dark && bw ? <small>{sfFracClock(bw.from)}–{sfFracClock(bw.to)}</small> : null}
+                  </span>
+                </a>
+                <SurfStar on={favs.indexOf(b.id) >= 0} onClick={() => toggleFav(b.id)} name={b.name} compact/>
+              </li>
+            );
+          })}
+        </ol>
+        {rows.length > 12 && (
+          <button type="button" className="st-more" onClick={() => setMore(!more)}>
+            {more ? 'Show top 12' : `Show all ${rows.length} spots`}
+          </button>
+        )}
+      </section>
+
+      {today && (
+        <section className="st-sec" aria-label="Today's conditions">
+          <h2 className="st-h2">Today</h2>
+          <SurfConditions data={data} dayKey={today}/>
+        </section>
+      )}
+      <SurfAbout data={data} extra={extra}/>
+    </div>
+  );
+}
+
+// ── Forecast: day tabs + every break with its 7-day strip ───────────────
+function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
+  const { data, all, days, extra } = ctx;
+  const [day, setDay] = useSfState(null);
+  const [open, setOpen] = useSfState(null);
+  const [area, setArea] = useSfState('key');
+  useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
+  const best = useSfMemo(() => {
+    const out = {};
+    if (day) all.forEach(b => { out[b.id] = sfBestWindow(b.hours, day, data.sun); });
+    return out;
+  }, [all, day]);
+  const dayObj = days.find(d => d.key === day);
+  const shown = all.filter(b => sfInArea(b, area));
+  const pick = id => {
+    const b = all.find(x => x.id === id);
+    if (b && !sfInArea(b, area)) setArea(b.area);
+    setOpen(id);
+    setTimeout(() => { const el = document.getElementById('sf-' + id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 30);
+  };
+  return (
+    <div className="sf-wrap">
+      <SurfTopBar title="Surf forecast" data={data}/>
+      <SurfDays days={days} day={day} setDay={setDay}/>
       {day && (
         <div className="sf-overview">
           <SurfConditions data={data} dayKey={day}/>
-          <SurfMap breaks={data.breaks} best={best} open={open} onPick={pick}/>
+          <SurfMap breaks={all} best={best} open={open} onPick={pick}/>
         </div>
       )}
-
+      {extra && <SurfAreaChips value={area} onChange={id => { setArea(id); setOpen(null); }} counts={sfCounts(all)} withKey total={all.length}/>}
       <SurfLegend/>
       <ul className="sf-list">
-        {data.breaks.map(b => (
+        {shown.map(b => (
           <SurfBreakRow key={b.id} b={b} days={days} dayKey={day} dayLabel={dayObj ? dayObj.wd : ''}
                         sun={data.sun} tides={data.tides} buoy={data.buoys && data.buoys[b.buoy]}
                         bw={best[b.id]} open={open === b.id}
-                        onToggle={() => setOpen(open === b.id ? null : b.id)} onDay={setDay}/>
+                        onToggle={() => setOpen(open === b.id ? null : b.id)} onDay={setDay}
+                        fav={favs.indexOf(b.id) >= 0} onFav={toggleFav} navigate={navigate}/>
         ))}
       </ul>
-
-      <section className="sf-about">
-        <h2>How this forecast works</h2>
-        <p>{data.method}</p>
-        <div className="sf-checked">
-          <p>
-            <b>What we've checked:</b> {v.what}. Over {v.testPeriod}, the blended model's error was{' '}
-            {v.hsRmseM ? `${(v.hsRmseM.blend * SF_FT).toFixed(1)} ft (RMS)` : '—'}, better than{' '}
-            {(v.beats || []).join(' and ')}. {v.leadNote}
-          </p>
-          {v.observed && <p><b>Against observed surf:</b> {v.observed}</p>}
-          {v.wind && <p><b>Wind:</b> {v.wind}</p>}
-          <p><b>Not yet checked:</b> {v.notVerified} {v.scale} Ratings top out at Fair–Good: a model alone can't call a day Good or Epic.</p>
-        </div>
-        <p className="sf-muted">Surf height is the face height of the bigger waves; occasional sets run larger. Best window is the highest-rated daylight 3-hour model step. Sun times are for La Jolla; water temperature is the latest CDIP buoy reading. Always check the NWS rip current risk and conditions on the beach.</p>
-        <p className="sf-credits">{(data.credits || []).concat(data.waterTemp ? [`Water temperature: CDIP buoy ${data.waterTemp.station}`] : [], ['Map tiles: Esri, © OpenStreetMap contributors']).join(' · ')}</p>
-      </section>
+      <SurfAbout data={data} extra={extra}/>
     </div>
   );
+}
+
+// ── Map: every spot, coloured by the day's best rating ─────────────────
+function SurfMapPage({ ctx, navigate }) {
+  const { data, all, days } = ctx;
+  const [day, setDay] = useSfState(null);
+  useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
+  const best = useSfMemo(() => {
+    const out = {};
+    if (day) all.forEach(b => { out[b.id] = sfBestWindow(b.hours, day, data.sun); });
+    return out;
+  }, [all, day]);
+  return (
+    <div className="sf-wrap">
+      <SurfTopBar title="Surf map" data={data}/>
+      <SurfDays days={days} day={day} setDay={setDay}/>
+      <div className="st-bigmap">
+        <SurfMap breaks={all} best={best} open={null} onPick={id => navigate('surf', { sub: 'break', spot: id })}/>
+      </div>
+      <SurfLegend/>
+      <div className="st-maplist">
+        {SF_AREAS.map(([, a]) => {
+          const list = all.filter(b => b.area === a);
+          if (!list.length) return null;
+          return (
+            <section key={a} className="st-maplist-area">
+              <h2 className="st-h3">{a}</h2>
+              <ul>
+                {list.map(b => {
+                  const bw = best[b.id];
+                  return (
+                    <li key={b.id}>
+                      <a {...sfLinkProps(navigate, { sub: 'break', spot: b.id })}>
+                        <i className={`st-dot sf-c-${bw ? sfRateKey(bw.h.label) : 'flat'}`}/>
+                        <span>{b.name}{b.defaults ? <em className="sf-def"> *</em> : null}</span>
+                        <b>{bw ? `${bw.h.faceFt[0]}–${bw.h.faceFt[1]} ft` : '—'}</b>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+      <p className="sf-muted">* Default settings: generic break settings, rating capped at Fair until the spot is tuned.</p>
+    </div>
+  );
+}
+
+// ── Wind timeline for one day: arrow + speed per 3 h, shaded by type ────
+function sfWindClass(t) {
+  if (t === 'glassy' || t === 'offshore') return 'good';
+  if (t === 'light onshore' || t === 'cross') return 'ok';
+  if (!t || t === 'unknown') return 'none';
+  return 'bad';
+}
+function SurfWind({ steps, sun }) {
+  if (!steps.length) return null;
+  return (
+    <div className="st-wind" role="table" aria-label="Wind by time of day">
+      {steps.map(h => (
+        <div key={h.t} role="row" className={`st-wind-c st-w-${sfWindClass(h.windType)}${sfIsDay(h.t, sun) ? '' : ' night'}`}>
+          <span className="st-wind-t">{sfClock(h.t)}</span>
+          {h.windFrom != null
+            ? <span className="st-wind-a" style={{ transform: `rotate(${(h.windFrom + 180) % 360}deg)` }}
+                    title={`From ${sfDir(h.windFrom)}`} aria-label={`from ${sfDir(h.windFrom)}`}>↑</span>
+            : <span className="st-wind-a" aria-hidden="true">·</span>}
+          <span className="st-wind-s">{h.windKt == null ? '—' : h.windKt}<small> kt</small></span>
+          <span className="st-wind-k">{h.windType === 'unknown' ? '' : h.windType}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Break page ────────────────────────────────────────────────────────
+function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
+  const { data, all, days, extra } = ctx;
+  const [day, setDay] = useSfState(null);
+  useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
+  useSfEffect(() => { window.scrollTo(0, 0); }, [spot]);
+  const b = all.find(x => x.id === spot);
+  if (!b) {
+    if (!extra && !ctx.spotsTried) return <div className="sf-wrap"><p className="sf-muted">Loading…</p></div>;
+    return (
+      <div className="sf-wrap">
+        <h1 className="sf-title">Spot not found</h1>
+        <p className="sf-muted">We don't have a forecast for “{spot}”. <a {...sfLinkProps(navigate, { sub: 'forecast' })}>See all breaks →</a></p>
+      </div>
+    );
+  }
+  const dk = day || (days[0] && days[0].key);
+  const dayObj = days.find(d => d.key === dk);
+  const am = sfPick(b.hours, dk, 7), pm = sfPick(b.hours, dk, 13);
+  const ref = am || pm;
+  const steps = b.hours.filter(h => sfDayKey(h.t) === dk);
+  const bw = dk ? sfBestWindow(b.hours, dk, data.sun) : null;
+  const buoy = data.buoys && data.buoys[b.buoy];
+  const near = all.filter(x => x.id !== b.id).map(x => ({ x, d: Math.abs(x.lat - b.lat) + Math.abs(x.lon - b.lon) }))
+    .sort((p, q) => p.d - q.d).slice(0, 4).map(p => p.x);
+  const swellTxt = w => `${Math.round(((w % 360) + 360) % 360)}°`;
+  return (
+    <div className="sf-wrap st-break">
+      <a className="st-crumb" {...sfLinkProps(navigate, { sub: 'forecast' })}>← All breaks</a>
+      <div className="sf-top">
+        <h1 className="sf-title">{b.name}</h1>
+        <span className="sf-chip">Model forecast</span>
+        {b.defaults && <span className="sf-chip sf-chip-warn">Default settings</span>}
+        <SurfStar on={favs.indexOf(b.id) >= 0} onClick={() => toggleFav(b.id)} name={b.name}/>
+      </div>
+      <p className="sf-muted st-sub">{b.area} · {b.type === 'reef' ? 'reef' : 'beach'} · faces {sfDir(b.shoreNormal)} ({Math.round(b.shoreNormal)}°)
+        · updated {sfLocal(data.generatedAt, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</p>
+      {b.note && <div className="sf-note st-note" role="note">{b.note}</div>}
+
+      <SurfDays days={days} day={dk} setDay={setDay}/>
+      <div className="st-break-top">
+        <div className="st-slots">
+          <SurfSlot h={am} label="Morning" def={b.defaults}/>
+          <SurfSlot h={pm} label="Afternoon" def={b.defaults}/>
+        </div>
+        <SurfBest bw={bw} isToday={days[0] && days[0].key === dk} dayLabel={dayObj ? dayObj.wd : ''}/>
+      </div>
+      <div className="st-panel">
+        <div className="sf-sec-h">7-day outlook</div>
+        <SurfStrip b={b} days={days} dayKey={dk} sun={data.sun} onDay={setDay}/>
+        <SurfLegend/>
+      </div>
+
+      <div className="st-two">
+        <div className="st-panel">
+          <div className="sf-sec-h">Wind · {dayObj ? dayObj.label : ''}</div>
+          <SurfWind steps={steps} sun={data.sun}/>
+          <p className="st-fine">Green: glassy or offshore. Amber: cross or light onshore. Red: onshore. Arrows point where the wind blows.</p>
+        </div>
+        <div className="st-panel">
+          <div className="sf-sec-h">Tide · La Jolla{!b.defaults && b.tideWindow ? ` · best ${b.tideWindow[0]} to ${b.tideWindow[1]} ft` : ''}</div>
+          <SurfTide tides={data.tides} dayKey={dk} sun={data.sun} win={b.defaults ? null : b.tideWindow} marks={steps.map(h => sfFrac(h.t))}/>
+        </div>
+      </div>
+
+      <div className="st-panel">
+        <div className="sf-sec-h">By time of day</div>
+        <div className="sf-steps" role="table" aria-label={`${b.name} by time of day`}>
+          <div className="sf-step sf-step-h" role="row">
+            <span>Time</span><span>Surf</span><span className="sf-nocase">kJ</span><span>Wind</span><span>Tide</span><span>Rating</span>
+          </div>
+          {steps.map(h => (
+            <div key={h.t} className={`sf-step${sfIsDay(h.t, data.sun) ? '' : ' night'}`} role="row">
+              <span>{sfClock(h.t)}</span>
+              <span>{h.faceFt[0]}–{h.faceFt[1]} ft</span>
+              <span>{h.energyKj != null ? h.energyKj : '—'}</span>
+              <span>{h.windKt == null ? '—' : `${h.windKt} kt ${sfDir(h.windFrom)}`}</span>
+              <span>{h.tideFt == null ? '—' : h.tideFt}</span>
+              <span className={sfRatingClass(h.label)}>{h.score.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+        {ref && (
+          <p className="st-fine">
+            Swell at the model point: {(ref.hsM * SF_FT).toFixed(1)} ft @ {Math.round(ref.tpS)} s from {sfDir(ref.dpDeg)} ({ref.dpDeg}°)
+            {ref.energyKj != null ? `, ${ref.energyKj} kJ` : ''}.
+            {ref.conf !== 'high' ? ` ${ref.conf[0].toUpperCase() + ref.conf.slice(1)} confidence this far out.` : ''}
+            {ref.modelsDisagree ? ' The two wave models disagree for this time.' : ''}
+          </p>
+        )}
+      </div>
+
+      {b.defaults && (
+        <div className="sf-def-box">
+          <b>Default settings.</b> This spot uses the same wave model as the main breaks, but with generic
+          settings: its break type is a guess, any tide is scored the same, and its swell window
+          ({b.swellWindow ? `${swellTxt(b.swellWindow[0])} to ${swellTxt(b.swellWindow[1])}` : 'generic'}) comes from the
+          direction the beach faces. Its rating is capped at Fair until the spot is tuned against observations.
+        </div>
+      )}
+      <div className="st-panel">
+        <div className="sf-sec-h">Details</div>
+        <p className="st-fine">
+          Forecast at CDIP MOP point {b.mop} ({b.mopDepthM} m deep), then a breaking model to the beach.
+          {ref && ref.kgM ? ` Breaking height ${ref.hbM.toFixed(1)} m (Komar–Gaughan check ${ref.kgM.toFixed(1)} m).` : ''}
+          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
+          {' '}Energy is the swell's power at the model point (about 100 kJ is small, 200–1000 kJ punchy).
+        </p>
+      </div>
+      {near.length > 0 && (
+        <div className="st-near">
+          <span className="sf-sec-h">Nearby</span>
+          {near.map(x => <a key={x.id} {...sfLinkProps(navigate, { sub: 'break', spot: x.id })}>{x.name}</a>)}
+        </div>
+      )}
+      <SurfAbout data={data} extra={extra} compact/>
+    </div>
+  );
+}
+
+function SurfAbout({ data, extra, compact }) {
+  const v = data.verification || {};
+  return (
+    <section className="sf-about">
+      <h2>How this forecast works</h2>
+      {!compact && <p>{data.method}</p>}
+      <div className="sf-checked">
+        <p>
+          <b>What we've checked:</b> {v.what}. Over {v.testPeriod}, the blended model's error was{' '}
+          {v.hsRmseM ? `${(v.hsRmseM.blend * SF_FT).toFixed(1)} ft (RMS)` : '—'}, better than{' '}
+          {(v.beats || []).join(' and ')}. {v.leadNote}
+        </p>
+        {v.observed && <p><b>Against observed surf:</b> {v.observed}</p>}
+        {v.wind && <p><b>Wind:</b> {v.wind}</p>}
+        <p><b>Not yet checked:</b> {v.notVerified} {v.scale} Ratings top out at Fair–Good: a model alone can't call a day Good or Epic.</p>
+      </div>
+      <p className="sf-muted">Surf height is the face height of the bigger waves; occasional sets run larger. Best window is the highest-rated daylight 3-hour model step. Sun times are for La Jolla; water temperature is the latest CDIP buoy reading.{extra ? ' Spots marked "default settings" use the same model with generic break settings that are not yet tuned for that spot, and they update about twice a day.' : ''} Always check the NWS rip current risk and conditions on the beach.</p>
+      <p className="sf-credits">{(data.credits || []).concat(data.waterTemp ? [`Water temperature: CDIP buoy ${data.waterTemp.station}`] : [], ['Map tiles: Esri, © OpenStreetMap contributors'], extra && extra.sources ? [extra.sources] : []).join(' · ')}</p>
+    </section>
+  );
+}
+
+function SurfView({ navigate, sub, spot }) {
+  const ctx = useSurfAll();
+  const [favs, toggleFav] = useSurfFavs();
+  const [spotsTried, setSpotsTried] = useSfState(false);
+  useSfEffect(() => { const t = setTimeout(() => setSpotsTried(true), 4000); return () => clearTimeout(t); }, []);
+  const { data, error } = ctx;
+  if (error) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
+  if (!data) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">Loading surf forecast…</p></div>;
+  const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
+  if (sub === 'forecast') return <SurfForecastPage {...props}/>;
+  if (sub === 'map') return <SurfMapPage {...props}/>;
+  if (sub === 'break' && spot) return <SurfBreakPage {...props} spot={spot}/>;
+  return <SurfReport {...props}/>;
 }
 
 window.SurfView = SurfView;

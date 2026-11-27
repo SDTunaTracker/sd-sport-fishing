@@ -76,6 +76,12 @@ function parseRoute(raw) {
   const detail = parts.length ? decodeURIComponent(parts.join('/')) : '';
 
   if (seg === 'boat' && detail) return { view: 'boat', params: { boat: detail }, hashRegions: regionIds };
+  // Surftracker (discreet surf mode): /sd/surf[/forecast|/map|/break/<id>]
+  if (seg === 'surf') {
+    const sub = ['forecast', 'map', 'break'].includes(parts[0]) ? parts[0] : 'report';
+    const spot = sub === 'break' && parts[1] ? decodeURIComponent(parts[1]) : '';
+    return { view: 'surf', params: spot ? { sub, spot } : { sub }, hashRegions: regionIds };
+  }
   if (seg === 'landing' && detail) return { view: 'landing', params: { landing: detail }, hashRegions: regionIds };
 
   if (seg === 'analytics') {
@@ -118,6 +124,8 @@ function pathFromRoute(view, params = {}, regions = ['san_diego']) {
   else if (view === 'landing' && params.landing) route = 'landing/' + encodeURIComponent(params.landing);
   else if (view === 'analytics') route = 'analytics/' + (params.subtab || 'overview');
   else if (view === 'boats') route = 'boats';
+  else if (view === 'surf') route = 'surf' + (params.sub && params.sub !== 'report' ? '/' + params.sub : '')
+    + (params.sub === 'break' && params.spot ? '/' + encodeURIComponent(params.spot) : '');
   else route = view;
   return '/' + prefix + '/' + route;
 }
@@ -483,6 +491,8 @@ function App() {
   };
 
   const isSfbay = regions[0] === 'sf_bay';
+  // Surftracker: /sd/surf/* swaps the header and footer for the surf mode's own.
+  const isSurf = route.view === 'surf' && !isSfbay;
   let content;
   if (isSfbay && route.view !== 'account') {
     content = <SFBayView view={route.view} params={route.params || {}} navigate={navigate}/>;
@@ -491,7 +501,7 @@ function App() {
   } else if (route.view === 'today') {
     content = <TodayView navigate={navigate} settings={settings} regions={regions}/>;
   } else if (route.view === 'surf' && window.SurfView) {
-    content = <SurfView navigate={navigate}/>;
+    content = <SurfView navigate={navigate} sub={route.params.sub || 'report'} spot={route.params.spot || ''}/>;
   } else if (route.view === 'pick' && window.PickTripView) {
     content = <PickTripView navigate={navigate} regions={regions}/>;
   } else if (route.view === 'analytics') {
@@ -523,7 +533,7 @@ function App() {
                               regions={regions} onRegionsDirect={setRegionsDirect} navigate={navigate}/>;
   }
 
-  if (!regionDataReady && route.view !== 'account') {
+  if (!regionDataReady && route.view !== 'account' && route.view !== 'surf') {
     content = <RegionLoading regions={regions} error={regionLoadError}
                              onRetry={() => setRegionDataTick(t => t + 1)}/>;
   }
@@ -537,11 +547,14 @@ function App() {
   return (
     <React.Fragment>
       <div className={`tt-nav-progress${navBusy ? ' on' : ''}`} aria-hidden="true"/>
-      <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
-                 hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
-                 regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>
-      <main className="main-content" data-screen-label={route.view}>{content}</main>
-      {isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
+      {isSurf && window.SurftrackerHeader
+        ? <SurftrackerHeader sub={route.params.sub || 'report'} navigate={navigate}/>
+        : <AppHeader active={headerActive} onNavigate={(id) => navigate(navMap[id] || 'today')}
+                     hrefFor={(id) => pathFromRoute(navMap[id] || 'today', {}, regions)}
+                     regions={regions} onRegionToggle={toggleRegion} onRegionsDirect={setRegionsDirect}/>}
+      <main className={`main-content${isSurf ? ' st-main' : ''}`} data-screen-label={route.view}>{content}</main>
+      {isSurf && window.SurftrackerFooter ? <SurftrackerFooter navigate={navigate}/>
+        : isSfbay ? <SFBayFooter/> : <AppFooter regions={regions}/>}
 
       {route.view === 'tripplanner' && !isSfbay && regionDataReady && <ChatBot pageContext={pageContext}/>}
       {route.view === 'tripplanner' && window.PickFab && !isSfbay && regionDataReady && <PickFab navigate={navigate} regions={regions}/>}
