@@ -163,3 +163,19 @@ def test_face_range_and_size_dependent_scale():
     assert F.RANGE == (0.85, 1.15)
     assert F.nws_scale(3.0) == F.nws_scale(12.0) == 1.0     # round 6: unscaled (pier sensor + lifeguards)
     assert "lifeguard" in F.VERIFICATION["observed"] and "Scripps Pier" in F.VERIFICATION["observed"]
+
+
+def test_wind_falls_back_to_gfs_when_ecmwf_fails(monkeypatch):
+    from src.surf import forecast as F
+    calls = []
+
+    def fake(breaks, model):
+        calls.append(model)
+        if model == "ecmwf_ifs025":
+            raise RuntimeError("down")
+        return [{0: (5.0, 270.0, 8.0)} for _ in breaks]
+
+    monkeypatch.setattr(F, "_wind_hourly", fake)
+    out = F.wind_hourly([{"lat": 0, "lon": 0}])
+    assert calls == ["ecmwf_ifs025", "gfs_seamless"]
+    assert out == [{0: (5.0, 270.0, 8.0)}]

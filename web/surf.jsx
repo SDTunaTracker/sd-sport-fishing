@@ -211,6 +211,7 @@ function SurfView({ navigate }) {
           {(v.beats || []).join(' and ')}. {v.leadNote}
         </p>
         {v.observed && <p><b>Against observed surf:</b> {v.observed}</p>}
+        {v.wind && <p><b>Wind:</b> {v.wind}</p>}
         <p><b>Not yet checked:</b> {v.notVerified} {v.scale} Ratings top out at Fair–Good: a model alone can't call a day Good or Epic.</p>
         <p className="sf-muted">Surf height is the face height of the bigger waves; occasional sets run larger. Always check the NWS rip current risk and conditions on the beach.</p>
         <p className="sf-credits">{(data.credits || []).join(' · ')}</p>
