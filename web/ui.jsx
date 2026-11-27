@@ -280,6 +280,17 @@ function AppHeader({ active, onNavigate, hrefFor, regions, onRegionToggle, onReg
                 </div>
               </React.Fragment>
             )}
+            {/* Surftracker: the discreet surf side project, last line of the menu (San Diego only). */}
+            {currentChoice === 'san_diego' && (
+              <React.Fragment>
+                <div className="mobile-menu-divider"></div>
+                <a className="mobile-menu-item mobile-menu-quiet" href="/sd/surf"
+                   onClick={spaLinkHandler(() => handleNavItem('surf'))}>
+                  <i className="fa-solid fa-water"></i>
+                  <span>Surftracker</span>
+                </a>
+              </React.Fragment>
+            )}
           </div>
         </div>
       )}
