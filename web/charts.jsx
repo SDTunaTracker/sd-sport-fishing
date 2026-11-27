@@ -1216,6 +1216,92 @@ function WaypointsSidebar({ waypoints, onSelect, onDelete, onExport, isOpen, onT
 
 // ── Boats Live: helpers ───────────────────────────────────────────────────────
 
+// ── Buoys (NDBC + CDIP, api/v1/buoys.json from src/marine.py) ─────────────────
+// Pins with the latest reading and a 48-hour trend. A buoy whose newest
+// record is older than staleAfterHours is drawn grey and says "stale".
+
+function fetchBuoys() {
+  var hour = Math.floor(Date.now() / 3600000);
+  return _withTimeout(
+    fetch('/api/v1/buoys.json?h=' + hour).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }),
+    6000, 'buoys'
+  );
+}
+
+var _COMPASS16 = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+function compass16(deg) {
+  return deg == null ? '' : _COMPASS16[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+}
+
+function buoyIsStale(b, staleH, now) {
+  if (!b.latest || !b.latest.t) return true;
+  return (now || Date.now()) - Date.parse(b.latest.t) > (staleH || 6) * 3600000;
+}
+
+// Inline SVG sparkline of one field over the history (null gaps skipped).
+function buoySpark(hist, key, color, label, unit) {
+  var pts = hist.map(function(h, i) { return [i, h[key]]; }).filter(function(p) { return p[1] != null; });
+  if (pts.length < 2) return '';
+  var vals = pts.map(function(p) { return p[1]; });
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  var W = 180, H = 34, n = Math.max(1, hist.length - 1), span = hi - lo || 1;
+  var d = pts.map(function(p, j) {
+    var x = (p[0] / n) * W, y = H - 3 - ((p[1] - lo) / span) * (H - 6);
+    return (j ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+  }).join(' ');
+  return '<div class="buoy-spark"><div class="buoy-spark-h">' + label + ' · 48 h <span>' +
+    lo.toFixed(1) + '–' + hi.toFixed(1) + ' ' + unit + '</span></div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true">' +
+    '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linejoin="round"/></svg></div>';
+}
+
+function buoyPopupHtml(b, staleH) {
+  var L0 = b.latest || {};
+  var stale = buoyIsStale(b, staleH);
+  var when = L0.t ? new Date(L0.t).toLocaleString('en-US', { timeZone: 'America/Los_Angeles',
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+  var rows = [];
+  if (L0.waveFt != null) rows.push('Swell <b>' + L0.waveFt.toFixed(1) + ' ft</b>' +
+    (L0.periodS != null ? ' @ ' + Math.round(L0.periodS) + ' s' : '') +
+    (L0.dirDeg != null ? ' from ' + compass16(L0.dirDeg) + ' (' + L0.dirDeg + '°)' : ''));
+  if (L0.windKt != null) rows.push('Wind <b>' + Math.round(L0.windKt) + ' kt</b>' +
+    (L0.windDirDeg != null ? ' from ' + compass16(L0.windDirDeg) : ''));
+  if (L0.waterF != null) rows.push('Water <b>' + L0.waterF.toFixed(1) + '°F</b>');
+  if (!rows.length) rows.push('No recent readings');
+  var src = b.source === 'ndbc' ? 'NOAA NDBC ' + b.id : 'CDIP ' + b.id + ' (Scripps)';
+  var hist = b.history || [];
+  return '<div class="buoy-pop"><div class="buoy-pop-h"><b>' + escXml(b.name) + '</b> <span>' + src + '</span></div>' +
+    rows.map(function(r) { return '<div class="buoy-pop-r">' + r + '</div>'; }).join('') +
+    buoySpark(hist, 'waveFt', '#2563eb', 'Swell', 'ft') +
+    buoySpark(hist, 'windKt', '#0f766e', 'Wind', 'kt') +
+    buoySpark(hist, 'waterF', '#ea580c', 'Water', '°F') +
+    '<div class="buoy-pop-t' + (stale ? ' stale' : '') + '">' +
+    (when ? (stale ? 'Stale: last report ' : 'As of ') + when : 'No data in the last 48 h') + '</div></div>';
+}
+
+function buildBuoysLayer(data) {
+  var group = L.layerGroup();
+  var staleH = data && data.staleAfterHours;
+  ((data && data.buoys) || []).forEach(function(b) {
+    var stale = buoyIsStale(b, staleH);
+    var L0 = b.latest || {};
+    var label = L0.waveFt != null ? L0.waveFt.toFixed(0) + ' ft' : (L0.windKt != null ? Math.round(L0.windKt) + ' kt' : '—');
+    var icon = L.divIcon({
+      className: 'buoy-pin' + (stale ? ' stale' : ''),
+      html: '<span class="buoy-dot"></span><span class="buoy-val">' + label + '</span>',
+      iconSize: null, iconAnchor: [7, 7],
+    });
+    L.marker([b.lat, b.lon], { icon: icon, title: b.name, keyboard: true })
+      .bindPopup(buoyPopupHtml(b, staleH), { maxWidth: 230, className: 'buoy-popup',
+        autoPanPaddingTopLeft: [16, 200], autoPanPaddingBottomRight: [72, 24] })
+      .addTo(group);
+  });
+  return group;
+}
+
 var BOAT_POLL_MS = 60000; // refresh every 60 s
 
 function fetchBoatPositions() {
@@ -1544,7 +1630,7 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 // Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
 function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirMode,
-                      onBase, onCond, onTides, onBoats, onSstMode, onDirMode,
+                      onBase, onCond, onTides, onBoats, onSstMode, onDirMode, showBuoys, onBuoys,
                       spotCount, showSpots, onSpots, spotWindow, onSpotWindow }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
@@ -1624,6 +1710,12 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
           <button className={'layer-btn' + (showBoats   ? ' active' : '')} aria-pressed={!!showBoats} onClick={function() { onBoats(!showBoats); }}>
             <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
           </button>
+          {onBuoys && (
+            <button className={'layer-btn' + (showBuoys ? ' active' : '')} onClick={function() { onBuoys(!showBuoys); }}
+              title="Offshore and nearshore buoys: swell, wind and water temperature, with a 48-hour trend">
+              <span className="layer-btn-icon">🛟</span>Buoys
+            </button>
+          )}
           {spotCount > 0 && onSpots && (
             <button className={'layer-btn' + (showSpots ? ' active' : '')} aria-pressed={!!showSpots} onClick={function() { onSpots(!showSpots); }}
               title="Spots mentioned in recent BloodyDecks forum reports">
@@ -1851,6 +1943,8 @@ function ChartsView({ navigate, settings, regions }) {
   const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false, pressure: false });
   const [showTides, setShowTides]   = React.useState(false);
   const [showBoats, setShowBoats]   = React.useState(false);
+  const [showBuoys, setShowBuoys]   = React.useState(false);
+  const [buoysError, setBuoysError] = React.useState(false);
   const [showSpots, setShowSpots]     = React.useState(false);
   const [spotsGeo, setSpotsGeo]       = React.useState(null);
   const [spotWindow, setSpotWindow]   = React.useState(14);
@@ -1908,6 +2002,7 @@ function ChartsView({ navigate, settings, regions }) {
   const overlayLayer     = React.useRef(null);
   const condGroupRef     = React.useRef(null);
   const boatLayerRef     = React.useRef(null);
+  const buoyLayerRef     = React.useRef(null);
   const boatsPollRef     = React.useRef(null);
   const windVelRef       = React.useRef(null);
   const wavesVelRef      = React.useRef(null);
@@ -2481,6 +2576,21 @@ function ChartsView({ navigate, settings, regions }) {
     return function() { clearInterval(boatsPollRef.current); };
   }, [showBoats]);
 
+  // Buoy pins (api/v1/buoys.json, refreshed hourly by the scrape).
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    if (buoyLayerRef.current) { mapInstance.current.removeLayer(buoyLayerRef.current); buoyLayerRef.current = null; }
+    if (!showBuoys) { setBuoysError(false); return; }
+    var alive = true;
+    fetchBuoys().then(function(data) {
+      if (!alive || !mapInstance.current) return;
+      setBuoysError(false);
+      buoyLayerRef.current = buildBuoysLayer(data);
+      buoyLayerRef.current.addTo(mapInstance.current);
+    }).catch(function() { if (alive) setBuoysError(true); });
+    return function() { alive = false; };
+  }, [showBuoys]);
+
   // Hide boat layer when scrubber is in the future (live positions don't apply)
   React.useEffect(function() {
     if (!mapInstance.current || !showBoats || !boatLayerRef.current) return;
@@ -2631,6 +2741,7 @@ function ChartsView({ navigate, settings, regions }) {
   if (condLayers.pressure) activeLayerLabels.push('Pressure');
   if (showTides)           activeLayerLabels.push('Tides');
   if (showBoats)           activeLayerLabels.push('Boats');
+  if (showBuoys)           activeLayerLabels.push('Buoys');
   if (showSpots && regionSpots14.length) activeLayerLabels.push('Forum');
 
   var maxSliderStep = sliderSeries ? sliderSeries.frames.length - 1 : 0;
@@ -2707,6 +2818,7 @@ function ChartsView({ navigate, settings, regions }) {
             onBase={setBaseLayer}
             onCond={onCond}
             onTides={setShowTides} onBoats={setShowBoats}
+            showBuoys={showBuoys} onBuoys={setShowBuoys}
             onSstMode={setSstMode} onDirMode={setDirMode}
             spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
             spotWindow={spotWindow} onSpotWindow={setSpotWindow}
@@ -2743,6 +2855,7 @@ function ChartsView({ navigate, settings, regions }) {
             {layerErrors.currents && <span className="layer-error-pill">Currents unavailable</span>}
             {layerErrors.pressure && <span className="layer-error-pill">Pressure unavailable</span>}
             {layerErrors.tides    && <span className="layer-error-pill">Tides unavailable</span>}
+            {buoysError           && <span className="layer-error-pill">Buoys unavailable</span>}
           </div>
         )}
 
@@ -2840,6 +2953,7 @@ function ChartsView({ navigate, settings, regions }) {
               onBase={setBaseLayer}
               onCond={onCond}
               onTides={setShowTides} onBoats={setShowBoats}
+              showBuoys={showBuoys} onBuoys={setShowBuoys}
               onSstMode={setSstMode} onDirMode={setDirMode}
               spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
               spotWindow={spotWindow} onSpotWindow={setSpotWindow}

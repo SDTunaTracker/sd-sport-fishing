@@ -16,6 +16,10 @@
       title: 'Today\'s San Diego Fish Counts — Live Sportfishing Report' + SFX,
       desc:  'Today\'s fish counts from H&M, Fisherman\'s, Seaforth, Point Loma, and Oceanside landings, checked hourly: bluefin, yellowfin, yellowtail and dorado by boat.'
     },
+    surf: {
+      title: 'San Diego Surf Forecast by Break: Model Forecast' + SFX,
+      desc:  'Surf height, wind, tide and a 0–5 rating for 12 San Diego breaks, from the Scripps CDIP nearshore wave model, plus the NWS rip current risk.'
+    },
     pick: {
       title: 'Pick My Trip: the Best San Diego Fishing Trip to Book This Week' + SFX,
       desc:  'Choose a trip type and dates and get one answer: the San Diego boat with open seats that has been catching best lately, plus two alternates.'
@@ -268,6 +272,7 @@
     home: 'home', today: 'today', forecast: 'forecast', boats: 'boats',
     analytics: 'analytics', tripplanner: 'tripplanner', charts: 'charts',
     account: 'account', settings: 'account', boat: 'boat', landing: 'landing', pick: 'pick',
+    surf: 'surf',
   };
 
   function updateFromLocation() {
