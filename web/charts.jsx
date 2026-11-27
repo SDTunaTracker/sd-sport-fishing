@@ -1216,6 +1216,92 @@ function WaypointsSidebar({ waypoints, onSelect, onDelete, onExport, isOpen, onT
 
 // ── Boats Live: helpers ───────────────────────────────────────────────────────
 
+// ── Buoys (NDBC + CDIP, api/v1/buoys.json from src/marine.py) ─────────────────
+// Pins with the latest reading and a 48-hour trend. A buoy whose newest
+// record is older than staleAfterHours is drawn grey and says "stale".
+
+function fetchBuoys() {
+  var hour = Math.floor(Date.now() / 3600000);
+  return _withTimeout(
+    fetch('/api/v1/buoys.json?h=' + hour).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }),
+    6000, 'buoys'
+  );
+}
+
+var _COMPASS16 = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+function compass16(deg) {
+  return deg == null ? '' : _COMPASS16[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+}
+
+function buoyIsStale(b, staleH, now) {
+  if (!b.latest || !b.latest.t) return true;
+  return (now || Date.now()) - Date.parse(b.latest.t) > (staleH || 6) * 3600000;
+}
+
+// Inline SVG sparkline of one field over the history (null gaps skipped).
+function buoySpark(hist, key, color, label, unit) {
+  var pts = hist.map(function(h, i) { return [i, h[key]]; }).filter(function(p) { return p[1] != null; });
+  if (pts.length < 2) return '';
+  var vals = pts.map(function(p) { return p[1]; });
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  var W = 180, H = 34, n = Math.max(1, hist.length - 1), span = hi - lo || 1;
+  var d = pts.map(function(p, j) {
+    var x = (p[0] / n) * W, y = H - 3 - ((p[1] - lo) / span) * (H - 6);
+    return (j ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+  }).join(' ');
+  return '<div class="buoy-spark"><div class="buoy-spark-h">' + label + ' · 48 h <span>' +
+    lo.toFixed(1) + '–' + hi.toFixed(1) + ' ' + unit + '</span></div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true">' +
+    '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linejoin="round"/></svg></div>';
+}
+
+function buoyPopupHtml(b, staleH) {
+  var L0 = b.latest || {};
+  var stale = buoyIsStale(b, staleH);
+  var when = L0.t ? new Date(L0.t).toLocaleString('en-US', { timeZone: 'America/Los_Angeles',
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+  var rows = [];
+  if (L0.waveFt != null) rows.push('Swell <b>' + L0.waveFt.toFixed(1) + ' ft</b>' +
+    (L0.periodS != null ? ' @ ' + Math.round(L0.periodS) + ' s' : '') +
+    (L0.dirDeg != null ? ' from ' + compass16(L0.dirDeg) + ' (' + L0.dirDeg + '°)' : ''));
+  if (L0.windKt != null) rows.push('Wind <b>' + Math.round(L0.windKt) + ' kt</b>' +
+    (L0.windDirDeg != null ? ' from ' + compass16(L0.windDirDeg) : ''));
+  if (L0.waterF != null) rows.push('Water <b>' + L0.waterF.toFixed(1) + '°F</b>');
+  if (!rows.length) rows.push('No recent readings');
+  var src = b.source === 'ndbc' ? 'NOAA NDBC ' + b.id : 'CDIP ' + b.id + ' (Scripps)';
+  var hist = b.history || [];
+  return '<div class="buoy-pop"><div class="buoy-pop-h"><b>' + escXml(b.name) + '</b> <span>' + src + '</span></div>' +
+    rows.map(function(r) { return '<div class="buoy-pop-r">' + r + '</div>'; }).join('') +
+    buoySpark(hist, 'waveFt', '#2563eb', 'Swell', 'ft') +
+    buoySpark(hist, 'windKt', '#0f766e', 'Wind', 'kt') +
+    buoySpark(hist, 'waterF', '#ea580c', 'Water', '°F') +
+    '<div class="buoy-pop-t' + (stale ? ' stale' : '') + '">' +
+    (when ? (stale ? 'Stale: last report ' : 'As of ') + when : 'No data in the last 48 h') + '</div></div>';
+}
+
+function buildBuoysLayer(data) {
+  var group = L.layerGroup();
+  var staleH = data && data.staleAfterHours;
+  ((data && data.buoys) || []).forEach(function(b) {
+    var stale = buoyIsStale(b, staleH);
+    var L0 = b.latest || {};
+    var label = L0.waveFt != null ? L0.waveFt.toFixed(0) + ' ft' : (L0.windKt != null ? Math.round(L0.windKt) + ' kt' : '—');
+    var icon = L.divIcon({
+      className: 'buoy-pin' + (stale ? ' stale' : ''),
+      html: '<span class="buoy-dot"></span><span class="buoy-val">' + label + '</span>',
+      iconSize: null, iconAnchor: [7, 7],
+    });
+    L.marker([b.lat, b.lon], { icon: icon, title: b.name, keyboard: true })
+      .bindPopup(buoyPopupHtml(b, staleH), { maxWidth: 230, className: 'buoy-popup',
+        autoPanPaddingTopLeft: [16, 200], autoPanPaddingBottomRight: [72, 24] })
+      .addTo(group);
+  });
+  return group;
+}
+
 var BOAT_POLL_MS = 60000; // refresh every 60 s
 
 function fetchBoatPositions() {
@@ -1544,7 +1630,7 @@ function ForecastSlider({ series, step, onStep, loading, playing, onPlay, onStep
 // Grouped toggles: Base (radio, one-at-a-time), Conditions (multi-select), Overlays (multi-select)
 
 function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirMode,
-                      onBase, onCond, onTides, onBoats, onSstMode, onDirMode,
+                      onBase, onCond, onTides, onBoats, onSstMode, onDirMode, showBuoys, onBuoys,
                       spotCount, showSpots, onSpots, spotWindow, onSpotWindow }) {
   var bases = [
     { id: 'sst',         icon: '🌡️', label: 'SST' },
@@ -1566,7 +1652,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
           {bases.map(function(b) {
             var isActive = baseLayer === b.id;
             return (
-              <button key={b.id} className={'layer-btn' + (isActive ? ' active' : '')}
+              <button key={b.id} className={'layer-btn' + (isActive ? ' active' : '')} aria-pressed={isActive}
                 onClick={function() { onBase(isActive ? null : b.id); }}>
                 <span className="layer-btn-icon">{b.icon}</span>{b.label}
               </button>
@@ -1578,7 +1664,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
             {Object.keys(SST_SOURCES).map(function(id) {
               var src = SST_SOURCES[id];
               return (
-                <button key={id} className={'layer-sst-btn' + (sstMode === id ? ' active' : '')}
+                <button key={id} className={'layer-sst-btn' + (sstMode === id ? ' active' : '')} aria-pressed={sstMode === id}
                   onClick={function() { onSstMode(id); }}>
                   {src.label}{src.badge ? <span className="sst-picker-badge">{src.badge}</span> : null}
                 </button>
@@ -1592,7 +1678,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
         <div className="layer-group-row">
           {conds.map(function(c) {
             return (
-              <button key={c.id} className={'layer-btn' + (condLayers[c.id] ? ' active' : '')}
+              <button key={c.id} className={'layer-btn' + (condLayers[c.id] ? ' active' : '')} aria-pressed={!!condLayers[c.id]}
                 onClick={function() { onCond(c.id, !condLayers[c.id]); }}>
                 <span className="layer-btn-icon">{c.icon}</span>{c.label}
                 {c.badge ? <span className="layer-sim-badge">{c.badge}</span> : null}
@@ -1607,7 +1693,7 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
           <div className="layer-group-row">
             {[{ id: 'particle', label: 'Particle' }, { id: 'arrow', label: 'Arrow' }, { id: 'none', label: 'None' }].map(function(d) {
               return (
-                <button key={d.id} className={'layer-btn' + ((dirMode || 'particle') === d.id ? ' active' : '')}
+                <button key={d.id} className={'layer-btn' + ((dirMode || 'particle') === d.id ? ' active' : '')} aria-pressed={(dirMode || 'particle') === d.id}
                   onClick={function() { onDirMode(d.id); }}>{d.label}</button>
               );
             })}
@@ -1618,14 +1704,20 @@ function LayerPanel({ baseLayer, condLayers, showTides, showBoats, sstMode, dirM
       <div className="layer-group">
         <div className="layer-group-label">Overlays</div>
         <div className="layer-group-row">
-          <button className={'layer-btn' + (showTides   ? ' active' : '')} onClick={function() { onTides(!showTides); }}>
+          <button className={'layer-btn' + (showTides   ? ' active' : '')} aria-pressed={!!showTides} onClick={function() { onTides(!showTides); }}>
             <span className="layer-btn-icon">🌙</span>Tides
           </button>
-          <button className={'layer-btn' + (showBoats   ? ' active' : '')} onClick={function() { onBoats(!showBoats); }}>
+          <button className={'layer-btn' + (showBoats   ? ' active' : '')} aria-pressed={!!showBoats} onClick={function() { onBoats(!showBoats); }}>
             <span className="layer-btn-icon">🚢</span>Boats<span className="layer-live-badge">LIVE</span>
           </button>
+          {onBuoys && (
+            <button className={'layer-btn' + (showBuoys ? ' active' : '')} onClick={function() { onBuoys(!showBuoys); }}
+              title="Offshore and nearshore buoys: swell, wind and water temperature, with a 48-hour trend">
+              <span className="layer-btn-icon">🛟</span>Buoys
+            </button>
+          )}
           {spotCount > 0 && onSpots && (
-            <button className={'layer-btn' + (showSpots ? ' active' : '')} onClick={function() { onSpots(!showSpots); }}
+            <button className={'layer-btn' + (showSpots ? ' active' : '')} aria-pressed={!!showSpots} onClick={function() { onSpots(!showSpots); }}
               title="Spots mentioned in recent BloodyDecks forum reports">
               <span className="layer-btn-icon">💬</span>Forum
             </button>
@@ -1851,12 +1943,32 @@ function ChartsView({ navigate, settings, regions }) {
   const [condLayers, setCondLayers] = React.useState({ wind: false, waves: false, currents: false, pressure: false });
   const [showTides, setShowTides]   = React.useState(false);
   const [showBoats, setShowBoats]   = React.useState(false);
+  const [showBuoys, setShowBuoys]   = React.useState(false);
+  const [buoysError, setBuoysError] = React.useState(false);
   const [showSpots, setShowSpots]     = React.useState(false);
   const [spotsGeo, setSpotsGeo]       = React.useState(null);
   const [spotWindow, setSpotWindow]   = React.useState(14);
   const [spotSheet, setSpotSheet]     = React.useState(null);   // phone bottom sheet
   const [mapZoom, setMapZoom]         = React.useState(null);
   const [sheetOpen, setSheetOpen]   = React.useState(false);
+  // Desktop layer panel can fold away to free the map (remembered per browser).
+  const [panelOpen, setPanelOpen]   = React.useState(function() {
+    try { return localStorage.getItem('tt_charts_panel') !== 'closed'; } catch (e) { return true; }
+  });
+  const sheetRef = React.useRef(null);
+  // Phones get the bottom dock + sheet; the desktop panel isn't rendered there
+  // at all (it used to render hidden and doubled the work of every toggle).
+  const [isPhone, setIsPhone] = React.useState(function() {
+    return !!(window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  });
+  React.useEffect(function() {
+    if (!window.matchMedia) return;
+    var mq = window.matchMedia('(max-width: 768px)');
+    function on() { setIsPhone(mq.matches); if (!mq.matches) setSheetOpen(false); }
+    if (mq.addEventListener) mq.addEventListener('change', on); else mq.addListener(on);
+    return function() { if (mq.removeEventListener) mq.removeEventListener('change', on); else mq.removeListener(on); };
+  }, []);
+  const sheetDrag = React.useRef(null);
   const [sstMode, setSstMode]       = React.useState(function() {
     return localStorage.getItem('tt_sst_mode') || 'mur';
   });
@@ -1890,6 +2002,7 @@ function ChartsView({ navigate, settings, regions }) {
   const overlayLayer     = React.useRef(null);
   const condGroupRef     = React.useRef(null);
   const boatLayerRef     = React.useRef(null);
+  const buoyLayerRef     = React.useRef(null);
   const boatsPollRef     = React.useRef(null);
   const windVelRef       = React.useRef(null);
   const wavesVelRef      = React.useRef(null);
@@ -2463,6 +2576,21 @@ function ChartsView({ navigate, settings, regions }) {
     return function() { clearInterval(boatsPollRef.current); };
   }, [showBoats]);
 
+  // Buoy pins (api/v1/buoys.json, refreshed hourly by the scrape).
+  React.useEffect(function() {
+    if (!mapInstance.current) return;
+    if (buoyLayerRef.current) { mapInstance.current.removeLayer(buoyLayerRef.current); buoyLayerRef.current = null; }
+    if (!showBuoys) { setBuoysError(false); return; }
+    var alive = true;
+    fetchBuoys().then(function(data) {
+      if (!alive || !mapInstance.current) return;
+      setBuoysError(false);
+      buoyLayerRef.current = buildBuoysLayer(data);
+      buoyLayerRef.current.addTo(mapInstance.current);
+    }).catch(function() { if (alive) setBuoysError(true); });
+    return function() { alive = false; };
+  }, [showBuoys]);
+
   // Hide boat layer when scrubber is in the future (live positions don't apply)
   React.useEffect(function() {
     if (!mapInstance.current || !showBoats || !boatLayerRef.current) return;
@@ -2613,42 +2741,88 @@ function ChartsView({ navigate, settings, regions }) {
   if (condLayers.pressure) activeLayerLabels.push('Pressure');
   if (showTides)           activeLayerLabels.push('Tides');
   if (showBoats)           activeLayerLabels.push('Boats');
+  if (showBuoys)           activeLayerLabels.push('Buoys');
   if (showSpots && regionSpots14.length) activeLayerLabels.push('Forum');
 
   var maxSliderStep = sliderSeries ? sliderSeries.frames.length - 1 : 0;
+
+  // ── Leaving the map, and the layers sheet ─────────────────────────────────
+  // Exit goes back to the page you came from when that page is ours, else Home.
+  function exitMap() {
+    if ((window.__ttInAppNavs || 0) > 0 && window.history.length > 1) window.history.back();
+    else if (navigate) navigate('home');
+  }
+  // The sheet gets its own history entry, so the Android/browser back gesture
+  // closes the sheet instead of leaving the map.
+  function openSheet() {
+    setSheetOpen(true);
+    try { window.history.pushState({ ttLayersSheet: 1 }, '', window.location.href); } catch (e) {}
+  }
+  function closeSheet() {
+    if (window.history.state && window.history.state.ttLayersSheet) window.history.back();   // popstate closes it
+    else setSheetOpen(false);
+  }
+  function togglePanel() {
+    setPanelOpen(function(o) { try { localStorage.setItem('tt_charts_panel', o ? 'closed' : 'open'); } catch (e) {} return !o; });
+  }
+  // Swipe the sheet's top strip down to close it.
+  function sheetDragStart(e) { sheetDrag.current = { y: e.touches[0].clientY, dy: 0 }; }
+  function sheetDragMove(e) {
+    var d = sheetDrag.current; if (!d || !sheetRef.current) return;
+    d.dy = Math.max(0, e.touches[0].clientY - d.y);
+    sheetRef.current.style.transition = 'none';
+    sheetRef.current.style.transform = 'translateY(' + d.dy + 'px)';
+  }
+  function sheetDragEnd() {
+    var d = sheetDrag.current; sheetDrag.current = null;
+    var el = sheetRef.current; if (!el) return;
+    el.style.transition = ''; el.style.transform = '';
+    if (d && d.dy > 70) closeSheet();
+  }
+  React.useEffect(function() {
+    if (!sheetOpen) return;
+    function onPop() { setSheetOpen(false); }
+    window.addEventListener('popstate', onPop);
+    var t = document.getElementById('layers-sheet-title'); if (t) t.focus({ preventScroll: true });
+    return function() { window.removeEventListener('popstate', onPop); };
+  }, [sheetOpen]);
+  // Escape closes whatever is on top: layers sheet, forum spot sheet, point readout.
+  React.useEffect(function() {
+    function onKey(e) {
+      if (e.key !== 'Escape') return;
+      if (sheetOpen) { closeSheet(); return; }
+      if (spotSheet) { setSpotSheet(null); return; }
+      if (tapReadout) { setTapReadout(null); }
+    }
+    document.addEventListener('keydown', onKey);
+    return function() { document.removeEventListener('keydown', onKey); };
+  }, [sheetOpen, spotSheet, tapReadout]);
 
   return (
     <div className="charts-view charts-immersive">
       <div className="chart-map-stage">
         <div ref={mapRef} className="chart-map" />
 
-        {/* Mobile-only: floating bar that opens the layer sheet + shows selection. */}
-        <button className="mobile-layers-bar" aria-label="Open map layers"
-          aria-expanded={sheetOpen}
-          onClick={function() { setSheetOpen(true); }}>
-          <span className="mobile-layers-bar-icon">⊞</span>
-          <span className="mobile-layers-bar-text">
-            <span className="mobile-layers-bar-title">Map Layers</span>
-            <span className="mobile-layers-bar-active">
-              {activeLayerLabels.length ? activeLayerLabels.join(' · ') : 'None selected'}
-            </span>
-          </span>
-          <span className="mobile-layers-bar-chevron">›</span>
-        </button>
-
-        {/* Desktop: floating dark-glass layer panel */}
-        <div className="layer-panel-desktop">
-          <LayerPanel
+        {/* Desktop: floating dark-glass layer panel; folds to one row. */}
+        <div className={'layer-panel-desktop' + (panelOpen ? '' : ' folded')}>
+          <button type="button" className="lpd-toggle" aria-expanded={panelOpen}
+            onClick={function() { togglePanel(); }}>
+            <span className="lpd-toggle-title">Layers</span>
+            <span className="lpd-toggle-active">{activeLayerLabels.length ? activeLayerLabels.join(' · ') : 'None'}</span>
+            <span className="lpd-toggle-chev" aria-hidden="true">{panelOpen ? '▴' : '▾'}</span>
+          </button>
+          {panelOpen && !isPhone && <LayerPanel
             baseLayer={baseLayer} condLayers={condLayers}
             showTides={showTides} showBoats={showBoats}
             sstMode={sstMode} dirMode={dirMode}
             onBase={setBaseLayer}
             onCond={onCond}
             onTides={setShowTides} onBoats={setShowBoats}
+            showBuoys={showBuoys} onBuoys={setShowBuoys}
             onSstMode={setSstMode} onDirMode={setDirMode}
             spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
             spotWindow={spotWindow} onSpotWindow={setSpotWindow}
-          />
+          />}
         </div>
 
         {spotSheet && (
@@ -2681,6 +2855,7 @@ function ChartsView({ navigate, settings, regions }) {
             {layerErrors.currents && <span className="layer-error-pill">Currents unavailable</span>}
             {layerErrors.pressure && <span className="layer-error-pill">Pressure unavailable</span>}
             {layerErrors.tides    && <span className="layer-error-pill">Tides unavailable</span>}
+            {buoysError           && <span className="layer-error-pill">Buoys unavailable</span>}
           </div>
         )}
 
@@ -2739,6 +2914,24 @@ function ChartsView({ navigate, settings, regions }) {
               onStepBack={function() { setPlaying(false); handleSliderInput(Math.max(0, sliderStep - 1)); }}
               onStepFwd={function() { setPlaying(false); handleSliderInput(Math.min(maxSliderStep, sliderStep + 1)); }} />
           )}
+
+          {/* Phones: the two things you do on a map, at thumb height. */}
+          <div className="chart-phone-dock">
+            <button type="button" className="cpd-layers" aria-haspopup="dialog" aria-expanded={sheetOpen}
+              onClick={openSheet}>
+              <span className="cpd-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2.5 2.5 6.5 10 10.5l7.5-4L10 2.5Z M2.5 10 10 14l7.5-4 M2.5 13.5 10 17.5l7.5-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
+              </span>
+              <span className="cpd-text">
+                <span className="cpd-title">Layers</span>
+                <span className="cpd-active">{activeLayerLabels.length ? activeLayerLabels.join(' · ') : 'None on'}</span>
+              </span>
+            </button>
+            <button type="button" className="cpd-exit" onClick={exitMap}>
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9-9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              <span>Exit map</span>
+            </button>
+          </div>
         </div>
 
         <div className="chart-attribution">Data: NASA GIBS · GEBCO · Stadia Maps · Open-Meteo · NOAA · AISStream.io</div>
@@ -2746,10 +2939,13 @@ function ChartsView({ navigate, settings, regions }) {
 
       {sheetOpen && (
         <div className="layers-sheet-overlay"
-          onClick={function(e) { if (e.target === e.currentTarget) setSheetOpen(false); }}>
-          <div className="layers-sheet" role="dialog" aria-label="Map layers">
-            <div className="layers-sheet-handle" />
-            <div className="layers-sheet-title">Map Layers</div>
+          onClick={function(e) { if (e.target === e.currentTarget) closeSheet(); }}>
+          <div className="layers-sheet" role="dialog" aria-modal="true" aria-labelledby="layers-sheet-title" ref={sheetRef}>
+            {/* Drag this strip down to close (like a native sheet). */}
+            <div className="layers-sheet-grab" onTouchStart={sheetDragStart} onTouchMove={sheetDragMove} onTouchEnd={sheetDragEnd} onTouchCancel={sheetDragEnd}>
+              <div className="layers-sheet-handle" />
+              <div className="layers-sheet-title" id="layers-sheet-title" tabIndex={-1}>Map layers</div>
+            </div>
             <LayerPanel
               baseLayer={baseLayer} condLayers={condLayers}
               showTides={showTides} showBoats={showBoats}
@@ -2757,6 +2953,7 @@ function ChartsView({ navigate, settings, regions }) {
               onBase={setBaseLayer}
               onCond={onCond}
               onTides={setShowTides} onBoats={setShowBoats}
+              showBuoys={showBuoys} onBuoys={setShowBuoys}
               onSstMode={setSstMode} onDirMode={setDirMode}
               spotCount={regionSpots14.length} showSpots={showSpots} onSpots={setShowSpots}
               spotWindow={spotWindow} onSpotWindow={setSpotWindow}
@@ -2765,11 +2962,14 @@ function ChartsView({ navigate, settings, regions }) {
             <div className="layer-group-label wp-sheet-label">Your map</div>
             <WaypointsSidebar inSheet
               waypoints={waypoints}
-              onSelect={function(wp) { setSheetOpen(false); handleSelect(wp); }}
+              onSelect={function(wp) { closeSheet(); handleSelect(wp); }}
               onDelete={handleDelete} onExport={function(fmt) { exportWaypoints(waypoints, fmt); }}
               isOpen={sidebarOpen} onToggle={function() { setSidebarOpen(!sidebarOpen); }}
             />
-            <button className="layers-sheet-close" onClick={function() { setSheetOpen(false); }}>Done</button>
+            <p className="layers-sheet-credit">Data: NASA GIBS · GEBCO · Stadia Maps · Open-Meteo · NOAA · AISStream.io</p>
+            <div className="layers-sheet-foot">
+              <button className="layers-sheet-close" onClick={closeSheet}>Done</button>
+            </div>
           </div>
         </div>
       )}

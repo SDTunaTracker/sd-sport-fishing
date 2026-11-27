@@ -344,7 +344,12 @@ function App() {
   // bridge any legacy #hash navigation to a clean path.
   useE(() => {
     const applyParsed = (parsed) => {
-      setRoute({ view: parsed.view, params: parsed.params });
+      // Same page (e.g. back out of the Charts layers sheet's history entry,
+      // or navigate()'s belt-and-braces popstate): keep the same route object
+      // so the whole app doesn't re-render. That cost ~0.5 s on a mid phone.
+      setRoute(prev => (prev && prev.view === parsed.view &&
+        JSON.stringify(prev.params || {}) === JSON.stringify(parsed.params || {}))
+        ? prev : { view: parsed.view, params: parsed.params });
       if (parsed.hashRegions) {
         setRegions(prev => {
           const same = parsed.hashRegions.length === prev.length &&
@@ -455,6 +460,8 @@ function App() {
     }
     if (window.location.pathname !== nextPath) {
       history.pushState(null, '', nextPath); // pushState does not fire popstate
+      // Charts' "Exit map" goes back only when the previous entry is ours.
+      window.__ttInAppNavs = (window.__ttInAppNavs || 0) + 1;
       // Belt-and-suspenders: some mobile browsers dropped the setRoute() call
       // below when it came right after a preventDefault()+pushState on an
       // <a href> touch click, leaving the URL updated but the view stale

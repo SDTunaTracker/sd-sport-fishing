@@ -322,6 +322,15 @@ def _ocla_conditions_payload(conn: sqlite3.Connection, days: int = 60) -> dict:
     return out
 
 
+def _marine_payload(conn: sqlite3.Connection, region: str) -> dict:
+    """window.SD.MARINE: NWS marine forecast/alerts, tides, buoys for one region."""
+    try:
+        from .marine import region_payload
+        return region_payload(conn, region)
+    except Exception:  # noqa: BLE001 — never fail the export over conditions
+        return {}
+
+
 def _recent_predictions(conn: sqlite3.Connection, days: int = 14) -> list[dict]:
     """Last `days` days of model-predicted score vs actual fishing quality."""
     cutoff = (date.today() - timedelta(days=days)).isoformat()
@@ -724,6 +733,8 @@ def build_app_payload(conn: sqlite3.Connection, full: dict, today: date | None =
         "SCHEDULE": schedule,
         "TRIPS": trips,
         "HALF_DAY_TRIPS": half,
+        # Additive (no schemaVersion bump): San Diego marine conditions as-is.
+        "MARINE": full.get("MARINE") or {},
         "MONTHLY": _monthly_rollup(conn),
         # San Diego only, like TRIPS and SCHEDULE (the app only links SD boats).
         "BOAT_PROFILES": {k: v for k, v in full["BOAT_PROFILES"].items()
@@ -947,6 +958,9 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
         "TODAY": _today_summary(all_rows),
         "SCHEDULE": schedule,
         "SST": _sst_payload(conn),
+        # San Diego only; OC/LA and SF Bay go in their region files via
+        # src.marine.region_payload(conn, region).
+        "MARINE": _marine_payload(conn, "san_diego"),
         "FORECAST": forecast_payload,
         "REVIEWS": _reviews_payload(conn),
         "BOAT_PROFILES": _boat_profiles_payload(conn),

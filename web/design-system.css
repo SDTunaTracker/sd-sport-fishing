@@ -564,6 +564,12 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .pk-adv, .pk-alt-adv { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font: 500 13px/1.4 var(--sans); color: var(--bad); }
 .pk-adv i { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); flex: none; }
 .pk-alt-adv { margin: 0; font-size: 12px; }
+/* NWS sea-conditions forecast (web/marine.js). Rough = seas 8 ft+ or an advisory. */
+.pk-sea { margin: 8px 0 0; font: 400 13px/1.4 var(--sans); color: var(--muted); }
+.pk-sea-src { font-weight: 500; }
+.pk-sea.rough, .pk-alt-sea.rough, .ta-sea.rough { color: var(--warn); }
+.pk-alt-sea { display: block; font: 400 12px/1.4 var(--sans); color: var(--muted); }
+.ta-sea { font: 400 12px/1.45 var(--sans); color: var(--muted); }
 .pk-best-side { display: flex; flex-direction: column; gap: 16px; justify-content: space-between; }
 .pk-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); }
 .pk-facts div { padding: 10px 0; }
@@ -851,6 +857,78 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .logo .logo-wordmark { font-size: 21px; letter-spacing: -0.02em; }
   .logo .logo-text { padding-left: 38px; margin-top: -10px; }
   .logo-region-btn { min-height: 24px; padding-right: 8px; }
+}
+
+/* ── Charts: leaving the map and adding layers (owner, 2026-11-26) ──────────
+   "make sure users can easily exit the map view when they are done, and
+   easily and smoothly add overlays and then exit out of the map view"
+   Phones: a bottom dock (Layers + Exit map) at thumb height; the layers sheet
+   is a compact tile grid (~60% of the screen) that closes by swipe-down, tap
+   outside, Escape, back gesture or Done. Desktop: the layer panel folds. */
+.chart-phone-dock { display: none; }
+.layers-sheet-credit { display: none; }
+.lpd-toggle { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; margin: 0 0 6px; padding: 0 12px;
+  border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; background: rgba(6,14,24,0.86); color: #f1f5f9;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  font: 600 13px var(--sans, system-ui); cursor: pointer; text-align: left; }
+.lpd-toggle:hover { border-color: rgba(56,189,248,0.55); }
+.lpd-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(56,189,248,.55); }
+.lpd-toggle-active { flex: 1; min-width: 0; color: rgba(203,213,225,.8); font-weight: 500; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lpd-toggle-chev { font-size: 11px; color: #cbd5e1; }
+.layer-btn:focus-visible, .layer-sst-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(56,189,248,.55); }
+@keyframes ttSheetUp { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes ttFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 768px) {
+  /* The old top "Map Layers" bar is gone; controls start at the top again. */
+  .charts-immersive .mobile-layers-bar { display: none; }
+  .charts-immersive .leaflet-top { top: 10px; }
+  .chart-scalebar { top: 112px; }
+
+  /* Bottom dock: Layers (what's on) + Exit map */
+  .chart-phone-dock { display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, rgba(6,14,24,.55), rgba(6,14,24,0)); }
+  .cpd-layers { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.14); border-radius: 14px; background: rgba(8,18,30,.9); color: #fff;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cpd-layers:active { background: rgba(20,36,56,.95); }
+  .cpd-icon { display: inline-flex; color: #7dd3fc; flex: none; }
+  .cpd-text { display: flex; flex-direction: column; min-width: 0; }
+  .cpd-title { font: 600 15px/1.2 var(--sans, system-ui); }
+  .cpd-active { font: 400 12px/1.3 var(--sans, system-ui); color: rgba(203,213,225,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cpd-exit { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 16px;
+    border: 0; border-radius: 14px; background: #fff; color: var(--ink, #17332C); box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    font: 600 15px var(--sans, system-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cpd-exit:active { background: #eef2f0; }
+  .cpd-layers:focus-visible, .cpd-exit:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(125,211,252,.7); }
+  /* Credits sit above the dock instead of under the thumbs */
+  .charts-immersive .leaflet-bottom { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); z-index: 590; }  /* under the readout/timeline (600) */
+  /* Our data-source line moves into the layers sheet on phones; it sat on top of Leaflet's credit. */
+  .charts-immersive .chart-attribution { display: none; }
+  .layers-sheet-credit { margin: 6px 0 0; font: 400 11px/1.4 var(--sans, system-ui); color: var(--muted, #6B7A74); text-align: center; }
+
+  /* Layers sheet: compact tiles, sticky grab strip and Done bar */
+  .layers-sheet-overlay { animation: ttFadeIn .18s ease-out; }
+  .layers-sheet { max-height: min(74dvh, 640px); padding: 0 16px; gap: 6px; transition: transform .18s ease-out;
+    animation: ttSheetUp .22s cubic-bezier(.2,.8,.2,1); overscroll-behavior: contain; }
+  .layers-sheet-grab { position: sticky; top: 0; z-index: 2; margin: 0 -16px; padding: 10px 16px 6px; background: inherit;
+    border-radius: 20px 20px 0 0; touch-action: none; cursor: grab; }
+  .layers-sheet-handle { width: 44px; height: 5px; margin: 0 auto 8px; }
+  .layers-sheet-title { margin: 0; outline: none; }
+  .layers-sheet .layer-panel { padding: 0; border: 0; gap: 10px; background: none; }
+  .layers-sheet .layer-group { gap: 6px; }
+  .layers-sheet .layer-group-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .layers-sheet .layer-btn { position: relative; flex-direction: column; justify-content: center; gap: 3px; min-height: 58px;
+    padding: 6px 2px; border-radius: 12px; font-size: 12.5px; white-space: normal; text-align: center; line-height: 1.15; }
+  .layers-sheet .layer-btn-icon { font-size: 19px; }
+  .layers-sheet .layer-live-badge, .layers-sheet .layer-sim-badge { position: absolute; top: 3px; right: 3px; margin: 0; font-size: 8px; padding: 1px 3px; }
+  .layers-sheet .layer-sst-subrow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 2px; }
+  .layers-sheet .layer-sst-btn { min-height: 44px; padding: 0 8px; font-size: 13px; justify-content: center; }
+  .layers-sheet .fs-seg .layer-btn { min-height: 44px; flex-direction: row; }
+  .layers-sheet-foot { position: sticky; bottom: 0; z-index: 2; margin: 4px -16px 0; padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--tb-surface, #fff); box-shadow: 0 -1px 0 var(--line, #E5E0D4); }
+  .layers-sheet-foot .layers-sheet-close { width: 100%; min-height: 48px; margin: 0; }
 }
 
 /* ── Surf forecast page (web/surf.jsx) ─────────────────────────────────── */
