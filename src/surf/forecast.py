@@ -116,18 +116,32 @@ HEIGHT_TRAP = {"beach": (1.5, 3, 6, 10), "reef": (2, 4, 8, 12), "shores": (1, 2,
 LEAD_SI = ((48, 0.0), (120, 0.10), (10 ** 6, 0.20))
 
 
+RATE_LIMIT_WAIT_S = 60          # Open-Meteo's free tier limits per IP per minute
+
+
 def _get_json(url, params=None, timeout=40, attempts=3):
+    """GET JSON with retries. On HTTP 429 (rate limited; GitHub runners share
+    IPs) wait for Retry-After, or a minute, before trying again."""
+    import time
     last = None
     for i in range(attempts):
         try:
             r = requests.get(url, params=params, headers={"User-Agent": UA, "Accept": "application/json"},
                              timeout=timeout)
+            if r.status_code == 429 and i < attempts - 1:
+                try:
+                    wait = float(r.headers.get("Retry-After", RATE_LIMIT_WAIT_S))
+                except ValueError:
+                    wait = RATE_LIMIT_WAIT_S
+                log.info("rate limited by %s; waiting %.0f s", url.split("/")[2], wait)
+                time.sleep(min(max(wait, 5.0), 120.0))
+                continue
             r.raise_for_status()
             return r.json()
         except Exception as e:  # noqa: BLE001
             last = e
-            import time
-            time.sleep(4 * (i + 1))
+            if i < attempts - 1:
+                time.sleep(4 * (i + 1))
     raise last
 
 
@@ -156,6 +170,41 @@ def mop_series(point: str, kind: str, since: datetime) -> dict[int, tuple[float,
 # rating's wind category right 66% of the time vs 55% for gfs_seamless (chosen on
 # 2025 TRAIN, better in 22 of 23 months). Fallback keeps the page up if it fails.
 WIND_MODELS = ("ecmwf_ifs025", "gfs_seamless")
+
+
+def previous_wind(path: Path, key: str = "breaks") -> tuple[dict[str, dict[int, tuple]], str | None]:
+    """Wind per break from the last published file: {id: {epoch hour: (kt, from, gust)}}.
+
+    Used only when every live wind source fails, so the page shows the last
+    good wind (labelled) instead of "unknown" everywhere."""
+    try:
+        old = json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}, None
+    out = {}
+    for b in old.get(key) or []:
+        m = {}
+        for h in b.get("hours") or []:
+            if h.get("windKt") is None or h.get("windFrom") is None:
+                continue
+            ep = int(datetime.fromisoformat(h["t"]).timestamp())
+            m[ep - ep % 3600] = (float(h["windKt"]), float(h["windFrom"]),
+                                 None if h.get("windGustKt") is None else float(h["windGustKt"]))
+        if m:
+            out[b["id"]] = m
+    return out, old.get("generatedAt")
+
+
+def with_wind_fallback(items: list[dict], winds: list[dict], path: Path, key: str = "breaks"):
+    """winds unchanged if any live wind came through; else the previous file's wind."""
+    if any(winds):
+        return winds, None
+    prev, when = previous_wind(path, key)
+    if not prev:
+        return winds, None
+    log.warning("surf wind: all live sources failed; reusing wind from the run at %s", when)
+    return [prev.get(b["id"], {}) for b in items], (
+        f"Wind from the previous forecast run ({when}); the wind service was unavailable this run.")
 
 
 def wind_hourly(breaks: list[dict]) -> list[dict[int, tuple[float, float, float]]]:
@@ -431,6 +480,7 @@ def build(now: datetime | None = None) -> dict:
     except Exception as e:  # noqa: BLE001
         log.warning("surf wind failed: %s", e)
         winds = [{} for _ in BREAKS]
+    winds, wind_note = with_wind_fallback(BREAKS, winds, OUT)
     try:
         tide_h, hilo = tides(now - timedelta(days=1))
     except Exception as e:  # noqa: BLE001
@@ -480,6 +530,7 @@ def build(now: datetime | None = None) -> dict:
                     "Surf Zone Forecast, forecaster notes and alerts: National Weather Service San Diego"],
         "verification": VERIFICATION, "breaks": breaks,
         "tides": {"station": TIDE_STATION, "name": "La Jolla", "hilo": hilo},
+        "windNote": wind_note,
         "nws": srf, "nwsNotes": nws_notes, "nwsAlerts": nws_alerts, "buoys": buoys,
     }, tide_h, now)   # extras.py: display-only fields
 
