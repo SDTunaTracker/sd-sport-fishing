@@ -50,6 +50,71 @@ def valid_offshore(lat: float, lon: float) -> bool:
     return in_sanity_box(lat, lon) and not on_land(lat, lon)
 
 
+# ------------------------------------------------------------------ map pins
+# Where a posted position is believable for the chart: offshore SoCal and
+# northern Baja (Point Conception down to about Cedros / Guerrero Negro, 28 N).
+PIN_LAT_MIN, PIN_LAT_MAX = 28.0, 34.6
+PIN_LON_MIN = -122.0
+
+# Mainland Pacific coast as (lat, lon), south to north. Latitude rises along
+# the list, so "on land" is simply lon east of the coast at that latitude.
+# Coarse on purpose (a few miles): it drops points on land or in the Gulf of
+# California, not points just inside a harbour.
+_COAST = [
+    (28.00, -114.10), (28.60, -114.20), (29.00, -114.80), (29.60, -115.40),
+    (30.00, -115.80), (30.40, -116.00), (30.90, -116.30), (31.40, -116.60),
+    (31.86, -116.66), (32.20, -116.90), (32.53, -117.12), (32.70, -117.25),
+    (32.85, -117.27), (33.10, -117.32), (33.40, -117.60), (33.60, -117.88),
+    (33.72, -118.10), (33.75, -118.40), (33.90, -118.42), (34.03, -118.80),
+    (34.08, -119.06), (34.27, -119.30), (34.40, -119.70), (34.45, -120.47),
+    (34.60, -120.65),
+]
+
+
+def coast_lon(lat: float) -> float:
+    pts = _COAST
+    if lat <= pts[0][0]:
+        return pts[0][1]
+    for (a_lat, a_lon), (b_lat, b_lon) in zip(pts, pts[1:]):
+        if lat <= b_lat:
+            t = (lat - a_lat) / (b_lat - a_lat)
+            return a_lon + t * (b_lon - a_lon)
+    return pts[-1][1]
+
+
+def in_pin_area(lat: float, lon: float) -> bool:
+    """Offshore SoCal / northern Baja: inside the box and west of the mainland coast."""
+    if not (PIN_LAT_MIN <= lat <= PIN_LAT_MAX and PIN_LON_MIN <= lon):
+        return False
+    return lon < coast_lon(lat)
+
+
+# ------------------------------------------------------------------ normalise
+# Forum posters write positions many ways. These rewrites turn the common
+# variants into the forms the three patterns below already read:
+#   "N32 50.639 W117 31.854"  hemisphere letters in front of the numbers
+#   "32 40.5 / 117 30.2"      slash, semicolon or bar between lat and lon
+#   "32-40.5 117-30.2"        dash between degrees and minutes
+
+_NUM_PART = r"\d{1,3}(?:\.\d+)?°?(?:[\s\-]*\d{1,2}(?:\.\d+)?['′]?){0,2}[\"″]?"
+_PREFIX_HEMI = re.compile(
+    r"(?<![A-Za-z])([NS])\s*(" + _NUM_PART + r")\s*[,/;|]?\s*([EW])\s*(" + _NUM_PART + r")",
+    re.I,
+)
+# "32-40.5" -> "32 40.5", but never touch a negative number like ", -117.5".
+_DEG_DASH = re.compile(r"(?<![\d.])(\d{2,3})-(\d{1,2}(?:\.\d+)?)(?!\d)")
+_PAIR_SEP = re.compile(r"(?<=[\d'′\"″°NSns])\s*[/;|]\s*(?=[\d\-NSEWnsew])")
+
+
+def normalise(raw: str) -> str:
+    s = raw.replace("º", "°").replace("˚", "°")
+    s = _PREFIX_HEMI.sub(
+        lambda m: f"{m.group(2).strip()} {m.group(1).upper()} {m.group(4).strip()} {m.group(3).upper()}", s)
+    s = _DEG_DASH.sub(r"\1 \2", s)
+    s = _PAIR_SEP.sub(" ", s)
+    return s
+
+
 # ------------------------------------------------------------------ parsers
 
 # Hemisphere suffix (N/S/E/W), optionally spaced from the number.
@@ -128,7 +193,7 @@ def parse_coords(raw: str) -> dict | None:
     """
     if not raw:
         return None
-    s = " " + raw.strip() + " "
+    s = " " + normalise(raw.strip()) + " "
 
     m = _DMS.search(s)
     if m:
@@ -164,6 +229,35 @@ def parse_coords(raw: str) -> dict | None:
         return {"lat": round(lat, 6), "lon": round(lon, 6), "format": "dd"}
 
     return None
+
+
+# Start of something that could be a latitude in the pin area (28-34 degrees,
+# hemisphere letter optional). Used to scan whole posts.
+_LAT_START = re.compile(r"(?<![\w.])(?:[NS]\s*)?(?:2[89]|3[0-4])(?=[°\s.\-])", re.I)
+_DD_DECIMALS = re.compile(r"\d\.\d{3,}")
+
+
+def find_coords(text: str) -> list[dict]:
+    """Every distinct believable position written in a post, in order.
+
+    Stricter than parse_coords: decimal degrees need 3+ decimals (so "32.5 lb,
+    117.4 miles" stays prose), and each pair must be inside the pin area."""
+    out: list[dict] = []
+    if not text:
+        return out
+    for m in _LAT_START.finditer(text):
+        window = text[m.start(): m.start() + 64].split("\n\n")[0]
+        p = parse_coords(window)
+        if not p:
+            continue
+        if p["format"] == "dd" and not _DD_DECIMALS.search(window):
+            continue
+        if not in_pin_area(p["lat"], p["lon"]):
+            continue
+        if any(abs(p["lat"] - q["lat"]) < 0.002 and abs(p["lon"] - q["lon"]) < 0.002 for q in out):
+            continue
+        out.append(p)
+    return out
 
 
 def coords_agree(a: tuple[float, float] | None,
