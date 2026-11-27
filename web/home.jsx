@@ -194,14 +194,14 @@
     return parts.length ? parts : null;
   }
 
-  // ── Home: latest counts, short ───────────────────────────────────────────
+  // ── Home: latest counts, every boat in one list ──────────────────────────
   // Home is "where to fish this week" and the way into the site; Today is the
-  // full day report (owner, 2026-11-27: each page holds its own purpose). So
-  // Home shows only the latest day's totals and its top boats, then sends
-  // people to Today for every boat, the date stepper, landing filters, row
-  // history and what's still fishing. Season leaders live here; Today links
-  // to the leaderboard.
-  const HOME_TOP_N = 3;
+  // full day report (owner, 2026-11-27: each page holds its own purpose).
+  // Owner, 2026-11-27: "I want to see all boats that have reported fish
+  // counts on one area", so Home lists every boat that reported for the
+  // latest day in compact rows (catch + fish per angler). Today keeps the
+  // date stepper, landing filters, row history and what's still fishing.
+  // Season leaders live here; Today links to the leaderboard.
   function CountsSection({ navigate, settings, regions }) {
     const metric = thUseMetric(regions, settings);
     const TODAY = getTodayISO();
@@ -228,7 +228,6 @@
 
     const stillN = isToday ? ((window.SD && window.SD.TODAY && window.SD.TODAY.stillFishing) || [])
       .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); }).length : 0;
-    const top = ranked.slice(0, HOME_TOP_N);
     const n = ranked.length;
     const todayHref = window.ttPathFromRoute ? window.ttPathFromRoute('today', {}, regions) : '/sd/today';
     const goToday = (e) => { if (navigate) { e.preventDefault(); navigate('today'); } };
@@ -249,8 +248,8 @@
                   <b>{n} boat{n === 1 ? '' : 's'}</b> brought in <b>{fmt.n(totals.total)} fish</b>
                   {species.length ? ': ' + species.map(sp => `${fmt.n(totals.bySp[sp] || 0)} ${sp.toLowerCase()}`).join(', ') : ''}.
                 </p>
-                <ol className="hc-list" aria-label="Top boats by fish per angler">
-                  {top.map((b, i) => {
+                <ol className="hc-list" aria-label="Boats that reported, by fish per angler">
+                  {ranked.map((b, i) => {
                     const fa = b.anglers > 0 ? thFish(b) / b.anglers : 0;
                     return (
                       <li key={`${b.boat}|${b.landing}`}>
@@ -267,7 +266,7 @@
               </React.Fragment>
             )}
             <a className="hc-more" href={todayHref} onClick={goToday}>
-              {n > HOME_TOP_N ? `All ${n} boats` : 'The full report'}{stillN ? `, ${stillN} still fishing` : ''} and other days on Today's report<span aria-hidden="true">{' →'}</span>
+              Other days, landing filters{stillN ? `, ${stillN} still fishing` : ''} and each boat's history on Today's report<span aria-hidden="true">{' →'}</span>
             </a>
           </section>
 
@@ -293,8 +292,8 @@
   // ── Today's report (v2) ───────────────────────────────────────────────────
   // Calm, data-first page: the date is the title, one sentence summarises the
   // day, species totals are a quiet strip (zero species hidden), then a ranked
-  // boat list. It is the only page with every boat's row details; Home shows
-  // a short summary that links here. No season leaderboard (Home and
+  // boat list. It is the only page with the date stepper, filters and row
+  // details; Home lists the latest day's boats and links here. No season leaderboard (Home and
   // Analytics have it) and no booking card (Home has it), just links.
   const TD2_SPECIES = { Yellowfin: '#C9A227', Bluefin: '#2F5D8A', Yellowtail: '#4F8A5B', Dorado: '#2F7F86' };
 
