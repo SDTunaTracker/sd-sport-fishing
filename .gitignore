@@ -30,3 +30,4 @@ tracker_dump.sql
 
 # NorCal (SF Bay) fetch cache — raw pages, never committed
 .cache/
+data/surf_cache/

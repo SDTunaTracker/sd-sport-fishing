@@ -193,6 +193,14 @@ jobs:
               print('WARNING: all ERDDAP attempts failed — keeping existing sst_grid.json')
           PYEOF
 
+      - name: Archive CDIP MOP surf forecast runs (CDIP / Scripps)
+        # src/surf/runs.py: stores each new MOP forecast run (ECMWF- and
+        # WW3-forced) at 8 buoy sites and 12 breaks in tracker.db (surf_runs),
+        # so surf forecast skill can be scored by lead time. CDIP keeps no
+        # archive of past runs. Free public data. Never fails the run.
+        continue-on-error: true
+        run: python -m src.surf.runs || echo "::warning::surf run archive failed"
+
       - name: Fetch currents grid (full mode, Copernicus Marine)
         # Real currents for the Charts map (src/currents_cmems.py). Skips until
         # the owner adds the two COPERNICUSMARINE_* secrets; the map keeps its
