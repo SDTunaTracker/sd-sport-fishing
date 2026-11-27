@@ -9,7 +9,9 @@ Per break (src/surf/breaks.py), every 3 h for ~6 days:
   3. Breaking step: each band of the MOP spectrum shoaled + refracted with
      its own frequency and direction from the MOP depth (~10 m) until
      Hm0 >= γ·h (physics.break_spectrum, experiment E8); bulk Hs/Tp
-     (physics.break_wave) only without a spectrum. Face range [Hb, 1.27·Hb] × c_b, in feet.
+     (physics.break_wave) only without a spectrum. Round 4: breaking height
+     is the Battjes–Janssen random-wave max Hs (E12) × the spectral/bulk
+     ratio (E8); face range 0.85–1.15 × that × NWS_SCALE (0.80), in feet.
      Komar–Gaughan is reported as a cross-check.
   4. Wind: Open-Meteo hourly 10 m wind (NOAA HRRR / GFS blend, `gfs_seamless`).
   5. Tide: NOAA CO-OPS 9410230 La Jolla, hourly predictions + highs/lows.
@@ -37,8 +39,8 @@ import requests
 
 from . import cdip as C
 from .breaks import BREAKS
-from .physics import (M_TO_FT, break_spectrum, break_wave, deep_water_height, komar_gaughan,
-                      spectral_hs)
+from .physics import (M_TO_FT, bj_profile, break_spectrum, break_wave, deep_water_height,
+                      komar_gaughan, spectral_hs)
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +49,17 @@ OUT = ROOT / "web" / "api" / "v1" / "surf.json"
 CAL = json.loads(Path(__file__).with_name("calibration.json").read_text(encoding="utf-8"))
 UA = C.UA
 TIDE_STATION = "9410230"
-SET_FACTOR = 1.27            # H1/10 ÷ Hs (Rayleigh)
+# Face range around the breaking-wave height H (E9: no 1.27 "sets" multiplier
+# on the top; sets are mentioned in words instead).
+RANGE = (0.85, 1.15)
+# Breaking: Battjes–Janssen random-wave energy balance on a plane slope (E12),
+# slope by break type [D], scaled by the E8 spectral/bulk ratio.
+SLOPE = {"beach": 1 / 50, "reef": 1 / 30, "shores": 1 / 50}
+# Residual global scale (round 4): after E8+E9+E12 our heights still ran 1.22×
+# the NWS San Diego Surf Zone Forecast. 0.80 was fit on the first 301 of 602
+# days and scored on the other 301 (MAE 0.61 ft vs 0.75 unscaled). It matches
+# NWS's scale; it is NOT calibrated to observed surf.
+NWS_SCALE = 0.80
 MODEL_CEILING = 3.74         # top of FAIR–GOOD
 STEP_H = 3
 SMOOTH_STEPS = 5             # ≈ 12 h centered at 3-hourly steps
@@ -60,6 +72,9 @@ VERIFICATION = {
     "hsRmseM": {"rawEcmwf": 0.136, "blend": 0.126},
     "beats": ["24 h persistence at all 8 buoys", "plain shoaling without island sheltering (RMSE ~1 m)"],
     "notVerified": "Face height and rating: no surf observations yet. Treat them as model estimates.",
+    "scale": "Surf heights are scaled (×0.80) to match the National Weather Service San Diego surf "
+             "forecasts (602 days; within 1 ft of NWS on 84% of held-out days). They are not yet "
+             "checked against observed surf.",
     "leadNote": "Scores are short-lead. Skill by forecast day is being collected.",
 }
 
@@ -314,15 +329,15 @@ def break_forecast(b: dict, wind: dict, tide_h: dict, now: datetime) -> dict:
     hours = []
     for i, t in enumerate(steps):
         hs, tp, dp = hs_s[i], tp_s[i], dp_l[i]
+        mono, _, _ = break_wave(hs, tp, dp, normal, h1, b["gamma"])
         r = ratios.get(t)
-        if r is not None and hs < b["gamma"] * h1:
-            hb = hs * r                                   # E8 spectral breaking step
-        else:
-            hb, _, _ = break_wave(hs, tp, dp, normal, h1, b["gamma"])
+        e8 = (hs * r / mono) if (r is not None and mono > 0 and hs < b["gamma"] * h1) else 1.0
+        hb = bj_profile(hs, tp, h1, SLOPE[b["type"]], dp, normal)[0] * e8   # E12 × E8
         lead = (t - now.timestamp()) / 3600
         si = next(v for lim, v in LEAD_SI if lead < lim)
-        lo_ft = hb * b["cal"] * M_TO_FT * (1 - si)
-        hi_ft = hb * b["cal"] * M_TO_FT * SET_FACTOR * (1 + si)
+        h_ft = hb * b["cal"] * NWS_SCALE * M_TO_FT
+        lo_ft = h_ft * RANGE[0] * (1 - si)
+        hi_ft = h_ft * RANGE[1] * (1 + si)
         hour = t - t % 3600
         wnd = wind.get(hour, (None, None, None))
         tide_ft = tide_h.get(hour)
@@ -381,8 +396,10 @@ def build(now: datetime | None = None) -> dict:
         "generatedAt": now.isoformat(timespec="minutes"), "staleAfterHours": 12,
         "label": "Model forecast",
         "method": "CDIP MOP nearshore wave model (ECMWF and WW3 forced, blended and bias-corrected at the "
-                  "buoys), linear shoaling and refraction to the break point (Hb = γ·h), face range "
-                  "Hb to 1.27·Hb. Wind: Open-Meteo (NOAA HRRR/GFS). Tide: NOAA La Jolla 9410230.",
+                  "buoys), then a random-wave shoaling and breaking model (Battjes–Janssen) from the "
+                  "model's 10 m point to the beach, using each swell's own period and direction. "
+                  "Heights are scaled to the NWS forecast scale. Wind: Open-Meteo (NOAA HRRR/GFS). "
+                  "Tide: NOAA La Jolla 9410230.",
         "credits": [C.CREDIT, "Wind: Open-Meteo.com (CC BY 4.0), NOAA HRRR/GFS",
                     "Tides: NOAA CO-OPS", "Surf Zone Forecast: National Weather Service San Diego"],
         "verification": VERIFICATION, "breaks": breaks,

@@ -158,3 +158,58 @@ def break_spectrum(freqs, dfs, energy, dirs, normal: float | None, h1: float, ga
         if H >= gamma * h:
             return H, h
     return H, h
+
+
+def _bj_qb(hrms: float, hmax: float) -> float:
+    """Fraction of breaking waves Qb from (1 - Qb)/ln(Qb) = -(Hrms/Hmax)^2 (Battjes & Janssen 1978)."""
+    b2 = (hrms / hmax) ** 2
+    if b2 >= 1:
+        return 1.0
+    if b2 < 0.1:
+        return 0.0
+    q = 0.5
+    for _ in range(60):                  # fixed point on Qb = exp((Qb - 1)/b²)
+        q = math.exp((q - 1) / b2)
+    return min(1.0, max(0.0, q))
+
+
+def bj_profile(Hs: float, T: float, h1: float, slope: float, direction: float | None = None,
+               normal: float | None = None, gamma: float = 0.73, alpha: float = 1.0,
+               dx: float = 2.0) -> tuple[float, float]:
+    """Random-wave shoaling + breaking (Battjes & Janssen 1978 energy balance)
+    from depth h1 shoreward on a plane slope. Returns (max Hs along the
+    profile, depth where it occurs): the height of the breaking-wave field
+    (experiment E12), instead of monochromatic shoaling to γ·h.
+
+    d(E·Cg·cosα)/dx = -D,  D = (α/4)·ρg·fp·Qb·Hmax²,  Hmax = γ·h,  Hrms = Hs/√2.
+    """
+    if not (Hs and Hs > 0 and T and T > 0):
+        return 0.0, 0.0
+    a1 = 0.0
+    if direction is not None and normal is not None and not math.isnan(direction):
+        a1 = (direction - normal + 180) % 360 - 180
+    if abs(a1) >= 90:
+        return 0.0, 0.0
+    c1 = celerity(T, h1)
+    s1 = math.sin(math.radians(a1)) / c1
+    rho_g = 1025 * G
+    fp = 1.0 / T
+    hrms = Hs / math.sqrt(2)
+    flux = rho_g * hrms ** 2 / 8 * group_speed(T, h1) * math.cos(math.radians(a1))
+    h, best, best_h = h1, Hs, h1
+    while h > 0.3:
+        hmax = gamma * h
+        qb = _bj_qb(hrms, hmax)
+        diss = alpha / 4 * rho_g * fp * qb * hmax ** 2
+        flux = max(0.0, flux - diss * dx)
+        h = max(0.3, h - slope * dx)
+        c, cg = celerity(T, h), group_speed(T, h)
+        sa = max(-1.0, min(1.0, s1 * c))
+        e = flux / (cg * math.sqrt(1 - sa * sa))
+        hrms = math.sqrt(8 * e / rho_g)
+        hs = hrms * math.sqrt(2)
+        if hs > best:
+            best, best_h = hs, h
+        if flux <= 0:
+            break
+    return best, best_h

@@ -145,3 +145,20 @@ def test_parse_grid_opendap_ascii():
     txt = ("waveEnergyDensity.waveEnergyDensity[2][3]\n[0], 0.1, 0.2, 0.3\n[1], 1.0, 2.0, 3.0\n\n"
            "waveEnergyDensity.waveTime[2]\n1, 2\n")
     assert C.parse_grid(txt, "waveEnergyDensity") == [[0.1, 0.2, 0.3], [1.0, 2.0, 3.0]]
+
+
+def test_battjes_janssen_random_wave_breaking():
+    hs, d = P.bj_profile(1.0, 14, 10, 1 / 50, 260, 260)
+    mono = P.break_wave(1.0, 14, 260, 260, 10, 0.78)[0]
+    assert 1.0 < hs < mono                      # grows by shoaling, less than monochromatic breaking
+    assert 0.3 < d < 10
+    assert P.bj_profile(1.0, 14, 10, 1 / 50, 80, 260) == (0.0, 0.0)   # from behind the beach
+    assert P.bj_profile(0.0, 14, 10, 1 / 50) == (0.0, 0.0)
+    assert P._bj_qb(0.1, 1.0) == 0.0 and P._bj_qb(2.0, 1.0) == 1.0
+    q = P._bj_qb(0.8, 1.0)
+    assert 0 < q < 1 and math.isclose((1 - q) / math.log(q), -(0.8 ** 2), rel_tol=1e-3)
+
+
+def test_face_range_and_nws_scale_constants():
+    assert F.RANGE == (0.85, 1.15) and F.NWS_SCALE == 0.80
+    assert "scaled" in F.VERIFICATION["scale"] and "not yet" in F.VERIFICATION["scale"].lower()
