@@ -282,6 +282,8 @@ function SurfMap({ breaks, best, open, onPick }) {
   const box = useSfRef(null);
   const map = useSfRef(null);
   const layer = useSfRef(null);
+  const labels = useSfRef(null);
+  const placeRef = useSfRef(null);   // latest placeLabels (fresh breaks/best/open) for map events
   const [failed, setFailed] = useSfState(false);
   useSfEffect(() => {
     let alive = true;
@@ -295,7 +297,10 @@ function SurfMap({ breaks, best, open, onPick }) {
       fit();
       setTimeout(fit, 250);   // the grid cell settles its height after first paint
       map.current = m;
+      m.createPane('sfLabels').style.zIndex = 590;   // under the pins (600), over tiles
       layer.current = L.layerGroup().addTo(m);
+      labels.current = L.layerGroup().addTo(m);
+      m.on('zoomend moveend resize', () => placeRef.current && placeRef.current());
       draw();
     }).catch(() => { if (alive) setFailed(true); });
     return () => { alive = false; if (map.current) { map.current.remove(); map.current = null; } };
@@ -319,7 +324,53 @@ function SurfMap({ breaks, best, open, onPick }) {
         .on('click', () => onPick(b.id))
         .addTo(layer.current);
     });
+    placeLabels();
   }
+  // Spot names next to the pins once zoomed in: tuned breaks from zoom 11, every
+  // spot from 12. Greedy placement (right, left, above, below the pin) that
+  // never covers a pin or another label; a name with no free spot is skipped
+  // until the map is zoomed further in.
+  function placeLabels() {
+    const L = window.L, m = map.current;
+    if (!L || !m || !labels.current) return;
+    labels.current.clearLayers();
+    const z = m.getZoom();
+    if (z < 11) return;
+    const size = m.getSize();
+    const font = '600 12px ' + getComputedStyle(box.current).fontFamily;
+    const ctx = (placeLabels.cv || (placeLabels.cv = document.createElement('canvas'))).getContext('2d');
+    ctx.font = font;
+    const pts = breaks.map(b => ({ b, p: m.latLngToContainerPoint([b.lat, b.lon]), r: b.defaults ? 6.5 : 9 }))
+      .filter(o => o.p.x > -60 && o.p.y > -30 && o.p.x < size.x + 60 && o.p.y < size.y + 30);
+    const boxes = pts.map(o => ({ x0: o.p.x - o.r, y0: o.p.y - o.r, x1: o.p.x + o.r, y1: o.p.y + o.r }));
+    // the zoom buttons and the tile credits are obstacles too
+    const mr = box.current.getBoundingClientRect();
+    box.current.querySelectorAll('.leaflet-control').forEach(c => {
+      const r = c.getBoundingClientRect();
+      if (r.width) boxes.push({ x0: r.left - mr.left - 3, y0: r.top - mr.top - 3, x1: r.right - mr.left + 3, y1: r.bottom - mr.top + 3 });
+    });
+    const hit = (r, list) => list.some(q => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0);
+    const rank = o => (o.b.id === open ? 0 : 10) + (o.b.defaults ? 5 : 0)
+      - ['flat', 'poor', 'poor-fair', 'fair', 'fair-good', 'good'].indexOf(best[o.b.id] ? sfRateKey(best[o.b.id].h.label) : 'flat') / 10;
+    const placed = [];
+    pts.filter(o => z >= 12 || !o.b.defaults).sort((a, c) => rank(a) - rank(c)).forEach(o => {
+      const w = Math.ceil(ctx.measureText(o.b.name).width) + 10, h = 18, { x, y } = o.p, g = o.r + 3;
+      const spots = [[x + g, y - h / 2], [x - g - w, y - h / 2], [x - w / 2, y - g - h], [x - w / 2, y + g]];
+      for (const [x0, y0] of spots) {
+        const r = { x0, y0, x1: x0 + w, y1: y0 + h };
+        if (r.x0 < 2 || r.y0 < 2 || r.x1 > size.x - 2 || r.y1 > size.y - 2) continue;
+        if (hit(r, boxes) || hit(r, placed)) continue;
+        placed.push({ x0: x0 - 2, y0: y0 - 2, x1: r.x1 + 2, y1: r.y1 + 2 });
+        L.marker([o.b.lat, o.b.lon], {
+          pane: 'sfLabels', keyboard: false, interactive: true,
+          icon: L.divIcon({ className: 'sf-lbl-wrap', iconSize: [w, h], iconAnchor: [x - x0, y - y0],
+                            html: `<span class="sf-lbl${o.b.defaults ? ' def' : ''}">${o.b.name.replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';')}</span>` }),
+        }).on('click', () => onPick(o.b.id)).addTo(labels.current);
+        break;
+      }
+    });
+  }
+  placeRef.current = placeLabels;
   useSfEffect(() => { draw(); }, [breaks, best, open]);
   if (failed) return null;
   return (
@@ -521,7 +572,7 @@ function SurfLegend() {
 
 // ════════════════════════════════════════════════════════════════════════
 // Surftracker: the discreet surf mode of the site (/sd/surf/*). Its own
-// header, nav (Report · Forecast · Map) and footer, with a way back to
+// header, nav (Report · Forecast · Map · Cams) and footer, with a way back to
 // Tunatracker. Reached only from a quiet link on Charts and in the footer.
 // ════════════════════════════════════════════════════════════════════════
 
@@ -554,7 +605,7 @@ function SurfWave({ size }) {
 }
 
 function SurftrackerHeader({ sub, navigate }) {
-  const tabs = [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map']];
+  const tabs = [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map'], ['cams', 'Cams']];
   const active = sub === 'break' ? 'forecast' : sub;
   return (
     <header className="st-header">
@@ -974,6 +1025,7 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
       <p className="sf-muted st-sub">{b.area} · {b.type === 'reef' ? 'reef' : 'beach'} · faces {sfDir(b.shoreNormal)} ({Math.round(b.shoreNormal)}°)
         · updated {sfLocal(data.generatedAt, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</p>
       {b.note && <div className="sf-note st-note" role="note">{b.note}</div>}
+      <SurfBreakCams spot={b.id} navigate={navigate}/>
 
       <SurfDays days={days} day={dk} setDay={setDay}/>
       <div className="st-break-top">
@@ -1078,6 +1130,155 @@ function SurfAbout({ data, extra, compact }) {
   );
 }
 
+// ── Live cams (/sd/surf/cams) ─────────────────────────────────────────────
+// Cam list: api/v1/surf_cams.json (hand-edited). Daily status from
+// src/surf/cams.py: api/v1/surf_cams_status.json (optional). Only YouTube
+// streams whose operators allow embedding. Nothing loads from YouTube except a
+// still picture until someone taps a cam; then one youtube-nocookie player.
+function useSurfCams() {
+  const [st, setSt] = useSfState({ cams: null, status: null, error: false });
+  useSfEffect(() => {
+    let alive = true;
+    const day = new Date().toISOString().slice(0, 13);
+    Promise.all([
+      fetch('/api/v1/surf_cams.json?h=' + day).then(r => (r.ok ? r.json() : Promise.reject(r.status))),
+      fetch('/api/v1/surf_cams_status.json?h=' + day).then(r => (r.ok ? r.json() : null)).catch(() => null),
+    ]).then(([list, status]) => {
+      if (!alive) return;
+      // a status file older than its staleAfterHours says nothing: show the cams
+      const fresh = status && status.generatedAt && (Date.now() - Date.parse(status.generatedAt)) / 36e5 < (status.staleAfterHours || 72);
+      setSt({ cams: (list && list.cams) || [], status: fresh ? status.cams || {} : {}, error: false });
+    }).catch(() => { if (alive) setSt({ cams: [], status: {}, error: true }); });
+    return () => { alive = false; };
+  }, []);
+  return st;
+}
+
+function sfCamOffline(status, id) {
+  const s = status && status[id];
+  return s && s.status === 'offline' ? s : null;
+}
+
+function SurfCamCard({ cam, status, playing, onPlay, focus, names, navigate }) {
+  const off = sfCamOffline(status, cam.id);
+  const ref = useSfRef(null);
+  useSfEffect(() => { if (focus && ref.current) ref.current.scrollIntoView({ block: 'center' }); }, [focus]);
+  const yt = encodeURIComponent(cam.youtube);
+  const watch = `https://www.youtube.com/watch?v=${yt}`;
+  const spotLinks = ids => ids.filter(id => names[id]).map((id, i) => (
+    <React.Fragment key={id}>{i ? ', ' : ''}<a {...sfLinkProps(navigate, { sub: 'break', spot: id })}>{names[id]}</a></React.Fragment>
+  ));
+  return (
+    <li ref={ref} id={'cam-' + cam.id} className={`st-cam${off ? ' off' : ''}${focus ? ' focus' : ''}`}>
+      <div className="st-cam-frame">
+        {off ? (
+          <div className="st-cam-off" role="status">
+            <b>Cam offline</b>
+            <span>{off.reason}</span>
+            {off.lastSeen && <span>Last seen live {sfLocal(off.lastSeen, { month: 'short', day: 'numeric' })}.</span>}
+            <a href={cam.operator.url} target="_blank" rel="noopener noreferrer">Check {cam.operator.name.replace(/ \(.*\)$/, '')} on YouTube ↗</a>
+          </div>
+        ) : playing ? (
+          <iframe src={`https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&mute=1&playsinline=1&rel=0`}
+                  title={`${cam.name} live cam`} loading="lazy" referrerPolicy="strict-origin-when-cross-origin"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen/>
+        ) : (
+          <button type="button" className="st-cam-play" onClick={onPlay} aria-label={`Play ${cam.name} live cam`}>
+            <img src={`https://i.ytimg.com/vi/${yt}/hqdefault_live.jpg`} alt="" loading="lazy" decoding="async"
+                 onError={e => { if (!/hqdefault\.jpg$/.test(e.currentTarget.src)) e.currentTarget.src = `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`; }}/>
+            <span className="st-cam-live">Live</span>
+            <span className="st-cam-btn" aria-hidden="true"/>
+          </button>
+        )}
+      </div>
+      <div className="st-cam-body">
+        <div className="st-cam-name">{cam.name}</div>
+        <div className="st-cam-by">
+          Cam by <a href={cam.operator.url} target="_blank" rel="noopener noreferrer">{cam.operator.name}</a>
+          {!off && <> · <a href={watch} target="_blank" rel="noopener noreferrer">YouTube ↗</a></>}
+        </div>
+        {cam.covers.length > 0 && <div className="st-cam-spots"><span>In view:</span> {spotLinks(cam.covers)}</div>}
+        {cam.near.length > 0 && <div className="st-cam-spots"><span>{cam.kind === 'harbour' ? 'Nearest breaks (not in view):' : 'Nearby:'}</span> {spotLinks(cam.near)}</div>}
+        {cam.note && <p className="st-cam-note">{cam.note}</p>}
+      </div>
+    </li>
+  );
+}
+
+function SurfCamsPage({ ctx, navigate, camId }) {
+  const { cams, status, error } = useSurfCams();
+  const [playing, setPlaying] = useSfState(null);
+  useSfEffect(() => { if (!camId) window.scrollTo(0, 0); }, []);
+  const names = {};
+  (ctx.all || []).forEach(b => { names[b.id] = b.name; });
+  if (!cams) return <div className="sf-wrap"><h1 className="sf-title">Live cams</h1><p className="sf-muted">Loading cams…</p></div>;
+  if (error || !cams.length) return <div className="sf-wrap"><h1 className="sf-title">Live cams</h1><p className="sf-muted">The cam list is unavailable right now.</p></div>;
+  const surf = cams.filter(c => c.kind === 'surf');
+  const harbour = cams.filter(c => c.kind !== 'surf');
+  const areas = SF_AREAS.map(a => a[1]).filter(a => surf.some(c => c.area === a));
+  surf.forEach(c => { if (areas.indexOf(c.area) < 0) areas.push(c.area); });
+  const card = c => (
+    <SurfCamCard key={c.id} cam={c} status={status} names={names} navigate={navigate} focus={camId === c.id}
+                 playing={playing === c.id} onPlay={() => setPlaying(c.id)}/>
+  );
+  const nOff = cams.filter(c => sfCamOffline(status, c.id)).length;
+  return (
+    <div className="sf-wrap st-cams">
+      <div className="sf-top">
+        <h1 className="sf-title">Live cams</h1>
+        <span className="sf-chip">{cams.length - nOff} of {cams.length} online</span>
+      </div>
+      <p className="sf-muted st-sub">Live streams run by local businesses and clubs, shown through YouTube's own player. Tap a picture to play; only one plays at a time.</p>
+
+      <section className="st-sec" aria-labelledby="st-cams-surf">
+        <h2 className="st-h2" id="st-cams-surf">Surf cams</h2>
+        {areas.map(a => (
+          <div key={a} className="st-cam-area">
+            <h3 className="st-h3">{a}</h3>
+            <ul className="st-cam-grid">{surf.filter(c => c.area === a).map(card)}</ul>
+          </div>
+        ))}
+      </section>
+
+      {harbour.length > 0 && (
+        <section className="st-sec" aria-labelledby="st-cams-bay">
+          <div className="st-sec-head">
+            <h2 className="st-h2" id="st-cams-bay">Harbour and bay cams</h2>
+            <span className="sf-chip">No surf in view</span>
+          </div>
+          <ul className="st-cam-grid">{harbour.map(card)}</ul>
+        </section>
+      )}
+
+      <p className="st-fine">
+        Each cam belongs to its operator; follow the links to support them. We check every cam once a day and mark it
+        offline if its video has been removed or no longer allows embedding. If a stream has just ended, the player may
+        show a recording until the operator restarts it. No Surftracker coverage yet for
+        Imperial Beach, Coronado, Sunset Cliffs, Blacks, Torrey Pines or Del Mar.
+      </p>
+    </div>
+  );
+}
+
+// Break page: "Live cam" links for any cam whose view covers this break.
+function SurfBreakCams({ spot, navigate }) {
+  const { cams, status } = useSurfCams();
+  const mine = (cams || []).filter(c => c.covers.indexOf(spot) >= 0);
+  if (!mine.length) return null;
+  return (
+    <div className="st-break-cams">
+      {mine.map(c => {
+        const off = sfCamOffline(status, c.id);
+        return (
+          <a key={c.id} className={`st-cam-link${off ? ' off' : ''}`} {...sfLinkProps(navigate, { sub: 'cams', spot: c.id })}>
+            <span className="st-cam-dot" aria-hidden="true"/>{off ? 'Cam offline' : 'Live cam'}: {c.name} →
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 function SurfView({ navigate, sub, spot }) {
   const ctx = useSurfAll();
   const [favs, toggleFav] = useSurfFavs();
@@ -1089,6 +1290,7 @@ function SurfView({ navigate, sub, spot }) {
   const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
   const page = sub === 'forecast' ? <SurfForecastPage {...props}/>
     : sub === 'map' ? <SurfMapPage {...props}/>
+    : sub === 'cams' ? <SurfCamsPage {...props} camId={spot}/>
     : sub === 'break' && spot ? <SurfBreakPage {...props} spot={spot}/>
     : <SurfReport {...props}/>;
   // NWS surf alerts banner (surf-nws.jsx) above every Surftracker tab.

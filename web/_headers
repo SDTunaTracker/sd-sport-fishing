@@ -29,6 +29,14 @@
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 
+/api/v1/surf_cams.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/surf_cams_status.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
 /api/v1/buoys.json
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
