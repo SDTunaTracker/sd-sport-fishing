@@ -63,9 +63,32 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
 <link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css" />
-<link rel="stylesheet" href="styles.css?v=20261127-3">
-<link rel="stylesheet" href="design-system.css?v=20261127-4">
-<link rel="stylesheet" href="sfbay.css?v=20261127-3">
+<!-- Charts fast path: on a charts URL, start fetching Leaflet and the
+     particle layer now, in parallel with data.js, and open the tile-server
+     connections early. Without this they only start after data.js and the
+     app have run (measured: map at 14.4 s on a throttled 4G phone). -->
+<script>
+  (function () {
+    try {
+      if (!/\/charts(\/|$)/.test(location.pathname) && !/charts/.test(location.hash)) return;
+      var h = document.head;
+      function link(rel, href, as, co) {
+        var l = document.createElement('link');
+        l.rel = rel; l.href = href;
+        if (as) l.as = as;
+        if (co) l.crossOrigin = 'anonymous';
+        h.appendChild(l);
+      }
+      link('preconnect', 'https://tiles.stadiamaps.com', null, true);
+      link('preconnect', 'https://gibs.earthdata.nasa.gov', null, true);
+      link('preload', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js', 'script', true);
+      link('preload', 'lib/leaflet-velocity/leaflet-velocity.js', 'script', false);
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="styles.css?v=20261127-4">
+<link rel="stylesheet" href="design-system.css?v=20261127-5">
+<link rel="stylesheet" href="sfbay.css?v=20261127-4">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- Clerk browser SDK — async so it doesn't block page render -->
 <script
@@ -141,42 +164,42 @@
 <script src="marine.js?v=20261127-3"></script>
 <script src="trip-picker.js?v=20261127-3"></script>
 <script src="pack-list.js?v=20261126-2"></script>
-<script src="analytics.js?v=20261127-3"></script>
+<script src="analytics.js?v=20261127-4"></script>
 <script src="analytics-events.js?v=20261125-14"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
 <script src="user-prefs.js?v=20261124-1"></script>
 <script src="metric-definitions.js?v=20261126-5"></script>
 
-<script src="dist/tweaks-panel.js?v=20261127-3"></script>
-<script src="dist/metric-label.js?v=20261127-3"></script>
-<script src="dist/ui.js?v=20261127-3"></script>
-<script src="dist/components.js?v=20261127-3"></script>
-<script src="dist/filterbar.js?v=20261127-3"></script>
-<script src="dist/dashboard.js?v=20261127-3"></script>
-<script src="dist/home.js?v=20261127-3"></script>
-<script src="dist/picker.js?v=20261127-3"></script>
-<script src="dist/boats.js?v=20261127-3"></script>
-<script src="dist/drilldown.js?v=20261127-3"></script>
-<script src="dist/boat-reviews.js?v=20261127-3"></script>
-<script src="dist/forum-reports.js?v=20261127-3"></script>
-<script src="dist/google-reviews.js?v=20261127-3"></script>
-<script src="dist/boat-videos.js?v=20261127-3"></script>
-<script src="dist/bait-now.js?v=20261127-3"></script>
+<script src="dist/tweaks-panel.js?v=20261127-4"></script>
+<script src="dist/metric-label.js?v=20261127-4"></script>
+<script src="dist/ui.js?v=20261127-4"></script>
+<script src="dist/components.js?v=20261127-4"></script>
+<script src="dist/filterbar.js?v=20261127-4"></script>
+<script src="dist/dashboard.js?v=20261127-4"></script>
+<script src="dist/home.js?v=20261127-4"></script>
+<script src="dist/picker.js?v=20261127-4"></script>
+<script src="dist/boats.js?v=20261127-4"></script>
+<script src="dist/drilldown.js?v=20261127-4"></script>
+<script src="dist/boat-reviews.js?v=20261127-4"></script>
+<script src="dist/forum-reports.js?v=20261127-4"></script>
+<script src="dist/google-reviews.js?v=20261127-4"></script>
+<script src="dist/boat-videos.js?v=20261127-4"></script>
+<script src="dist/bait-now.js?v=20261127-4"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261127-4"></script>
-<script src="dist/tripplanner.js?v=20261127-3"></script>
-<script src="dist/headtohead.js?v=20261127-3"></script>
-<script src="dist/seasonality.js?v=20261127-3"></script>
-<script src="dist/moon.js?v=20261127-3"></script>
-<script src="dist/settings.js?v=20261127-3"></script>
-<script src="dist/account.js?v=20261127-3"></script>
-<script src="dist/analytics.js?v=20261127-3"></script>
-<script src="dist/forecast.js?v=20261127-3"></script>
-<script src="dist/chatbot.js?v=20261127-3"></script>
-<script src="dist/sfbay.js?v=20261127-3"></script>
-<script src="dist/surf.js?v=20261127-4"></script>
-<script src="dist/app.js?v=20261127-4"></script>
+<script src="dist/charts.js?v=20261127-5"></script>
+<script src="dist/tripplanner.js?v=20261127-4"></script>
+<script src="dist/headtohead.js?v=20261127-4"></script>
+<script src="dist/seasonality.js?v=20261127-4"></script>
+<script src="dist/moon.js?v=20261127-4"></script>
+<script src="dist/settings.js?v=20261127-4"></script>
+<script src="dist/account.js?v=20261127-4"></script>
+<script src="dist/analytics.js?v=20261127-4"></script>
+<script src="dist/forecast.js?v=20261127-4"></script>
+<script src="dist/chatbot.js?v=20261127-4"></script>
+<script src="dist/sfbay.js?v=20261127-4"></script>
+<script src="dist/surf.js?v=20261127-5"></script>
+<script src="dist/app.js?v=20261127-5"></script>
 <script src="seo.js?v=20261127-1"></script>
 <script>
 if ('serviceWorker' in navigator) {
