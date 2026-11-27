@@ -15,7 +15,10 @@
     'Point Loma Sportfishing': 'Point Loma',
     'Oceanside Sea Center': 'Oceanside',
   };
-  const thShort = (n) => TH_SHORT[n] || n;
+  // Other landings (OC/LA): drop the generic suffix ("Long Beach Sportfishing" -> "Long Beach").
+  const thShort = (n) => TH_SHORT[n] || String(n).replace(/\s+(Sportfishing|Landing)$/, '') || n;
+  // More landings than fit on two rows of chips on a phone -> a dropdown there.
+  const TH_CHIP_MAX = 6;
   const getTodayISO = () => window.TT_DATES.getPacificDate();
 
   function isoMinus(iso, days) {
@@ -192,16 +195,13 @@
     const windDir = (fc && fc.wind_direction) || '';
     const moonPct = fc && fc.moon_phase != null ? Math.round(fc.moon_phase) : null;
     const moonName = (fc && fc.moon_phase_name) || null;
-    const label = (fc && fc.conditions_label) || null;
-    const summary = (fc && fc.summary) || null;
 
     return (
       <div className="th-condband">
         {fc && <div className="th-cond-left">
-          <div className="th-cond-toprow">
-            {label && <span className="th-rating-chip">{label}</span>}
-            {summary && <span className="th-cond-summary">{summary}</span>}
-          </div>
+          {/* Observed conditions only. The old forecast score chip ("GOOD")
+              and its call ("solid yellowfin opportunity") are gone: forecasts
+              are R&D only and not shown to users (owner rule). */}
           <div className="th-cond-stats">
             <span><b>{sstF != null ? `${sstF}°F` : '—'}</b> water</span>
             <span><b>{windKt != null ? `${windKt} kt ${windDir}` : '—'}</b> wind</span>
@@ -296,7 +296,14 @@
                       onClick={() => { setSelectedDate(dates[dateIdx - 1]); setOpenBoat(null); }}>›</button>
             </div>
             <div className="th-spacer"/>
-            <div className="th-chiprow">
+            {landings.length > TH_CHIP_MAX && (
+              <select className="th-landsel" aria-label="Landing" value={landing}
+                      onChange={e => { setLanding(e.target.value); setOpenBoat(null); }}>
+                <option value="all">All landings</option>
+                {landings.map(l => <option key={l} value={l}>{thShort(l)}</option>)}
+              </select>
+            )}
+            <div className={`th-chiprow${landings.length > TH_CHIP_MAX ? ' th-chiprow-many' : ''}`}>
               <button className={`th-chip${landing === 'all' ? ' on' : ''}`}
                       onClick={() => { setLanding('all'); setOpenBoat(null); }}>All</button>
               {landings.map(l => (
@@ -510,11 +517,8 @@
       .filter(t => { const rl = regionLandingList(regions); return !rl || rl.includes(t.landing); });
     const topTrip = useMemo(() => (SDA.computeTopTripToBook && SDA.computeTopTripToBook(regionLandingList(regions))) || null, [settings, regions]);
 
-    const fc = isOclaOnly(regions) ? null : (window.SD && window.SD.FORECAST && window.SD.FORECAST.today);
-    // The forecast label can carry an emoji prefix (e.g. "⬆️ Excellent"); keep the words only.
-    const condLabel = fc && fc.conditions_label
-      ? (String(fc.conditions_label).replace(/[^A-Za-z\s-]/g, '').trim().toLowerCase() || null) : null;
-    const condSummary = fc && fc.summary ? fc.summary : null;
+    // The forecast label/summary ("Conditions excellent", "...opportunity")
+    // are no longer shown: forecasts are R&D only (owner rule).
 
     const lastScrape = window.SD && window.SD.META && window.SD.META.lastScrape;
     const updated = lastScrape ? new Date(lastScrape).toLocaleString('en-US', {
@@ -564,12 +568,6 @@
               <span>{TD2_SPECIES[sp] && <i className="td2-dot" style={{ background: TD2_SPECIES[sp] }}/>}{sp.toLowerCase()}</span>
             </div>
           ))}
-          {(condLabel || condSummary) && (
-            <div className="td2-cond">
-              {condLabel && <div>Conditions <b>{condLabel}</b></div>}
-              {condSummary && <div>{condSummary}</div>}
-            </div>
-          )}
         </div>
 
         <div className="td2-grid">
