@@ -611,7 +611,10 @@ function SurfWave({ size }) {
 }
 
 function SurftrackerHeader({ sub, navigate }) {
-  const tabs = [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map'], ['cams', 'Cams']];
+  const paddle = sub === 'paddle' || sub === 'races';
+  const tabs = paddle
+    ? [['paddle', 'Paddle report']].concat(window.PaddleRaces ? [['races', 'Races']] : [])
+    : [['report', 'Report'], ['forecast', 'Forecast'], ['map', 'Map'], ['cams', 'Cams']];
   const active = sub === 'break' ? 'forecast' : sub;
   return (
     <header className="st-header">
@@ -620,15 +623,19 @@ function SurftrackerHeader({ sub, navigate }) {
           <span className="st-brand-mark"><SurfWave size={22}/></span>
           <span className="st-brand-text">Surftracker<small>San Diego</small></span>
         </a>
+        <div className="st-mode" role="group" aria-label="Surf or paddle">
+          <a className={`st-mode-b${paddle ? '' : ' on'}`} aria-current={paddle ? undefined : 'true'} {...sfLinkProps(navigate, { sub: 'report' })}>Surf</a>
+          <a className={`st-mode-b${paddle ? ' on' : ''}`} aria-current={paddle ? 'true' : undefined} {...sfLinkProps(navigate, { sub: 'paddle' })}>Paddle</a>
+        </div>
         <nav className="st-nav" aria-label="Surftracker">
           {tabs.map(([id, label]) => (
             <a key={id} className={`st-tab${active === id ? ' on' : ''}`} aria-current={active === id ? 'page' : undefined}
                {...sfLinkProps(navigate, { sub: id })}>{label}</a>
           ))}
         </nav>
-        <a className="st-back" href="/sd/today"
+        <a className="st-back" href="/sd/today" aria-label="Back to Tunatracker"
            onClick={e => { if (e.metaKey || e.ctrlKey) return; e.preventDefault(); navigate('today'); }}>
-          <span aria-hidden="true">←</span> Tunatracker
+          <span aria-hidden="true">←</span><span className="st-back-l"> Tunatracker</span>
         </a>
       </div>
     </header>
@@ -1247,11 +1254,6 @@ function SurfCompass({ b, sun, title, data }) {
           </button>
         ))}
       </div>
-      <p className="st-fine">
-        Arrows show where swell and wind come from, pointing at the break; the shaded fan is the swell window this beach is
-        open to. Swell is the model's swell just offshore (CDIP MOP point, refraction included); surf is breaking face height.
-        Wind colours: green offshore or glassy, amber cross or light onshore, red onshore. No current data yet, so no current arrow.
-      </p>
     </section>
   );
 }
@@ -1344,7 +1346,6 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         <div className="st-panel">
           <div className="sf-sec-h">Wind · {dayObj ? dayObj.label : ''}</div>
           <SurfWind steps={steps} sun={data.sun}/>
-          <p className="st-fine">Green: glassy or offshore. Amber: cross or light onshore. Red: onshore. Arrows point where the wind blows.</p>
         </div>
         <div className="st-panel">
           <div className="sf-sec-h">Tide · La Jolla{!b.defaults && b.tideWindow ? ` · best ${b.tideWindow[0]} to ${b.tideWindow[1]} ft` : ''}</div>
@@ -1390,10 +1391,8 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
       <div className="st-panel">
         <div className="sf-sec-h">Details</div>
         <p className="st-fine">
-          Forecast at CDIP MOP point {b.mop} ({b.mopDepthM} m deep), then a breaking model to the beach.
-          {ref && ref.kgM ? ` Model breaker-height check: Hb ${ref.hbM.toFixed(1)} m (Komar–Gaughan ${ref.kgM.toFixed(1)} m), an internal step, not the surf height shown.` : ''}
-          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now, wave height offshore (not surf height): ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
-          {' '}Energy is the swell's power at the model point (about 100 kJ is small, 200–1000 kJ punchy).
+          Model point {b.mop} ({b.mopDepthM} m)
+          {buoy ? ` · Buoy ${buoy.station}: swell ${buoy.hsFt} ft · ${Math.round(buoy.tpS)} s ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}` : ''}
         </p>
       </div>
       {near.length > 0 && (
@@ -1582,6 +1581,11 @@ function SurfView({ navigate, sub, spot }) {
   const [spotsTried, setSpotsTried] = useSfState(false);
   useSfEffect(() => { const t = setTimeout(() => setSpotsTried(true), 4000); return () => clearTimeout(t); }, []);
   const { data, error } = ctx;
+  if (sub === 'paddle' && window.PaddleView) {
+    return <window.PaddleView spot={spot}
+                              link={id => sfLinkProps(navigate, id ? { sub: 'paddle', spot: id } : { sub: 'paddle' })}
+                              surfLink={id => sfLinkProps(navigate, { sub: 'break', spot: id })}/>;
+  }
   if (error) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
   if (!data) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">Loading surf forecast…</p></div>;
   const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
