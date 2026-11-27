@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DB = ROOT / "tracker.db"
 
 TOP_KEYS = {"schemaVersion", "generatedAt", "META", "LANDINGS_META", "TODAY",
-            "SCHEDULE", "TRIPS", "HALF_DAY_TRIPS", "MONTHLY", "BOAT_PROFILES"}
+            "SCHEDULE", "TRIPS", "HALF_DAY_TRIPS", "MONTHLY", "BOAT_PROFILES", "MARINE"}
 DROPPED = {"ADMIN", "FORECAST", "REVIEWS", "SCRAPE_STATUS"}
 TRIP_KEYS = {"id", "date", "year", "month", "day", "boat", "landing", "tripLength",
              "tripLengthDays", "anglers", "Bluefin", "Yellowfin", "Yellowtail", "Dorado",

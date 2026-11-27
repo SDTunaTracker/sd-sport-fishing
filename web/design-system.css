@@ -564,6 +564,12 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .pk-adv, .pk-alt-adv { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font: 500 13px/1.4 var(--sans); color: var(--bad); }
 .pk-adv i { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); flex: none; }
 .pk-alt-adv { margin: 0; font-size: 12px; }
+/* NWS sea-conditions forecast (web/marine.js). Rough = seas 8 ft+ or an advisory. */
+.pk-sea { margin: 8px 0 0; font: 400 13px/1.4 var(--sans); color: var(--muted); }
+.pk-sea-src { font-weight: 500; }
+.pk-sea.rough, .pk-alt-sea.rough, .ta-sea.rough { color: var(--warn); }
+.pk-alt-sea { display: block; font: 400 12px/1.4 var(--sans); color: var(--muted); }
+.ta-sea { font: 400 12px/1.45 var(--sans); color: var(--muted); }
 .pk-best-side { display: flex; flex-direction: column; gap: 16px; justify-content: space-between; }
 .pk-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); }
 .pk-facts div { padding: 10px 0; }

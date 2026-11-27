@@ -237,6 +237,24 @@ def check(conn: sqlite3.Connection, today: date | None = None,
     except sqlite3.OperationalError:
         pass
 
+    # 5c. Trip-day marine conditions (src.marine): NWS forecasts and alerts,
+    # tides, buoys. Ported from claude/ais-conditions (marine part only).
+    try:
+        logs = dict(conn.execute("SELECT kind, fetched_at FROM marine_fetch_log").fetchall())
+    except sqlite3.OperationalError:
+        logs = None
+    if logs is not None:
+        for kind, limit in MARINE_MAX_AGE.items():
+            at = logs.get(kind)
+            if at is None or now - datetime.fromisoformat(at) > limit:
+                probs.append(Problem(f"marine:{kind}", "marine", "warning",
+                                     f"marine {kind} last fetched {at or 'never'} (limit {limit})"))
+        far = conn.execute("SELECT MIN(mx) FROM (SELECT MAX(ts) AS mx FROM tide_predictions"
+                           " GROUP BY station)").fetchone()[0]
+        if far is None or datetime.fromisoformat(far) < now + timedelta(days=3):
+            probs.append(Problem("marine:tides:horizon", "marine", "warning",
+                                 f"tide predictions run out at {far or 'never'}"))
+
     # 6. Scheduled jobs actually ran (heartbeat written by main.py).
     if run_status is not None:
         for mode, max_h in (("full", 30), ("hourly", 3)):
@@ -308,6 +326,10 @@ def last_schedule_refresh(conn: sqlite3.Connection, landing: str) -> datetime | 
                              (landing,)).fetchone())
     ts = [datetime.fromisoformat(v[0]) for v in vals if v and v[0]]
     return max(ts) if ts else None
+
+
+MARINE_MAX_AGE = {"alerts": timedelta(hours=2), "forecasts": timedelta(hours=9),
+                  "buoys": timedelta(hours=4), "tides": timedelta(hours=48)}
 
 
 _JOB_RUNS_DDL = """CREATE TABLE IF NOT EXISTS job_runs (

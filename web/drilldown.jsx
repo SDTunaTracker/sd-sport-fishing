@@ -1,5 +1,42 @@
 // Boat detail drill-down
 const { useEffect, useMemo } = React;
+// Next departures with the NWS sea-conditions forecast for each (web/marine.js).
+// Hidden when no upcoming trip falls inside the NWS forecast or it is stale.
+function BoatSeaPanel({ boat }) {
+  const M = window.TTMarine;
+  const marine = window.SD && window.SD.MARINE;
+  if (!M || !marine) return null;
+  const now = Date.now();
+  const rows = (window.SD.SCHEDULE || [])
+    .filter(t => t.boat === boat && t.departureAt && Date.parse(t.departureAt) > now)
+    .sort((a, b) => Date.parse(a.departureAt) - Date.parse(b.departureAt))
+    .map(t => ({ t, sea: M.forTrip(marine, t, now) }))
+    .filter(r => r.sea)
+    .slice(0, 4);
+  if (!rows.length) return null;
+  const day = (iso) => new Date(iso).toLocaleDateString('en-US',
+    { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric' });
+  return (
+    <div style={{marginBottom: 12}}>
+    <Panel title="Next trips · sea conditions" meta="NWS forecast" padding={false}>
+      <ul className="dd-sea">
+        {rows.map(({ t, sea }) => (
+          <li key={t.departureAt + t.tripLength} className={sea.rough ? 'rough' : ''}>
+            <span className="dd-sea-when">{day(t.departureAt)} · {t.tripLength}</span>
+            <span className="dd-sea-line">
+              {sea.atDeparture ? 'At departure: ' : ''}{M.line(sea)}
+              {sea.advisory ? ` · ${sea.advisory.event}` : sea.rough ? ' · rough' : ''}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="dd-sea-foot">National Weather Service coastal waters forecast:
+        inshore 0–10 nm for half-day trips, offshore 10–60 nm for overnight and longer.</div>
+    </Panel>
+    </div>
+  );
+}
+
 function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
   const [detailTab, setDetailTab] = React.useState('overview');
   const [reviewOpenSignal, setReviewOpenSignal] = React.useState(0);
@@ -241,6 +278,8 @@ function BoatDetail({ filters, setFilters, navigate, boat, regions }) {
           </div>
         </Panel>
       </div>
+
+      <BoatSeaPanel boat={boat}/>
 
       {/* ── Bottom tabs: Trip History / Reviews ── */}
       <div className="dd-tabs">
