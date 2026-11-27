@@ -3487,6 +3487,12 @@ body.chat-open {
   flex-wrap: wrap;
 }
 
+/* Hot chip + Filters button (AnalyticsFilterBar) share one row */
+.boats-controls-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.boats-controls-row button.filter-pill { cursor: pointer; display: inline-flex; align-items: center; height: 34px; }
+.boats-controls-row .afb-toggle { height: 34px; border-radius: 999px; }
+.boats-controls-row .afb-wrap { min-width: 0; }
+
 /* View toggle (Grid / Map / List) */
 .boats-view-toggle {
   display: flex;
@@ -3669,8 +3675,11 @@ body.chat-open {
 /* Mobile */
 @media (max-width: 600px) {
   .boats-controls { gap: 8px; }
-  .boats-view-toggle { margin-left: 0; width: 100%; }
-  .boats-view-toggle button { flex: 1; }
+  /* Search gets its own line; Hot / Filters / view toggle share the next. */
+  .boats-search-input-wrap { flex: 1 1 100%; max-width: none; }
+  .boats-controls-row { flex: 1 1 auto; }
+  .boats-view-toggle { margin-left: auto; }
+  .boats-view-toggle button { padding: 8px 12px; }
   .boats-card-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
   .landing-map-container { height: 300px; }
   .boats-landing-header { flex-direction: column; align-items: flex-start; gap: 6px; }

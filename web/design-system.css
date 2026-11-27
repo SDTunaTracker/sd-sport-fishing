@@ -157,7 +157,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .multiselect-trigger:hover { border-color: var(--faint); }
 .multiselect-panel { border-radius: 12px; border-color: var(--line); box-shadow: var(--shadow-lg); padding: 6px; }
 .multiselect-panel .ms-row { border-radius: 8px; font-size: 13.5px; padding: 8px 10px; }
-.boats-search-input { min-height: 40px; border-radius: 999px; padding-left: 36px; font-size: 14px; }
+/* Wrapper class lifts specificity over the generic input[type="text"] padding, which hid the first letter behind the icon. */
+.boats-search-input-wrap .boats-search-input { min-height: 40px; border-radius: 999px; padding-left: 36px; font-size: 14px; }
 .boats-search-icon { left: 14px; }
 
 /* ── Chips / pills / tags ─────────────────────────────────────────────────── */
@@ -986,4 +987,48 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .sf-break-name { grid-column: 1 / -1; }
   .sf-face { font-size: 17px; }
   .sf-step { grid-template-columns: 0.7fr 1fr 1.2fr 0.8fr 0.6fr; font-size: 12.5px; padding: 7px 8px; }
+}
+
+/* ── Home vs Today: each page its own job (2026-11-27) ──
+   Home: a short "Today's counts" summary (top 3 boats) that links to Today.
+   Today: the full day report, plus today's conditions and a link back to
+   Home's "Where to fish this week". */
+.hc .hc-grid { padding: 28px 0 8px; align-items: start; }
+.hc-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hc-date { font: 600 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.hc-sum { font: 400 16px/1.5 var(--sans); color: var(--ink-2); margin: 10px 0 14px; }
+.hc-sum b { color: var(--ink); font-weight: 600; }
+.hc-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.hc-list li { border-bottom: 1px solid var(--line); }
+.hc-row { display: grid; grid-template-columns: 22px minmax(0, 1.2fr) minmax(0, 1.4fr) auto; align-items: center; gap: 14px;
+  width: 100%; min-height: 56px; padding: 10px 6px; border: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); font: inherit; }
+.hc-row:hover { background: var(--surface); }
+.hc-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.hc-rank { font: 800 16px/1 var(--serif); color: var(--accent); }
+.hc-boat { min-width: 0; }
+.hc-boat b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-boat i { font-style: normal; font-size: 12px; color: var(--muted); }
+.hc-catch { font-size: 13.5px; color: var(--ink-2); min-width: 0; }
+.hc-fa { text-align: right; white-space: nowrap; }
+.hc-fa b { font: 600 16px/1 var(--mono); color: var(--ink); }
+.hc-fa i { font-style: normal; font-size: 11.5px; color: var(--muted); margin-left: 6px; }
+.hc-more { display: inline-block; padding: 12px 0; margin-top: 2px; color: var(--accent-ink); font: 600 14px var(--sans); text-decoration: none; }
+.hc-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+.hc-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+.td2-cond { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: -8px 0 20px; font: 400 12.5px var(--mono); color: var(--muted); }
+.td2-cond b { color: var(--ink); font-weight: 600; }
+.td2-cond-lbl { font-weight: 600; letter-spacing: .12em; text-transform: uppercase; font-size: 10.5px; color: var(--accent-ink); align-self: center; }
+.td2-plan { border: 1px solid var(--line); border-radius: 16px; padding: 20px; background: var(--surface); }
+.td2-plan-txt { font-size: 14px; line-height: 1.5; color: var(--ink-2); margin: 6px 0 14px; }
+.td2-plan-btn { min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); border-radius: 10px; background: var(--ink); color: #fff; font: 600 14px var(--sans); cursor: pointer; }
+.td2-plan-btn:hover { background: var(--pine, var(--ink)); }
+.td2-plan-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent); }
+
+@media (max-width: 760px) {
+  .hc .hc-grid { padding-top: 22px; }
+  .hc-row { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; }
+  .hc-catch { grid-column: 2 / 4; grid-row: 2; font-size: 12.5px; margin-top: -4px; }
+  .hc-fa i { display: block; margin: 3px 0 0; }
+  .td2-cond { margin: -4px 0 16px; }
 }
