@@ -159,6 +159,8 @@ def test_battjes_janssen_random_wave_breaking():
     assert 0 < q < 1 and math.isclose((1 - q) / math.log(q), -(0.8 ** 2), rel_tol=1e-3)
 
 
-def test_face_range_and_nws_scale_constants():
-    assert F.RANGE == (0.85, 1.15) and F.NWS_SCALE == 0.80
-    assert "scaled" in F.VERIFICATION["scale"] and "not yet" in F.VERIFICATION["scale"].lower()
+def test_face_range_and_size_dependent_scale():
+    assert F.RANGE == (0.85, 1.15)
+    assert math.isclose(F.nws_scale(3.0), 0.79) and math.isclose(F.nws_scale(5.0), 0.85)
+    assert F.nws_scale(10.0) == 1.0 and F.nws_scale(20.0) == 1.0      # big days: matches lifeguard reports
+    assert "NWS" in F.VERIFICATION["scale"] and "lifeguard" in F.VERIFICATION["observed"]
