@@ -36,7 +36,7 @@ UA = "TunaTrackerBot/1.0 (+https://thetunatracker.com; trip-day marine condition
 # station, NDBC buoys and CDIP stations per site region.
 REGIONS: dict[str, dict] = {
     "san_diego": {"zones": ["PZZ740", "PZZ745"], "tide": "9410170",
-                  "ndbc": ["46232", "46086", "46047"], "cdip": ["191", "045", "100"]},
+                  "ndbc": ["46232", "46086", "46047"], "cdip": ["191", "045", "100", "220"]},
     "oc_la":     {"zones": ["PZZ655", "PZZ676"], "tide": "9410660",
                   "ndbc": ["46221", "46222", "46025"], "cdip": ["092", "028"]},
     "sf_bay":    {"zones": ["PZZ530", "PZZ531", "PZZ545", "PZZ571"], "tide": "9414290",
@@ -53,6 +53,7 @@ BUOY_PINS: dict[str, dict] = {
               "alsoNdbc": "46232"},
     "100":   {"source": "cdip", "name": "Torrey Pines Outer", "lat": 32.933, "lon": -117.391},
     "045":   {"source": "cdip", "name": "Oceanside Offshore", "lat": 33.178, "lon": -117.472},
+    "220":   {"source": "cdip", "name": "Mission Bay West", "lat": 32.749, "lon": -117.502},
 }
 BUOY_HISTORY_HOURS = 48
 BUOY_KEEP_DAYS = 14

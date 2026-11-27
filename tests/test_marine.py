@@ -100,7 +100,7 @@ def test_buoys_payload_history_units_and_ndbc_temp_fill(tmp_path):
     conn.execute(ins, ("46047", "ndbc", "2026-11-23T19:40:00+00:00", 3.0, 9.0, 300, 7.0, 320, 19.0))  # > 48 h
     p = M.buoys_payload(conn, now)
     by = {b["id"]: b for b in p["buoys"]}
-    assert set(by) == {"46047", "46086", "191", "100", "045"}
+    assert set(by) == {"46047", "46086", "191", "100", "045", "220"}
     pl = by["191"]
     assert [h["t"][11:16] for h in pl["history"]] == ["18:00", "19:00"]   # one per hour
     assert pl["history"][0]["waterF"] == 64.4                         # filled from NDBC 46232
@@ -116,4 +116,4 @@ def test_buoys_payload_history_units_and_ndbc_temp_fill(tmp_path):
 def test_san_diego_buoys_include_tanner_bank_and_torrey_pines():
     sd = M.REGIONS["san_diego"]
     assert sd["zones"] == ["PZZ740", "PZZ745"]
-    assert "46047" in sd["ndbc"] and "100" in sd["cdip"]
+    assert "46047" in sd["ndbc"] and {"100", "220"} <= set(sd["cdip"])
