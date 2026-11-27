@@ -83,13 +83,12 @@ def test_cam_list_is_valid():
     assert len(ids) == len(set(ids))
     spot_ids = {b["id"] for b in BREAKS} | {s[0] for s in SPOTS}
     for c in data["cams"]:
-        assert c["kind"] in ("surf", "harbour")
+        # owner rule (2026-11-27): cams must show surf breaks, never a harbour or bay view
+        assert c["kind"] == "surf" and c["covers"], c["id"]
         assert len(c["youtube"]) == 11
         assert c["operator"]["name"] and c["operator"]["url"].startswith("https://www.youtube.com/")
         for sid in c["covers"] + c["near"]:
             assert sid in spot_ids, (c["id"], sid)
-        if c["kind"] == "harbour":
-            assert not c["covers"]
     # cleared for embedding only: never Surfline / HDOnTap / Earth Watch Live
     blob = json.dumps(data["cams"]).lower()
     assert "surfline" not in blob and "hdontap" not in blob and "earth watch" not in blob
