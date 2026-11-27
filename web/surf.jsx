@@ -314,7 +314,7 @@ function SurfMap({ breaks, best, open, onPick }) {
         iconSize: b.defaults ? [11, 11] : [16, 16], iconAnchor: b.defaults ? [5.5, 5.5] : [8, 8],
       });
       L.marker([b.lat, b.lon], { icon, title: b.name, keyboard: true, zIndexOffset: open === b.id ? 1000 : 0 })
-        .bindTooltip(`<b>${b.name}</b> ${txt} ft${bw ? ' · ' + sfTitle(bw.h.label) : ''}${b.defaults ? ' · default settings' : ''}`,
+        .bindTooltip(`<b>${b.name}</b> surf ${txt} ft${bw ? ' · ' + sfTitle(bw.h.label) : ''}${b.defaults ? ' · default settings' : ''}`,
                      { direction: 'left', offset: [-8, 0], className: 'sf-tip' })
         .on('click', () => onPick(b.id))
         .addTo(layer.current);
@@ -345,7 +345,7 @@ function SurfStrip({ b, days, dayKey, sun, onDay }) {
         return (
           <button key={d.key} type="button" className={`sf-sday${d.key === dayKey ? ' on' : ''}`}
                   onClick={e => { e.stopPropagation(); onDay(d.key); }}
-                  aria-label={`${d.label}: up to ${Math.max(0, ...steps.map(h => h.faceFt[1]))} ft`}>
+                  aria-label={`${d.label}: surf up to ${Math.max(0, ...steps.map(h => h.faceFt[1]))} ft`}>
             <span className="sf-sday-lbl">{d.wd}<span className="sf-sday-n"> {d.dn}</span></span>
             <span className="sf-bars">
               {steps.map(h => {
@@ -381,7 +381,7 @@ function SurfSlot({ h, label, def }) {
   return (
     <div className="sf-slot">
       <span className="sf-slot-lbl">{label}</span>
-      <span className="sf-face">{lo === hi ? lo : `${lo}–${hi}`}<small> ft</small>
+      <span className="sf-face" title="Surf height: breaking wave face at the beach">{lo === hi ? lo : `${lo}–${hi}`}<small> ft</small>
         {h.energyKj != null && <em className="sf-kj" title="Wave energy at the model point, kJ (Surf-forecast.com scale: about 100 small, 200–1000 punchy)">{h.energyKj} kJ</em>}
       </span>
       <span className="sf-band">{sfBand(lo, hi)}</span>
@@ -477,8 +477,8 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
           <div className="sf-detail-notes">
             MOP point {b.mop} at {b.mopDepthM} m, beach faces {Math.round(b.shoreNormal)}°.
             {b.swellWindow ? ` Works best on swell from ${b.swellWindow[0]}° to ${b.swellWindow[1]}°.` : ''}
-            {ref && ref.kgM ? ` Breaking height ${ref.hbM.toFixed(1)} m (Komar–Gaughan check ${ref.kgM.toFixed(1)} m).` : ''}
-            {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
+            {ref && ref.kgM ? ` Model breaker-height check: Hb ${ref.hbM.toFixed(1)} m (Komar–Gaughan ${ref.kgM.toFixed(1)} m), an internal step, not the surf height shown.` : ''}
+            {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: swell ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
             {' '}Energy is the swell's power at the model point (Surf-forecast.com scale: about 100 kJ is small, 200–1000 kJ punchy).
           </div>
         </div>
@@ -513,7 +513,7 @@ function SurfLegend() {
       {['FLAT', 'POOR', 'POOR–FAIR', 'FAIR', 'FAIR–GOOD'].map(l => (
         <span key={l}><i className={`sf-c-${sfRateKey(l)}`}/>{sfTitle(l)}</span>
       ))}
-      <span className="sf-legend-note">Bars: face height per 3 h · faded = dark</span>
+      <span className="sf-legend-note">Bars: surf (face) height per 3 h · faded = dark</span>
     </div>
   );
 }
@@ -753,7 +753,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
               return (
                 <a key={b.id} className={`st-card st-card-${h ? sfRateKey(h.label) : 'none'}`} {...sfLinkProps(navigate, { sub: 'break', spot: b.id })}>
                   <span className="st-card-name">{b.name}</span>
-                  <span className="st-card-h">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
+                  <span className="st-card-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
                   <span className={h ? sfRatingClass(h.label) : 'sf-rate'}>{h ? sfTitle(h.label) : '—'}</span>
                   {bw && bw.h.score >= 0.5 && <span className="st-card-bw">Best {sfFracClock(bw.from)}–{sfFracClock(bw.to)}</span>}
                 </a>
@@ -781,7 +781,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
                   <span className="st-rank-name">{b.name}
                     <i>{b.area}{b.defaults ? <em className="sf-def"> · default settings</em> : null}</i>
                   </span>
-                  <span className="st-rank-h">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
+                  <span className="st-rank-h" title="Surf height: breaking wave face at the beach">{h ? `${h.faceFt[0]}–${h.faceFt[1]}` : '—'}<small> ft</small></span>
                   <span className="st-rank-r">
                     {h ? <span className={sfRatingClass(h.label)}>{sfTitle(h.label)}</span> : '—'}
                     {!dark && next && h && sfRateKey(next.label) !== sfRateKey(h.label)
@@ -1039,8 +1039,8 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
         <div className="sf-sec-h">Details</div>
         <p className="st-fine">
           Forecast at CDIP MOP point {b.mop} ({b.mopDepthM} m deep), then a breaking model to the beach.
-          {ref && ref.kgM ? ` Breaking height ${ref.hbM.toFixed(1)} m (Komar–Gaughan check ${ref.kgM.toFixed(1)} m).` : ''}
-          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
+          {ref && ref.kgM ? ` Model breaker-height check: Hb ${ref.hbM.toFixed(1)} m (Komar–Gaughan ${ref.kgM.toFixed(1)} m), an internal step, not the surf height shown.` : ''}
+          {buoy ? ` Nearest buoy (CDIP ${buoy.station}) now: swell ${buoy.hsFt} ft @ ${Math.round(buoy.tpS)} s from ${sfDir(buoy.dpDeg)}, ${sfLocal(buoy.t, { hour: 'numeric', minute: '2-digit' })}.` : ''}
           {' '}Energy is the swell's power at the model point (about 100 kJ is small, 200–1000 kJ punchy).
         </p>
       </div>
@@ -1063,7 +1063,7 @@ function SurfAbout({ data, extra, compact }) {
       {!compact && <p>{data.method}</p>}
       <div className="sf-checked">
         <p>
-          <b>What we've checked:</b> {v.what}. Over {v.testPeriod}, the blended model's error was{' '}
+          <b>What we've checked:</b> {v.what}. Over {v.testPeriod}, the blended model's swell-height (Hs) error at the buoys was{' '}
           {v.hsRmseM ? `${(v.hsRmseM.blend * SF_FT).toFixed(1)} ft (RMS)` : '—'}, better than{' '}
           {(v.beats || []).join(' and ')}. {v.leadNote}
         </p>
