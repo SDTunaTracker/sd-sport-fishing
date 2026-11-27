@@ -51,6 +51,11 @@ OUT = ROOT / "web" / "api" / "v1" / "surf.json"
 CAL = json.loads(Path(__file__).with_name("calibration.json").read_text(encoding="utf-8"))
 UA = C.UA
 TIDE_STATION = "9410230"
+# Other NOAA CO-OPS tide stations a caller may pass to tides(station=...).
+TIDE_STATIONS = {"9410230": "La Jolla (Scripps Pier)", "9410170": "San Diego (Broadway), San Diego Bay"}
+# NOAA CO-OPS tidal current prediction stations (harmonic). There is none at the
+# Mission Bay entrance, so callers must leave current out there, not guess.
+CURRENT_STATIONS = {"PCT0031": "San Diego Bay Entrance"}
 # Face range around the breaking-wave height H (E9: no 1.27 "sets" multiplier
 # on the top; sets are mentioned in words instead).
 RANGE = (0.85, 1.15)
@@ -246,9 +251,10 @@ def _wind_hourly(breaks: list[dict], model: str) -> list[dict[int, tuple[float, 
     return out
 
 
-def tides(start: datetime, days: int = 7) -> tuple[dict[int, float], list[dict]]:
+def tides(start: datetime, days: int = 7, station: str = TIDE_STATION) -> tuple[dict[int, float], list[dict]]:
+    """NOAA CO-OPS tide predictions (ft MLLW, UTC): ({epoch hour: ft}, [high/low events])."""
     base = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
-    common = {"product": "predictions", "application": "Tunatracker", "station": TIDE_STATION,
+    common = {"product": "predictions", "application": "Tunatracker", "station": station,
               "begin_date": start.strftime("%Y%m%d"), "range": 24 * (days + 1), "datum": "MLLW",
               "time_zone": "gmt", "units": "english", "format": "json"}
     hourly = {}
@@ -259,6 +265,30 @@ def tides(start: datetime, days: int = 7) -> tuple[dict[int, float], list[dict]]
              .isoformat(timespec="minutes"), "ft": round(float(p["v"]), 1), "type": p.get("type")}
             for p in _get_json(base, {**common, "interval": "hilo"}).get("predictions", [])]
     return hourly, hilo
+
+
+def currents(start: datetime, days: int = 7, station: str = "PCT0031") -> list[dict]:
+    """NOAA CO-OPS tidal current predictions: max flood, max ebb and slack events.
+
+    [{"t": iso UTC, "type": "flood"|"ebb"|"slack", "kt": speed (>= 0),
+      "towardDeg": direction the water flows TOWARD (flood or ebb mean), or None at slack}]
+    Predictions, not observations. Station PCT0031 = San Diego Bay Entrance.
+    """
+    js = _get_json("https://api.tidesandcurrents.noaa.gov/api/prod/datagetter", {
+        "product": "currents_predictions", "application": "Tunatracker", "station": station,
+        "begin_date": start.strftime("%Y%m%d"), "range": 24 * (days + 1), "interval": "MAX_SLACK",
+        "units": "english", "time_zone": "gmt", "format": "json"})
+    out = []
+    for p in (js.get("current_predictions") or {}).get("cp", []):
+        kind = (p.get("Type") or "").lower()
+        if kind not in ("flood", "ebb", "slack"):
+            continue
+        toward = p.get("meanFloodDir") if kind == "flood" else p.get("meanEbbDir") if kind == "ebb" else None
+        out.append({"t": datetime.strptime(p["Time"], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+                    .isoformat(timespec="minutes"), "type": kind,
+                    "kt": round(abs(float(p.get("Velocity_Major") or 0.0)), 2),
+                    "towardDeg": None if toward is None else int(toward)})
+    return out
 
 
 def nws_surf_zone() -> dict | None:
