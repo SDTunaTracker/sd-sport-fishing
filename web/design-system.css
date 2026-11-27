@@ -401,6 +401,8 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 .mobile-menu-head .mm-logo .brand-mark { margin-right: 2px; }
 .mobile-menu-head a.mm-logo { color: #fff; text-decoration: none; min-height: 44px; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
 .mobile-menu-head a.mm-logo:focus-visible { outline: 2px solid rgba(255,255,255,.7); outline-offset: 2px; }
+.mobile-menu-item.mobile-menu-quiet { font-size: 13.5px; color: rgba(255,255,255,.55); }
+.mobile-menu-item.mobile-menu-quiet i { opacity: .55; }
 .app-footer-logo { display: flex; align-items: center; gap: 10px; }
 
 /* ── Today's report v2 (web/home.jsx → TodayReport) ─────────────────────────
