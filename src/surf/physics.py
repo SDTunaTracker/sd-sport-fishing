@@ -1,0 +1,106 @@
+"""Linear wave physics for the surf breaking step (pure Python, SI units).
+
+  wavenumber(T, h)            ω² = g k tanh(k h), solved by Newton iteration
+  group_speed(T, h)           Cg = n c, n = ½(1 + 2kh / sinh 2kh)
+  shoal_hs(H, T, h_to, h_from=None)
+                              linear shoaling Ks = sqrt(Cg_from / Cg_to);
+                              h_from None = deep water
+  break_wave(Hs, T, dir, normal, h1, gamma)
+                              shoal + refract (Snell) from the MOP depth h1
+                              shoreward until H >= γ·h -> (Hb, hb, alpha_b)
+  komar_gaughan(H0, T)        Hb = 0.39 g^(1/5) (T H0²)^(2/5), the closed-form check
+
+Directions are "coming from", degrees true. alpha = wave direction minus the
+shore normal (the direction the beach faces). Waves from |alpha| >= 90° don't
+reach the beach.
+"""
+from __future__ import annotations
+
+import math
+
+G = 9.81
+
+
+def wavenumber(T: float, h: float) -> float:
+    w = 2 * math.pi / T
+    k0 = w * w / G
+    if h <= 0:
+        return float("nan")
+    # Fenton & McKee start, then Newton.
+    k = k0 / math.tanh((k0 * h) ** 0.75) ** (2 / 3)
+    for _ in range(30):
+        th = math.tanh(k * h)
+        f = G * k * th - w * w
+        df = G * th + G * k * h * (1 - th * th)
+        dk = f / df
+        k -= dk
+        if abs(dk) < 1e-10 * k:
+            break
+    return k
+
+
+def celerity(T: float, h: float | None) -> float:
+    if h is None:
+        return G * T / (2 * math.pi)
+    return (2 * math.pi / T) / wavenumber(T, h)
+
+
+def group_speed(T: float, h: float | None) -> float:
+    if h is None:
+        return G * T / (4 * math.pi)
+    k = wavenumber(T, h)
+    kh = k * h
+    n = 0.5 * (1 + (2 * kh / math.sinh(2 * kh) if kh < 350 else 0.0))
+    return n * (2 * math.pi / T) / k
+
+
+def shoal_hs(H: float, T: float, h_to: float, h_from: float | None = None) -> float:
+    """H shoaled (no refraction) from depth h_from (None = deep) to h_to."""
+    if H is None or T is None or not (T > 0) or not (h_to and h_to > 0) or math.isnan(H) or math.isnan(T):
+        return float("nan") if H is None else H
+    return H * math.sqrt(group_speed(T, h_from) / group_speed(T, h_to))
+
+
+def break_wave(Hs: float, T: float, direction: float | None, normal: float | None,
+               h1: float, gamma: float, dh: float = 0.05) -> tuple[float, float, float]:
+    """Breaking height Hb (m), breaking depth hb (m) and angle at breaking (deg).
+
+    Starts at depth h1 (the MOP point, ~10 m) with Hs, Tp, Dp, then steps
+    shoreward applying shoaling (Ks) and refraction (Kr, Snell's law
+    sin α / c = const) until H >= γ·h. If the wave already breaks at h1
+    (big swell), Hb = Hs at h1.
+    """
+    if not (Hs and Hs > 0 and T and T > 0):
+        return 0.0, 0.0, 0.0
+    a1 = 0.0
+    if direction is not None and normal is not None and not math.isnan(direction):
+        a1 = (direction - normal + 180) % 360 - 180
+    if abs(a1) >= 90:
+        return 0.0, 0.0, a1
+    if Hs >= gamma * h1:
+        return Hs, h1, a1
+    c1, cg1 = celerity(T, h1), group_speed(T, h1)
+    s1 = math.sin(math.radians(a1)) / c1
+    cos1 = math.cos(math.radians(a1))
+    h = h1
+    while h > dh:
+        h -= dh
+        c, cg = celerity(T, h), group_speed(T, h)
+        sa = max(-1.0, min(1.0, s1 * c))
+        cosa = math.sqrt(1 - sa * sa)
+        H = Hs * math.sqrt(cg1 / cg) * math.sqrt(cos1 / cosa)
+        if H >= gamma * h:
+            return H, h, math.degrees(math.asin(sa))
+    return H, h, math.degrees(math.asin(sa))
+
+
+def deep_water_height(Hs: float, T: float, h1: float) -> float:
+    """Back-shoal Hs at depth h1 to deep water (no refraction)."""
+    return Hs * math.sqrt(group_speed(T, h1) / group_speed(T, None))
+
+
+def komar_gaughan(H0: float, T: float) -> float:
+    return 0.39 * G ** 0.2 * (T * H0 * H0) ** 0.4
+
+
+M_TO_FT = 3.28084

@@ -193,6 +193,15 @@ jobs:
               print('WARNING: all ERDDAP attempts failed — keeping existing sst_grid.json')
           PYEOF
 
+      - name: Surf forecast and MOP run archive (CDIP / Scripps)
+        # src/surf: snapshots each new CDIP MOP forecast run into tracker.db
+        # (surf_runs, for lead-time verification) and writes
+        # web/api/v1/surf.json for /sd/surf. Free public data. Never fails the run.
+        continue-on-error: true
+        run: |
+          python -m src.surf.runs || echo "::warning::surf run archive failed"
+          python -m src.surf.forecast || echo "::warning::surf forecast failed"
+
       - name: Fetch currents grid (full mode, Copernicus Marine)
         # Real currents for the Charts map (src/currents_cmems.py). Skips until
         # the owner adds the two COPERNICUSMARINE_* secrets; the map keeps its
@@ -239,7 +248,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
-          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/api/v1/bait_now.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/api/v1/bait_now.json web/api/v1/surf.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           # Per-region data files: data-region-oc_la.js, ... (src/export.py) and
           # data-region-sfbay.js (src/export_sfbay.py).
           if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi

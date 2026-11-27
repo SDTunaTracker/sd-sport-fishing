@@ -25,6 +25,10 @@
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 
+/api/v1/surf.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
 /api/v1/google_places.json
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
