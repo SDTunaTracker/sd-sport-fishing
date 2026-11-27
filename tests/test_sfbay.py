@@ -160,6 +160,16 @@ def test_owner_pinned_boats_stay_ranked():
     assert six["argo"] is False and six["scallywag"] is False and six["small"] is True
 
 
+def test_sixpack_judged_on_recent_trips_when_boat_is_active():
+    trips = ([{"boat_slug": "reused", "date": "2012-07-15", "anglers": 60}] +
+             [{"boat_slug": "reused", "date": f"2024-0{m}-01", "anglers": 5} for m in range(1, 5)] +
+             [{"boat_slug": "oldbig", "date": "2008-06-01", "anglers": 30}] +
+             [{"boat_slug": "oldsmall", "date": f"2010-0{m}-01", "anglers": 6} for m in range(1, 5)])
+    six = N.classify_sixpacks(trips)
+    assert six["reused"] is True        # big pre-2019 trips don't count for an active boat
+    assert six["oldbig"] is False and six["oldsmall"] is True
+
+
 def test_recent_day_updates_counts_in_place():
     conn = _db()
     trips, _ = S.parse_day(PAGE, DAY)

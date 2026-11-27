@@ -358,16 +358,25 @@ SIXPACK_OVERRIDES: dict[str, bool] = {
 }
 
 
+# History goes back to 2002 and boats change (Wet Spot carried 31-60 anglers in
+# 2011-14, never more than 5 since 2019). A boat that ran since SIXPACK_SINCE is
+# judged on those trips only, which is the set the owner reviewed at launch
+# (2026-11-26); a boat that only ran before it is judged on its own history.
+SIXPACK_SINCE = "2019-01-01"
+
+
 def classify_sixpacks(trips: Iterable[dict]) -> dict[str, bool]:
     """Boat slug -> is six-pack. A boat is a six-pack when it never carried more
-    than 6 anglers across at least 3 trips (the SD rule in sixpack_boats.py).
-    Boats with fewer trips are classified by their max so far."""
+    than 6 anglers (the SD rule in sixpack_boats.py), counting only its trips
+    since SIXPACK_SINCE when it has any. Trips without a date always count."""
+    trips = list(trips)
+    recent = {t["boat_slug"] for t in trips if (t.get("date") or SIXPACK_SINCE) >= SIXPACK_SINCE}
     mx: dict[str, int] = {}
-    n: Counter = Counter()
     for t in trips:
         k = t["boat_slug"]
+        if k in recent and t.get("date") and t["date"] < SIXPACK_SINCE:
+            continue
         mx[k] = max(mx.get(k, 0), t["anglers"])
-        n[k] += 1
     out = {k: v <= SIXPACK_MAX_ANGLERS for k, v in mx.items()}
     out.update(SIXPACK_OVERRIDES)
     return out
