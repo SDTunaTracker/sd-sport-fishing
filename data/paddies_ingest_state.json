@@ -3,65 +3,65 @@
   "boat_reports_last_run_utc": "2026-11-27T12:54:16Z",
   "boat_reports_last_success_utc": "2026-11-27T12:54:16Z",
   "boat_reports_pending": 277,
-  "consecutive_failures": 0,
-  "consecutive_zero_runs": 0,
+  "consecutive_failures": 1,
+  "consecutive_zero_runs": 1,
   "extract_consecutive_failed_runs": 0,
   "extract_last_error": null,
   "extract_last_run_utc": "2026-11-27T12:53:39Z",
   "extract_last_success_utc": "2026-11-27T12:53:39Z",
   "feeds": {
     "bd-baja": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-27T06:23:30Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-26T20:18:32Z"
     },
     "bd-california": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-25T19:29:09Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-25T00:33:23Z"
     },
     "bd-kayak": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-27T06:23:30Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-19T14:50:16Z"
     },
     "bd-long-range": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-26T03:40:40Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-25T21:43:24Z"
     },
     "bd-socal-offshore": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-27T06:23:30Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-27T04:45:29Z"
     },
     "bd-socal-sportboats": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-26T03:40:40Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-26T02:58:48Z"
     },
     "bd-socal-trip-planning": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-27T06:23:30Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-26T23:07:45Z"
     },
     "bd-spearfishing": {
-      "consecutive_failures": 0,
-      "last_error": null,
+      "consecutive_failures": 1,
+      "last_error": "<HTTPError 403: 'Forbidden'>",
       "last_new_row_utc": "2026-11-24T22:06:38Z",
       "last_success_utc": "2026-11-27T12:50:59Z",
       "newest_post_published_at": "2026-11-08T14:25:56Z"
@@ -77,16 +77,16 @@
   "landing_reports_last_error": null,
   "landing_reports_last_run_utc": "2026-11-27T12:58:24Z",
   "landing_reports_last_success_utc": "2026-11-27T12:58:24Z",
-  "last_error": null,
-  "last_items_seen": 198,
+  "last_error": "<HTTPError 403: 'Forbidden'>",
+  "last_items_seen": 0,
   "last_new_row_utc": "2026-11-27T06:23:30Z",
-  "last_run_utc": "2026-11-27T12:50:59Z",
+  "last_run_utc": "2026-11-27T23:36:42Z",
   "last_success_utc": "2026-11-27T12:50:59Z",
   "newest_post_published_at": "2026-11-27T04:45:29Z",
-  "pending_extract": 74,
+  "pending_extract": 93,
   "spots_features": 12,
   "spots_geocoded": 622,
-  "spots_last_run_utc": "2026-11-27T12:58:25Z",
+  "spots_last_run_utc": "2026-11-27T23:36:42Z",
   "spots_rows": 1307,
   "spots_unresolved_names": {
     "Catalina backside additional structure spots": 1,
@@ -115,5 +115,5 @@
     "tuna pens": 2,
     "weather buoy near the corner": 1
   },
-  "total_rows": 1024
+  "total_rows": 1067
 }
