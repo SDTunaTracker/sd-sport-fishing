@@ -161,6 +161,5 @@ def test_battjes_janssen_random_wave_breaking():
 
 def test_face_range_and_size_dependent_scale():
     assert F.RANGE == (0.85, 1.15)
-    assert math.isclose(F.nws_scale(3.0), 0.79) and math.isclose(F.nws_scale(5.0), 0.85)
-    assert F.nws_scale(10.0) == 1.0 and F.nws_scale(20.0) == 1.0      # big days: matches lifeguard reports
-    assert "NWS" in F.VERIFICATION["scale"] and "lifeguard" in F.VERIFICATION["observed"]
+    assert F.nws_scale(3.0) == F.nws_scale(12.0) == 1.0     # round 6: unscaled (pier sensor + lifeguards)
+    assert "lifeguard" in F.VERIFICATION["observed"] and "Scripps Pier" in F.VERIFICATION["observed"]

@@ -11,7 +11,7 @@ Per break (src/surf/breaks.py), every 3 h for ~6 days:
      Hm0 >= γ·h (physics.break_spectrum, experiment E8); bulk Hs/Tp
      (physics.break_wave) only without a spectrum. Round 4: breaking height
      is the Battjes–Janssen random-wave max Hs (E12) × the spectral/bulk
-     ratio (E8); face range 0.85–1.15 × that × nws_scale(H) (round 5), in feet.
+     ratio (E8); face range 0.85–1.15 × that (no scale, round 6), in feet.
      Komar–Gaughan is reported as a cross-check.
   4. Wind: Open-Meteo hourly 10 m wind (NOAA HRRR / GFS blend, `gfs_seamless`).
   5. Tide: NOAA CO-OPS 9410230 La Jolla, hourly predictions + highs/lows.
@@ -55,14 +55,14 @@ RANGE = (0.85, 1.15)
 # Breaking: Battjes–Janssen random-wave energy balance on a plane slope (E12),
 # slope by break type [D], scaled by the E8 spectral/bulk ratio.
 SLOPE = {"beach": 1 / 50, "reef": 1 / 30, "shores": 1 / 50}
-# Size-dependent scale (round 5). After E8+E9+E12 our heights ran ~1.2× the
-# NWS San Diego Surf Zone Forecast on small days but matched lifeguard high-surf
-# reports on big days. s(H) = min(1, 0.70 + 0.03·H_ft) was fit on the first 301
-# of 602 NWS days; held out: NWS MAE 0.59 ft (87% within 1 ft) and, on 56
-# independent lifeguard/official NWS storm reports (2016–2026), observed/ours
-# median 1.06, big-day hit rate 91%.
+# No height scale (round 6). Round 5 scaled small days down to the NWS Surf
+# Zone Forecast scale; the Scripps Pier pressure sensor (CDIP 073, ~6.5 m,
+# 1,538 small mornings) showed that scaled heights fell BELOW the measured
+# pre-breaking Hs on 88% of days, so NWS's small-day numbers are conservative,
+# not truth. Unscaled heights match lifeguard high-surf reports (0.99) and sit
+# 1.13x the pier Hs on small days (rank correlation 0.94).
 def nws_scale(h_ft: float) -> float:
-    return min(1.0, 0.70 + 0.03 * h_ft)
+    return 1.0
 MODEL_CEILING = 3.74         # top of FAIR–GOOD
 STEP_H = 3
 SMOOTH_STEPS = 5             # ≈ 12 h centered at 3-hourly steps
@@ -75,11 +75,13 @@ VERIFICATION = {
     "hsRmseM": {"rawEcmwf": 0.136, "blend": 0.126},
     "beats": ["24 h persistence at all 8 buoys", "plain shoaling without island sheltering (RMSE ~1 m)"],
     "notVerified": "Face height and rating: no surf observations yet. Treat them as model estimates.",
-    "scale": "Small-day heights are scaled down (up to 30%) to match National Weather Service San "
-             "Diego surf forecasts; within 1 ft of NWS on 87% of held-out days.",
-    "observed": "Checked against 56 lifeguard and official high-surf reports (NWS storm reports, "
-                "2016–2026): our heights hit at least 80% of the reported size on 91% of them. Small "
-                "days have no observations yet.",
+    "scale": "On small days our heights run about 20% above NWS surf forecasts; the Scripps Pier "
+             "wave sensor supports ours.",
+    "observed": "Big days: 56 lifeguard and official high-surf reports (NWS storm reports, 2016–2026) "
+                "matched our heights (median ratio 0.99; we reached at least 80% of the reported size "
+                "on 93%). Small days: our heights track the Scripps Pier wave sensor (CDIP 073) "
+                "closely over 1,538 small mornings (rank correlation 0.94). Small-day face heights "
+                "are not yet checked against people's observations.",
     "leadNote": "Scores are short-lead. Skill by forecast day is being collected.",
 }
 
@@ -404,7 +406,7 @@ def build(now: datetime | None = None) -> dict:
         "method": "CDIP MOP nearshore wave model (ECMWF and WW3 forced, blended and bias-corrected at the "
                   "buoys), then a random-wave shoaling and breaking model (Battjes–Janssen) from the "
                   "model's 10 m point to the beach, using each swell's own period and direction. "
-                  "Heights are scaled to the NWS forecast scale. Wind: Open-Meteo (NOAA HRRR/GFS). "
+                  "Wind: Open-Meteo (NOAA HRRR/GFS). "
                   "Tide: NOAA La Jolla 9410230.",
         "credits": [C.CREDIT, "Wind: Open-Meteo.com (CC BY 4.0), NOAA HRRR/GFS",
                     "Tides: NOAA CO-OPS", "Surf Zone Forecast: National Weather Service San Diego"],
