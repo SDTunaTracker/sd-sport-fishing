@@ -477,6 +477,25 @@
   "newport pier": "newport-reef-1",
   "osborne bank": "osborn-bank",
   "osbourne bank": "osborn-bank",
-  "osborne": "osborn-bank"
+  "osborne": "osborn-bank",
+  "sci": "san-clemente-island",
+  "sci front side": "san-clemente-island",
+  "sci backside": "san-clemente-island",
+  "front side of clemente": "san-clemente-island",
+  "back side of clemente": "san-clemente-island",
+  "backside of clemente": "san-clemente-island",
+  "san clemente island front side": "san-clemente-island",
+  "san clemente island backside": "san-clemente-island",
+  "nw of sci": "san-clemente-island",
+  "north end of clemente": "san-clemente-island",
+  "clemente island": "san-clemente-island",
+  "14 mile": "lasuen-knoll",
+  "14 mile bank": "lasuen-knoll",
+  "the 14 mile": "lasuen-knoll",
+  "fourteen mile": "lasuen-knoll",
+  "east butterfly": "east-butterfly",
+  "east butterfly bank": "east-butterfly",
+  "west butterfly": "west-butterfly-162",
+  "west butterfly bank": "west-butterfly-162"
  }
 }
