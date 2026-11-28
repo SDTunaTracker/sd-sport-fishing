@@ -683,6 +683,11 @@ function App() {
                      slot: !old || stale ? keepSlot : old.slot,
                      gen: !old ? 0 : old.gen + (stale ? 1 : 0) });
     m.__active = keepKey;
+    // One kept copy per route: drop copies of this route kept for another
+    // region or settings. Two live copies of a Surftracker page would also
+    // hand its cached Leaflet map (surf.jsx _sfMaps) back and forth.
+    const base = route.view + ' ' + JSON.stringify(route.params || {}) + ' ';
+    for (const k of [...m.keys()]) if (k !== keepKey && k.startsWith(base)) m.delete(k);
     while (m.size > KEEP_ALIVE_MAX) m.delete(m.keys().next().value);
   }
   if (!keepKey) keepAlive.current.__active = null;
