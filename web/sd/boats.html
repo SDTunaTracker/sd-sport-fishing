@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#17332C">
 <base href="/">
+<script>
+  (function () {
+    var m = /^\/sd\/([^\/]+)/.exec(location.pathname);
+    if (!m || /^(home|today|charts|forecast|surf|pick|account|settings)$/.test(m[1])) return;
+    var s = document.createElement('script');
+    s.id = 'tt-history-early'; s.async = true; s.src = 'data-history.js';
+    s.onload = function () { window.__ttHistEarly = 1; };
+    s.onerror = function () { window.__ttHistEarly = 2; };
+    document.head.appendChild(s);
+  })();
+</script>
 <title>San Diego Sportfishing Boats Directory | Tunatracker</title>
 <meta name="description" content="Browse every San Diego sportfishing boat with photos, reviews, win rates, and catch records across H&amp;M, Fisherman's, Seaforth, Point Loma, and Oceanside.">
 <link rel="canonical" href="https://thetunatracker.com/sd/boats">
@@ -56,19 +67,32 @@
   gtag('js', new Date());
   gtag('config', 'G-6QDTY73V37');
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
-<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></noscript>
 <link rel="stylesheet" href="styles.css?v=20261127-35">
 <link rel="stylesheet" href="design-system.css?v=20261127-39">
 <script>window.VESSEL_WORKER_URL = '';</script>
-<script
-  async
-  crossorigin="anonymous"
-  data-clerk-publishable-key="pk_test_Z3VpZGVkLWdhbm5ldC05OC5jbGVyay5hY2NvdW50cy5kZXYk"
-  src="https://guided-gannet-98.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
-  type="text/javascript">
+<script id="tt-clerk-sdk">
+  (function () {
+    function addClerk() {
+      var s = document.createElement('script');
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.setAttribute('data-clerk-publishable-key', 'pk_test_Z3VpZGVkLWdhbm5ldC05OC5jbGVyay5hY2NvdW50cy5kZXYk');
+      s.src = 'https://guided-gannet-98.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+      s.type = 'text/javascript';
+      document.head.appendChild(s);
+    }
+    if (document.readyState === 'complete') addClerk();
+    else window.addEventListener('load', addClerk);
+  })();
 </script>
 </head>
 <body>
@@ -100,7 +124,7 @@
 <tr><td><a href="/sd/boat/Legend/">Legend</a></td><td>Oct 27, 2026</td><td>792</td><td>91.7%</td><td>2.15</td></tr>
 <tr><td><a href="/sd/boat/Little%20G/">Little G</a></td><td>Nov 23, 2026</td><td>59</td><td>61.0%</td><td>2.72</td></tr>
 <tr><td><a href="/sd/boat/Lucky%20Charm/">Lucky Charm</a></td><td>Sep 20, 2025</td><td>2</td><td>100.0%</td><td>0.68</td></tr>
-<tr><td><a href="/sd/boat/Malihini/">Malihini</a></td><td>Nov 22, 2026</td><td>1081</td><td>71.7%</td><td>1.31</td></tr>
+<tr><td><a href="/sd/boat/Malihini/">Malihini</a></td><td>Nov 27, 2026</td><td>1082</td><td>71.7%</td><td>1.3</td></tr>
 <tr><td><a href="/sd/boat/Nautilus/">Nautilus</a></td><td>Nov 26, 2026</td><td>619</td><td>52.0%</td><td>1.85</td></tr>
 <tr><td><a href="/sd/boat/Ocean%20Odyssey/">Ocean Odyssey</a></td><td>Nov 1, 2026</td><td>563</td><td>94.3%</td><td>2.97</td></tr>
 <tr><td><a href="/sd/boat/Old%20Glory/">Old Glory</a></td><td>Nov 22, 2026</td><td>1496</td><td>91.0%</td><td>2.16</td></tr>
@@ -160,7 +184,7 @@
 <tr><td><a href="/sd/boat/Searcher/">Searcher</a></td><td>May 17, 2024</td><td>28</td><td>78.6%</td><td>2.44</td></tr>
 <tr><td><a href="/sd/boat/Seasons%2023/">Seasons 23</a></td><td>Jul 13, 2019</td><td>2</td><td>100.0%</td><td>3.5</td></tr>
 <tr><td><a href="/sd/boat/Shogun/">Shogun</a></td><td>Oct 20, 2024</td><td>42</td><td>90.5%</td><td>1.71</td></tr>
-<tr><td><a href="/sd/boat/Tomahawk/">Tomahawk</a></td><td>Nov 21, 2026</td><td>702</td><td>89.0%</td><td>1.92</td></tr>
+<tr><td><a href="/sd/boat/Tomahawk/">Tomahawk</a></td><td>Nov 27, 2026</td><td>703</td><td>88.9%</td><td>1.92</td></tr>
 <tr><td><a href="/sd/boat/Western%20Star/">Western Star</a></td><td>May 5, 2021</td><td>37</td><td>94.6%</td><td>3.31</td></tr>
   </tbody>
 </table>
