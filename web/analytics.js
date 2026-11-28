@@ -170,6 +170,9 @@
       out.push(Object.assign({}, t, row));
     }
     window.SD_PROC_TRIPS = out;
+    // How many raw rows this was built from: app.jsx re-derives when
+    // data-history.js merges older trips in later.
+    window.SD_PROC_SRC_LEN = window.SD.TRIPS.length;
   }
   // Helper: every filter can be 'all' / null / single value / array. This makes
   // each one behave the same way (multi-select compatible) without changing

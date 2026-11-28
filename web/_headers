@@ -1,6 +1,11 @@
 /data.js
   Cache-Control: no-cache, must-revalidate
 
+# Older trips (web/region-data.js). Revalidated with an ETag, so a repeat
+# visit costs a 304; a stale copy is detected by version and re-fetched.
+/data-history.js
+  Cache-Control: no-cache, must-revalidate
+
 /data-region-*
   Cache-Control: no-cache, must-revalidate
 
@@ -38,6 +43,10 @@
   Cache-Control: no-cache, must-revalidate
 
 /api/v1/paddle_spots.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/met_grid.json
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 

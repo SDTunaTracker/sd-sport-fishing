@@ -55,6 +55,10 @@ def test_region_file_defines_its_data_and_hash_is_content_based():
     m = re.search(r'\(window\.SD_REGIONS = window\.SD_REGIONS \|\| \{\}\)\["oc_la"\] = (.*);\n$', text)
     assert m, text[:200]
     payload = json.loads(m.group(1))
+    # Trip arrays are written as columns (see test_columnar_* below).
+    assert payload["TRIPS"]["$c"] == 1
+    for k in E.COLUMNAR_KEYS:
+        payload[k] = E.decode_columnar(payload[k])
     assert {t["id"] for t in payload["TRIPS"]} == {2, 3}
     assert [t["id"] for t in payload["HALF_DAY_TRIPS"]] == [10]
     # Schedule rows have no region field: mapped through the landing's trips / LANDINGS_META.
@@ -79,7 +83,7 @@ def test_size_guard_raises(tmp_path, monkeypatch):
         E._check_file_size(f)
 
 
-@pytest.mark.parametrize("path", [WEB / "data.js", *sorted(WEB.glob("data-region-*.js"))],
+@pytest.mark.parametrize("path", [WEB / "data.js", WEB / E.HISTORY_FILE, *sorted(WEB.glob("data-region-*.js"))],
                          ids=lambda p: p.name)
 def test_live_data_files_under_cloudflare_limit(path):
     if not path.exists():
@@ -97,3 +101,91 @@ def test_live_data_js_lists_existing_region_files():
         pytest.skip("data.js predates the per-region split")
     for reg, f in json.loads(m.group(1)).items():
         assert (WEB / f["file"]).exists(), f"data.js lists {f['file']} but it is missing"
+
+
+# ── Columnar trip arrays (src/export.py encode_columnar) ──────────────────────
+def _mixed_rows():
+    rows = [_trip(i, "san_diego", "H&M Landing", date=f"2026-11-{10 + i % 5:02d}") for i in range(1, 30)]
+    rows[3]["fullCatch"] = {"Yellowfin": 1, "Rockfish": 4}
+    rows[7]["Rockfish"] = 4
+    rows[9]["rawText"] = "some text"
+    rows[11]["anglers"] = None
+    rows[12]["tripLengthDays"] = 0.75
+    return rows
+
+
+def test_columnar_round_trip_is_lossless():
+    rows = _mixed_rows()
+    enc = E.encode_columnar(rows)
+    assert enc["$c"] == 1 and enc["n"] == len(rows)
+    assert "s" in enc["v"]["fullCatch"] and "z" in enc["v"]["id"] and "d" in enc["v"]["landing"]
+    assert E.decode_columnar(json.loads(json.dumps(enc))) == rows
+
+
+def test_columnar_js_decoder_matches_python(tmp_path):
+    """The decoder appended to data.js rebuilds the same rows in a browser."""
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    rows = _mixed_rows()
+    payload = {"TRIPS": rows, "HALF_DAY_TRIPS": [], "META": {}}
+    js = "var window={};\nwindow.SD = " + json.dumps(E._compact(payload)) + ";\n" + E._COLS_DECODER_JS
+    js += "process.stdout.write(JSON.stringify(window.SD));\n"
+    f = tmp_path / "d.js"
+    f.write_text(js, encoding="utf-8")
+    out = json.loads(subprocess.run([node, str(f)], capture_output=True, text=True, check=True).stdout)
+    assert out["TRIPS"] == rows and out["HALF_DAY_TRIPS"] == []
+
+
+# ── Trip history split (src/export.py data_js_texts) ──────────────────────────
+def test_history_cutoff_is_january_first_of_last_year():
+    from datetime import date
+    assert E.history_cutoff(date(2026, 11, 27)) == "2025-01-01"
+    assert E.history_cutoff(date(2027, 1, 1)) == "2026-01-01"
+
+
+def test_data_js_keeps_recent_trips_and_history_file_has_the_rest():
+    from datetime import date
+    old = [_trip(i, "san_diego", "H&M Landing", date="2024-06-01") for i in (1, 2)]
+    new = [_trip(i, "san_diego", "H&M Landing", date=d) for i, d in ((3, "2025-01-01"), (4, "2026-11-20"))]
+    payload = {"TRIPS": old + new, "HALF_DAY_TRIPS": [], "META": {"tripCount": 4}}
+    js, hist = E.data_js_texts(payload, today=date(2026, 11, 27))
+    sd = json.loads(re.search(r"^window\.SD = (.*);\n", js, re.M).group(1))
+    assert [t["id"] for t in E.decode_columnar(sd["TRIPS"])] == [3, 4]
+    assert sd["META"]["tripCount"] == 4            # full count, as before
+    h = sd["META"]["HISTORY"]
+    assert h["file"] == "data-history.js" and h["before"] == "2025-01-01" and h["tripCount"] == 2
+    body = json.loads(re.search(r"^window\.SD_HISTORY = (.*);\n", hist, re.M).group(1))
+    assert body["v"] == h["v"] and body["before"] == "2025-01-01"
+    assert [t["id"] for t in E.decode_columnar(body["TRIPS"])] == [1, 2]
+    assert payload["TRIPS"] == old + new           # app.json still sees every trip
+    # Same rows, same version: browsers keep their cached copy.
+    _, hist2 = E.data_js_texts(dict(payload, TRIPS=old + new + [_trip(5, "san_diego", "H&M Landing", date="2026-11-21")]),
+                               today=date(2026, 11, 27))
+    assert hist2 == hist
+
+
+def test_live_data_js_history_file_matches():
+    data_js = WEB / "data.js"
+    if not data_js.exists():
+        pytest.skip("data.js not generated")
+    m = re.search(r'"HISTORY":(\{[^}]*\})', data_js.read_text(encoding="utf-8"))
+    if not m:
+        pytest.skip("data.js predates the history split")
+    meta = json.loads(m.group(1))
+    text = (WEB / meta["file"]).read_text(encoding="utf-8")
+    assert f'window.SD_HISTORY = {{"v":"{meta["v"]}"' in text
+
+
+def test_early_history_script_matches_app_history_free_views():
+    """index.html, the generated pages and app.jsx agree on which views skip history."""
+    from src import generate_pages as G
+    app = (WEB / "app.jsx").read_text(encoding="utf-8")
+    m = re.search(r"const HISTORY_FREE_VIEWS = \{([^}]*)\}", app)
+    free = set(re.findall(r"(\w+):\s*1", m.group(1)))
+    idx = (WEB / "index.html").read_text(encoding="utf-8")
+    assert G.HISTORY_EARLY_JS.strip() in idx
+    listed = set(re.search(r"/\^\(([a-z|]+)\)\$/", G.HISTORY_EARLY_JS).group(1).split("|"))
+    assert free <= listed and listed - free <= {"settings"}   # settings = old alias of account
