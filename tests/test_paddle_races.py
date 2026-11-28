@@ -1,5 +1,6 @@
 """Paddle Tracker races: data files, course geometry, leg scoring, forecast build (offline)."""
 import json
+import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -422,5 +423,58 @@ def test_transcribed_csvs_hold_only_allowed_fields_and_known_races():
 def test_live_people_are_all_prone_finishers_from_allowed_sources():
     live = json.loads((ROOT / "web/api/v1/paddle_people.json").read_text(encoding="utf-8"))
     allowed = ("https://catalinaclassicpaddleboardrace.com/", "https://watermanchallenge.weebly.com/")
-    assert all(r["source"].startswith(allowed) for r in live["results"])
+    # PaddleGuru: the owner's accepted-risk decision (2026-11-28), public /results pages only
+    pg = re.compile(r"^https://paddleguru\.com/races/[A-Za-z0-9]+/results$")
+    assert all(r["source"].startswith(allowed) or pg.match(r["source"]) for r in live["results"])
     assert all(r["craft"] in IM.PRONE for r in live["results"])
+
+
+PG_PAGE = """<html><body><script id="state" type="application/edn">{:route {:name :x}, :page-state {:title "Test Race 2024",
+:dates {:start 1719532800000}, :location {:loc {:position {:latitude 33.0, :longitude -117.3}}},
+:contacts ("org@example.com"), :startlist {"Main, 14 Mile Prone Race" {:entries (
+ {:athletes ({:type "full-user", :full-name "Ann  Lee ", :username "ann1", :userid "u1"}), :racer-number 7,
+  :division {:category {:name "Fourteen (14')"}, :gender "female", :age-group {:name "40-49"}},
+  :result {:division-size 3, :status "timed", :time 8643000, :rank {:overall 9, :division 2}}}
+ {:athletes ({:full-name "Bo Ray"}), :division {:category {:name "Stock (12' and shorter)"}, :gender "male"},
+  :result {:status "dnf"}}
+ {:athletes ({:full-name "Cy Day"}), :division {:category {:name "Stock"}, :gender "male"}}
+ {:athletes ({:full-name "Di Fox"} {:full-name "Ed Fox"}), :division {:category {:name "Unlimited"}},
+  :result {:division-size 1, :status "timed", :time 9000000, :rank {:division 1}}})}
+ "SUP 6 mile" {:entries ({:athletes ({:full-name "Fi Sup"}), :division {:category {:name "14' Men"}, :gender "male"},
+  :result {:division-size 4, :status "timed", :time 4000000, :rank {:division 1}}})}}}}</script></body></html>"""
+
+
+def test_paddleguru_parse_keeps_timed_prone_singles_and_only_allowed_fields():
+    from src.paddle.sources import paddleguru as PG
+    p = PG.parse(PG.state(PG_PAGE), "https://paddleguru.com/races/Test2024/results")
+    assert (p["date"], p["lat"]) == ("2024-06-28", 33.0)
+    assert list(p["races"]) == ["Main, 14 Mile Prone Race"]          # the SUP course is left out
+    (ann,) = p["races"]["Main, 14 Mile Prone Race"]                  # DNF, no result and a two-person entry left out
+    assert ann == {"name": "Ann Lee", "division": "14' Women", "craft": "Prone 14'", "time": "2:24:03",
+                   "place": "2", "field": "3", "source": "https://paddleguru.com/races/Test2024/results"}
+
+
+def test_paddleguru_not_found_and_block_pages():
+    from src.paddle.sources import Blocked, paddleguru as PG
+    nf = '<script id="state" type="application/edn">{:page-state {:status :error, :error-type :not-found}}</script>'
+    assert PG.parse(PG.state(nf), "u") is None
+    with pytest.raises(Blocked):
+        PG.state("<html>Access denied</html>")
+
+
+def test_paddleguru_craft_reads_the_course_name():
+    from src.paddle.sources import paddleguru as PG
+    assert PG.craft("14' Men", "Hanohano SUP 6 mile") is None
+    assert PG.craft("14' Men", "Prone paddleboard 6 mile") == "Prone 14'"
+    assert PG.craft("Unlimited", "Waterman Challenge, 14 Mile Traditional Paddleboard Race") == "Prone unlimited"
+    assert PG.craft("OC1 Men", "Long course") is None
+
+
+def test_paddleguru_never_keeps_kids_races_and_reads_ul():
+    from src.paddle.sources import paddleguru as PG
+    for course in ("Kids 1000m", "Grom Race", "2 Mile Youth Paddle Race (17 and Under)", "Kids prone"):
+        assert PG.MINORS.search(course), course
+    assert PG.craft("Prone UL", "Classic 8 Mile Race") == "Prone unlimited"
+    two = [{"id": "long", "miles": 9}, {"id": "short", "miles": 4.5}]
+    assert PG.distance_for({"distances": two}, "Short Course ", ["Long Course", "Short Course "])["id"] == "short"
+    assert PG.distance_for({"distances": [{"id": "loop"}]}, "The Loop", ["The Loop"])["id"] == "loop"

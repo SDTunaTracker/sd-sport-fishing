@@ -1,6 +1,6 @@
 {
   "updated": "2026-11-27",
-  "about": "Hand-maintained race list for Paddle Tracker, from the owner's race schedule. PaddleGuru's terms forbid automated access, so nothing here is scraped: details come from organisers' sites and public reports, and each race links to its PaddleGuru page. status 'draft — confirm' = not yet checked by the owner; 'date TBA' = next season, date not posted. Edit with: python -m src.paddle.races set <id> --date YYYY-MM-DD [--start HH:MM] [--url URL]",
+  "about": "Hand-maintained race list for Paddle Tracker, from the owner's race schedule. Race details come from organisers' sites and public reports, and each race links to its PaddleGuru page. Past prone results for some races were read from PaddleGuru's public results pages (owner's decision 2026-11-28; see src/paddle/sources/paddleguru.py). status 'draft — confirm' = not yet checked by the owner; 'date TBA' = next season, date not posted. Edit with: python -m src.paddle.races set <id> --date YYYY-MM-DD [--start HH:MM] [--url URL]",
   "defaults": {
     "paceMph": 4.5,
     "tz": "America/Los_Angeles"
@@ -554,7 +554,26 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2026",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "board-race",
+          "label": "Board Race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -579,7 +598,14 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/TomDavisOceanChallenge2026",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -604,7 +630,20 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/AdlerPaddler2026",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": "Free race.",
@@ -629,7 +668,20 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/TheLifeguardLap2026",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 8.0,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.0,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -713,7 +765,14 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/19thAnnualSeasideSlide",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 8.0,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -775,7 +834,14 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/NACElMorroClassic2026",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -800,7 +866,14 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/TheR10PaddleboardRace2026",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "2-mile-adult-paddle-race-18",
+          "label": "2 Mile Adult Paddle Race (18+)",
+          "miles": 2.0,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -955,7 +1028,20 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2025",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 9.0,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 3.0,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": "2026 date not posted (owner: ~Aug 9). Link is the 2025 race page.",
@@ -1032,7 +1118,20 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/AdlerPaddler2025",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": "Free race.",
@@ -1057,7 +1156,20 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/TheLifeguardLap",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 8.0,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.0,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -1178,7 +1290,14 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/NACElMorroClassic2025",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -1322,7 +1441,14 @@
       "website": null,
       "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2025",
       "registration": null,
-      "distances": [],
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 9.0,
+          "courseId": null
+        }
+      ],
       "divisions": [],
       "course": null,
       "notes": null,
@@ -1837,6 +1963,1911 @@
       ],
       "status": "draft — confirm",
       "results": "https://watermanchallenge.weebly.com/results.html"
+    },
+    {
+      "id": "adler-paddler-2014",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2014,
+      "date": "2014-03-16",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/4thAnnualAdlerPaddler",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/4thAnnualAdlerPaddler/results). Details copied from adler-paddler-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "adler-paddler-2015",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2015,
+      "date": "2015-03-22",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/5thAnnualAdlerPaddler",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/5thAnnualAdlerPaddler/results). Details copied from adler-paddler-2014; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "adler-paddler-2016",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2016,
+      "date": "2016-03-12",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/6thAnnualAdlerPaddler",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "fun-course",
+          "label": "Fun Course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/6thAnnualAdlerPaddler/results). Details copied from adler-paddler-2015; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "adler-paddler-2019",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2019,
+      "date": "2019-03-17",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/9thAnnualAdlerPaddler",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "fun-course",
+          "label": "Fun Course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/9thAnnualAdlerPaddler/results). Details copied from adler-paddler-2016; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "adler-paddler-2022",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2022,
+      "date": "2022-03-20",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/10thAnnualAdlerPaddler",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/10thAnnualAdlerPaddler/results). Details copied from adler-paddler-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "adler-paddler-2023",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2023,
+      "date": "2023-03-19",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/11thAnnualAdlerPaddler",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/11thAnnualAdlerPaddler/results). Details copied from adler-paddler-2022; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2013",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2013,
+      "date": "2013-01-26",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HanohanoHukiOceanChallenge",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HanohanoHukiOceanChallenge/results). Details copied from hanohano-2025; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2014",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2014,
+      "date": "2014-01-25",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/2014HanohanoHukiOceanChallenge",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/2014HanohanoHukiOceanChallenge/results). Details copied from hanohano-2013; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2015",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2015,
+      "date": "2015-01-24",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/2015HanohanoHukiOceanChallenge",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/2015HanohanoHukiOceanChallenge/results). Details copied from hanohano-2014; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2016",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2016,
+      "date": "2016-01-23",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/2016HanohanoHukiOceanChallenge",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/2016HanohanoHukiOceanChallenge/results). Details copied from hanohano-2015; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2017",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2017,
+      "date": "2017-01-28",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/2017HanohanoHukiOceanChallenge",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/2017HanohanoHukiOceanChallenge/results). Details copied from hanohano-2016; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2018",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2018,
+      "date": "2018-01-27",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/2018HanohanoHukiOceanChallenge",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/2018HanohanoHukiOceanChallenge/results). Details copied from hanohano-2017; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2019",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2019,
+      "date": "2019-01-26",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HanohanoHukiOceanChallenge2019",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HanohanoHukiOceanChallenge2019/results). Details copied from hanohano-2018; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2020",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2020,
+      "date": "2020-01-25",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HanohanoHukiOceanChallenge2020",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HanohanoHukiOceanChallenge2020/results). Details copied from hanohano-2019; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2022",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2022,
+      "date": "2022-01-29",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HanohanoOceanChallenge2022",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HanohanoOceanChallenge2022/results). Details copied from hanohano-2020; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2023",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2023,
+      "date": "2023-01-28",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/WestCoastPaddleSportsHanohanoOceanChallenge2023",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/WestCoastPaddleSportsHanohanoOceanChallenge2023/results). Details copied from hanohano-2022; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "hanohano-2024",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2024,
+      "date": "2024-01-27",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HanohanoOceanChallenge2024",
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HanohanoOceanChallenge2024/results). Details copied from hanohano-2025; confirm.",
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "malibu-downwinder-2022",
+      "series": "malibu-downwinder",
+      "name": "Malibu Downwinder",
+      "year": 2022,
+      "date": "2022-04-30",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Point Mugu to Leo Carrillo",
+        "lat": 34.0855,
+        "lon": -119.06
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/Malibudownwinder2022",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Point Mugu to Leo Carrillo",
+          "miles": 7,
+          "courseId": "malibu-downwinder"
+        }
+      ],
+      "divisions": [],
+      "course": "Point-to-point downwinder from Mugu State Beach (north of Mugu Rock) to Leo Carrillo State Beach.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/Malibudownwinder2022/results). Details copied from malibu-downwinder-2025; confirm.",
+      "sources": [
+        "Race blog, Malibu Downwinder 2012 (about 7 mi)"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "malibu-downwinder-2023",
+      "series": "malibu-downwinder",
+      "name": "Malibu Downwinder",
+      "year": 2023,
+      "date": "2023-04-29",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Point Mugu to Leo Carrillo",
+        "lat": 34.0855,
+        "lon": -119.06
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/Malibudownwinder2023",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Point Mugu to Leo Carrillo",
+          "miles": 7,
+          "courseId": "malibu-downwinder"
+        }
+      ],
+      "divisions": [],
+      "course": "Point-to-point downwinder from Mugu State Beach (north of Mugu Rock) to Leo Carrillo State Beach.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/Malibudownwinder2023/results). Details copied from malibu-downwinder-2022; confirm.",
+      "sources": [
+        "Race blog, Malibu Downwinder 2012 (about 7 mi)"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-el-morro-2023",
+      "series": "nac-el-morro",
+      "name": "NAC El Morro Classic",
+      "year": 2023,
+      "date": "2023-07-30",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center / El Morro",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACElMorroClassic2023",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACElMorroClassic2023/results). Details copied from nac-el-morro-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-el-morro-2024",
+      "series": "nac-el-morro",
+      "name": "NAC El Morro Classic",
+      "year": 2024,
+      "date": "2024-06-16",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center / El Morro",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACElMorroClassic2024",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACElMorroClassic2024/results). Details copied from nac-el-morro-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2013",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2013,
+      "date": "2013-02-09",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HalRosoffClassic",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HalRosoffClassic/results). Details copied from nac-hal-rosoff-2026; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2014",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2014,
+      "date": "2014-02-08",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HalRosoffClassic2014",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HalRosoffClassic2014/results). Details copied from nac-hal-rosoff-2013; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2015",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2015,
+      "date": "2015-02-07",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/HalRosoffClassic2015",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/HalRosoffClassic2015/results). Details copied from nac-hal-rosoff-2014; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2016",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2016,
+      "date": "2016-02-06",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2016",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2016/results). Details copied from nac-hal-rosoff-2015; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2017",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2017,
+      "date": "2017-02-11",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2017",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2017/results). Details copied from nac-hal-rosoff-2016; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2018",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2018,
+      "date": "2018-02-10",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2018",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2018/results). Details copied from nac-hal-rosoff-2017; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2019",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2019,
+      "date": "2019-02-09",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2019",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2019/results). Details copied from nac-hal-rosoff-2018; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2020",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2020,
+      "date": "2020-02-15",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2020",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2020/results). Details copied from nac-hal-rosoff-2019; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2022",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2022,
+      "date": "2022-02-12",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2022",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "board-race",
+          "label": "Board Race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2022/results). Details copied from nac-hal-rosoff-2020; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2023",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2023,
+      "date": "2023-02-11",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2023",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "board-race",
+          "label": "Board Race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2023/results). Details copied from nac-hal-rosoff-2022; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2024",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2024,
+      "date": "2024-02-10",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2024",
+      "registration": null,
+      "distances": [
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "board-race",
+          "label": "Board Race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2024/results). Details copied from nac-hal-rosoff-2023; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "nac-hal-rosoff-2025",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2025,
+      "date": "2025-02-08",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/NACHalRosoffClassic2025",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": null,
+          "courseId": null
+        },
+        {
+          "id": "board-race",
+          "label": "Board Race",
+          "miles": null,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/NACHalRosoffClassic2025/results). Details copied from nac-hal-rosoff-2026; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "r10-2023",
+      "series": "r10",
+      "name": "R10 Paddleboard Race",
+      "year": 2023,
+      "date": "2023-07-09",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Torrance Beach",
+        "lat": 33.805,
+        "lon": -118.3925
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/TheR10PaddleboardRace",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 8.0,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/TheR10PaddleboardRace/results). Details copied from r10-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "rock-2-rock-2014",
+      "series": "rock-2-rock",
+      "name": "Rock 2 Rock",
+      "year": 2014,
+      "date": "2014-06-15",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Two Harbors, Catalina to Cabrillo Beach, San Pedro",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://southbayboardriders.org/paddle-series/rock-to-rock/",
+      "paddleguru": "https://paddleguru.com/races/Rock2Rock",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Two Harbors to Cabrillo Beach",
+          "miles": 22,
+          "courseId": "rock-2-rock"
+        }
+      ],
+      "divisions": [],
+      "course": "Channel crossing from Two Harbors (Catalina) to Cabrillo Beach, San Pedro.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/Rock2Rock/results). Details copied from rock-2-rock-2025; confirm.",
+      "sources": [
+        "Easy Reader, Rock 2 Rock reports",
+        "South Bay Boardriders Club"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "rock-2-rock-2015",
+      "series": "rock-2-rock",
+      "name": "Rock 2 Rock",
+      "year": 2015,
+      "date": "2015-06-21",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Two Harbors, Catalina to Cabrillo Beach, San Pedro",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://southbayboardriders.org/paddle-series/rock-to-rock/",
+      "paddleguru": "https://paddleguru.com/races/Rock2Rock2015",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Two Harbors to Cabrillo Beach",
+          "miles": 22,
+          "courseId": "rock-2-rock"
+        }
+      ],
+      "divisions": [],
+      "course": "Channel crossing from Two Harbors (Catalina) to Cabrillo Beach, San Pedro.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/Rock2Rock2015/results). Details copied from rock-2-rock-2014; confirm.",
+      "sources": [
+        "Easy Reader, Rock 2 Rock reports",
+        "South Bay Boardriders Club"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "rock-2-rock-2018",
+      "series": "rock-2-rock",
+      "name": "Rock 2 Rock",
+      "year": 2018,
+      "date": "2018-06-24",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Two Harbors, Catalina to Cabrillo Beach, San Pedro",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://southbayboardriders.org/paddle-series/rock-to-rock/",
+      "paddleguru": "https://paddleguru.com/races/Rock2Rock2018",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Two Harbors to Cabrillo Beach",
+          "miles": 22,
+          "courseId": "rock-2-rock"
+        }
+      ],
+      "divisions": [],
+      "course": "Channel crossing from Two Harbors (Catalina) to Cabrillo Beach, San Pedro.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/Rock2Rock2018/results). Details copied from rock-2-rock-2015; confirm.",
+      "sources": [
+        "Easy Reader, Rock 2 Rock reports",
+        "South Bay Boardriders Club"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "tahoe-downwind-2020",
+      "series": "tahoe-downwind",
+      "name": "Tahoe Downwind",
+      "year": 2020,
+      "date": "2020-08-29",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Lake Tahoe",
+        "lat": 39.0968,
+        "lon": -120.0324
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionships2020TahoeWatermanPaddleRacing",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 9.0,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/TAHOEDOWNWINDChampionships2020TahoeWatermanPaddleRacing/results). Details copied from tahoe-downwind-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "tahoe-downwind-2022",
+      "series": "tahoe-downwind",
+      "name": "Tahoe Downwind",
+      "year": 2022,
+      "date": "2022-08-27",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Lake Tahoe",
+        "lat": 39.0968,
+        "lon": -120.0324
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2022",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 9.0,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 3.0,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2022/results). Details copied from tahoe-downwind-2020; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "tahoe-downwind-2024",
+      "series": "tahoe-downwind",
+      "name": "Tahoe Downwind",
+      "year": 2024,
+      "date": "2024-08-17",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Lake Tahoe",
+        "lat": 39.0968,
+        "lon": -120.0324
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2024",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Main race",
+          "miles": 9.0,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 3.0,
+          "courseId": null
+        }
+      ],
+      "divisions": [],
+      "course": null,
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2024/results). Details copied from tahoe-downwind-2025; confirm.",
+      "sources": [],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "the-loop-2021",
+      "series": "the-loop",
+      "name": "The Loop",
+      "year": 2021,
+      "date": "2021-05-30",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Coronado Shores, Coronado",
+        "lat": 32.6745,
+        "lon": -117.177
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/TheLoop",
+      "registration": null,
+      "distances": [
+        {
+          "id": "loop",
+          "label": "The Loop",
+          "miles": 11.25,
+          "courseId": "the-loop"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/TheLoop/results). Details copied from the-loop-2025; confirm.",
+      "sources": [
+        "Perfect Paddles, The Loop 2023",
+        "SurfTech prone race guide"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "the-loop-2022",
+      "series": "the-loop",
+      "name": "The Loop",
+      "year": 2022,
+      "date": "2022-05-15",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Coronado Shores, Coronado",
+        "lat": 32.6745,
+        "lon": -117.177
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/THELOOP2022",
+      "registration": null,
+      "distances": [
+        {
+          "id": "loop",
+          "label": "The Loop",
+          "miles": 11.25,
+          "courseId": "the-loop"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/THELOOP2022/results). Details copied from the-loop-2021; confirm.",
+      "sources": [
+        "Perfect Paddles, The Loop 2023",
+        "SurfTech prone race guide"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "the-loop-2023",
+      "series": "the-loop",
+      "name": "The Loop",
+      "year": 2023,
+      "date": "2023-05-21",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Coronado Shores, Coronado",
+        "lat": 32.6745,
+        "lon": -117.177
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/THELOOP2023",
+      "registration": null,
+      "distances": [
+        {
+          "id": "loop",
+          "label": "The Loop",
+          "miles": 11.25,
+          "courseId": "the-loop"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/THELOOP2023/results). Details copied from the-loop-2022; confirm.",
+      "sources": [
+        "Perfect Paddles, The Loop 2023",
+        "SurfTech prone race guide"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "the-loop-2024",
+      "series": "the-loop",
+      "name": "The Loop",
+      "year": 2024,
+      "date": "2024-05-11",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Coronado Shores, Coronado",
+        "lat": 32.6745,
+        "lon": -117.177
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/THELOOP2024",
+      "registration": null,
+      "distances": [
+        {
+          "id": "loop",
+          "label": "The Loop",
+          "miles": 11.25,
+          "courseId": "the-loop"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/THELOOP2024/results). Details copied from the-loop-2025; confirm.",
+      "sources": [
+        "Perfect Paddles, The Loop 2023",
+        "SurfTech prone race guide"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "waterman-challenge-2021",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2021,
+      "date": "2021-07-10",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": "https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2021",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2021/results). Details copied from waterman-challenge-2018; confirm.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "waterman-challenge-2022",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2022,
+      "date": "2022-07-09",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": "https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2022",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2022/results). Details copied from waterman-challenge-2021; confirm.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "waterman-challenge-2023",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2023,
+      "date": "2023-07-01",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": "https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2023",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2023/results). Details copied from waterman-challenge-2022; confirm.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "waterman-challenge-2024",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2024,
+      "date": "2024-06-29",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2024",
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "Past results from PaddleGuru (https://paddleguru.com/races/WatermanChallengePaddleboardRaceSwamistoWindansea2024/results). Details copied from waterman-challenge-2025; confirm.",
+      "sources": [
+        "SurfTech, 2023 Waterman Challenge recap"
+      ],
+      "status": "draft — confirm"
     }
   ]
 }

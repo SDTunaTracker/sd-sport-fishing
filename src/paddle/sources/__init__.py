@@ -3,7 +3,10 @@
 Checked 2026-11-27 (see the hand-over note):
   catalinaclassicpaddleboardrace.com  robots allows all, no terms page → OK (catalina_classic.py; PDFs via transcribed CSVs)
   watermanchallenge.weebly.com        organiser's own site, robots allows, no site terms → OK (transcribed.py, 2015-2018 PDFs)
-  paddleguru.com (+ its cloudfront mirror d25d8zmroho46r.cloudfront.net) ToS forbids automated access → never
+  paddleguru.com                      ToS forbids automated access. Owner's accepted-risk decision
+                                      2026-11-28 (personal, non-commercial): public /results pages only,
+                                      prone only, cached, stop on any block → paddleguru.py.
+                                      Its cloudfront mirror, registration and participant pages: never.
   webscorer.com                       ToS: scraping without consent prohibited → never (owner may download manually)
   athlinks.com                        ToS forbids robots / automatic means → never
   my.raceresult.com                   robots disallows results lists/details → never
