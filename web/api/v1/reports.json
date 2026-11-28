@@ -1,13 +1,13 @@
 {
-  "build": "1082ed2",
-  "generated_at": "2026-11-27T23:36:42Z",
+  "build": "1da611e",
+  "generated_at": "2026-11-28T12:07:34Z",
   "window_days": 14,
   "feeds": [
     {
       "id": "bd-socal-offshore",
       "name": "BD Southern California Offshore",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-offshore-fishing-reports/",
-      "items_14d": 80
+      "items_14d": 81
     },
     {
       "id": "bd-spearfishing",
@@ -25,13 +25,13 @@
       "id": "bd-socal-sportboats",
       "name": "BD Southern California Sportboats",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/southern-california-sportboats/",
-      "items_14d": 15
+      "items_14d": 14
     },
     {
       "id": "bd-long-range",
       "name": "BD Long Range Fishing",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/san-diego-long-range-sportfishing-reports/",
-      "items_14d": 71
+      "items_14d": 80
     },
     {
       "id": "bd-california",
@@ -43,7 +43,7 @@
       "id": "bd-socal-trip-planning",
       "name": "BD Southern CA Fishing Trip Planning",
       "forum_url": "https://www.bdoutdoors.com/forums/forum/california-inshore-trip-planning/",
-      "items_14d": 15
+      "items_14d": 16
     },
     {
       "id": "bd-kayak",
@@ -55,9 +55,11 @@
   "summary_48h": {
     "top_banks": [],
     "species_counts": {
-      "bluefin": 2,
-      "yellowfin": 1,
-      "wahoo": 1
+      "yellowfin": 4,
+      "bonito": 1,
+      "wahoo": 1,
+      "dorado": 1,
+      "bluefin": 1
     },
     "water_temp_f": null,
     "water_color_mode": null,
@@ -568,7 +570,7 @@
       "lat": 32.9,
       "lon": -118.5,
       "radius_nm": 10,
-      "mentions_14d": 5,
+      "mentions_14d": 4,
       "bite_14d": 3,
       "species_14d": {
         "yellowtail": 2,
@@ -635,68 +637,29 @@
           "quote": "the Current was ripping, and it helped get your bait back far enough to get bit",
           "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
           "feed_id": "bd-socal-offshore"
-        },
-        {
-          "type": "conditions",
-          "trip_date": "2026-11-13",
-          "species": [],
-          "count": null,
-          "size_lb": null,
-          "outcome": null,
-          "water_temp_f": null,
-          "water_color": null,
-          "quote": "woke up in the morning to flat com seas",
-          "url": "https://www.bdoutdoors.com/forums/threads/over-night-on-the-eldorado.872417/",
-          "feed_id": "bd-socal-offshore"
-        }
-      ]
-    },
-    "302": {
-      "name": "302",
-      "region": "san_diego",
-      "lat": 32.4483,
-      "lon": -117.58,
-      "radius_nm": 2,
-      "mentions_14d": 2,
-      "bite_14d": 1,
-      "species_14d": {
-        "marlin": 1
-      },
-      "outcome_mode": null,
-      "last_report": "2026-11-13",
-      "recent": [
-        {
-          "type": "conditions",
-          "trip_date": "2026-11-13",
-          "species": [],
-          "count": null,
-          "size_lb": null,
-          "outcome": null,
-          "water_temp_f": 76.5,
-          "water_color": null,
-          "quote": "water was 76.5 degrees",
-          "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
-          "feed_id": "bd-socal-offshore"
-        },
-        {
-          "type": "bite",
-          "trip_date": "2026-11-13",
-          "species": [
-            "marlin"
-          ],
-          "count": 1,
-          "size_lb": 304.0,
-          "outcome": null,
-          "water_temp_f": null,
-          "water_color": null,
-          "quote": "we had a huge marlin jump out of the water and smash the mean joe green",
-          "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
-          "feed_id": "bd-socal-offshore"
         }
       ]
     }
   },
   "pins": [
+    {
+      "lat": 32.7576,
+      "lon": -117.4581,
+      "region": "san_diego",
+      "precision": "offset",
+      "precision_nm": 2.5,
+      "resolution": "offset:mission-bay-jetty",
+      "trip_date": "2026-11-28",
+      "bank": null,
+      "species": [
+        "bonito",
+        "yellowfin"
+      ],
+      "quote": "We found them about 10 miles west.",
+      "url": "https://www.bdoutdoors.com/forums/threads/black-friday-yft.872734/",
+      "feed_id": "bd-socal-offshore",
+      "raw": "10 miles west"
+    },
     {
       "lat": 32.6633,
       "lon": -117.2615,
@@ -762,5 +725,5 @@
       "raw": "Area between Delmar and La Jolla"
     }
   ],
-  "unresolved_14d": 87
+  "unresolved_14d": 84
 }

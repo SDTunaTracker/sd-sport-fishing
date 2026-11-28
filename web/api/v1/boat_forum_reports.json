@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27T23:36:42Z",
+ "generated_at": "2026-11-28T12:07:34Z",
  "source": "BloodyDecks (bdoutdoors.com) forum trip reports",
  "label": "From BloodyDecks trip reports",
  "note": "Summaries of public forum posts, extracted automatically. Not verified reviews; follow the links for the original posts.",
@@ -5379,7 +5379,7 @@
   "Searcher": {
    "landing": "Fisherman's Landing",
    "region": "san_diego",
-   "report_count": 5,
+   "report_count": 6,
    "aspects": {
     "overall": {
      "pos": 3,
@@ -5387,17 +5387,17 @@
      "neg": 0
     },
     "captain": {
-     "pos": 3,
+     "pos": 4,
      "mixed": 0,
      "neg": 0
     },
     "crew": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     },
     "galley": {
-     "pos": 3,
+     "pos": 4,
      "mixed": 0,
      "neg": 0
     },
@@ -5407,7 +5407,7 @@
      "neg": 1
     },
     "fish_finding": {
-     "pos": 3,
+     "pos": 4,
      "mixed": 0,
      "neg": 0
     }
@@ -5584,6 +5584,40 @@
      "region": "both",
      "landing_count": null,
      "match_confidence": 0.8,
+     "photos": 0,
+     "reply": false
+    },
+    {
+     "title": "Searcher 3-day report.",
+     "url": "https://www.bdoutdoors.com/forums/threads/searcher-3-day-report.866391/",
+     "published_at": "2026-06-05T21:54:32+00:00",
+     "forum": "BD Southern California Sportboats",
+     "trip_date": "2026-06-02",
+     "trip_length": "3 Day",
+     "scores": {
+      "captain": 2,
+      "crew": 2,
+      "galley": 2,
+      "fish_finding": 2
+     },
+     "would_rebook": null,
+     "quotes": {
+      "captain": "the skipper never stopped looking for fish",
+      "crew": "I was very happy with the crew and food",
+      "galley": "good food, fun crew, cheap beer"
+     },
+     "catch_summary": "50 keeper yellowtail (5–25 lb), ~20 undersized released; 1 yellowtail 25 lb at Tanner Bank; rockfish.",
+     "tackle": [
+      "#25 line - yellowtail",
+      "iron - yellowtail (~3 fish)"
+     ],
+     "spots": [
+      "Tanner Bank",
+      "Colonet"
+     ],
+     "region": "san_diego",
+     "landing_count": null,
+     "match_confidence": 0.95,
      "photos": 0,
      "reply": false
     }
@@ -6955,44 +6989,88 @@
   "Vagabond": {
    "landing": "Point Loma Sportfishing",
    "region": "san_diego",
-   "report_count": 7,
+   "report_count": 8,
    "aspects": {
     "overall": {
-     "pos": 3,
+     "pos": 4,
      "mixed": 0,
      "neg": 0
     },
     "captain": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 0,
      "neg": 0
     },
     "crew": {
-     "pos": 2,
+     "pos": 3,
      "mixed": 1,
      "neg": 0
     },
     "galley": {
-     "pos": 3,
+     "pos": 4,
      "mixed": 0,
      "neg": 0
     },
     "bunks": {
-     "pos": 3,
+     "pos": 4,
      "mixed": 0,
      "neg": 0
     },
     "fish_finding": {
-     "pos": 1,
+     "pos": 2,
      "mixed": 2,
      "neg": 0
     }
    },
    "rebook": {
-    "yes": 2,
+    "yes": 3,
     "no": 0
    },
    "reports": [
+    {
+     "title": "Vagabond 10 day report (Nov 9-19)",
+     "url": "https://www.bdoutdoors.com/forums/threads/vagabond-10-day-report-nov-9-19.872715/",
+     "published_at": "2026-11-28T00:52:04+00:00",
+     "forum": "BD Long Range Fishing",
+     "trip_date": "2026-11-09",
+     "trip_length": "10 Day",
+     "scores": {
+      "overall": 2,
+      "captain": 2,
+      "crew": 2,
+      "galley": 2,
+      "bunks": 1,
+      "fish_finding": 2
+     },
+     "would_rebook": true,
+     "quotes": {
+      "overall": "Another great trip on the Vagabond.",
+      "captain": "Mike gets on the PA and tells me to come to the bow.",
+      "crew": "The crew was outstanding as usual",
+      "galley": "5 star, head chef from Mister A's and Mille Fleurs",
+      "bunks": "Surprisingly great sleeping as we headed north with the boat not pounding at all.",
+      "fish_finding": "Mike would find a nice school of tuna and drop the anchor for something different.",
+      "would_rebook": "I think this is about 25 years now"
+     },
+     "catch_summary": "~70 wahoo, near limits of yellowfin tuna (mostly 30–60 lb), some yellowtail; biggest fish 63 lb yellowtail.",
+     "tackle": [
+      "pink Rapala Mag 40, Owner ST66 4/0 treble - wahoo",
+      "pink DTX lure - wahoo",
+      "bomb lure - wahoo",
+      "gold Raider - wahoo",
+      "fillet of scad - big yellowtail"
+     ],
+     "spots": [
+      "the ridge",
+      "the rocks",
+      "San Martin"
+     ],
+     "region": "san_diego",
+     "landing_count": null,
+     "match_confidence": 0.95,
+     "photos": 12,
+     "reply": false
+    },
     {
      "title": "Vagabond SD Anglers 10-Day 11/9 to 11/19 (edited - photos now [maybe!] but no vids)",
      "url": "https://www.bdoutdoors.com/forums/threads/vagabond-sd-anglers-10-day-11-9-to-11-19-edited-photos-now-maybe-but-no-vids.872601/",

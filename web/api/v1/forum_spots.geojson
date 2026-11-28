@@ -1,6 +1,6 @@
 {
  "type": "FeatureCollection",
- "generated_at": "2026-11-27T23:36:42Z",
+ "generated_at": "2026-11-28T12:07:35Z",
  "label": "Recent forum reports by spot",
  "source": "BloodyDecks (bdoutdoors.com) public forum posts, summarized automatically",
  "window_days": 14,
@@ -194,51 +194,6 @@
       "date": "2026-11-24",
       "feed": "bd-socal-offshore",
       "photos": 2
-     }
-    ]
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     -117.58,
-     32.4483
-    ]
-   },
-   "properties": {
-    "id": "302",
-    "name": "302",
-    "position": "spot",
-    "region": "san_diego",
-    "precision_nm": 2.0,
-    "reports_7d": 0,
-    "reports_14d": 1,
-    "last_report": "2026-11-13",
-    "posted_at": "2026-11-16T13:14:51+00:00",
-    "species": {
-     "other": 1
-    },
-    "tuna_7d": null,
-    "tuna_reports_7d": 0,
-    "tuna": null,
-    "quality": {},
-    "kinds": {
-     "conditions": 1,
-     "bite": 1
-    },
-    "water_temp_f": {
-     "min": 76.5,
-     "max": 76.5
-    },
-    "sources": [
-     {
-      "url": "https://www.bdoutdoors.com/forums/threads/320-pound-black-marlin-302-thursday.872414/",
-      "title": "320 pound Black Marlin 302 Thursday",
-      "date": "2026-11-13",
-      "feed": "bd-socal-offshore",
-      "photos": 0
      }
     ]
    }
@@ -537,7 +492,7 @@
     },
     "kinds": {
      "bite": 3,
-     "conditions": 2
+     "conditions": 1
     },
     "water_temp_f": null,
     "sources": [
@@ -547,6 +502,53 @@
       "date": "2026-11-14",
       "feed": "bd-socal-offshore",
       "photos": 0
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.4581,
+     32.7576
+    ]
+   },
+   "properties": {
+    "id": "pt:32.7576,-117.4581",
+    "name": "~4 nm from 178",
+    "position": "estimate",
+    "region": "san_diego",
+    "precision_nm": 2.5,
+    "reports_7d": 1,
+    "reports_14d": 1,
+    "last_report": "2026-11-28",
+    "posted_at": "2026-11-28T11:52:32+00:00",
+    "species": {
+     "yellowfin": 2,
+     "other": 1
+    },
+    "tuna_7d": 4,
+    "tuna_reports_7d": 1,
+    "tuna": null,
+    "quality": {
+     "good": 2,
+     "slow": 1
+    },
+    "kinds": {
+     "bite": 3,
+     "conditions": 1,
+     "offset": 1
+    },
+    "water_temp_f": null,
+    "sources": [
+     {
+      "url": "https://www.bdoutdoors.com/forums/threads/black-friday-yft.872734/",
+      "title": "Black Friday YFT",
+      "date": "2026-11-28",
+      "feed": "bd-socal-offshore",
+      "photos": 6
      }
     ]
    }
