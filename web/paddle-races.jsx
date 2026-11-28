@@ -81,54 +81,65 @@ function PrLink({ hrefFor, go, id, className, children }) {
 
 // ── race list ───────────────────────────────────────────────────────────────
 function prGroups(races, today) {
+  const thisYear = Number(today.slice(0, 4));
+  const isPast = r => r.date ? r.date < today : (r.year || 0) < thisYear;
   const up = races.filter(r => r.date && r.date >= today).sort((a, b) => a.date.localeCompare(b.date));
-  const past = races.filter(r => r.date && r.date < today);
-  const years = [...new Set(past.map(r => r.year))].sort((a, b) => b - a);
+  const rest = races.filter(r => !(r.date && r.date >= today));
+  const years = [...new Set(rest.map(r => r.year || 0))].sort((a, b) => b - a);
+  const md = {};
+  races.filter(r => r.date).sort((a, b) => a.date.localeCompare(b.date)).forEach(r => { md[r.series] = r.date.slice(4); });
   const groups = [];
   if (up.length) groups.push({ key: 'up', title: 'Upcoming', races: up });
-  years.forEach(y => groups.push({ key: 'y' + y, title: String(y), past: true,
-    races: past.filter(r => r.year === y).sort((a, b) => a.date.localeCompare(b.date)) }));
-  const tbc = races.filter(r => !r.date);
-  if (tbc.length) groups.push({ key: 'tbc', title: 'Date TBC', races: tbc });
+  // next seasons (dates TBA) first, then past seasons, newest first
+  years.sort((a, b) => (a > thisYear) === (b > thisYear) ? (a > thisYear ? a - b : b - a) : (a > thisYear ? -1 : 1));
+  years.forEach(y => {
+    const key = r => r.date || (md[r.series] ? y + md[r.series] : '9999');   // TBA: last season's calendar slot
+    const rs = rest.filter(r => (r.year || 0) === y)
+      .sort((a, b) => key(a).localeCompare(key(b)) || a.name.localeCompare(b.name));
+    const tba = rs.every(r => !r.date);
+    groups.push({ key: 'y' + y, title: y ? String(y) + (tba ? ' · dates TBA' : '') : 'Date TBC', races: rs, isPast });
+  });
   return groups;
 }
 
-function PrRaceRow({ r, fc, past, hrefFor, go }) {
-  const f = fc && fc.races && fc.races[r.id];
+function PrRaceRow({ r, fc, cond, past, hrefFor, go }) {
+  const f = (fc && fc.races && fc.races[r.id]) || (cond && cond.races && cond.races[r.id]);
   const main = f && f[Object.keys(f)[0]];
   return (
     <li>
       <PrLink className={`pr-row${past ? ' pr-past' : ''}`} hrefFor={hrefFor} go={go} id={r.id}>
         <span className="pr-row-date">
-          {r.date ? <><b>{prDate(r.date, { month: 'short', day: 'numeric' })}</b><i>{prDate(r.date, { weekday: 'short' })}</i></> : <b>TBC</b>}
+          {r.date ? <><b>{prDate(r.date, { month: 'short', day: 'numeric' })}</b><i>{prDate(r.date, { weekday: 'short' })}</i></> : <b>{r.status === 'date TBA' ? 'TBA' : 'TBC'}</b>}
         </span>
         <span className="pr-row-main">
-          <span className="pr-row-name">{r.name}{r.status && r.status.startsWith('draft') && <em className="pr-draft">draft</em>}</span>
-          <span className="pr-row-sub">{r.location.name} · {r.distances.map(d => prMiles(d.miles)).join(' · ')}</span>
+          <span className="pr-row-name">{r.name}</span>
+          <span className="pr-row-sub">{[r.location.name].concat(r.distances.filter(d => d.miles).map(d => prMiles(d.miles))).join(' · ')}</span>
           <span className="pr-chips">{(r.divisions || []).map(d => <span key={d} className="pr-chip">{d}</span>)}</span>
         </span>
-        {main && <span className="pr-row-fc"><PrPill label={main.label}/></span>}
+        {main && <span className="pr-row-fc" title={past ? 'Race-day conditions' : 'Forecast'}><PrPill label={main.label}/></span>}
       </PrLink>
     </li>
   );
 }
 
-function PrList({ doc, fc, hrefFor, go }) {
+function PrList({ doc, fc, cond, people, hrefFor, go }) {
   const groups = prGroups(doc.races || [], prToday());
+  const nPeople = people && people.paddlers ? people.paddlers.length : 0;
   return (
     <div className="pr-wrap">
       <h1 className="pr-title">Races</h1>
-      <p className="pr-muted">San Diego paddle races. Course map and race-day forecast for each.</p>
+      <p className="pr-muted">Southern California paddle races. Course map and race-day forecast for each.
+        {nPeople > 0 && <> <PrLink className="pr-inline" hrefFor={hrefFor} go={go} id="paddlers">Paddlers →</PrLink></>}</p>
       {groups.map(g => (
         <section key={g.key} className="pr-group" aria-labelledby={'pr-g-' + g.key}>
           <h2 className="pr-h2" id={'pr-g-' + g.key}>{g.title}</h2>
           <ul className="pr-list">
-            {g.races.map(r => <PrRaceRow key={r.id} r={r} fc={fc} past={g.past} hrefFor={hrefFor} go={go}/>)}
+            {g.races.map(r => <PrRaceRow key={r.id} r={r} fc={fc} cond={cond} past={g.isPast ? g.isPast(r) : false} hrefFor={hrefFor} go={go}/>)}
           </ul>
         </section>
       ))}
       {!groups.length && <p className="pr-muted">No races listed yet.</p>}
-      <p className="pr-foot">Race details from each race's PaddleGuru page, entered by hand.</p>
+      <p className="pr-foot">Race details entered by hand; each race links to its PaddleGuru page.</p>
     </div>
   );
 }
@@ -291,7 +302,7 @@ function PrStartWindow({ b }) {
 }
 function prLabelOf(s) { return s >= 3.5 ? 'Great' : s >= 2.5 ? 'Good' : s >= 1.5 ? 'Fair' : s >= 0.5 ? 'Poor' : 'Hard'; }
 
-function PrRacePage({ race, fc, hrefFor, go }) {
+function PrRacePage({ race, fc, cond, people, others, hrefFor, go }) {
   const dists = race.distances || [];
   const [distId, setDistId] = usePrState((dists.find(d => d.courseId) || dists[0] || {}).id);
   const [sel, setSel] = usePrState(null);
@@ -299,9 +310,11 @@ function PrRacePage({ race, fc, hrefFor, go }) {
   const dist = dists.find(d => d.id === distId) || dists[0] || {};
   const geoSt = usePrJson(dist.courseId ? 'paddle_courses/' + dist.courseId + '.geojson' : null);
   const geo = geoSt.data;
-  const f = fc && fc.races && fc.races[race.id] && fc.races[race.id][dist.id];
   const today = prToday();
   const past = race.date && race.date < today;
+  const fFc = fc && fc.races && fc.races[race.id] && fc.races[race.id][dist.id];
+  const fPast = past && cond && cond.races && cond.races[race.id] && cond.races[race.id][dist.id];
+  const f = fFc || fPast || null;
   const daysOut = race.date ? Math.round((Date.parse(race.date) - Date.parse(today)) / 864e5) : null;
   const pts = geo ? prWaypoints(geo) : [];
   const groups = prLegGroups(pts, f && f.legs);
@@ -311,10 +324,15 @@ function PrRacePage({ race, fc, hrefFor, go }) {
       <PrLink className="pr-crumb" hrefFor={hrefFor} go={go} id="">← All races</PrLink>
       <h1 className="pr-title">{race.name} {race.year ? <span className="pr-year">{race.year}</span> : null}</h1>
       <p className="pr-meta">
-        {race.date ? prDate(race.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Date TBC'}
+        {race.date ? prDate(race.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : race.status === 'date TBA' ? 'Date TBA' : 'Date TBC'}
         {race.startLocal ? ' · start ' + prHhmm(race.startLocal) : ''} · {race.location.name}
       </p>
       {draft && <p className="pr-flag">Draft: details and course not yet confirmed.</p>}
+      {others.length > 1 && (
+        <p className="pr-years">{others.map(o => o.id === race.id
+          ? <b key={o.id}>{o.year}</b>
+          : <PrLink key={o.id} hrefFor={hrefFor} go={go} id={o.id}>{o.year}</PrLink>)}</p>
+      )}
 
       {dists.length > 1 && (
         <div className="pr-tabs" role="tablist" aria-label="Distance">
@@ -327,20 +345,24 @@ function PrRacePage({ race, fc, hrefFor, go }) {
         </div>
       )}
 
-      <section className="pr-call" aria-label="Race-day forecast">
+      <section className="pr-call" aria-label={fPast && !fFc ? 'Race-day conditions' : 'Race-day forecast'}>
         {f ? (
           <>
-            <div className="pr-call-top"><PrPill big label={f.label}/><span className="pr-call-reason">{f.reason}</span></div>
+            <div className="pr-call-top">
+              {fPast && !fFc && <span className="pr-call-k">Race day</span>}
+              <PrPill big label={f.label}/><span className="pr-call-reason">{f.reason}</span>
+            </div>
             <p className="pr-muted pr-small">
               {f.preview ? 'Preview: scored as if the race were ' + prDate(f.date, { weekday: 'short', month: 'short', day: 'numeric' }) + '. ' : ''}
+              {fPast && !fFc ? 'Wind from ERA5 reanalysis. ' : ''}
               Start {prHhmm(f.start)}{f.startAssumed ? ' (assumed)' : ''} · {f.paceMph} mph pace
-              {fc.waterTemp ? ' · water ' + fc.waterTemp.f + '°F' : ''}
+              {f.waterF ? ' · water ' + f.waterF + '°F' : ''}
             </p>
             <PrStartWindow b={f.bestStart}/>
           </>
         ) : (
           <p className="pr-muted">
-            {past ? 'Past race.' : !race.date ? 'Forecast once the date is set.'
+            {past ? (dist.courseId ? 'Race-day conditions not in yet.' : 'Past race.') : !race.date ? 'Forecast once the date is set.'
               : !dist.courseId ? 'Forecast once the course is mapped.'
               : daysOut != null && daysOut > ((fc && fc.horizonDays) || 7) ? `Forecast opens ${(fc && fc.horizonDays) || 7} days out.`
               : 'No forecast yet.'}
@@ -365,18 +387,21 @@ function PrRacePage({ race, fc, hrefFor, go }) {
           <dt>Date</dt><dd>{race.date ? prDate(race.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'TBC'}</dd>
           <dt>Start</dt><dd>{race.startLocal ? prHhmm(race.startLocal) : 'TBC'}</dd>
           <dt>Location</dt><dd>{race.location.name}</dd>
-          <dt>Distances</dt><dd>{dists.map(d => d.label + ' ' + prMiles(d.miles)).join(' · ')}</dd>
+          <dt>Distances</dt><dd>{dists.map(d => d.label + (d.miles ? ' ' + prMiles(d.miles) : '')).join(' · ') || 'TBC'}</dd>
           <dt>Divisions</dt><dd>{(race.divisions || []).join(', ') || 'TBC'}</dd>
           {race.organiser && <><dt>Organiser</dt><dd>{race.organiser}</dd></>}
           {race.course && <><dt>Course</dt><dd>{race.course}</dd></>}
           {race.notes && <><dt>Notes</dt><dd>{race.notes}</dd></>}
+          {race.website && <><dt>Website</dt><dd><a href={race.website} target="_blank" rel="noopener">{race.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></dd></>}
+          {race.startNote && <><dt>Start note</dt><dd>{race.startNote}</dd></>}
           {race.registration && <><dt>Register</dt><dd><a href={race.registration} target="_blank" rel="noopener">Registration →</a></dd></>}
         </dl>
         {race.paddleguru
           ? <a className="pr-pg" href={race.paddleguru} target="_blank" rel="noopener">Race page on PaddleGuru →</a>
-          : <p className="pr-muted pr-small">PaddleGuru link to come.</p>}
+          : <p className="pr-muted pr-small">{race.status === 'date TBA' ? 'PaddleGuru link once the race is posted.' : 'No PaddleGuru page listed.'}</p>}
         {race.sources && race.sources.length > 0 && <p className="pr-src">Sources: {race.sources.join('; ')}.</p>}
       </section>
+      {window.PaddlePaddlers && <window.PaddlePaddlers.PpRaceResults race={race} people={people} hrefFor={hrefFor} go={go}/>}
     </div>
   );
 }
@@ -385,15 +410,28 @@ function PaddleRaces({ raceId, hrefFor, go }) {
   usePrEffect(prEnsureCss, []);
   const races = usePrJson('paddle_races.json');
   const fc = usePrJson('paddle_race_forecast.json');
+  const cond = usePrJson('paddle_race_conditions.json');
+  const people = usePrJson('paddle_people.json');
   if (races.error) return <div className="pr-wrap"><h1 className="pr-title">Races</h1><p className="pr-muted">The race list is unavailable right now.</p></div>;
   if (!races.data) return <div className="pr-wrap"><h1 className="pr-title">Races</h1><p className="pr-muted">Loading races…</p></div>;
-  const props = { fc: fc.data, hrefFor, go };
+  const props = { fc: fc.data, cond: cond.data, people: people.data, hrefFor, go };
+  const PP = window.PaddlePaddlers;
+  if (raceId === 'paddlers' || (raceId && raceId.startsWith('paddler-'))) {
+    if (!PP) return null;
+    if (people.error) return <div className="pr-wrap"><h1 className="pr-title">Paddlers</h1><p className="pr-muted">Unavailable right now.</p></div>;
+    if (!people.data) return <div className="pr-wrap"><h1 className="pr-title">Paddlers</h1><p className="pr-muted">Loading…</p></div>;
+    const p = { people: people.data, races: races.data, cond: cond.data, hrefFor, go };
+    return raceId === 'paddlers' ? <PP.PpIndex {...p}/> : <PP.PpProfile key={raceId} id={raceId.slice(8)} {...p}/>;
+  }
   if (raceId) {
-    const race = (races.data.races || []).find(r => r.id === raceId);
+    const all = races.data.races || [];
+    const race = all.find(r => r.id === raceId);
     if (!race) return <div className="pr-wrap"><h1 className="pr-title">Race not found</h1><PrLink className="pr-crumb" hrefFor={hrefFor} go={go} id="">← All races</PrLink></div>;
-    return <PrRacePage key={race.id} race={race} {...props}/>;
+    const others = all.filter(r => r.series && r.series === race.series).sort((a, b) => (a.year || 0) - (b.year || 0));
+    return <PrRacePage key={race.id} race={race} others={others} {...props}/>;
   }
   return <PrList doc={races.data} {...props}/>;
 }
 
+window.PaddleRacesKit = { usePrJson, PrPill, PrLink, prDate, prMiles, prKey };
 window.PaddleRaces = PaddleRaces;

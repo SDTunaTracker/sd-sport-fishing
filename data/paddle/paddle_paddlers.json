@@ -1,0 +1,4 @@
+{
+  "about": "Paddlers the owner has listed. Add with: python -m src.paddle.results add-paddler \"First Last\". hidden: true removes them from the site.",
+  "paddlers": []
+}

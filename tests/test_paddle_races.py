@@ -20,7 +20,7 @@ def test_race_ids_unique_and_fields():
     assert len(ids) == len(set(ids))
     for r in RACES["races"]:
         assert r["name"] and r["status"] and r["location"]["name"]
-        assert r["distances"], r["id"]
+        assert r.get("series") and r["id"].startswith(r["series"] + "-")
         if r["date"]:
             assert str(r["year"]) == r["date"][:4]
         if r.get("paddleguru"):
@@ -48,7 +48,7 @@ def test_loop_course_matches_published_length():
 
 
 def test_validate_catches_mismatched_waypoint():
-    fc = CO.load("plank-to-plank")
+    fc = CO.load("malibu-downwinder")
     fc = json.loads(json.dumps(fc))
     fc["features"][1]["geometry"]["coordinates"] = [-117.0, 32.0]
     assert any("not on the course line" in e for e in CO.validate(fc))
@@ -165,12 +165,133 @@ def test_build_preview_scores_every_leg(offline, tmp_path):
 def test_best_start_window_when_flexible(offline, tmp_path):
     races = json.loads(json.dumps(RACES))
     for r in races["races"]:
-        if r["id"] == "plank-to-plank":
+        if r["id"] == "malibu-downwinder-2026":
             r["startFlexible"] = True
     f = tmp_path / "races.json"
     f.write_text(json.dumps(races), encoding="utf-8")
     now = datetime.now(timezone.utc)
     day = (now.astimezone(F.TZ).date() + timedelta(days=2)).isoformat()
-    e = F.build(now=now, as_if={"plank-to-plank": day}, races_path=f)["races"]["plank-to-plank"]["main"]
+    e = F.build(now=now, as_if={"malibu-downwinder-2026": day}, races_path=f)["races"]["malibu-downwinder-2026"]["main"]
     b = e["bestStart"]
     assert b and b["from"] <= b["best"] <= b["to"] and b["byStart"][0]["start"] == "06:00"
+
+
+# ── race list editing (src/paddle/races.py) ────────────────────────────────
+
+from src.paddle import races as RA
+
+
+def test_race_file_checks_clean():
+    assert RA.check(RACES) == []
+
+
+def test_every_series_has_a_2027_entry_awaiting_a_date():
+    series = {r["series"] for r in RACES["races"]}
+    tba = {r["series"] for r in RACES["races"] if r["year"] == 2027}
+    assert series == tba
+    assert all(r["status"] == RA.TBA and r["date"] is None for r in RACES["races"] if r["year"] == 2027)
+
+
+def test_set_date_moves_tba_to_draft_and_cleans_url():
+    doc = json.loads(json.dumps(RACES))
+    r = RA.set_fields(doc, "the-loop-2027", day="2027-05-15", start="07:30",
+                      url="https://paddleguru.com/races/THELOOP2027/schedule?fbclid=x")
+    assert r["date"] == "2027-05-15" and r["status"] == RA.DRAFT and r["startLocal"] == "07:30"
+    assert r["paddleguru"] == "https://paddleguru.com/races/THELOOP2027"
+    assert RA.check(doc) == []
+    RA.set_fields(doc, "the-loop-2027", confirm=True)
+    assert r["status"] == RA.CONFIRMED
+
+
+def test_new_season_adds_one_tba_per_series():
+    doc = json.loads(json.dumps(RACES))
+    added = RA.new_season(doc, 2028)
+    assert len(added) == len({r["series"] for r in RACES["races"]})
+    assert RA.new_season(doc, 2028) == []
+    assert RA.check(doc) == []
+
+
+def test_check_flags_bad_rows():
+    doc = {"races": [{"id": "x-2027", "series": "x", "year": 2027, "date": "2026-01-01", "status": "nope",
+                      "startLocal": "7am", "paddleguru": "https://example.com", "location": {},
+                      "distances": [{"id": "a", "courseId": "missing"}]}]}
+    errs = " | ".join(RA.check(doc))
+    for bit in ("status", "not in year", "HH:MM", "paddleguru", "location", "missing"):
+        assert bit in errs
+
+
+def test_water_temp_only_for_san_diego_races():
+    by = {r["id"]: r for r in RACES["races"]}
+    assert F.near_sst_buoy(by["the-loop-2026"]) and F.near_sst_buoy(by["waterman-challenge-2026"])
+    assert not F.near_sst_buoy(by["catalina-classic-2026"]) and not F.near_sst_buoy(by["seaside-slide-2026"])
+
+
+# ── past-race conditions (src/paddle/conditions.py) ────────────────────────
+
+from src.paddle import conditions as CD
+
+
+def test_conditions_scores_past_races_once(monkeypatch, tmp_path):
+    calls = []
+
+    def fake(points, day):
+        calls.append(day)
+        t0 = int(datetime.fromisoformat(day + "T00:00:00+00:00").timestamp())
+        return [{t0 + h * 3600: (15.0, 270.0, 18.0) for h in range(48)} for _ in points]
+    monkeypatch.setattr(CD, "archive_wind", fake)
+    monkeypatch.setattr(CD.SF, "currents", lambda *a, **k: [])
+    out = CD.build(today=datetime(2026, 11, 27).date())
+    mal = out["races"]["malibu-downwinder-2026"]["main"]
+    assert mal["reason"].startswith("W 15 kt → downwind")      # W wind, paddling ESE
+    assert mal["label"] in ("Great", "Good")
+    n = len(calls)
+    again = CD.build(existing=out, today=datetime(2026, 11, 27).date())
+    assert len(calls) == n and again["races"].keys() == out["races"].keys()
+    assert "the-loop-2027" not in out["races"]                   # no date yet
+
+
+# ── paddler profiles (src/paddle/results.py) ───────────────────────────────
+
+from src.paddle import results as RS
+
+FIX = ROOT / "tests" / "fixtures" / "paddle"
+
+
+def test_fixture_results_check_clean():
+    people, results = RS.load(FIX)
+    assert RS.check(people, results, RACES) == []
+
+
+def test_hidden_paddler_and_results_never_published(tmp_path):
+    pub = RS.build(src=FIX, out=tmp_path / "people.json")
+    ids = {p["id"] for p in pub["paddlers"]}
+    assert "test-paddler-hidden" not in ids
+    assert all(r["paddler"] in ids for r in pub["results"])
+    assert "Hidden" not in (tmp_path / "people.json").read_text(encoding="utf-8")
+    assert pub["remove"].startswith("mailto:")
+    assert all(set(p) == {"id", "name", "crew", "note"} for p in pub["paddlers"])
+
+
+def test_check_rejects_unknown_ids_extra_fields_and_bad_places():
+    people = {"paddlers": [{"id": "a-b", "name": "A B", "hidden": False, "email": "x"}]}
+    results = {"results": [
+        {"paddler": "nobody", "race": "the-loop-2026", "distance": "loop", "craft": "Prone 14'"},
+        {"paddler": "a-b", "race": "no-race", "craft": "Kayak"},
+        {"paddler": "a-b", "race": "the-loop-2026", "distance": "loop", "craft": "SUP", "time": "2h", "place": 5,
+         "field": 3, "age": 44},
+    ]}
+    errs = " | ".join(RS.check(people, results, RACES))
+    for bit in ("unknown paddler", "unknown race", "craft", "not h:mm:ss", "field 3", "fields not allowed: age",
+                "fields not allowed: email"):
+        assert bit in errs, bit
+
+
+def test_times_parse():
+    assert RS.seconds("2:05:31") == 7531 and RS.seconds("58:02") == 3482 and RS.seconds("1:00:00.5") == 3600.5
+
+
+def test_live_people_file_matches_source_and_has_no_test_data(tmp_path):
+    live = json.loads((ROOT / "web/api/v1/paddle_people.json").read_text(encoding="utf-8"))
+    built = RS.build(out=tmp_path / "p.json")
+    assert live == built, "run: python -m src.paddle.results build"
+    assert not any("test" in p["id"] for p in live["paddlers"])

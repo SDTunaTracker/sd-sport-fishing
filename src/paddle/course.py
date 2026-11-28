@@ -9,7 +9,7 @@ One FeatureCollection per course (race + distance):
     and, for every vertex but the finish, the leg that starts there:
       leg            short name, written to read after a wind word
                      ("on the ocean leg", "into the bay")
-      water          ocean | channel | bay   (swell is scored on ocean legs only)
+      water          ocean | channel | bay | lake   (swell is scored on ocean legs only)
       current        NOAA current station id (e.g. PCT0031), optional
       currentFactor  share of that station's speed felt on the leg (default 1)
 
@@ -27,7 +27,7 @@ RACES = ROOT / "web" / "api" / "v1" / "paddle_races.json"
 
 EARTH_MI = 3958.8
 ROLES = {"start", "mark", "via", "finish"}
-WATERS = {"ocean", "channel", "bay"}
+WATERS = {"ocean", "channel", "bay", "lake"}
 
 
 def distance_mi(a_lat: float, a_lon: float, b_lat: float, b_lon: float) -> float:
@@ -84,8 +84,8 @@ def validate(fc: dict) -> list[str]:
             if p.get("water") not in WATERS:
                 errs.append(f"waypoint {n} water {p.get('water')!r}")
     for lon, lat in coords:
-        if not (32.0 < lat < 34.5 and -119.5 < lon < -116.5):
-            errs.append(f"point {lat},{lon} is outside Southern California")
+        if not (32.0 < lat < 40.0 and -121.5 < lon < -116.5):
+            errs.append(f"point {lat},{lon} is outside California")
     return errs
 
 
@@ -120,3 +120,33 @@ def legs(fc: dict) -> list[dict]:
 
 def total_mi(fc: dict) -> float:
     return round(sum(l["miles"] for l in legs(fc)), 1)
+
+
+def build(course_id: str, name: str, summary: str, sources: list[str], waypoints: list[dict],
+          status: str = "draft — confirm", **props) -> dict:
+    """A course FeatureCollection from an ordered waypoint list.
+
+    waypoints: [{"lat", "lon", "name", "role", "leg", "water", "current"?, "currentFactor"?}, ...];
+    the finish needs only lat, lon, name, role.
+    """
+    feats = [{"type": "Feature", "properties": {"kind": "course"},
+              "geometry": {"type": "LineString", "coordinates": [[w["lon"], w["lat"]] for w in waypoints]}}]
+    for i, w in enumerate(waypoints):
+        p = {"kind": "waypoint", "i": i, **{k: v for k, v in w.items() if k not in ("lat", "lon")}}
+        feats.append({"type": "Feature", "properties": p,
+                      "geometry": {"type": "Point", "coordinates": [w["lon"], w["lat"]]}})
+    fc = {"type": "FeatureCollection",
+          "properties": {"id": course_id, "name": name, "status": status, "summary": summary,
+                         "sources": sources, "drawnBy": "Tunatracker, from public descriptions; waypoints approximate",
+                         **props},
+          "features": feats}
+    errs = validate(fc)
+    if errs:
+        raise ValueError("; ".join(errs))
+    return fc
+
+
+def write(fc: dict, folder: Path = COURSES) -> Path:
+    p = folder / f"{fc['properties']['id']}.geojson"
+    p.write_text(json.dumps(fc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return p

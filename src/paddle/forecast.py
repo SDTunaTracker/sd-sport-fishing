@@ -11,7 +11,7 @@ Inputs, all through src/surf (imported, not copied):
   wind     ECMWF IFS 0.25° hourly via Open-Meteo (forecast.wind_hourly), at each leg's midpoint
   current  NOAA CO-OPS current predictions (forecast.currents), e.g. PCT0031 Bay Entrance
   swell    CDIP MOP ECMWF-forced nearshore Hs/Tp/Dp at the MOP point nearest each ocean leg
-  water    CDIP buoy SST (extras.water_temp)
+  water    CDIP buoy SST (extras.water_temp), San Diego County races only
 
 Run:  python -m src.paddle.forecast
       python -m src.paddle.forecast --as-if the-loop-2025=2026-11-29   (local preview only)
@@ -42,6 +42,17 @@ DEFAULT_START = "08:00"
 DEFAULT_PACE = 4.5
 FLEX_FROM, FLEX_TO, FLEX_STEP = 6.0, 14.0, 0.5
 FT = 3.281
+
+
+SST_NEAR_KM = 80          # the SST buoys (CDIP 201 Scripps, 220 Mission Bay) speak for San Diego County only
+SST_AT = (32.93, -117.27)
+
+
+def near_sst_buoy(race: dict) -> bool:
+    loc = race.get("location") or {}
+    if loc.get("lat") is None or loc.get("lon") is None:
+        return False
+    return CO.distance_mi(loc["lat"], loc["lon"], *SST_AT) * 1.609 <= SST_NEAR_KM
 
 
 # ── time helpers ────────────────────────────────────────────────────────────
@@ -220,20 +231,21 @@ def build(now: datetime | None = None, as_if: dict[str, str] | None = None,
             currents[st] = SF.currents(now - timedelta(days=1), days=HORIZON_DAYS + 2, station=st)
         except Exception as e:  # noqa: BLE001
             log.warning("current %s failed: %s", st, e)
-    try:
-        wt = water_temp(now)
-    except Exception as e:  # noqa: BLE001
-        log.warning("water temp failed: %s", e)
-        wt = None
-    water_f = wt["f"] if wt else None
+    wt = None
+    if any(near_sst_buoy(race) for race, *_ in todo):
+        try:
+            wt = water_temp(now)
+        except Exception as e:  # noqa: BLE001
+            log.warning("water temp failed: %s", e)
     payload["waterTemp"] = wt
 
     for (race, dist, day, preview, legs), wind, swell in zip(todo, winds, swells):
         pace = float(dist.get("paceMph") or race.get("paceMph") or defaults.get("paceMph") or DEFAULT_PACE)
         hhmm = dist.get("startLocal") or race.get("startLocal")
+        water_f = wt["f"] if wt and near_sst_buoy(race) else None
         r = score_course(legs, start_utc(day, hhmm or DEFAULT_START), pace, wind, swell, currents, water_f)
         entry = {"date": day, "start": hhmm or DEFAULT_START, "startAssumed": not hhmm, "paceMph": pace,
-                 "preview": preview, **r}
+                 "preview": preview, "waterF": water_f, **r}
         if race.get("startFlexible"):
             entry["bestStart"] = best_start(legs, day, pace, wind, swell, currents, water_f)
         payload["races"].setdefault(race["id"], {})[dist["id"]] = entry

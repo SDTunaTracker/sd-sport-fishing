@@ -21,6 +21,7 @@
 .pr-crumb { display: inline-block; margin-bottom: 6px; color: var(--pr-ink-2); text-decoration: none; font-size: 14px; }
 .pr-crumb:hover { text-decoration: underline; }
 .pr-foot, .pr-src { color: var(--pr-muted); font-size: 12px; margin: 18px 0 0; }
+.pr-foot a { color: var(--pr-ink-2); text-decoration: underline; }
 
 /* pills and colours */
 .pr-pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font: 700 12px/1.3 var(--pr-sans);
@@ -108,4 +109,61 @@
   .pr-leg-row > :nth-child(4) { grid-area: water; }
   .pr-leg-row > :nth-child(5) { grid-area: pill; justify-self: end; }
   .pr-dl { grid-template-columns: 90px 1fr; }
+}
+
+/* season links, race-day label, inline link */
+.pr-years { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px; font: 500 13px/1.4 var(--pr-mono); }
+.pr-years a { color: var(--pr-ink-2); } .pr-years b { color: var(--pr-ink); }
+.pr-call-k { font: 600 10.5px/1.2 var(--pr-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--pr-muted); }
+.pr-inline { color: var(--pr-ink); font-weight: 600; white-space: nowrap; }
+
+/* paddlers */
+.pr-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.pr-input { height: 38px; padding: 0 10px; border: 1px solid var(--pr-line); border-radius: var(--pr-r); background: var(--pr-surface);
+  color: var(--pr-ink); font: 400 14px/1 var(--pr-sans); min-width: 0; }
+.pr-filters input.pr-input { flex: 1 1 200px; }
+.pr-filters select.pr-input { flex: 1 1 150px; }
+.pr-row-pp { grid-template-columns: 1fr; }
+.pr-crew { font-style: normal; margin-left: 8px; padding: 1px 7px; border-radius: 999px; background: #E3F0EF; color: #1F5B5E;
+  font: 600 10.5px/1.5 var(--pr-sans); vertical-align: 2px; }
+.pr-res { border-top: 1px solid var(--pr-line); }
+.pr-res-row { display: grid; grid-template-columns: minmax(0, 2fr) .8fr .7fr .8fr minmax(0, 2fr); gap: 8px; align-items: center;
+  padding: 9px 4px; border-bottom: 1px solid var(--pr-line); font-size: 13.5px; }
+.pr-res-row small { display: block; color: var(--pr-muted); font-size: 11.5px; }
+.pr-res-race a { font-weight: 600; color: var(--pr-ink); }
+.pr-res-row .pr-pill { margin-right: 6px; }
+.pr-src-link { display: inline-block; margin-top: 2px; font-size: 11.5px; color: var(--pr-ink-2); }
+.pr-chart { width: 100%; max-width: 640px; height: auto; display: block; }
+.pr-grid { stroke: var(--pr-line); stroke-width: 1; }
+.pr-ax { font: 500 11px var(--pr-mono); fill: var(--pr-muted); }
+.pr-line { fill: none; stroke: var(--pr-ink); stroke-width: 2; }
+.pr-pt { fill: var(--pr-surface); stroke: var(--pr-ink); stroke-width: 2; }
+.pr-yoy { margin: 0 0 14px; }
+.pr-yoy-h { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.pr-yoy-row { display: grid; grid-template-columns: 44px minmax(60px, 1fr) 120px minmax(0, 1.4fr); gap: 8px; align-items: center;
+  font-size: 13px; padding: 3px 0; }
+.pr-yoy-yr { font-family: var(--pr-mono); color: var(--pr-ink-2); }
+.pr-yoy-bar { height: 10px; background: var(--pr-band); border-radius: 5px; overflow: hidden; }
+.pr-yoy-bar i { display: block; height: 100%; background: var(--pr-ink-2); border-radius: 5px; }
+.pr-yoy-t { font-family: var(--pr-mono); }
+.pr-yoy-c { color: var(--pr-muted); font-size: 12px; }
+.pr-faster { color: var(--pr-great); } .pr-slower { color: var(--pr-hard); }
+.pr-h2h { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--pr-line); }
+.pr-h2h li { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 8px 4px; border-bottom: 1px solid var(--pr-line); font-size: 14px; }
+.pr-h2h a { font-weight: 600; color: var(--pr-ink); min-width: 140px; }
+.pr-rr { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr) auto 50px; gap: 8px; align-items: baseline;
+  padding: 8px 4px; border-bottom: 1px solid var(--pr-line); font-size: 14px; }
+.pr-rr a { font-weight: 600; color: var(--pr-ink); }
+.pr-rr > :last-child { text-align: right; font-family: var(--pr-mono); }
+
+@media (max-width: 640px) {
+  .pr-res-row { grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "race race race" "time place pace" "cond cond cond"; row-gap: 4px; }
+  .pr-res-row > :nth-child(1) { grid-area: race; } .pr-res-row > :nth-child(2) { grid-area: time; }
+  .pr-res-row > :nth-child(3) { grid-area: place; } .pr-res-row > :nth-child(4) { grid-area: pace; }
+  .pr-res-row > :nth-child(5) { grid-area: cond; }
+  .pr-res-row.pr-leg-head { display: none; }
+  .pr-yoy-row { grid-template-columns: 40px minmax(40px, 1fr) 110px; }
+  .pr-yoy-c { grid-column: 1 / -1; padding-left: 48px; }
+  .pr-rr { grid-template-columns: 1fr auto 44px; }
+  .pr-rr > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
 }

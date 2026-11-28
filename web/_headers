@@ -45,6 +45,21 @@
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 
+/api/v1/paddle_race_conditions.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
+/api/v1/paddle_people.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+  X-Robots-Tag: noindex
+
+/sd/surf/races/paddlers
+  X-Robots-Tag: noindex, nofollow
+
+/sd/surf/races/paddler-*
+  X-Robots-Tag: noindex, nofollow
+
 /api/v1/paddle_courses/*
   Content-Type: application/geo+json
   Cache-Control: no-cache, must-revalidate

@@ -1,0 +1,134 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "id": "catalina-classic",
+    "name": "Catalina Classic (~32 mi)",
+    "status": "draft — confirm",
+    "summary": "Isthmus of Catalina across the channel to a buoy off Palos Verdes Point, then up the coast to the Manhattan Beach Pier.",
+    "sources": [
+      "catalinaclassicpaddleboardrace.com (race rules: course)"
+    ],
+    "drawnBy": "Tunatracker, from public descriptions; waypoints approximate"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "course"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -118.497,
+            33.4465
+          ],
+          [
+            -118.47,
+            33.62
+          ],
+          [
+            -118.445,
+            33.79
+          ],
+          [
+            -118.425,
+            33.84
+          ],
+          [
+            -118.414,
+            33.884
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 0,
+        "name": "Start, the Isthmus",
+        "role": "start",
+        "leg": "across the channel",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.497,
+          33.4465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 1,
+        "name": "Mid-channel",
+        "role": "via",
+        "leg": "across the channel",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.47,
+          33.62
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 2,
+        "name": "Buoy off Palos Verdes Point",
+        "role": "mark",
+        "leg": "up the coast",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.445,
+          33.79
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 3,
+        "name": "Off Redondo",
+        "role": "via",
+        "leg": "up the coast",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.425,
+          33.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 4,
+        "name": "Finish, Manhattan Beach Pier",
+        "role": "finish"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.414,
+          33.884
+        ]
+      }
+    }
+  ]
+}

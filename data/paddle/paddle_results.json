@@ -1,0 +1,4 @@
+{
+  "about": "Race results typed in from public results pages (one row per paddler, race and distance). Add with: python -m src.paddle.results add ...",
+  "results": []
+}
