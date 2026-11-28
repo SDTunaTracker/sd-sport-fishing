@@ -1,3 +1,154 @@
 {
-  "ambiguous": []
+  "ambiguous": [
+    {
+      "name": "Peter Schulam",
+      "race": "malibu-downwinder-2023",
+      "division": "Stock Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": []
+    },
+    {
+      "name": "Peter Schulam",
+      "race": "malibu-downwinder-2023",
+      "division": "Stock Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": []
+    },
+    {
+      "name": "Michael Porra",
+      "race": "nac-hal-rosoff-2015",
+      "division": "Prone Unlimited Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "michael-porra"
+      ]
+    },
+    {
+      "name": "Michael Porra",
+      "race": "nac-hal-rosoff-2015",
+      "division": "Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "michael-porra"
+      ]
+    },
+    {
+      "name": "Chris Meinhold",
+      "race": "nac-hal-rosoff-2016",
+      "division": "Prone 12'6\" Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "chris-meinhold"
+      ]
+    },
+    {
+      "name": "Chris Meinhold",
+      "race": "nac-hal-rosoff-2016",
+      "division": "Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "chris-meinhold"
+      ]
+    },
+    {
+      "name": "Joe Scaturro",
+      "race": "nac-hal-rosoff-2017",
+      "division": "Prone 12'6\" Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "joe-scaturro"
+      ]
+    },
+    {
+      "name": "Joe Scaturro",
+      "race": "nac-hal-rosoff-2017",
+      "division": "Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "joe-scaturro"
+      ]
+    },
+    {
+      "name": "Liz Hunter",
+      "race": "nac-hal-rosoff-2017",
+      "division": "Prone 12'6\" Women",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "liz-hunter"
+      ]
+    },
+    {
+      "name": "Liz Hunter",
+      "race": "nac-hal-rosoff-2017",
+      "division": "Prone Women",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "liz-hunter"
+      ]
+    },
+    {
+      "name": "Porter Hogan",
+      "race": "nac-hal-rosoff-2018",
+      "division": "Prone 12'6\" Men",
+      "reason": "same name twice in this race",
+      "candidates": []
+    },
+    {
+      "name": "Porter Hogan",
+      "race": "nac-hal-rosoff-2018",
+      "division": "Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": []
+    },
+    {
+      "name": "Ian Ferrell",
+      "race": "nac-hal-rosoff-2025",
+      "division": "Prone Unlimited Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "ian-ferrell"
+      ]
+    },
+    {
+      "name": "Ian Ferrell",
+      "race": "nac-hal-rosoff-2025",
+      "division": "Prone Unlimited Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "ian-ferrell"
+      ]
+    },
+    {
+      "name": "Ian Ferrell",
+      "race": "nac-hal-rosoff-2026",
+      "division": "Prone Unlimited Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "ian-ferrell"
+      ]
+    },
+    {
+      "name": "Ian Ferrell",
+      "race": "nac-hal-rosoff-2026",
+      "division": "Prone Men",
+      "reason": "same name twice in this race",
+      "candidates": [
+        "ian-ferrell"
+      ]
+    },
+    {
+      "name": "Joshua Pighetti",
+      "race": "tahoe-downwind-2026",
+      "division": "Prone Unlimited 14+ Men",
+      "reason": "same name twice in this race",
+      "candidates": []
+    },
+    {
+      "name": "Joshua Pighetti",
+      "race": "tahoe-downwind-2026",
+      "division": "Prone Unlimited 14+ Men",
+      "reason": "same name twice in this race",
+      "candidates": []
+    }
+  ]
 }

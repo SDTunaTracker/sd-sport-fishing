@@ -1,0 +1,18 @@
+{
+  "_about": "PaddleGuru results-page slugs to try per race series, from the Wayback Machine index (web.archive.org CDX, checked 2026-11-28). Used by src/paddle/sources/paddleguru.py together with year-swapped forms of each race's own slug.",
+  "hanohano": ["2014HanohanoHukiOceanChallenge", "2015HanohanoHukiOceanChallenge", "2016HanohanoHukiOceanChallenge", "2017HanohanoHukiOceanChallenge", "2018HanohanoHukiOceanChallenge", "HanohanoHukiOceanChallenge", "HanohanoHukiOceanChallenge2019", "HanohanoHukiOceanChallenge2020", "HanohanoHukiOceanChallenge2022", "HanohanoHukiTimeTrialChallenge2021", "HanohanoOceanChallenge2022", "HanohanoOceanChallenge2023", "HanohanoOceanChallenge2024", "WestCoastPaddleSportsHanohanoOceanChallenge2023"],
+  "nac-hal-rosoff": ["HalRosoffClassic", "HalRosoffClassic2014", "HalRosoffClassic2015", "HalRosoffClassic2016", "NACHalRosoffClassic2016", "NACHalRosoffClassic2017", "NACHalRosoffClassic2018", "NACHalRosoffClassic2019", "NACHalRosoffClassic2020", "NACHalRosoffClassic2022", "NACHalRosoffClassic2023", "NACHalRosoffClassic2024"],
+  "adler-paddler": ["4thAnnualAdlerPaddler", "5thAnnualAdlerPaddler", "6thAnnualAdlerPaddler", "7thAnnualAdlerPaddler", "8thAnnualAdlerPaddler2018", "9thAnnualAdlerPaddler", "10thAnnualAdlerPaddler", "11thAnnualAdlerPaddler", "12thAnnualAdlerPaddler", "13thAnnualAdlerPaddler"],
+  "lifeguard-lap": ["TheLifeguardLap"],
+  "malibu-downwinder": ["Malibu2MarinaChampionshipRace2020", "MalibuToMarina", "Malibudownwinder2022", "Malibudownwinder2023", "Malibudownwinder2024"],
+  "seaside-slide": ["17thAnnualSeasideSlide", "18thAnnualSeasideSlide", "SeasideSlide"],
+  "the-loop": ["TheLoop", "THELOOP2022", "THELOOP2023", "THELOOP2024", "THELOOP2025"],
+  "nac-el-morro": ["NACElMorroClassic2023", "NACElMorroClassic2024", "ElMorroClassic"],
+  "r10": ["TheR10PaddleboardRace2024", "TheR10PaddleboardRace", "R10PaddleboardRace"],
+  "waterman-challenge": ["WatermanChallengePaddleboardRace", "WatermanChallengePaddleboardRaceSwamistoWindansea", "WatermanChallengePaddleboardRaceSwamistoWindansea2023", "WatermanChallengePaddleboardRaceSwamistoWindansea2024"],
+  "rock-2-rock": ["Rock2Rock", "Rock2Rock2015", "Rock2Rock2016", "Rock2Rock2017", "Rock2Rock2018", "Rock2Rock2019", "Rock2Rock2022", "Rock2Rock2023", "Rock2Rock2024", "Rock2Rock2025"],
+  "paddle-laguna": ["PaddleLagunaBeach", "PaddleLagunaBeach2023", "PaddleLagunaBeach20242ndAnnual", "PaddleLagunaBeach2ndAnnual"],
+  "tahoe-downwind": ["TAHOEDOWNWINDChampionships2020TahoeWatermanPaddleRacing", "TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2021", "TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2022", "TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2023", "TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2024"],
+  "tom-davis": ["TomDavisOceanChallenge", "TomDavisOceanChallenge2025", "TomDavisOceanChallenge2024"],
+  "ocean-rodeo": ["SouthCoastOceanRodeo2025", "SouthCoastOceanRodeo2024"]
+}
