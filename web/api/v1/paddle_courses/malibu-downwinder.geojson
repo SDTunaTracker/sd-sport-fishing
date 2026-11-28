@@ -1,0 +1,134 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "id": "malibu-downwinder",
+    "name": "Malibu Downwinder (~7 mi)",
+    "status": "draft — confirm",
+    "summary": "Mugu State Beach (north of Mugu Rock) down the coast to Leo Carrillo State Beach.",
+    "sources": [
+      "Race blog, Malibu Downwinder 2012"
+    ],
+    "drawnBy": "Tunatracker, from public descriptions; waypoints approximate"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "course"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -119.069,
+            34.0868
+          ],
+          [
+            -119.06,
+            34.0815
+          ],
+          [
+            -119.014,
+            34.0665
+          ],
+          [
+            -118.965,
+            34.048
+          ],
+          [
+            -118.937,
+            34.0432
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 0,
+        "name": "Start, Mugu State Beach",
+        "role": "start",
+        "leg": "past Mugu Rock",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.069,
+          34.0868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 1,
+        "name": "Off Mugu Rock",
+        "role": "via",
+        "leg": "down the coast",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.06,
+          34.0815
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 2,
+        "name": "Off Sycamore Cove",
+        "role": "via",
+        "leg": "down the coast",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -119.014,
+          34.0665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 3,
+        "name": "Off County Line",
+        "role": "via",
+        "leg": "to Leo Carrillo",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.965,
+          34.048
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 4,
+        "name": "Finish, Leo Carrillo State Beach",
+        "role": "finish"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.937,
+          34.0432
+        ]
+      }
+    }
+  ]
+}

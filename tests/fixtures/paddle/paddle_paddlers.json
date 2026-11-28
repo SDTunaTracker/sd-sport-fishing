@@ -1,0 +1,33 @@
+{
+  "about": "TEST FIXTURE: fake people, never deployed.",
+  "paddlers": [
+    {
+      "id": "test-paddler-a",
+      "name": "Test Paddler A",
+      "hidden": false,
+      "crew": true,
+      "note": null
+    },
+    {
+      "id": "test-paddler-b",
+      "name": "Test Paddler B",
+      "hidden": false,
+      "crew": true,
+      "note": null
+    },
+    {
+      "id": "test-paddler-c",
+      "name": "Test Paddler C",
+      "hidden": false,
+      "crew": true,
+      "note": null
+    },
+    {
+      "id": "test-paddler-hidden",
+      "name": "Test Paddler Hidden",
+      "hidden": true,
+      "crew": true,
+      "note": null
+    }
+  ]
+}

@@ -5,17 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#17332C">
 <base href="/">
-<script>
-  (function () {
-    var m = /^\/sd\/([^\/]+)/.exec(location.pathname);
-    if (!m || /^(home|today|charts|forecast|surf|pick|account|settings)$/.test(m[1])) return;
-    var s = document.createElement('script');
-    s.id = 'tt-history-early'; s.async = true; s.src = 'data-history.js';
-    s.onload = function () { window.__ttHistEarly = 1; };
-    s.onerror = function () { window.__ttHistEarly = 2; };
-    document.head.appendChild(s);
-  })();
-</script>
 <title>Outer Limits Fish Report &amp; Counts — Seaforth Sportfishing | Tunatracker</title>
 <meta name="description" content="Outer Limits (Seaforth Sportfishing) latest fish counts, last trip Sep 25, 2026. 340 trips since 2015: 94.1% landed trophy fish, avg 2.17 per angler per day.">
 <link rel="canonical" href="https://thetunatracker.com/sd/boat/Outer%20Limits/">
@@ -70,32 +59,19 @@
   gtag('js', new Date());
   gtag('config', 'G-6QDTY73V37');
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></noscript>
-<link rel="stylesheet" href="styles.css?v=20261127-34">
-<link rel="stylesheet" href="design-system.css?v=20261127-38">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">
+<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">
+<link rel="stylesheet" href="styles.css?v=20261127-35">
+<link rel="stylesheet" href="design-system.css?v=20261127-39">
 <script>window.VESSEL_WORKER_URL = '';</script>
-<script id="tt-clerk-sdk">
-  (function () {
-    function addClerk() {
-      var s = document.createElement('script');
-      s.async = true;
-      s.crossOrigin = 'anonymous';
-      s.setAttribute('data-clerk-publishable-key', 'pk_test_Z3VpZGVkLWdhbm5ldC05OC5jbGVyay5hY2NvdW50cy5kZXYk');
-      s.src = 'https://guided-gannet-98.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
-      s.type = 'text/javascript';
-      document.head.appendChild(s);
-    }
-    if (document.readyState === 'complete') addClerk();
-    else window.addEventListener('load', addClerk);
-  })();
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_Z3VpZGVkLWdhbm5ldC05OC5jbGVyay5hY2NvdW50cy5kZXYk"
+  src="https://guided-gannet-98.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+  type="text/javascript">
 </script>
 </head>
 <body>
@@ -152,7 +128,7 @@
 <script src="dates.js?v=20261124-1"></script>
 <script src="feature-flags.js?v=20261126-7"></script>
 <script src="regions.js?v=20261126-2"></script>
-<script src="data.js?v=20261127-8"></script>
+<script src="data.js?v=20261127-11"></script>
 <script>if(!window.SD){var s=document.getElementById('seo-static'),r=document.getElementById('root');if(s)s.style.display='';if(r)r.style.display='none';}</script>
 <script src="region-data.js?v=20261127-3"></script>
 <script src="regulations.js?v=20261125-8"></script>
@@ -160,45 +136,48 @@
 <script src="marine.js?v=20261127-3"></script>
 <script src="trip-picker.js?v=20261127-4"></script>
 <script src="pack-list.js?v=20261126-2"></script>
-<script src="analytics.js?v=20261127-34"></script>
+<script src="analytics.js?v=20261127-35"></script>
 <script src="analytics-events.js?v=20261125-14"></script>
 <script src="clerk-init.js?v=20261124-1"></script>
 <script src="use-auth.js?v=20261124-1"></script>
 <script src="user-prefs.js?v=20261124-1"></script>
 <script src="metric-definitions.js?v=20261126-5"></script>
 
-<script src="dist/tweaks-panel.js?v=20261127-34"></script>
-<script src="dist/metric-label.js?v=20261127-34"></script>
-<script src="dist/ui.js?v=20261127-35"></script>
-<script src="dist/components.js?v=20261127-34"></script>
-<script src="dist/filterbar.js?v=20261127-34"></script>
-<script src="dist/dashboard.js?v=20261127-35"></script>
-<script src="dist/home.js?v=20261127-35"></script>
-<script src="dist/picker.js?v=20261127-35"></script>
-<script src="dist/boats.js?v=20261127-34"></script>
-<script src="dist/drilldown.js?v=20261127-34"></script>
-<script src="dist/boat-reviews.js?v=20261127-34"></script>
-<script src="dist/forum-reports.js?v=20261127-34"></script>
-<script src="dist/google-reviews.js?v=20261127-34"></script>
-<script src="dist/boat-videos.js?v=20261127-34"></script>
-<script src="dist/bait-now.js?v=20261127-34"></script>
+<script src="dist/tweaks-panel.js?v=20261127-35"></script>
+<script src="dist/metric-label.js?v=20261127-35"></script>
+<script src="dist/ui.js?v=20261127-36"></script>
+<script src="dist/components.js?v=20261127-35"></script>
+<script src="dist/filterbar.js?v=20261127-35"></script>
+<script src="dist/dashboard.js?v=20261127-36"></script>
+<script src="dist/home.js?v=20261127-36"></script>
+<script src="dist/picker.js?v=20261127-36"></script>
+<script src="dist/boats.js?v=20261127-35"></script>
+<script src="dist/drilldown.js?v=20261127-35"></script>
+<script src="dist/boat-reviews.js?v=20261127-35"></script>
+<script src="dist/forum-reports.js?v=20261127-35"></script>
+<script src="dist/google-reviews.js?v=20261127-35"></script>
+<script src="dist/boat-videos.js?v=20261127-35"></script>
+<script src="dist/bait-now.js?v=20261127-35"></script>
 <script type="text/javascript-deferred" id="tt-leaflet-vel-js" src="lib/leaflet-velocity/leaflet-velocity.js"></script>
-<script src="dist/charts.js?v=20261127-37"></script>
-<script src="dist/tripplanner.js?v=20261127-34"></script>
-<script src="dist/headtohead.js?v=20261127-34"></script>
-<script src="dist/seasonality.js?v=20261127-34"></script>
-<script src="dist/moon.js?v=20261127-34"></script>
-<script src="dist/settings.js?v=20261127-34"></script>
-<script src="dist/account.js?v=20261127-34"></script>
-<script src="dist/analytics.js?v=20261127-34"></script>
-<script src="dist/forecast.js?v=20261127-34"></script>
-<script src="dist/chatbot.js?v=20261127-34"></script>
-<script src="dist/sfbay.js?v=20261127-34"></script>
-<script src="dist/surf-nws.js?v=20261127-22"></script>
-<script src="dist/surf-scorecard.js?v=20261127-22"></script>
-<script src="dist/paddle.js?v=20261127-14"></script>
-<script src="dist/surf.js?v=20261127-37"></script>
-<script src="dist/app.js?v=20261127-36"></script>
+<script src="dist/charts.js?v=20261127-38"></script>
+<script src="dist/tripplanner.js?v=20261127-35"></script>
+<script src="dist/headtohead.js?v=20261127-35"></script>
+<script src="dist/seasonality.js?v=20261127-35"></script>
+<script src="dist/moon.js?v=20261127-35"></script>
+<script src="dist/settings.js?v=20261127-35"></script>
+<script src="dist/account.js?v=20261127-35"></script>
+<script src="dist/analytics.js?v=20261127-35"></script>
+<script src="dist/forecast.js?v=20261127-35"></script>
+<script src="dist/chatbot.js?v=20261127-35"></script>
+<script src="dist/sfbay.js?v=20261127-35"></script>
+<script src="dist/surf-nws.js?v=20261127-23"></script>
+<script src="dist/surf-scorecard.js?v=20261127-23"></script>
+<script src="dist/paddle.js?v=20261127-15"></script>
+<script src="dist/paddle-races.js?v=20261127-6"></script>
+<script src="dist/paddle-paddlers.js?v=20261127-5"></script>
+<script src="dist/surf-report.js?v=20261127-5"></script>
+<script src="dist/surf.js?v=20261127-38"></script>
+<script src="dist/app.js?v=20261127-37"></script>
 <script src="seo.js?v=20261127-2"></script>
 <script>
 if ('serviceWorker' in navigator) {

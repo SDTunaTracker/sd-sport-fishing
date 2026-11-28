@@ -867,6 +867,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf report" data={data}/>
+      {window.SurfAutoReport && <window.SurfAutoReport/>}
       <SurfEssentials data={data} region nowLabel="now"/>
       <SurfNws nws={data.nws}/>
       {window.SurfNwsNotes && <window.SurfNwsNotes notes={data.nwsNotes}/>}
@@ -969,6 +970,7 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf forecast" data={data}/>
+      {window.SurfAutoOutlook && <window.SurfAutoOutlook/>}
       <SurfDays days={days} day={day} setDay={setDay}/>
       {day && (
         <div className="sf-overview">
@@ -1644,6 +1646,11 @@ function SurfView({ navigate, sub, spot }) {
   const ctx = useSurfAll();
   const [favs, toggleFav] = useSurfFavs();
   const { data, error } = ctx;
+  // Paddle races (web/paddle-races.jsx): own data, doesn't need surf.json.
+  if (sub === 'races' && window.PaddleRaces) {
+    return <window.PaddleRaces raceId={spot} hrefFor={id => sfPath({ sub: 'races', spot: id })}
+                               go={id => navigate('surf', id ? { sub: 'races', spot: id } : { sub: 'races' })}/>;
+  }
   if (sub === 'paddle' && window.PaddleView) {
     return <window.PaddleView spot={spot}
                               link={id => sfLinkProps(navigate, id ? { sub: 'paddle', spot: id } : { sub: 'paddle' })}

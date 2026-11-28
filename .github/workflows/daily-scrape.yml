@@ -237,6 +237,19 @@ jobs:
             echo "Skipping paddle spots (hour=$HOUR, mode=${{ steps.mode.outputs.mode }})"
           fi
 
+      - name: Surf report (Surftracker written report)
+        # src/surf/report.py: the written Today report, 5-day outlook, region
+        # lines and paddle note, from surf.json + surf_spots.json + NWS text.
+        # Claude (claude-haiku-5-5) writes it with strict fact checks; the
+        # template writer is the fallback (no key, API down, failed checks).
+        # Rewrites at most every 3 h unless the story changes (about 9 calls a
+        # day, well under $1 a month). Writes web/api/v1/surf_report.json. Never fails the run.
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -m src.surf.report || echo "::warning::surf report failed"
+
       - name: Surf cam live check (Surftracker, once a day)
         # src/surf/cams.py: YouTube oEmbed + thumbnail check (removed / embed off) for each cam
         # in web/api/v1/surf_cams.json (2 keyless requests per cam, no API key).
@@ -249,6 +262,18 @@ jobs:
           else
             echo "Skipping surf cam check (mode=${{ steps.mode.outputs.mode }})"
           fi
+
+      - name: Paddle race forecast (Paddle Tracker)
+        # src/paddle/forecast.py: scores each leg of races in the next 7 days
+        # (web/api/v1/paddle_races.json + paddle_courses/) with the surf code's
+        # ECMWF wind, NOAA currents and CDIP swell. No requests when no race is
+        # in range. Writes web/api/v1/paddle_race_forecast.json and
+        # paddle_race_conditions.json. Never fails the run.
+        continue-on-error: true
+        run: |
+          python -m src.paddle.forecast || echo "::warning::paddle race forecast failed"
+          # past races: race-day wind from the ERA5 archive, fetched once per race
+          python -m src.paddle.conditions || echo "::warning::paddle race conditions failed"
 
       - name: Fetch currents grid (full mode, Copernicus Marine)
         # Real currents for the Charts map (src/currents_cmems.py). Skips until
@@ -296,7 +321,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tracker.db web/data.js web/api/v1/app.json web/sitemap.xml web/sd web/sst_grid.json
-          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/api/v1/bait_now.json web/api/v1/surf.json web/api/v1/surf_spots.json web/api/v1/surf_cams_status.json web/api/v1/paddle_spots.json web/api/v1/buoys.json web/api/v1/met_grid.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in web/api/v1/enso.json web/api/v1/boat_videos.json web/api/v1/bait_now.json web/api/v1/surf.json web/api/v1/surf_spots.json web/api/v1/surf_report.json web/api/v1/surf_cams_status.json web/api/v1/paddle_spots.json web/api/v1/paddle_race_forecast.json web/api/v1/paddle_race_conditions.json web/api/v1/buoys.json web/api/v1/met_grid.json web/currents_grid.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           # Per-region data files: data-region-oc_la.js, ... (src/export.py) and
           # data-region-sfbay.js (src/export_sfbay.py).
           if ls web/data-region-*.js >/dev/null 2>&1; then git add web/data-region-*.js; fi
