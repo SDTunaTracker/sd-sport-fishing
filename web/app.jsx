@@ -661,16 +661,27 @@ function App() {
     // once per mount (useMemo with []), so a different region or new settings
     // gets a fresh instance, as a remount always did.
     ? [route.view, JSON.stringify(route.params || {}), regions.join(','), JSON.stringify(settings)].join(' ') : null;
+  // ...and a 15-minute slot: Surftracker / Paddle read hourly files and work
+  // out "now" when they render, so a view older than that is remounted (fresh
+  // data, fresh clock) instead of shown; its old copy is dropped.
+  const keepSlot = Math.floor(Date.now() / (15 * 60000));
   if (keepKey) {
     const m = keepAlive.current;
+    const old = m.get(keepKey);
+    // Only when switching to it: a view you're looking at is never remounted.
+    const stale = !!old && m.__active !== keepKey && old.slot !== keepSlot;
     m.delete(keepKey);
-    m.set(keepKey, { type: content.type, props: content.props });
+    m.set(keepKey, { type: content.type, props: content.props,
+                     slot: !old || stale ? keepSlot : old.slot,
+                     gen: !old ? 0 : old.gen + (stale ? 1 : 0) });
+    m.__active = keepKey;
     while (m.size > KEEP_ALIVE_MAX) m.delete(m.keys().next().value);
   }
+  if (!keepKey) keepAlive.current.__active = null;
   // Kept views stay mounted (hidden) even while a loading panel or an
   // uncached page (Account) is showing.
   const mainBody = [...keepAlive.current.entries()].map(([k, v]) => (
-    <KeptView key={k} active={k === keepKey} type={v.type} props={v.props} tick={regionDataTick}/>));
+    <KeptView key={k + ' #' + v.gen} active={k === keepKey} type={v.type} props={v.props} tick={regionDataTick}/>));
   if (!keepKey && content) mainBody.push(<React.Fragment key="tt-uncached">{content}</React.Fragment>);
 
   return (

@@ -49,5 +49,7 @@
 /sd+ocla/*           /sd/:splat    301
 # Surftracker (merged 2026-11-27): no prerendered page, so serve the app shell.
 # Without these, /sd/surf answered 404 and bounced through 404.html to "/".
+# The splat covers every deeper route: /forecast, /map, /cams[/<cam>],
+# /break/<id>, /paddle[/<spot>].
 /sd/surf             /   200
 /sd/surf/*           /   200
