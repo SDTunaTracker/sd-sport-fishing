@@ -1,0 +1,112 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "id": "rock-2-rock",
+    "name": "Rock 2 Rock (~22 mi)",
+    "status": "draft — confirm",
+    "summary": "Channel crossing from Two Harbors, Catalina, to Cabrillo Beach, San Pedro.",
+    "sources": [
+      "Easy Reader, Rock 2 Rock reports"
+    ],
+    "drawnBy": "Tunatracker, from public descriptions; waypoints approximate"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "course"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -118.497,
+            33.4465
+          ],
+          [
+            -118.38,
+            33.6
+          ],
+          [
+            -118.295,
+            33.699
+          ],
+          [
+            -118.285,
+            33.7075
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 0,
+        "name": "Start, Two Harbors",
+        "role": "start",
+        "leg": "across the channel",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.497,
+          33.4465
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 1,
+        "name": "Mid-channel",
+        "role": "via",
+        "leg": "across the channel",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.38,
+          33.6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 2,
+        "name": "Off Point Fermin",
+        "role": "via",
+        "leg": "to Cabrillo Beach",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.295,
+          33.699
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 3,
+        "name": "Finish, Cabrillo Beach",
+        "role": "finish"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.285,
+          33.7075
+        ]
+      }
+    }
+  ]
+}

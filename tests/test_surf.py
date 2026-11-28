@@ -209,3 +209,27 @@ def test_break_forecast_emits_wind_gusts(monkeypatch):
     wind = {t: (6.0, 90.0, 11.6), t + 10800: (5.0, 80.0, None)}
     out = F.break_forecast(BY_ID["ocean-beach"], wind, {}, datetime.fromtimestamp(t, timezone.utc))
     assert [h["windGustKt"] for h in out["hours"]] == [12, None]
+
+
+def test_currents_parse_and_tides_station(monkeypatch):
+    from datetime import datetime, timezone
+    from src.surf import forecast as F
+    seen = []
+
+    def fake(url, params=None, **k):
+        seen.append(params)
+        if params["product"] == "currents_predictions":
+            return {"current_predictions": {"cp": [
+                {"Type": "flood", "Time": "2026-11-27 04:24", "Velocity_Major": 1.57, "meanFloodDir": 355, "meanEbbDir": 173},
+                {"Type": "ebb", "Time": "2026-11-27 10:00", "Velocity_Major": -0.81, "meanFloodDir": 355, "meanEbbDir": 173},
+                {"Type": "slack", "Time": "2026-11-27 07:50", "Velocity_Major": 0, "meanFloodDir": 355, "meanEbbDir": 173}]}}
+        return {"predictions": [{"t": "2026-11-27 00:00", "v": "3.1", "type": "H"}]}
+    monkeypatch.setattr(F, "_get_json", fake)
+    c = F.currents(datetime(2026, 11, 27, tzinfo=timezone.utc))
+    assert [x["type"] for x in c] == ["flood", "ebb", "slack"]
+    assert c[1]["kt"] == 0.81 and c[1]["towardDeg"] == 173 and c[2]["towardDeg"] is None
+    assert seen[-1]["station"] == "PCT0031"
+    F.tides(datetime(2026, 11, 27, tzinfo=timezone.utc), station="9410170")
+    assert seen[-1]["station"] == "9410170"
+    F.tides(datetime(2026, 11, 27, tzinfo=timezone.utc))
+    assert seen[-1]["station"] == F.TIDE_STATION
