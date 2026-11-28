@@ -37,6 +37,10 @@
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
 
+/api/v1/paddle_spots.json
+  Content-Type: application/json
+  Cache-Control: no-cache, must-revalidate
+
 /api/v1/paddle_races.json
   Content-Type: application/json
   Cache-Control: no-cache, must-revalidate
