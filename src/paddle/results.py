@@ -39,7 +39,7 @@ SRC = CO.ROOT / "data" / "paddle"
 PADDLERS = SRC / "paddle_paddlers.json"
 RESULTS = SRC / "paddle_results.json"
 OUT = CO.ROOT / "web" / "api" / "v1" / "paddle_people.json"
-CRAFTS = ["Prone stock", "Prone 14'", "Prone unlimited", "SUP", "OC1", "OC2", "OC6", "Surfski", "Other"]
+CRAFTS = ["Prone stock", "Prone 14'", "Prone unlimited", "Prone", "SUP", "OC1", "OC2", "OC6", "Surfski", "Other"]
 CONTACT = "mailto:thetunatracker@gmail.com?subject=Remove%20my%20paddle%20profile"
 TIME_RE = re.compile(r"^(\d{1,2}):([0-5]\d):([0-5]\d)(\.\d+)?$|^([0-5]?\d):([0-5]\d)(\.\d+)?$")
 
