@@ -858,6 +858,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf report" data={data}/>
+      {window.SurfAutoReport && <window.SurfAutoReport/>}
       <SurfEssentials data={data} region nowLabel="now"/>
       <SurfNws nws={data.nws}/>
       {window.SurfNwsNotes && <window.SurfNwsNotes notes={data.nwsNotes}/>}
@@ -960,6 +961,7 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf forecast" data={data}/>
+      {window.SurfAutoOutlook && <window.SurfAutoOutlook/>}
       <SurfDays days={days} day={day} setDay={setDay}/>
       {day && (
         <div className="sf-overview">
