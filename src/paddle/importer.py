@@ -34,7 +34,7 @@ from . import results as RS
 
 OVERRIDES = "paddle_overrides.json"
 AMBIGUOUS = "paddle_ambiguous.json"
-PRONE = {"Prone stock", "Prone 14'", "Prone unlimited"}
+PRONE = {"Prone stock", "Prone 14'", "Prone unlimited", "Prone"}   # "Prone": board class not given (e.g. Kapuna, Women)
 SUFFIX = {"jr", "sr", "ii", "iii", "iv"}
 
 

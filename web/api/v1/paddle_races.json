@@ -1512,6 +1512,331 @@
       ],
       "status": "draft — confirm",
       "results": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+    },
+    {
+      "id": "catalina-classic-2019",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2019,
+      "date": "2019-08-25",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2019-race-results/"
+    },
+    {
+      "id": "catalina-classic-2018",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2018,
+      "date": "2018-08-26",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2018-race-results/"
+    },
+    {
+      "id": "catalina-classic-2017",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2017,
+      "date": "2017-08-27",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2017-race-results/"
+    },
+    {
+      "id": "catalina-classic-2015",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2015,
+      "date": "2015-08-30",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2015-results/"
+    },
+    {
+      "id": "catalina-classic-2014",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2014,
+      "date": "2014-08-31",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2014-race-results/"
+    },
+    {
+      "id": "waterman-challenge-2018",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2018,
+      "date": "2018-06-30",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "23rd Waterman Challenge. Results from the organiser's PDF.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://watermanchallenge.weebly.com/results.html"
+    },
+    {
+      "id": "waterman-challenge-2017",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2017,
+      "date": "2017-07-15",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "22nd Waterman Challenge. Results from the organiser's PDF. Date assumed (mid-July Saturday); confirm.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://watermanchallenge.weebly.com/results.html"
+    },
+    {
+      "id": "waterman-challenge-2016",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2016,
+      "date": "2016-07-16",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "21st Waterman Challenge. Results from the organiser's PDF.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://watermanchallenge.weebly.com/results.html"
+    },
+    {
+      "id": "waterman-challenge-2015",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2015,
+      "date": "2015-07-11",
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": "https://watermanchallenge.weebly.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "20th Waterman Challenge. Results from the organiser's PDF.",
+      "sources": [
+        "watermanchallenge.weebly.com (organiser's site, results PDFs)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://watermanchallenge.weebly.com/results.html"
     }
   ]
 }

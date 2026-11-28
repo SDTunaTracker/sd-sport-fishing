@@ -391,8 +391,36 @@ def test_catalina_parse_keeps_only_allowed_fields_and_division_places():
     assert set(rows[0]) == {"name", "division", "craft", "time", "source", "place", "field"}
 
 
+CC_HTML_2 = """<table><tr><th>Place</th><th>Time</th><th>Last</th><th>First</th><th>Class</th><th>Gender</th></tr>
+<tr><td>1</td><td>5:23:14</td><td>Ash</td><td>Al</td><td>UL</td><td>M</td></tr>
+<tr><td>2</td><td>05:55.1</td><td>Bay</td><td>Bo</td><td>UL</td><td>M</td></tr>
+<tr><td>3</td><td>5:58 51</td><td>Cole</td><td>Cy</td><td>UL</td><td>M</td></tr>
+<tr><td>4</td><td>Unofficial Time</td><td>Dunn</td><td>Di</td><td>UL</td><td>M</td></tr>
+<tr><td>999</td><td>DNF</td><td>Eck</td><td>Ed</td><td>UL</td><td>M</td></tr>
+<tr><td>999</td><td>DNS</td><td>Fox</td><td>Fi</td><td>S</td><td>F</td></tr></table>"""
+
+
+def test_catalina_parse_odd_cells_last_first_and_ul():
+    rows = CC.parse(CC_HTML_2, "https://x/2018")
+    assert [(r["name"], r["time"], r["place"], r["field"]) for r in rows] == [
+        ("Al Ash", "5:23:14", "1", "3"), ("Bo Bay", None, "2", "3"), ("Cy Cole", "5:58:51", "3", "3")]
+    assert rows[0]["division"] == "Unlimited Men"                       # "UL" is unlimited
+
+
+def test_transcribed_csvs_hold_only_allowed_fields_and_known_races():
+    from src.paddle.sources import transcribed as TR
+    races = {r["id"] for r in json.loads((ROOT / "web/api/v1/paddle_races.json").read_text(encoding="utf-8"))["races"]}
+    files = sorted(CC.TRANSCRIBED.glob("*.csv"))
+    assert files, "expected transcribed organiser PDFs in data/paddle/imports/"
+    for f in files:
+        head = f.read_text(encoding="utf-8").splitlines()[0].split(",")
+        assert set(head) <= {"name", "division", "craft", "time", "place", "field", "source"}, f.name
+        assert f.stem in races, f.name
+    assert {f.stem for f in TR.files()} >= {"waterman-challenge-2018"}
+
+
 def test_live_people_are_all_prone_finishers_from_allowed_sources():
     live = json.loads((ROOT / "web/api/v1/paddle_people.json").read_text(encoding="utf-8"))
-    allowed = ("https://catalinaclassicpaddleboardrace.com/",)
+    allowed = ("https://catalinaclassicpaddleboardrace.com/", "https://watermanchallenge.weebly.com/")
     assert all(r["source"].startswith(allowed) for r in live["results"])
     assert all(r["craft"] in IM.PRONE for r in live["results"])
