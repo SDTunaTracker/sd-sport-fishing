@@ -170,7 +170,7 @@ function PpH2H({ me, rows, people, hrefFor, go }) {
     gaps.sort((x, y) => x - y);
     const med = gaps.length ? gaps[Math.floor(gaps.length / 2)] : null;
     return { p, w, l, med, n: w + l };
-  }).filter(x => x.n > 0).sort((a, b) => b.n - a.n);
+  }).filter(x => x.n > 0).sort((a, b) => b.n - a.n || a.p.name.localeCompare(b.p.name)).slice(0, 10);
   if (!out.length) return <p className="pr-muted pr-small">No shared races with other listed paddlers yet.</p>;
   return (
     <ul className="pr-h2h">
@@ -247,7 +247,7 @@ function PpRaceResults({ race, people, hrefFor, go }) {
   if (!rows.length) return null;
   return (
     <section className="pr-group" aria-labelledby="pr-rr-h">
-      <h2 className="pr-h2" id="pr-rr-h">Listed paddlers</h2>
+      <h2 className="pr-h2" id="pr-rr-h">Results</h2>
       <ul className="pr-list">
         {rows.map(r => (
           <li key={r.paddler + r.distance} className="pr-rr">

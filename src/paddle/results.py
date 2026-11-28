@@ -1,4 +1,5 @@
-"""Paddler profiles and race results, entered by hand (PaddleGuru's terms forbid scraping).
+"""Paddler profiles and race results: entered by hand, imported from a CSV, or from an allowed
+source adapter (src/paddle/sources/). PaddleGuru, Webscorer and Athlinks forbid scraping.
 
 Source files (hand-edited, NOT deployed; data/ is outside web/):
   data/paddle/paddle_paddlers.json  {"paddlers": [{"id", "name", "hidden", "crew", "note"}]}
@@ -11,8 +12,8 @@ Rules:
   * Only paddlers the owner has listed. Only what public results show: name,
     division, craft class, time, place, field size, race and year.
   * `hidden: true` removes the person and every result of theirs from the site.
-  * Results are entered against a paddler id, so there is no name matching;
-    two people with the same name simply get two ids.
+  * Rows entered by hand use a paddler id. Imports match by normalised name and flag
+    anything ambiguous instead of merging (see importer.py).
 
     python -m src.paddle.results add-paddler "First Last" [--crew]
     python -m src.paddle.results add --paddler first-last --race the-loop-2026 --distance loop \\
@@ -21,6 +22,7 @@ Rules:
     python -m src.paddle.results hide first-last        # or: unhide
     python -m src.paddle.results build                  # rewrite the public file (add/hide do this too)
     python -m src.paddle.results check
+    python -m src.paddle.results import-csv FILE --race RACE_ID [--distance D] [--source URL]         [--prone-only] [--add-new] [--full-results]
 """
 from __future__ import annotations
 
@@ -161,6 +163,14 @@ def main(argv: list[str] | None = None) -> int:
         sub.add_parser(c).add_argument("id")
     sub.add_parser("build")
     sub.add_parser("check")
+    p = sub.add_parser("import-csv")
+    p.add_argument("file")
+    p.add_argument("--race")
+    p.add_argument("--distance")
+    p.add_argument("--source")
+    p.add_argument("--prone-only", action="store_true")
+    p.add_argument("--add-new", action="store_true", help="create profiles for names not listed yet")
+    p.add_argument("--full-results", action="store_true", help="file lists every finisher (division size from it)")
     a = ap.parse_args(argv)
     people, results = load()
     if a.cmd == "add-paddler":
@@ -186,6 +196,11 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         hit[0]["hidden"] = a.cmd == "hide"
         _save(PADDLERS, people)
+    elif a.cmd == "import-csv":
+        from .importer import import_rows, read_csv
+        rep = import_rows(read_csv(Path(a.file)), a.race, a.distance, a.source, prone_only=a.prone_only,
+                          add_new=a.add_new, full_results=a.full_results)
+        print("import:", ", ".join(f"{k} {v}" for k, v in rep.items()))
     elif a.cmd == "check":
         errs = check(people, results, json.loads(CO.RACES.read_text(encoding="utf-8")))
         print("\n".join(errs) or f"OK: {len(people['paddlers'])} paddlers, {len(results['results'])} results")

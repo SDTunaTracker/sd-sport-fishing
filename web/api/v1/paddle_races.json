@@ -7,6 +7,484 @@
   },
   "races": [
     {
+      "id": "adler-paddler-2027",
+      "series": "adler-paddler",
+      "name": "Adler Paddler",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Naples Island, Long Beach",
+        "lat": 33.756,
+        "lon": -118.129
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": "Free race.",
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "catalina-classic-2027",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2027,
+      "date": null,
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "date TBA"
+    },
+    {
+      "id": "hanohano-2027",
+      "series": "hanohano",
+      "name": "Hanohano Ocean Challenge",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Mariner's Point, Mission Bay",
+        "lat": 32.7672,
+        "lon": -117.247
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "long",
+          "label": "Long course",
+          "miles": 9,
+          "courseId": null
+        },
+        {
+          "id": "short",
+          "label": "Short course",
+          "miles": 4.5,
+          "courseId": null
+        },
+        {
+          "id": "junior",
+          "label": "Junior",
+          "miles": 0.6,
+          "courseId": null
+        }
+      ],
+      "divisions": [
+        "Prone",
+        "SUP",
+        "OC",
+        "Surfski"
+      ],
+      "course": "Inside Mission Bay since 2025.",
+      "notes": null,
+      "sources": [
+        "SUP Connect, 30th Hanohano report",
+        "standupmagazin.com, 31st Hanohano"
+      ],
+      "status": "date TBA"
+    },
+    {
+      "id": "lifeguard-lap-2027",
+      "series": "lifeguard-lap",
+      "name": "Lifeguard Lap",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Avila Beach",
+        "lat": 35.1797,
+        "lon": -120.7335
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "malibu-downwinder-2027",
+      "series": "malibu-downwinder",
+      "name": "Malibu Downwinder",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Point Mugu to Leo Carrillo",
+        "lat": 34.0855,
+        "lon": -119.06
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Point Mugu to Leo Carrillo",
+          "miles": 7,
+          "courseId": "malibu-downwinder"
+        }
+      ],
+      "divisions": [],
+      "course": "Point-to-point downwinder from Mugu State Beach (north of Mugu Rock) to Leo Carrillo State Beach.",
+      "notes": null,
+      "sources": [
+        "Race blog, Malibu Downwinder 2012 (about 7 mi)"
+      ],
+      "status": "date TBA"
+    },
+    {
+      "id": "nac-el-morro-2027",
+      "series": "nac-el-morro",
+      "name": "NAC El Morro Classic",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center / El Morro",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "nac-hal-rosoff-2027",
+      "series": "nac-hal-rosoff",
+      "name": "NAC Hal Rosoff Classic",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Newport Aquatic Center, Newport Beach",
+        "lat": 33.62,
+        "lon": -117.8895
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "ocean-rodeo-2027",
+      "series": "ocean-rodeo",
+      "name": "South Coast Ocean Rodeo",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "El Morro, Crystal Cove",
+        "lat": 33.559,
+        "lon": -117.823
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "paddle-laguna-2027",
+      "series": "paddle-laguna",
+      "name": "Paddle Laguna Beach",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Laguna Beach",
+        "lat": 33.5427,
+        "lon": -117.7854
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "r10-2027",
+      "series": "r10",
+      "name": "R10 Paddleboard Race",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Torrance Beach",
+        "lat": 33.805,
+        "lon": -118.3925
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "rock-2-rock-2027",
+      "series": "rock-2-rock",
+      "name": "Rock 2 Rock",
+      "year": 2027,
+      "date": null,
+      "startLocal": "06:30",
+      "startNote": "Start time from a past year's report.",
+      "startFlexible": false,
+      "location": {
+        "name": "Two Harbors, Catalina to Cabrillo Beach, San Pedro",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://southbayboardriders.org/paddle-series/rock-to-rock/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Two Harbors to Cabrillo Beach",
+          "miles": 22,
+          "courseId": "rock-2-rock"
+        }
+      ],
+      "divisions": [],
+      "course": "Channel crossing from Two Harbors (Catalina) to Cabrillo Beach, San Pedro.",
+      "notes": "Run by South Bay Boardriders Club. Catalina Classic qualifier.",
+      "sources": [
+        "Easy Reader, Rock 2 Rock reports",
+        "South Bay Boardriders Club"
+      ],
+      "status": "date TBA"
+    },
+    {
+      "id": "seaside-slide-2027",
+      "series": "seaside-slide",
+      "name": "Seaside Slide",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Seaside (location TBC)",
+        "lat": null,
+        "lon": null
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "tahoe-downwind-2027",
+      "series": "tahoe-downwind",
+      "name": "Tahoe Downwind",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Lake Tahoe",
+        "lat": 39.0968,
+        "lon": -120.0324
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "the-loop-2027",
+      "series": "the-loop",
+      "name": "The Loop",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Coronado Shores, Coronado",
+        "lat": 32.6745,
+        "lon": -117.177
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "loop",
+          "label": "The Loop",
+          "miles": 11.25,
+          "courseId": "the-loop"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
+      "notes": "Prone only (arms and hands). First run 1997.",
+      "sources": [
+        "Perfect Paddles, The Loop 2023",
+        "SurfTech prone race guide"
+      ],
+      "status": "date TBA"
+    },
+    {
+      "id": "tom-davis-2027",
+      "series": "tom-davis",
+      "name": "Tom Davis Ocean Challenge",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Baby Beach, Dana Point",
+        "lat": 33.4613,
+        "lon": -117.704
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": null,
+      "sources": [],
+      "status": "date TBA"
+    },
+    {
+      "id": "waterman-challenge-2027",
+      "series": "waterman-challenge",
+      "name": "Waterman Challenge",
+      "year": 2027,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Swami's to Windansea",
+        "lat": 33.0347,
+        "lon": -117.2925
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Swami's to Windansea",
+          "miles": 14,
+          "courseId": "waterman-challenge"
+        }
+      ],
+      "divisions": [],
+      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
+      "notes": "Catalina Classic qualifier.",
+      "sources": [
+        "SurfTech, 2023 Waterman Challenge recap"
+      ],
+      "status": "date TBA"
+    },
+    {
       "id": "hanohano-2026",
       "series": "hanohano",
       "name": "Hanohano Ocean Challenge",
@@ -424,31 +902,6 @@
       "status": "draft — confirm"
     },
     {
-      "id": "tahoe-downwind-2026",
-      "series": "tahoe-downwind",
-      "name": "Tahoe Downwind",
-      "year": 2026,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Lake Tahoe",
-        "lat": 39.0968,
-        "lon": -120.0324
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2025",
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": "2026 date not posted (owner: ~Aug 9). Link is the 2025 race page.",
-      "sources": [],
-      "status": "draft — confirm"
-    },
-    {
       "id": "catalina-classic-2026",
       "series": "catalina-classic",
       "name": "Catalina Classic",
@@ -482,6 +935,31 @@
       "sources": [
         "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
       ],
+      "status": "draft — confirm"
+    },
+    {
+      "id": "tahoe-downwind-2026",
+      "series": "tahoe-downwind",
+      "name": "Tahoe Downwind",
+      "year": 2026,
+      "date": null,
+      "startLocal": null,
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Lake Tahoe",
+        "lat": 39.0968,
+        "lon": -120.0324
+      },
+      "organiser": null,
+      "website": null,
+      "paddleguru": "https://paddleguru.com/races/TAHOEDOWNWINDChampionshipsTahoeWatermanPaddleRacing2025",
+      "registration": null,
+      "distances": [],
+      "divisions": [],
+      "course": null,
+      "notes": "2026 date not posted (owner: ~Aug 9). Link is the 2025 race page.",
+      "sources": [],
       "status": "draft — confirm"
     },
     {
@@ -888,453 +1366,11 @@
       "status": "draft — confirm"
     },
     {
-      "id": "hanohano-2027",
-      "series": "hanohano",
-      "name": "Hanohano Ocean Challenge",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Mariner's Point, Mission Bay",
-        "lat": 32.7672,
-        "lon": -117.247
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [
-        {
-          "id": "long",
-          "label": "Long course",
-          "miles": 9,
-          "courseId": null
-        },
-        {
-          "id": "short",
-          "label": "Short course",
-          "miles": 4.5,
-          "courseId": null
-        },
-        {
-          "id": "junior",
-          "label": "Junior",
-          "miles": 0.6,
-          "courseId": null
-        }
-      ],
-      "divisions": [
-        "Prone",
-        "SUP",
-        "OC",
-        "Surfski"
-      ],
-      "course": "Inside Mission Bay since 2025.",
-      "notes": null,
-      "sources": [
-        "SUP Connect, 30th Hanohano report",
-        "standupmagazin.com, 31st Hanohano"
-      ],
-      "status": "date TBA"
-    },
-    {
-      "id": "nac-hal-rosoff-2027",
-      "series": "nac-hal-rosoff",
-      "name": "NAC Hal Rosoff Classic",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Newport Aquatic Center, Newport Beach",
-        "lat": 33.62,
-        "lon": -117.8895
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "tom-davis-2027",
-      "series": "tom-davis",
-      "name": "Tom Davis Ocean Challenge",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Baby Beach, Dana Point",
-        "lat": 33.4613,
-        "lon": -117.704
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "adler-paddler-2027",
-      "series": "adler-paddler",
-      "name": "Adler Paddler",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Naples Island, Long Beach",
-        "lat": 33.756,
-        "lon": -118.129
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": "Free race.",
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "lifeguard-lap-2027",
-      "series": "lifeguard-lap",
-      "name": "Lifeguard Lap",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Avila Beach",
-        "lat": 35.1797,
-        "lon": -120.7335
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "ocean-rodeo-2027",
-      "series": "ocean-rodeo",
-      "name": "South Coast Ocean Rodeo",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "El Morro, Crystal Cove",
-        "lat": 33.559,
-        "lon": -117.823
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "malibu-downwinder-2027",
-      "series": "malibu-downwinder",
-      "name": "Malibu Downwinder",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Point Mugu to Leo Carrillo",
-        "lat": 34.0855,
-        "lon": -119.06
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [
-        {
-          "id": "main",
-          "label": "Point Mugu to Leo Carrillo",
-          "miles": 7,
-          "courseId": "malibu-downwinder"
-        }
-      ],
-      "divisions": [],
-      "course": "Point-to-point downwinder from Mugu State Beach (north of Mugu Rock) to Leo Carrillo State Beach.",
-      "notes": null,
-      "sources": [
-        "Race blog, Malibu Downwinder 2012 (about 7 mi)"
-      ],
-      "status": "date TBA"
-    },
-    {
-      "id": "seaside-slide-2027",
-      "series": "seaside-slide",
-      "name": "Seaside Slide",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Seaside (location TBC)",
-        "lat": null,
-        "lon": null
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "the-loop-2027",
-      "series": "the-loop",
-      "name": "The Loop",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Coronado Shores, Coronado",
-        "lat": 32.6745,
-        "lon": -117.177
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [
-        {
-          "id": "loop",
-          "label": "The Loop",
-          "miles": 11.25,
-          "courseId": "the-loop"
-        }
-      ],
-      "divisions": [
-        "Prone"
-      ],
-      "course": "Ocean start off Coronado Shores, round Zuniga Jetty, through the bay, under the bridge, finish Glorietta Bay. Bad-conditions backup: \"The Lap\", ~10.25 mi in the bay.",
-      "notes": "Prone only (arms and hands). First run 1997.",
-      "sources": [
-        "Perfect Paddles, The Loop 2023",
-        "SurfTech prone race guide"
-      ],
-      "status": "date TBA"
-    },
-    {
-      "id": "nac-el-morro-2027",
-      "series": "nac-el-morro",
-      "name": "NAC El Morro Classic",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Newport Aquatic Center / El Morro",
-        "lat": 33.62,
-        "lon": -117.8895
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "r10-2027",
-      "series": "r10",
-      "name": "R10 Paddleboard Race",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Torrance Beach",
-        "lat": 33.805,
-        "lon": -118.3925
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "waterman-challenge-2027",
-      "series": "waterman-challenge",
-      "name": "Waterman Challenge",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Swami's to Windansea",
-        "lat": 33.0347,
-        "lon": -117.2925
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [
-        {
-          "id": "main",
-          "label": "Swami's to Windansea",
-          "miles": 14,
-          "courseId": "waterman-challenge"
-        }
-      ],
-      "divisions": [],
-      "course": "Open-ocean point-to-point down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla). Originally 15 mi with a Scripps Pier check-in; ~14 mi direct for most of its history.",
-      "notes": "Catalina Classic qualifier.",
-      "sources": [
-        "SurfTech, 2023 Waterman Challenge recap"
-      ],
-      "status": "date TBA"
-    },
-    {
-      "id": "rock-2-rock-2027",
-      "series": "rock-2-rock",
-      "name": "Rock 2 Rock",
-      "year": 2027,
-      "date": null,
-      "startLocal": "06:30",
-      "startNote": "Start time from a past year's report.",
-      "startFlexible": false,
-      "location": {
-        "name": "Two Harbors, Catalina to Cabrillo Beach, San Pedro",
-        "lat": 33.444,
-        "lon": -118.4975
-      },
-      "organiser": null,
-      "website": "https://southbayboardriders.org/paddle-series/rock-to-rock/",
-      "paddleguru": null,
-      "registration": null,
-      "distances": [
-        {
-          "id": "main",
-          "label": "Two Harbors to Cabrillo Beach",
-          "miles": 22,
-          "courseId": "rock-2-rock"
-        }
-      ],
-      "divisions": [],
-      "course": "Channel crossing from Two Harbors (Catalina) to Cabrillo Beach, San Pedro.",
-      "notes": "Run by South Bay Boardriders Club. Catalina Classic qualifier.",
-      "sources": [
-        "Easy Reader, Rock 2 Rock reports",
-        "South Bay Boardriders Club"
-      ],
-      "status": "date TBA"
-    },
-    {
-      "id": "paddle-laguna-2027",
-      "series": "paddle-laguna",
-      "name": "Paddle Laguna Beach",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Laguna Beach",
-        "lat": 33.5427,
-        "lon": -117.7854
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "tahoe-downwind-2027",
-      "series": "tahoe-downwind",
-      "name": "Tahoe Downwind",
-      "year": 2027,
-      "date": null,
-      "startLocal": null,
-      "startNote": null,
-      "startFlexible": false,
-      "location": {
-        "name": "Lake Tahoe",
-        "lat": 39.0968,
-        "lon": -120.0324
-      },
-      "organiser": null,
-      "website": null,
-      "paddleguru": null,
-      "registration": null,
-      "distances": [],
-      "divisions": [],
-      "course": null,
-      "notes": null,
-      "sources": [],
-      "status": "date TBA"
-    },
-    {
-      "id": "catalina-classic-2027",
+      "id": "catalina-classic-2024",
       "series": "catalina-classic",
       "name": "Catalina Classic",
-      "year": 2027,
-      "date": null,
+      "year": 2024,
+      "date": "2024-08-25",
       "startLocal": "06:00",
       "startNote": null,
       "startFlexible": false,
@@ -1359,11 +1395,123 @@
         "Prone"
       ],
       "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
-      "notes": "Prone paddleboard marathon.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
       "sources": [
         "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
       ],
-      "status": "date TBA"
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2024-race-results/"
+    },
+    {
+      "id": "catalina-classic-2023",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2023,
+      "date": "2023-08-27",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+    },
+    {
+      "id": "catalina-classic-2022",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2022,
+      "date": "2022-08-28",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+    },
+    {
+      "id": "catalina-classic-2021",
+      "series": "catalina-classic",
+      "name": "Catalina Classic",
+      "year": 2021,
+      "date": "2021-08-29",
+      "startLocal": "06:00",
+      "startNote": null,
+      "startFlexible": false,
+      "location": {
+        "name": "Isthmus, Catalina to Manhattan Beach Pier",
+        "lat": 33.444,
+        "lon": -118.4975
+      },
+      "organiser": null,
+      "website": "https://catalinaclassicpaddleboardrace.com/",
+      "paddleguru": null,
+      "registration": null,
+      "distances": [
+        {
+          "id": "main",
+          "label": "Isthmus to Manhattan Beach",
+          "miles": 32,
+          "courseId": "catalina-classic"
+        }
+      ],
+      "divisions": [
+        "Prone"
+      ],
+      "course": "Isthmus of Catalina to the Manhattan Beach Pier, with an early turn toward a buoy off Palos Verdes Point. 9 hour limit.",
+      "notes": "Prone paddleboard marathon. Date assumed (last Sunday in August); confirm.",
+      "sources": [
+        "catalinaclassicpaddleboardrace.com (race info, rules, schedule)"
+      ],
+      "status": "draft — confirm",
+      "results": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
     }
   ]
 }

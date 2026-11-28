@@ -392,6 +392,7 @@ function PrRacePage({ race, fc, cond, people, others, hrefFor, go }) {
           {race.organiser && <><dt>Organiser</dt><dd>{race.organiser}</dd></>}
           {race.course && <><dt>Course</dt><dd>{race.course}</dd></>}
           {race.notes && <><dt>Notes</dt><dd>{race.notes}</dd></>}
+          {race.results && <><dt>Results</dt><dd><a href={race.results} target="_blank" rel="noopener">Official results ↗</a></dd></>}
           {race.website && <><dt>Website</dt><dd><a href={race.website} target="_blank" rel="noopener">{race.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></dd></>}
           {race.startNote && <><dt>Start note</dt><dd>{race.startNote}</dd></>}
           {race.registration && <><dt>Register</dt><dd><a href={race.registration} target="_blank" rel="noopener">Registration →</a></dd></>}

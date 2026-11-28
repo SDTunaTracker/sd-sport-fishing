@@ -295,3 +295,104 @@ def test_live_people_file_matches_source_and_has_no_test_data(tmp_path):
     built = RS.build(out=tmp_path / "p.json")
     assert live == built, "run: python -m src.paddle.results build"
     assert not any("test" in p["id"] for p in live["paddlers"])
+
+
+# ── imports from any source (src/paddle/importer.py) ───────────────────────
+
+import shutil
+
+from src.paddle import importer as IM
+from src.paddle.sources import catalina_classic as CC
+
+
+@pytest.fixture
+def src(tmp_path):
+    d = tmp_path / "paddle"
+    d.mkdir()
+    (d / "paddle_paddlers.json").write_text(json.dumps({"paddlers": [
+        {"id": "pat-lee", "name": "Pat Lee", "hidden": False, "crew": True, "note": None},
+        {"id": "sam-ray", "name": "Sam Ray", "hidden": False, "crew": False, "note": None},
+        {"id": "sam-ray-2", "name": "Sam Ray", "hidden": False, "crew": False, "note": None},
+    ]}), encoding="utf-8")
+    (d / "paddle_results.json").write_text(json.dumps({"results": []}), encoding="utf-8")
+    return d
+
+
+def _csv(tmp_path, text):
+    f = tmp_path / "r.csv"
+    f.write_text(text, encoding="utf-8")
+    return IM.read_csv(f)
+
+
+def test_norm_name_and_craft():
+    assert IM.norm_name("José  O'Neil-Smith Jr.") == "jose oneil smith"
+    assert IM.craft_of("Prone 14' Men 40-49") == "Prone 14'" and IM.craft_of("Unlimited") == "Prone unlimited"
+    assert IM.craft_of("SUP 14 Women") == "SUP" and IM.craft_of("OC-1 Men") == "OC1" and IM.craft_of("") is None
+
+
+def test_csv_import_matches_listed_and_flags_shared_names(src, tmp_path):
+    rows = _csv(tmp_path, "First Name,Last Name,Division,Time,Place,Age,Hometown\n"
+                          "pat,LEE,Prone 14' Men,2:10:00,2,44,Somewhere\n"
+                          "Sam,Ray,Prone stock Men,2:20:00,3,50,X\n"
+                          "Alex,Kim,Prone stock Men,2:30:00,4,30,Y\n"
+                          "Jo,Fin,SUP Women,2:00:00,1,30,Z\n"
+                          "Dee,Nf,Prone stock Men,,,30,Z\n")
+    rep = IM.import_rows(rows, "the-loop-2026", source="https://example.org/r", full_results=True, src=src)
+    assert rep == {"added": 1, "updated": 0, "newPaddlers": 0, "notListed": 2, "notProne": 0, "dnf": 1, "ambiguous": 1}
+    res = json.loads((src / "paddle_results.json").read_text())["results"]
+    assert res == [{"paddler": "pat-lee", "race": "the-loop-2026", "distance": "loop", "division": "Prone 14' Men",
+                    "craft": "Prone 14'", "time": "2:10:00", "place": 2, "field": 2, "source": "https://example.org/r"}]
+    assert "44" not in (src / "paddle_results.json").read_text()          # age never stored
+    amb = json.loads((src / "paddle_ambiguous.json").read_text())["ambiguous"]
+    assert amb[0]["name"] == "Sam Ray" and set(amb[0]["candidates"]) == {"sam-ray", "sam-ray-2"}
+
+
+def test_override_assign_resolves_ambiguous_and_reimport_updates(src, tmp_path):
+    (src / "paddle_overrides.json").write_text(json.dumps({"aliases": {}, "assign": [
+        {"name": "Sam Ray", "race": "the-loop-2026", "paddler": "sam-ray-2"}]}), encoding="utf-8")
+    rows = _csv(tmp_path, "name,division,time,place,field\nSam Ray,Prone stock Men,2:20:00,3,9\n")
+    assert IM.import_rows(rows, "the-loop-2026", src=src)["added"] == 1
+    rows = _csv(tmp_path, "name,division,time,place,field\nSam Ray,Prone stock Men,2:19:00,2,9\n")
+    assert IM.import_rows(rows, "the-loop-2026", src=src)["updated"] == 1
+    res = json.loads((src / "paddle_results.json").read_text())["results"]
+    assert len(res) == 1 and res[0]["paddler"] == "sam-ray-2" and res[0]["time"] == "2:19:00"
+
+
+def test_add_new_prone_only_and_division_history(src, tmp_path):
+    rows = _csv(tmp_path, "name,division,time,place,field\nAlex Kim,Prone stock Men,2:30:00,4,9\n"
+                          "Jo Fin,SUP Women,2:00:00,1,5\n")
+    rep = IM.import_rows(rows, "the-loop-2026", prone_only=True, add_new=True, src=src)
+    assert rep["newPaddlers"] == 1 and rep["notProne"] == 1
+    # same name later in an OC race: history doesn't fit -> flagged, not merged
+    rows = _csv(tmp_path, "name,division,time,place,field\nAlex Kim,OC-1 Men,1:30:00,2,9\n")
+    rep = IM.import_rows(rows, "waterman-challenge-2026", add_new=True, src=src)
+    assert rep["ambiguous"] == 1 and rep["added"] == 0
+
+
+def test_same_name_twice_in_one_race_is_flagged(src, tmp_path):
+    rows = _csv(tmp_path, "name,division,time\nChris Day,Prone stock Men,2:00:00\nChris Day,Prone 14' Men,2:05:00\n")
+    rep = IM.import_rows(rows, "the-loop-2026", add_new=True, src=src)
+    assert rep["ambiguous"] == 2 and rep["newPaddlers"] == 0
+
+
+CC_HTML = """<table><tr><th>PLACE</th><th>TIME</th><th>NAME</th><th>S/U</th><th>M/F</th><th>NOTES</th></tr>
+<tr><td>1</td><td>5:38:44</td><td>ANN MCRAE</td><td>U</td><td>F</td><td></td></tr>
+<tr><td>2</td><td>6:01:00</td><td>BO DIAZ</td><td>S</td><td>M</td><td></td></tr>
+<tr><td>3</td><td>5:59:00</td><td>CY LO</td><td>S</td><td>M</td><td></td></tr>
+<tr><td></td><td>DNF</td><td>DEE NO</td><td>S</td><td>M</td><td>DNF</td></tr></table>"""
+
+
+def test_catalina_parse_keeps_only_allowed_fields_and_division_places():
+    rows = CC.parse(CC_HTML, "https://x/2021")
+    assert [r["name"] for r in rows] == ["Ann McRae", "Bo Diaz", "Cy Lo"]
+    bo, cy = rows[1], rows[2]
+    assert (cy["place"], cy["field"], bo["place"]) == ("1", "2", "2")     # by time within Stock Men
+    assert rows[0]["division"] == "Unlimited Women" and rows[0]["craft"] == "Prone unlimited"
+    assert set(rows[0]) == {"name", "division", "craft", "time", "source", "place", "field"}
+
+
+def test_live_people_are_all_prone_finishers_from_allowed_sources():
+    live = json.loads((ROOT / "web/api/v1/paddle_people.json").read_text(encoding="utf-8"))
+    allowed = ("https://catalinaclassicpaddleboardrace.com/",)
+    assert all(r["source"].startswith(allowed) for r in live["results"])
+    assert all(r["craft"] in IM.PRONE for r in live["results"])
