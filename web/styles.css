@@ -6451,6 +6451,13 @@ button.btn-save-boat[data-saved="true"],
     linear-gradient(180deg, rgba(10,22,18,0) 55%, rgba(10,22,18,.5) 100%),
     url('/hero-sunrise.jpg') center 38%/cover no-repeat,
     #14403A;
+  /* WebP, sized for the screen: 111 KB on desktop, 33 KB on phones (below),
+     instead of the 664 KB 4387px JPEG. Browsers without image-set() type()
+     keep the JPEG from the shorthand above. */
+  background-image:
+    linear-gradient(96deg, rgba(10,22,18,.86) 0%, rgba(10,22,18,.5) 42%, rgba(10,22,18,.12) 100%),
+    linear-gradient(180deg, rgba(10,22,18,0) 55%, rgba(10,22,18,.5) 100%),
+    image-set(url('/hero-sunrise-1920.webp') type('image/webp'), url('/hero-sunrise.jpg') type('image/jpeg'));
 }
 .ch-hero-in { max-width: 1080px; margin: 0 auto; padding: 0 32px; width: 100%; }
 .ch-kick {
@@ -6607,6 +6614,12 @@ button.btn-save-boat[data-saved="true"],
 /* Mobile */
 @media (max-width: 640px) {
   .ch-hero { height: auto; min-height: 280px; padding: 48px 0; }
+  .ch-hero {
+    background-image:
+      linear-gradient(96deg, rgba(10,22,18,.86) 0%, rgba(10,22,18,.5) 42%, rgba(10,22,18,.12) 100%),
+      linear-gradient(180deg, rgba(10,22,18,0) 55%, rgba(10,22,18,.5) 100%),
+      image-set(url('/hero-sunrise-1000.webp') type('image/webp'), url('/hero-sunrise.jpg') type('image/jpeg'));
+  }
   .ch-hero-in { padding: 0 16px; }
   .ch-h1 { font-size: 46px; }
   .ch-wrap { padding: 0 16px; }

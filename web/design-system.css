@@ -1531,3 +1531,15 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
 /* Surftracker overview maps: Leaflet lives in a child element that survives tab switches */
 .sf-map { position: relative; }
 .sf-map > .sf-map-el { position: absolute; inset: 0; }
+
+/* Surftracker auto-written surf report (surf-report.jsx) */
+.sfr { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px 14px; margin: 0 0 14px; }
+.sfr-h { font: 600 12px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+.sfr-head { margin: 0 0 6px; font: 600 16px/1.35 var(--sans); color: var(--ink); }
+.sfr-p { margin: 0 0 8px; font: 400 14px/1.55 var(--sans); color: var(--ink-2); }
+.sfr-paddle b { font-weight: 600; color: var(--ink); }
+.sfr-more { background: none; border: 0; padding: 2px 0; margin: 0 0 6px; font: 600 13px/1.3 var(--sans); color: var(--sea); cursor: pointer; }
+.sfr-regions { list-style: none; margin: 0 0 8px; padding: 0; }
+.sfr-regions li { font: 400 13.5px/1.5 var(--sans); color: var(--ink-2); padding: 5px 0; border-top: 1px solid var(--line); }
+.sfr-regions b { font-weight: 600; color: var(--ink); margin-right: 4px; }
+.sfr-src { font: 400 11.5px/1.4 var(--sans); color: var(--faint); }

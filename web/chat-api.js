@@ -579,6 +579,10 @@ function ccTripDocs(t) {
 }
 
 async function streamChatMessage(userMessage, history, pageContext, onUpdate) {
+  // Boat form and season answers read every year of trips (data-history.js).
+  if (window.ttRegionData && window.ttRegionData.ensureHistory) {
+    try { await window.ttRegionData.ensureHistory(); } catch (e) { /* answer with what's loaded */ }
+  }
   const response = await fetch(CHAT_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

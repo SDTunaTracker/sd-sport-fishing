@@ -85,6 +85,23 @@ _SD_FALLBACK_SCRIPT = (
 )
 
 
+# Starts data-history.js before the stylesheets on pages that show every year
+# (same script as in web/index.html; tests/test_region_files.py keeps the two
+# and app.jsx HISTORY_FREE_VIEWS in step).
+HISTORY_EARLY_JS = r"""<script>
+  (function () {
+    var m = /^\/sd\/([^\/]+)/.exec(location.pathname);
+    if (!m || /^(home|today|charts|forecast|surf|pick|account|settings)$/.test(m[1])) return;
+    var s = document.createElement('script');
+    s.id = 'tt-history-early'; s.async = true; s.src = 'data-history.js';
+    s.onload = function () { window.__ttHistEarly = 1; };
+    s.onerror = function () { window.__ttHistEarly = 2; };
+    document.head.appendChild(s);
+  })();
+</script>
+"""
+
+
 def _safe_dir(name: str) -> str:
     """Remove chars that are problematic as directory names on any OS."""
     bad = r'/\:*?"<>|'
@@ -503,10 +520,15 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
     )
     robots = '<meta name="robots" content="noindex, follow">\n' if noindex else ""
     # Static-only pages (app=False) skip the SPA's CSS and scripts.
+    # Icons and map styles don't block the first paint (same as index.html).
+    _later = ' media="print" onload="this.media=\'all\'"'
     app_assets = (
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">\n'
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous">\n'
-        '<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css">\n'
+        '<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>\n'
+        '<link rel="preconnect" href="https://unpkg.com" crossorigin>\n'
+        f'<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"{_later}>\n'
+        f'<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="anonymous"{_later}>\n'
+        f'<link rel="stylesheet" href="lib/leaflet-velocity/leaflet-velocity.css"{_later}>\n'
+        '<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></noscript>\n'
     ) if app else ""
     app_scripts = f"{shared['vessel_script']}\n{shared['clerk_sdk']}\n" if app else ""
     page_css = (
@@ -523,7 +545,7 @@ def _head(title: str, desc: str, canonical: str, og: dict, json_ld,
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#17332C">
 <base href="/">
-<title>{_esc(title)}</title>
+{HISTORY_EARLY_JS if app else ""}<title>{_esc(title)}</title>
 <meta name="description" content="{_esc(desc)}">
 {robots}<link rel="canonical" href="{canonical_full}">
 <meta property="og:type"        content="website">

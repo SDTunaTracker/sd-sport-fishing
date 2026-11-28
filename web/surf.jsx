@@ -116,6 +116,17 @@ function sfBestWindow(hours, dayKey, sun) {
   return { h: best, from: a, to: Math.max(b, a + 0.5) };
 }
 
+// One request per URL (the URLs carry the hour), shared by every Surftracker
+// tab: App keeps visited tabs mounted, and each one reads the same files.
+const _sfOnce = {};
+function sfFetchOnce(url, parse) {
+  if (!_sfOnce[url]) {
+    _sfOnce[url] = fetch(url).then(parse);
+    _sfOnce[url].catch(() => { delete _sfOnce[url]; });   // let a later tab retry
+  }
+  return _sfOnce[url];
+}
+
 // More county spots (src/surf/spots.py, default settings), optional: the page
 // works without it and drops it when it is older than its staleAfterHours.
 function useSurfSpots() {
@@ -123,8 +134,7 @@ function useSurfSpots() {
   useSfEffect(() => {
     let alive = true;
     const hour = Math.floor(Date.now() / 3600000);
-    fetch('/api/v1/surf_spots.json?h=' + hour)
-      .then(r => (r.ok ? r.json() : null))
+    sfFetchOnce('/api/v1/surf_spots.json?h=' + hour, r => (r.ok ? r.json() : null))
       .then(d => {
         if (!alive || !d || !Array.isArray(d.spots)) return;
         const ageH = (Date.now() - Date.parse(d.generatedAt)) / 3600000;
@@ -145,8 +155,7 @@ function useSurfData() {
   useSfEffect(() => {
     let alive = true;
     const hour = Math.floor(Date.now() / 3600000);
-    fetch('/api/v1/surf.json?h=' + hour)
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    sfFetchOnce('/api/v1/surf.json?h=' + hour, r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(d => { if (alive) setState({ data: d, error: false }); })
       .catch(() => { if (alive) setState({ data: null, error: true }); });
     return () => { alive = false; };
@@ -858,6 +867,7 @@ function SurfReport({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf report" data={data}/>
+      {window.SurfAutoReport && <window.SurfAutoReport/>}
       <SurfEssentials data={data} region nowLabel="now"/>
       <SurfNws nws={data.nws}/>
       {window.SurfNwsNotes && <window.SurfNwsNotes notes={data.nwsNotes}/>}
@@ -960,6 +970,7 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
   return (
     <div className="sf-wrap">
       <SurfTopBar title="Surf forecast" data={data}/>
+      {window.SurfAutoOutlook && <window.SurfAutoOutlook/>}
       <SurfDays days={days} day={day} setDay={setDay}/>
       {day && (
         <div className="sf-overview">

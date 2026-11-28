@@ -32,6 +32,12 @@ function loadWindow() {
   for (const f of ['dates.js', 'feature-flags.js', 'regions.js', 'data.js', 'region-data.js', 'regulations.js', 'chat-api.js', 'analytics.js']) {
     vm.runInContext(fs.readFileSync(path.join(WEB, f), 'utf8'), ctx, { filename: f });
   }
+  // San Diego trips before SD.META.HISTORY.before live in data-history.js.
+  const hist = ctx.SD.META && ctx.SD.META.HISTORY;
+  if (hist) {
+    vm.runInContext(fs.readFileSync(path.join(WEB, hist.file), 'utf8'), ctx, { filename: hist.file });
+    ctx.ttRegionData.adoptHistory();
+  }
   // Non-base regions (OC/LA, ...) live in data-region-<id>.js; merge them all.
   const regionFiles = (ctx.SD.META && ctx.SD.META.REGION_FILES) || {};
   for (const [id, f] of Object.entries(regionFiles)) {

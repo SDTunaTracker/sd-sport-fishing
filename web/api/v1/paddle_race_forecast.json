@@ -1,1 +1,1 @@
-{"generatedAt":"2026-11-27T23:58+00:00","horizonDays":7,"sources":{"wind":"ECMWF IFS 0.25° via Open-Meteo","current":"NOAA CO-OPS predictions","swell":"CDIP MOP (ECMWF-forced), nearshore","water":"CDIP buoy SST"},"races":{}}
+{"generatedAt":"2026-11-28T00:58+00:00","horizonDays":7,"sources":{"wind":"ECMWF IFS 0.25° via Open-Meteo","current":"NOAA CO-OPS predictions","swell":"CDIP MOP (ECMWF-forced), nearshore","water":"CDIP buoy SST"},"races":{}}

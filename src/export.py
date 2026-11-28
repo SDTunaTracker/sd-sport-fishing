@@ -770,6 +770,165 @@ def write_admin_json(conn: sqlite3.Connection, meta: dict, path: Path) -> Path:
     return path
 
 
+# ── Compact (columnar) trip arrays ───────────────────────────────────────────
+# TRIPS is ~37k rows of the same ~22 keys. Written as row objects it is 15 MB
+# of JS (1.3 MB brotli from Cloudflare) that a phone must download and parse
+# before any page renders. Written as columns it is under 3 MB raw and about a
+# third of the wire size. Lossless: every row comes back with the same keys and
+# values. The decoder (_COLS_DECODER_JS) runs at the end of data.js, and
+# web/region-data.js runs it on region files, so window.SD.TRIPS is the same
+# array of row objects every page already reads.
+#
+# Format v1: {"$c":1, "n":rows, "k":[keys in first-seen order], "v":{key: col}}
+#   col = [v0, v1, ...]          dense column
+#       | {"d":[dict], "i":[..]} dense strings as indexes into a dictionary
+#       | {"z":[..]}             dense ints as deltas (ids, sorted by date)
+#       | {"s":[[row, v], ..]}   sparse: only rows that carry the key
+COLUMNAR_KEYS = ("TRIPS", "HALF_DAY_TRIPS")
+
+
+def encode_columnar(rows: list[dict]) -> dict:
+    n = len(rows)
+    keys: list[str] = []
+    seen: set[str] = set()
+    for r in rows:
+        for k in r:
+            if k not in seen:
+                seen.add(k)
+                keys.append(k)
+    cols: dict[str, object] = {}
+    for k in keys:
+        if all(k in r for r in rows):
+            vals = [r[k] for r in rows]
+            if all(isinstance(x, str) for x in vals):
+                uniq = list(dict.fromkeys(vals))
+                if len(uniq) * 4 < n:
+                    ix = {u: i for i, u in enumerate(uniq)}
+                    cols[k] = {"d": uniq, "i": [ix[x] for x in vals]}
+                    continue
+            if k == "id" and all(type(x) is int for x in vals):
+                cols[k] = {"z": [vals[0]] + [vals[i] - vals[i - 1] for i in range(1, n)]}
+                continue
+            cols[k] = vals
+        else:
+            cols[k] = {"s": [[i, r[k]] for i, r in enumerate(rows) if k in r]}
+    return {"$c": 1, "n": n, "k": keys, "v": cols}
+
+
+def decode_columnar(c):
+    """Python twin of the JS decoder (tests and scripts that read data.js)."""
+    if not isinstance(c, dict) or c.get("$c") != 1:
+        return c
+    n, keys, cols = c["n"], c["k"], c["v"]
+    out: list[dict] = [{} for _ in range(n)]
+    for k in keys:
+        col = cols[k]
+        if isinstance(col, list):
+            for i in range(n):
+                out[i][k] = col[i]
+        elif "d" in col:
+            d = col["d"]
+            for i, x in enumerate(col["i"]):
+                out[i][k] = d[x]
+        elif "z" in col:
+            acc = 0
+            for i, x in enumerate(col["z"]):
+                acc += x
+                out[i][k] = acc
+        else:
+            for i, v in col["s"]:
+                out[i][k] = v
+    return out
+
+
+def _compact(payload: dict) -> dict:
+    """Copy of payload with the big trip arrays written as columns."""
+    out = dict(payload)
+    for k in COLUMNAR_KEYS:
+        if isinstance(out.get(k), list) and out[k]:
+            out[k] = encode_columnar(out[k])
+    return out
+
+
+# Appended to data.js: defines window.__ttRows (once) and decodes window.SD in
+# place. A row's sparse keys come back after its dense keys.
+# Rows are built by a generated loop with one object literal for the dense
+# keys: V8 then gives every row the same compact shape. Measured in Node on
+# the 37k San Diego trips: 13 ms and 13 MB, against 86 ms / 13 MB for the old
+# row-object data.js and 107 ms / 67 MB for a plain key-by-key loop (kept
+# below as the fallback if a Content-Security-Policy ever blocks Function).
+_COLS_DECODER_JS = (
+    "window.__ttRows=window.__ttRows||function(c){"
+    "if(!c||c.$c!==1)return c;var n=c.n,k=c.k,v=c.v,K=k.length,i,j,out=new Array(n),"
+    "a=[],f=[],h=[],sp=[];"
+    "for(j=0;j<K;j++){var x=v[k[j]],q=JSON.stringify(k[j]);"
+    "if(Array.isArray(x)){a.push(x);f.push(q+':c'+(a.length-1)+'[i]');}"
+    "else if(x.d){a.push(x.d,x.i);f.push(q+':c'+(a.length-2)+'[c'+(a.length-1)+'[i]]');}"
+    "else if(x.z){var z=new Array(n),p=0;for(i=0;i<n;i++){p+=x.z[i];z[i]=p;}a.push(z);f.push(q+':c'+(a.length-1)+'[i]');}"
+    "else{sp.push([k[j],x.s]);continue;}}"
+    "for(j=0;j<a.length;j++)h.push('c'+j+'=a['+j+']');"
+    "try{new Function('a','n','out','var '+h.join(',')+';for(var i=0;i<n;i++)out[i]={'+f.join(',')+'};')(a,n,out);}"
+    "catch(e){var dk=k.filter(function(key){return !v[key].s;});"
+    "for(i=0;i<n;i++){var r={};for(j=0;j<dk.length;j++){var y=v[dk[j]];"
+    "r[dk[j]]=Array.isArray(y)?y[i]:y.d?y.d[y.i[i]]:null;}out[i]=r;}"
+    "for(j=0;j<dk.length;j++){var w=v[dk[j]];if(w.z){var s=0;for(i=0;i<n;i++){s+=w.z[i];out[i][dk[j]]=s;}}}}"
+    "for(j=0;j<sp.length;j++){var key=sp[j][0],e=sp[j][1];for(i=0;i<e.length;i++)out[e[i][0]][key]=e[i][1];}"
+    "return out;};\n"
+    "(function(S){if(!S)return;"
+    + "".join(f"S.{k}=window.__ttRows(S.{k});" for k in COLUMNAR_KEYS)
+    + "})(window.SD);\n"
+)
+
+
+# ── Trip history file ────────────────────────────────────────────────────────
+# data.js carries San Diego trips from January 1 of last year on: everything
+# Home, Today, Charts, Surf and the trip picker read (30-120 day windows and
+# the current season). Older trips go to web/data-history.js, which
+# web/region-data.js starts loading right after data.js. Views that need every
+# year (Boats, boat/landing pages, Analytics, ...) wait for it; app.jsx lists
+# the ones that don't. index.html starts the download in parallel with data.js
+# on pages that need it. It's revalidated by ETag (a 304 on repeat visits);
+# SD.META.HISTORY.v tells the loader when a cached copy is out of date. app.json and the generated pages still get
+# every trip: only the data.js text is split.
+HISTORY_FILE = "data-history.js"
+
+
+def history_cutoff(today: date | None = None) -> str:
+    """First date kept in data.js: January 1 of last year (Pacific)."""
+    t = today or pacific_today()
+    return f"{t.year - 1}-01-01"
+
+
+def history_js(rows: list[dict], cutoff: str) -> tuple[str, dict]:
+    """(file text, SD.META.HISTORY entry) for the trips before cutoff."""
+    import hashlib
+    body = json.dumps(encode_columnar(rows) if rows else [], separators=(",", ":"), default=str)
+    v = hashlib.sha1((cutoff + body).encode("utf-8")).hexdigest()[:12]
+    meta = {"file": HISTORY_FILE, "v": v, "before": cutoff, "tripCount": len(rows)}
+    text = ("// Auto-generated by src/export.py — do not edit. Loaded by web/region-data.js.\n"
+            "window.SD_HISTORY = {\"v\":" + json.dumps(v) + ",\"before\":" + json.dumps(cutoff)
+            + ",\"TRIPS\":" + body + "};\n")
+    return text, meta
+
+
+def data_js_texts(payload: dict, today: date | None = None) -> tuple[str, str]:
+    """(data.js text, data-history.js text) for the full window.SD payload.
+
+    data.js gets TRIPS from history_cutoff() on and SD.META.HISTORY; every
+    other key is written as-is. META.tripCount stays the full count.
+    """
+    cutoff = history_cutoff(today)
+    trips = payload.get("TRIPS") or []
+    hist_text, hist_meta = history_js([t for t in trips if (t.get("date") or "") < cutoff], cutoff)
+    core = dict(payload)
+    core["TRIPS"] = [t for t in trips if (t.get("date") or "") >= cutoff]
+    core["META"] = dict(payload.get("META") or {}, HISTORY=hist_meta)
+    js = "// Auto-generated by src/export.py — do not edit.\n"
+    js += "window.SD = " + json.dumps(_compact(core), separators=(",", ":"), default=str) + ";\n"
+    js += _COLS_DECODER_JS
+    return js, hist_text
+
+
 # ── Per-region data files ────────────────────────────────────────────────────
 # data.js carries the base region (San Diego) only. Every other region's rows
 # (TRIPS, HALF_DAY_TRIPS, BOATS, SCHEDULE, TODAY) go to web/data-region-<id>.js,
@@ -812,7 +971,7 @@ def _check_file_size(path: Path) -> float:
 def _region_js(region: str, payload: dict) -> str:
     return ("// Auto-generated by src/export.py — do not edit. Loaded by web/region-data.js.\n"
             "(window.SD_REGIONS = window.SD_REGIONS || {})[" + json.dumps(region) + "] = "
-            + json.dumps(payload, separators=(",", ":"), default=str) + ";\n")
+            + json.dumps(_compact(payload), separators=(",", ":"), default=str) + ";\n")
 
 
 def split_by_region(all_rows: list[dict], trips: list[dict], half_day_trips: list[dict],
@@ -979,9 +1138,9 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     # Minified JSON — drops indentation and inter-token whitespace. Cuts the
     # on-disk size roughly in half versus indent=2, which matters because the
     # browser has to download + parse this file synchronously at page load.
-    js = "// Auto-generated by src/export.py — do not edit.\n"
-    js += "window.SD = " + json.dumps(payload, separators=(",", ":"), default=str) + ";\n"
+    js, hist_js = data_js_texts(payload)
     out_path.write_text(js, encoding="utf-8")
+    (out_path.parent / HISTORY_FILE).write_text(hist_js, encoding="utf-8")
     for reg, js_text in region_js.items():
         (out_path.parent / region_files[reg]["file"]).write_text(js_text, encoding="utf-8")
 
@@ -999,6 +1158,7 @@ def export(conn: sqlite3.Connection, out_path: Path, weather_forecast: list | No
     import logging as _logging
     _log = _logging.getLogger(__name__)
     _check_file_size(out_path)
+    _check_file_size(out_path.parent / HISTORY_FILE)
     for reg in region_files:
         _check_file_size(out_path.parent / region_files[reg]["file"])
 
