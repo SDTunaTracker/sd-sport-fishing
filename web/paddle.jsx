@@ -7,7 +7,13 @@ const { useState: usePdState, useEffect: usePdEffect } = React;
 const PD_TZ = 'America/Los_Angeles';
 const PD_DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 const PD_KIND = { bay: 'Bay', harbour: 'Harbour', lagoon: 'Lagoon', coast: 'Beach' };
-function pdTime(iso, opts) { return new Date(iso).toLocaleString('en-US', Object.assign({ timeZone: PD_TZ }, opts)); }
+const _pdFmt = new Map();   // cached formatters: toLocaleString with a timeZone is ~35x slower per call
+function pdTime(iso, opts) {
+  const k = JSON.stringify(opts || {});
+  let f = _pdFmt.get(k);
+  if (!f) { f = new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: PD_TZ }, opts)); _pdFmt.set(k, f); }
+  return f.format(new Date(iso));
+}
 function pdDir(d) { return d == null ? '' : PD_DIRS[Math.round(((d % 360) + 360) % 360 / 22.5) % 16]; }
 function pdKey(label) { return label ? label.toLowerCase() : 'none'; }
 function pdNow(hours) { const n = Date.now(); return hours.find(h => Date.parse(h.t) + 3600e3 > n) || hours[hours.length - 1]; }
