@@ -28,7 +28,15 @@ function _ensureChartsLoaded() {
       if (!el) { resolve(); return; }
       var src = el.getAttribute('src');
       if (!src) { resolve(); return; }
-      if (document.querySelector('script[src="' + src + '"]:not([type])')) { resolve(); return; }
+      var existing = document.querySelector('script[src="' + src + '"]:not([type])');
+      if (existing) {
+        // Surftracker adds its own Leaflet <script>; if it is still loading,
+        // wait for it, or leaflet-velocity runs before window.L exists.
+        if (id !== 'tt-leaflet-js' || window.L) { resolve(); return; }
+        existing.addEventListener('load', function() { resolve(); });
+        existing.addEventListener('error', reject);
+        return;
+      }
       var s = document.createElement('script');
       s.src = src;
       var co = el.getAttribute('crossorigin');
