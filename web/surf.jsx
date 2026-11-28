@@ -1635,6 +1635,11 @@ function SurfView({ navigate, sub, spot }) {
   const ctx = useSurfAll();
   const [favs, toggleFav] = useSurfFavs();
   const { data, error } = ctx;
+  // Paddle races (web/paddle-races.jsx): own data, doesn't need surf.json.
+  if (sub === 'races' && window.PaddleRaces) {
+    return <window.PaddleRaces raceId={spot} hrefFor={id => sfPath({ sub: 'races', spot: id })}
+                               go={id => navigate('surf', id ? { sub: 'races', spot: id } : { sub: 'races' })}/>;
+  }
   if (sub === 'paddle' && window.PaddleView) {
     return <window.PaddleView spot={spot}
                               link={id => sfLinkProps(navigate, id ? { sub: 'paddle', spot: id } : { sub: 'paddle' })}

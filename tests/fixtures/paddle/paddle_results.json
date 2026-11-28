@@ -1,0 +1,126 @@
+{
+  "about": "TEST FIXTURE",
+  "results": [
+    {
+      "paddler": "test-paddler-a",
+      "race": "the-loop-2025",
+      "distance": "loop",
+      "division": "Prone 14' Men 40-49",
+      "craft": "Prone 14'",
+      "time": "2:21:40",
+      "place": 4,
+      "field": 11,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-a",
+      "race": "the-loop-2026",
+      "distance": "loop",
+      "division": "Prone 14' Men 40-49",
+      "craft": "Prone 14'",
+      "time": "2:16:05",
+      "place": 3,
+      "field": 12,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-a",
+      "race": "waterman-challenge-2025",
+      "distance": "main",
+      "division": "Prone 14' Men",
+      "craft": "Prone 14'",
+      "time": "2:58:12",
+      "place": 9,
+      "field": 25,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-a",
+      "race": "waterman-challenge-2026",
+      "distance": "main",
+      "division": "Prone 14' Men",
+      "craft": "Prone 14'",
+      "time": "2:49:30",
+      "place": 6,
+      "field": 27,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-a",
+      "race": "catalina-classic-2026",
+      "distance": "main",
+      "division": "Prone stock Men 40-49",
+      "craft": "Prone stock",
+      "time": "7:12:44",
+      "place": 5,
+      "field": 14,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-b",
+      "race": "the-loop-2025",
+      "distance": "loop",
+      "division": "Prone 14' Men 40-49",
+      "craft": "Prone 14'",
+      "time": "2:19:02",
+      "place": 3,
+      "field": 11,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-b",
+      "race": "the-loop-2026",
+      "distance": "loop",
+      "division": "Prone 14' Men 40-49",
+      "craft": "Prone 14'",
+      "time": "2:18:30",
+      "place": 4,
+      "field": 12,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-b",
+      "race": "malibu-downwinder-2026",
+      "distance": "main",
+      "division": "Prone unlimited Men",
+      "craft": "Prone unlimited",
+      "time": "1:21:10",
+      "place": 2,
+      "field": 9,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-c",
+      "race": "waterman-challenge-2026",
+      "distance": "main",
+      "division": "Prone stock Women",
+      "craft": "Prone stock",
+      "time": "3:05:44",
+      "place": 2,
+      "field": 8,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-c",
+      "race": "hanohano-2026",
+      "distance": "long",
+      "division": "Prone Women",
+      "craft": "Prone stock",
+      "time": "1:58:20",
+      "place": 1,
+      "field": 6,
+      "source": "https://example.com/test-results"
+    },
+    {
+      "paddler": "test-paddler-hidden",
+      "race": "the-loop-2026",
+      "distance": "loop",
+      "division": "Prone 14' Men 40-49",
+      "craft": "Prone 14'",
+      "time": "2:10:00",
+      "place": 1,
+      "field": 12,
+      "source": "https://example.com/test-results"
+    }
+  ]
+}

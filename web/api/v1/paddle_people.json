@@ -1,0 +1,3756 @@
+{
+ "about": "Paddlers listed by the site owner. Results typed in from public race results; each links to its source.",
+ "remove": "mailto:thetunatracker@gmail.com?subject=Remove%20my%20paddle%20profile",
+ "crafts": [
+  "Prone stock",
+  "Prone 14'",
+  "Prone unlimited",
+  "SUP",
+  "OC1",
+  "OC2",
+  "OC6",
+  "Surfski",
+  "Other"
+ ],
+ "paddlers": [
+  {
+   "id": "scott-clausen",
+   "name": "Scott Clausen",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "max-first",
+   "name": "Max First",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "alex-merrill",
+   "name": "Alex Merrill",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "bobby-frey",
+   "name": "Bobby Frey",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jake-miller",
+   "name": "Jake Miller",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "michael-lorch",
+   "name": "Michael Lorch",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mauricio-leon-de-la-barra",
+   "name": "Mauricio Leon De La Barra",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "stephen-sinkus",
+   "name": "Stephen Sinkus",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "zach-jirkovsky",
+   "name": "Zach Jirkovsky",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "luca-brammer",
+   "name": "Luca Brammer",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "quincy-lee",
+   "name": "Quincy Lee",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "ben-diener",
+   "name": "Ben Diener",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "foster-campbell",
+   "name": "Foster Campbell",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "don-miralle",
+   "name": "Don Miralle",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "steve-shikiya",
+   "name": "Steve Shikiya",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "chris-russell",
+   "name": "Chris Russell",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "scott-rusher",
+   "name": "Scott Rusher",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "andrew-matheson",
+   "name": "Andrew Matheson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "dj-nurre",
+   "name": "Dj Nurre",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jason-weber",
+   "name": "Jason Weber",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "willy-bravernic",
+   "name": "Willy Bravernic",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kyle-smith",
+   "name": "Kyle Smith",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "nelson-kingery",
+   "name": "Nelson Kingery",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "bill-lafferty",
+   "name": "Bill Lafferty",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "dan-michaluk",
+   "name": "Dan Michaluk",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "sean-jasso",
+   "name": "Sean Jasso",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jon-loren",
+   "name": "Jon Loren",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tyler-jaggers",
+   "name": "Tyler Jaggers",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "rick-strobel",
+   "name": "Rick Strobel",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "liz-hunter",
+   "name": "Liz Hunter",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jack-bark",
+   "name": "Jack Bark",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "brian-kingston",
+   "name": "Brian Kingston",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "gregory-dunne",
+   "name": "Gregory Dunne",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mike-jackson",
+   "name": "Mike Jackson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "spencer-mcfarland",
+   "name": "Spencer McFarland",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "boogie-baldwin",
+   "name": "Boogie Baldwin",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "john-martin",
+   "name": "John Martin",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "casey-annis",
+   "name": "Casey Annis",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "cody-strange",
+   "name": "Cody Strange",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "john-carroll",
+   "name": "John Carroll",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "aaron-klafter",
+   "name": "Aaron Klafter",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "aaron-osten",
+   "name": "Aaron Osten",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "justin-bingham",
+   "name": "Justin Bingham",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "joel-bloom",
+   "name": "Joel Bloom",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mark-cole",
+   "name": "Mark Cole",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "blake-herman",
+   "name": "Blake Herman",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mike-shultz",
+   "name": "Mike Shultz",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "matt-streeter",
+   "name": "Matt Streeter",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "doug-weems",
+   "name": "Doug Weems",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tiana-pugliese",
+   "name": "Tiana Pugliese",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "sarah-mcgrath",
+   "name": "Sarah McGrath",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "parker-kinsey",
+   "name": "Parker Kinsey",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kevin-coye",
+   "name": "Kevin Coye",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "trent-hodges",
+   "name": "Trent Hodges",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "dj-wilson",
+   "name": "Dj Wilson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "emily-bark",
+   "name": "Emily Bark",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "david-skarman",
+   "name": "David Skarman",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "chad-carter",
+   "name": "Chad Carter",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tom-horton",
+   "name": "Tom Horton",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "brian-peterson",
+   "name": "Brian Peterson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "aimee-spector",
+   "name": "Aimee Spector",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "sierra-perry",
+   "name": "Sierra Perry",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kurt-fry",
+   "name": "Kurt Fry",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "brian-selogie",
+   "name": "Brian Selogie",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "joseph-diasparra",
+   "name": "Joseph Diasparra",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kyle-mcdonald",
+   "name": "Kyle McDonald",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "chris-pearson",
+   "name": "Chris Pearson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "steven-rossier",
+   "name": "Steven Rossier",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "daniel-olinger",
+   "name": "Daniel Olinger",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "ed-mckeegan",
+   "name": "Ed McKeegan",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "john-ward",
+   "name": "John Ward",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jasmine-stiles",
+   "name": "Jasmine Stiles",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "joe-bark",
+   "name": "Joe Bark",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "thomas-glassing",
+   "name": "Thomas Glassing",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "michael-schutzler",
+   "name": "Michael Schutzler",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mederic-berthe",
+   "name": "Mederic Berthe",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "steve-shlens",
+   "name": "Steve Shlens",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "deon-lourens",
+   "name": "Deon Lourens",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "daniel-michaluk",
+   "name": "Daniel Michaluk",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "gavin-loughlin",
+   "name": "Gavin Loughlin",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "josh-stewart",
+   "name": "Josh Stewart",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jacob-reed",
+   "name": "Jacob Reed",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "cade-bruno",
+   "name": "Cade Bruno",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "noah-mayne",
+   "name": "Noah Mayne",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "christina-boring",
+   "name": "Christina Boring",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "luke-wheeler",
+   "name": "Luke Wheeler",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "daniel-ohlinger",
+   "name": "Daniel Ohlinger",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jenna-solberg",
+   "name": "Jenna Solberg",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "matt-mccormick",
+   "name": "Matt McCormick",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tobin-ellis",
+   "name": "Tobin Ellis",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "joe-scaturro",
+   "name": "Joe Scaturro",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "grace-emig",
+   "name": "Grace Emig",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mark-walton",
+   "name": "Mark Walton",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kevyn-murphy",
+   "name": "Kevyn Murphy",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "george-plsek",
+   "name": "George Plsek",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "willy-bravenec",
+   "name": "Willy Bravenec",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "spencer-pirdy",
+   "name": "Spencer Pirdy",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "geoffrey-page",
+   "name": "Geoffrey Page",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "lockwood-holmes",
+   "name": "Lockwood Holmes",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jake-jesson",
+   "name": "Jake Jesson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "lachie-lansdown",
+   "name": "Lachie Lansdown",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "benjamin-landis",
+   "name": "Benjamin Landis",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tommy-ostendorf",
+   "name": "Tommy Ostendorf",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "steve-mauri",
+   "name": "Steve Mauri",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "andrew-mckellips",
+   "name": "Andrew Mckellips",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jeffrey-giery",
+   "name": "Jeffrey Giery",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kelvin-humenny",
+   "name": "Kelvin Humenny",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "richard-boykin",
+   "name": "Richard Boykin",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "douglas-weems",
+   "name": "Douglas Weems",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jason-field",
+   "name": "Jason Field",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kip-atwater",
+   "name": "Kip Atwater",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "christopher-mcentee",
+   "name": "Christopher McEntee",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jeff-new",
+   "name": "Jeff New",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "gregg-buckley",
+   "name": "Gregg Buckley",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "andrew-sarnecki",
+   "name": "Andrew Sarnecki",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "steven-beuder",
+   "name": "Steven Beuder",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "lance-aguilar",
+   "name": "Lance Aguilar",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "max-lynch",
+   "name": "Max Lynch",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "mike-avery",
+   "name": "Mike Avery",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "hiro-ebihara",
+   "name": "Hiro Ebihara",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kyle-macdonald",
+   "name": "Kyle MacDonald",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "edward-mckeegan",
+   "name": "Edward McKeegan",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "steve-rossier",
+   "name": "Steve Rossier",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "terry-frogley",
+   "name": "Terry Frogley",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "daryl-caringi",
+   "name": "Daryl Caringi",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "robert-parucha",
+   "name": "Robert Parucha",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tristan-sullaway",
+   "name": "Tristan Sullaway",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "clint-johnson",
+   "name": "Clint Johnson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "shane-gallas",
+   "name": "Shane Gallas",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "donald-miralle",
+   "name": "Donald Miralle",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "jake-glick",
+   "name": "Jake Glick",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "caleb-brown",
+   "name": "Caleb Brown",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "david-thomas",
+   "name": "David Thomas",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "erik-von-koehe",
+   "name": "Erik Von Koehe",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "brent-blackman",
+   "name": "Brent Blackman",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "adam-nussen",
+   "name": "Adam Nussen",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "toa-pere",
+   "name": "Toa Pere",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "matt-stockamp",
+   "name": "Matt Stockamp",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "wyatt-kircher",
+   "name": "Wyatt Kircher",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "tyler-sinks",
+   "name": "Tyler Sinks",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "drew-moyer",
+   "name": "Drew Moyer",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "john-hall",
+   "name": "John Hall",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "matt-holt",
+   "name": "Matt Holt",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "dj-o-brien-wilson",
+   "name": "Dj O'Brien-Wilson",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "kevin-graner",
+   "name": "Kevin Graner",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "sean-reseigh",
+   "name": "Sean Reseigh",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "max-malamed",
+   "name": "Max Malamed",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "michael-cassen",
+   "name": "Michael Cassen",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "hayden-paul",
+   "name": "Hayden Paul",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "ryan-koverman",
+   "name": "Ryan Koverman",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "stu-jeremias",
+   "name": "Stu Jeremias",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "amy-dantzler",
+   "name": "Amy Dantzler",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "scotty-sinks",
+   "name": "Scotty Sinks",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "david-webster",
+   "name": "David Webster",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "gracie-emig",
+   "name": "Gracie Emig",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "brent-stevens",
+   "name": "Brent Stevens",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "rook-campbell",
+   "name": "Rook Campbell",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "andrew-herzik",
+   "name": "Andrew Herzik",
+   "crew": false,
+   "note": null
+  },
+  {
+   "id": "christian-stutzman",
+   "name": "Christian Stutzman",
+   "crew": false,
+   "note": null
+  }
+ ],
+ "results": [
+  {
+   "paddler": "scott-clausen",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:38:44",
+   "place": 1,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "max-first",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:53:40",
+   "place": 2,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "alex-merrill",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:06:08",
+   "place": 3,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "bobby-frey",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:11:21",
+   "place": 4,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "jake-miller",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:26:00",
+   "place": 5,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "michael-lorch",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:30:52",
+   "place": 6,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "mauricio-leon-de-la-barra",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:30:55",
+   "place": 7,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "stephen-sinkus",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:32:51",
+   "place": 8,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "zach-jirkovsky",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:36:16",
+   "place": 9,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "luca-brammer",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:42:02",
+   "place": 10,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "quincy-lee",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:44:25",
+   "place": 1,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "ben-diener",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:45:50",
+   "place": 11,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "foster-campbell",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:47:11",
+   "place": 2,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "don-miralle",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:48:25",
+   "place": 3,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "steve-shikiya",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:52:40",
+   "place": 12,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "chris-russell",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:01:53",
+   "place": 13,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "scott-rusher",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:02:00",
+   "place": 14,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "andrew-matheson",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:02:42",
+   "place": 15,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "dj-nurre",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:03:04",
+   "place": 16,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "jason-weber",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:03:45",
+   "place": 17,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "willy-bravernic",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:04:44",
+   "place": 18,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "kyle-smith",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:05:05",
+   "place": 4,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "nelson-kingery",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:07:40",
+   "place": 5,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "bill-lafferty",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:08:09",
+   "place": 19,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "dan-michaluk",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:10:42",
+   "place": 6,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "sean-jasso",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:15:39",
+   "place": 20,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "jon-loren",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:15:42",
+   "place": 21,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "tyler-jaggers",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:17:40",
+   "place": 7,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "rick-strobel",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:23:12",
+   "place": 8,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "liz-hunter",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "7:26:50",
+   "place": 1,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "jack-bark",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:29:05",
+   "place": 22,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "brian-kingston",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:29:19",
+   "place": 23,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "gregory-dunne",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:33:08",
+   "place": 9,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "mike-jackson",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:35:28",
+   "place": 24,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "spencer-mcfarland",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:35:55",
+   "place": 25,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "boogie-baldwin",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:36:00",
+   "place": 10,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "john-martin",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:37:12",
+   "place": 26,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "casey-annis",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:39:44",
+   "place": 27,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "cody-strange",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:40:50",
+   "place": 28,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "john-carroll",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:41:11",
+   "place": 29,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "aaron-klafter",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:41:50",
+   "place": 30,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "aaron-osten",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:42:11",
+   "place": 31,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "justin-bingham",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:47:59",
+   "place": 32,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "joel-bloom",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:50:23",
+   "place": 33,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "mark-cole",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:52:51",
+   "place": 34,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "blake-herman",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:53:22",
+   "place": 35,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "mike-shultz",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:54:46",
+   "place": 36,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "matt-streeter",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:56:51",
+   "place": 37,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "doug-weems",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:00:21",
+   "place": 38,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "tiana-pugliese",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:01:10",
+   "place": 2,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "sarah-mcgrath",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:02:07",
+   "place": 3,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "parker-kinsey",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:05:26",
+   "place": 11,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "kevin-coye",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:06:25",
+   "place": 39,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "trent-hodges",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:11:11",
+   "place": 40,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "dj-wilson",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:12:11",
+   "place": 4,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "emily-bark",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:16:15",
+   "place": 5,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "david-skarman",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:18:12",
+   "place": 41,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "chad-carter",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:18:13",
+   "place": 42,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "tom-horton",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:23:50",
+   "place": 43,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "brian-peterson",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:24:02",
+   "place": 44,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "aimee-spector",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:24:38",
+   "place": 6,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "sierra-perry",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:25:40",
+   "place": 7,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "kurt-fry",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:26:38",
+   "place": 45,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "brian-selogie",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:27:47",
+   "place": 46,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "joseph-diasparra",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:29:45",
+   "place": 47,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "kyle-mcdonald",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:29:54",
+   "place": 48,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "chris-pearson",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:34:00",
+   "place": 49,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "steven-rossier",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:36:22",
+   "place": 50,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "daniel-olinger",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:37:49",
+   "place": 12,
+   "field": 12,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "ed-mckeegan",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:38:37",
+   "place": 51,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "john-ward",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:38:38",
+   "place": 52,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "jasmine-stiles",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:41:24",
+   "place": 8,
+   "field": 8,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "joe-bark",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:50:41",
+   "place": 53,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "thomas-glassing",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:55:02",
+   "place": 54,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "michael-schutzler",
+   "race": "catalina-classic-2021",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:59:45",
+   "place": 55,
+   "field": 55,
+   "source": "https://catalinaclassicpaddleboardrace.com/2021-race-results/"
+  },
+  {
+   "paddler": "kyle-smith",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:05:03",
+   "place": 1,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "don-miralle",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:07:59",
+   "place": 2,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "quincy-lee",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:08:41",
+   "place": 3,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mederic-berthe",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:16:30",
+   "place": 4,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "foster-campbell",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:19:33",
+   "place": 5,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "steve-shlens",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:20:10",
+   "place": 6,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "deon-lourens",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:22:08",
+   "place": 7,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "daniel-michaluk",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:22:28",
+   "place": 8,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "gavin-loughlin",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:24:03",
+   "place": 9,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "spencer-mcfarland",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:25:04",
+   "place": 10,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "liz-hunter",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "6:30:46",
+   "place": 1,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "josh-stewart",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:33:50",
+   "place": 11,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "rick-strobel",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:37:31",
+   "place": 12,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jacob-reed",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:39:03",
+   "place": 13,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "cade-bruno",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:39:31",
+   "place": 14,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "tiana-pugliese",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "6:39:34",
+   "place": 2,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "noah-mayne",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:41:51",
+   "place": 15,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "gregory-dunne",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:45:12",
+   "place": 16,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "christina-boring",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "6:54:34",
+   "place": 3,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "luke-wheeler",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:00:30",
+   "place": 17,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "dj-wilson",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "7:04:58",
+   "place": 4,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "daniel-ohlinger",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:06:33",
+   "place": 18,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "emily-bark",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "7:13:31",
+   "place": 5,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jenna-solberg",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "7:23:15",
+   "place": 6,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "matt-mccormick",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:26:03",
+   "place": 19,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "sierra-perry",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "7:37:08",
+   "place": 7,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "tobin-ellis",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:46:17",
+   "place": 20,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "joe-scaturro",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:47:15",
+   "place": 21,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "grace-emig",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "7:58:13",
+   "place": 8,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mark-walton",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:14:18",
+   "place": 22,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "kevyn-murphy",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:49:34",
+   "place": 9,
+   "field": 9,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "max-first",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:26:05",
+   "place": 1,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "alex-merrill",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:29:09",
+   "place": 2,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "scott-clausen",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:31:41",
+   "place": 3,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jake-miller",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:37:38",
+   "place": 4,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jack-bark",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:40:44",
+   "place": 5,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "bobby-frey",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:41:04",
+   "place": 6,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mauricio-leon-de-la-barra",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:44:19",
+   "place": 7,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "chris-russell",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:48:35",
+   "place": 8,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "george-plsek",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:54:41",
+   "place": 9,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "michael-lorch",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:55:38",
+   "place": 10,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "willy-bravenec",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:59:52",
+   "place": 11,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "spencer-pirdy",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:01:54",
+   "place": 12,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "geoffrey-page",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:04:27",
+   "place": 13,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "lockwood-holmes",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:05:57",
+   "place": 14,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jake-jesson",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:07:50",
+   "place": 15,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "zach-jirkovsky",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:07:51",
+   "place": 16,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "dj-nurre",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:09:29",
+   "place": 17,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "scott-rusher",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:13:33",
+   "place": 18,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "ben-diener",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:17:40",
+   "place": 19,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "lachie-lansdown",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:18:08",
+   "place": 20,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jason-weber",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:18:36",
+   "place": 21,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "benjamin-landis",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:25:30",
+   "place": 22,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "tommy-ostendorf",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:26:06",
+   "place": 23,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jon-loren",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:26:38",
+   "place": 24,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "aaron-osten",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:30:22",
+   "place": 25,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mark-cole",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:31:57",
+   "place": 26,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "steve-mauri",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:36:40",
+   "place": 27,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "brian-peterson",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:37:25",
+   "place": 28,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "matt-streeter",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:37:35",
+   "place": 29,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mike-jackson",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:38:54",
+   "place": 30,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "brian-kingston",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:42:51",
+   "place": 31,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "andrew-mckellips",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:43:59",
+   "place": 32,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "casey-annis",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:45:06",
+   "place": 33,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "sean-jasso",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:46:17",
+   "place": 34,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jeffrey-giery",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:47:01",
+   "place": 35,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "bill-lafferty",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:49:59",
+   "place": 36,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "justin-bingham",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:50:45",
+   "place": 37,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "kelvin-humenny",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:51:54",
+   "place": 38,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "joel-bloom",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:52:52",
+   "place": 39,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "richard-boykin",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:55:00",
+   "place": 40,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "cody-strange",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:55:05",
+   "place": 41,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "douglas-weems",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:55:08",
+   "place": 42,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "parker-kinsey",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:55:12",
+   "place": 43,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "kevin-coye",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:57:56",
+   "place": 44,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mike-shultz",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:59:56",
+   "place": 45,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "david-skarman",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:59:56",
+   "place": 46,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jason-field",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:01:05",
+   "place": 47,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "kurt-fry",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:02:24",
+   "place": 48,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "kip-atwater",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:05:55",
+   "place": 49,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "john-carroll",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:06:52",
+   "place": 50,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "christopher-mcentee",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:07:22",
+   "place": 51,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "jeff-new",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:08:20",
+   "place": 52,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "tom-horton",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:11:21",
+   "place": 53,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "michael-schutzler",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:12:19",
+   "place": 54,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "gregg-buckley",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:12:20",
+   "place": 55,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "aaron-klafter",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:14:30",
+   "place": 56,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "andrew-sarnecki",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:20:30",
+   "place": 57,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "steven-beuder",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:21:38",
+   "place": 58,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "lance-aguilar",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:21:57",
+   "place": 59,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "brian-selogie",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:24:23",
+   "place": 60,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "max-lynch",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:25:19",
+   "place": 61,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "mike-avery",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:27:05",
+   "place": 62,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "hiro-ebihara",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:27:13",
+   "place": 63,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "kyle-macdonald",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:29:33",
+   "place": 64,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "edward-mckeegan",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:32:46",
+   "place": 65,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "steve-rossier",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:35:21",
+   "place": 66,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "terry-frogley",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:15:14",
+   "place": 67,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "daryl-caringi",
+   "race": "catalina-classic-2022",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:20:36",
+   "place": 68,
+   "field": 68,
+   "source": "https://catalinaclassicpaddleboardrace.com/2022-race-results/"
+  },
+  {
+   "paddler": "scott-clausen",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:46:27",
+   "place": 1,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "jake-miller",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "5:54:54",
+   "place": 2,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "robert-parucha",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:12:13",
+   "place": 3,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "tristan-sullaway",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:20:52",
+   "place": 4,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "zach-jirkovsky",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:27:41",
+   "place": 5,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "alex-merrill",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:35:56",
+   "place": 6,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "mauricio-leon-de-la-barra",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:41:27",
+   "place": 7,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "chris-russell",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:41:38",
+   "place": 8,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "dj-nurre",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:49:37",
+   "place": 9,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "stephen-sinkus",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:52:56",
+   "place": 10,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "clint-johnson",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:57:23",
+   "place": 11,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "spencer-pirdy",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "6:58:18",
+   "place": 12,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "shane-gallas",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:58:49",
+   "place": 1,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "lockwood-holmes",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "6:58:57",
+   "place": 2,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "jack-bark",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:01:01",
+   "place": 13,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "bill-lafferty",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:04:00",
+   "place": 14,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "gavin-loughlin",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:06:58",
+   "place": 3,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "foster-campbell",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:08:50",
+   "place": 4,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "donald-miralle",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:09:54",
+   "place": 5,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "quincy-lee",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:10:02",
+   "place": 6,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "ben-diener",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:10:38",
+   "place": 15,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "jake-glick",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:13:02",
+   "place": 16,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "daniel-michaluk",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:13:39",
+   "place": 7,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "jason-weber",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:14:15",
+   "place": 17,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "caleb-brown",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:29:16",
+   "place": 18,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "michael-lorch",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:30:03",
+   "place": 19,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "deon-lourens",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:32:04",
+   "place": 8,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "tommy-ostendorf",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:33:29",
+   "place": 20,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "jon-loren",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:37:40",
+   "place": 21,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "rick-strobel",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:39:41",
+   "place": 9,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "cade-bruno",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:41:06",
+   "place": 10,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "david-thomas",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:44:55",
+   "place": 11,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "scott-rusher",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:46:07",
+   "place": 22,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "erik-von-koehe",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:46:51",
+   "place": 23,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "brent-blackman",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:48:41",
+   "place": 24,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "adam-nussen",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:49:35",
+   "place": 25,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "noah-mayne",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:50:05",
+   "place": 12,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "matt-streeter",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:51:47",
+   "place": 26,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "toa-pere",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "7:51:54",
+   "place": 13,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "parker-kinsey",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "7:56:01",
+   "place": 27,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "aaron-osten",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:03:31",
+   "place": 28,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "matt-stockamp",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:03:46",
+   "place": 14,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "liz-hunter",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:04:16",
+   "place": 1,
+   "field": 6,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "wyatt-kircher",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:06:02",
+   "place": 29,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "tyler-sinks",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:07:28",
+   "place": 15,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "drew-moyer",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:07:52",
+   "place": 30,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "cody-strange",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:08:24",
+   "place": 31,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "douglas-weems",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:08:32",
+   "place": 32,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "john-carroll",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:10:09",
+   "place": 33,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "kevin-coye",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:10:28",
+   "place": 34,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "john-hall",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:12:16",
+   "place": 35,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "matt-holt",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:14:54",
+   "place": 16,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "dj-o-brien-wilson",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:15:39",
+   "place": 2,
+   "field": 6,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "sean-jasso",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:15:45",
+   "place": 36,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "kevin-graner",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:16:31",
+   "place": 37,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "casey-annis",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:20:52",
+   "place": 38,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "sean-reseigh",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:21:49",
+   "place": 39,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "max-malamed",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:22:29",
+   "place": 17,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "richard-boykin",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:26:26",
+   "place": 40,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "michael-cassen",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:31:47",
+   "place": 41,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "hayden-paul",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:31:53",
+   "place": 42,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "mark-cole",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:33:16",
+   "place": 43,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "ryan-koverman",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:33:34",
+   "place": 18,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "emily-bark",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:33:46",
+   "place": 3,
+   "field": 6,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "stu-jeremias",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:36:17",
+   "place": 44,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "brian-kingston",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:36:32",
+   "place": 45,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "amy-dantzler",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:38:18",
+   "place": 4,
+   "field": 6,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "scotty-sinks",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:39:49",
+   "place": 19,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "kurt-fry",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:43:17",
+   "place": 46,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "david-webster",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:44:19",
+   "place": 20,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "hiro-ebihara",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:44:35",
+   "place": 47,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "gracie-emig",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:47:49",
+   "place": 5,
+   "field": 6,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "sierra-perry",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Women",
+   "craft": "Prone stock",
+   "time": "8:49:50",
+   "place": 6,
+   "field": 6,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "brent-stevens",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:50:23",
+   "place": 48,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "aaron-klafter",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:51:14",
+   "place": 49,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "rook-campbell",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:51:54",
+   "place": 21,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "andrew-herzik",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Stock Men",
+   "craft": "Prone stock",
+   "time": "8:53:56",
+   "place": 22,
+   "field": 22,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "andrew-sarnecki",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "8:54:14",
+   "place": 50,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  },
+  {
+   "paddler": "christian-stutzman",
+   "race": "catalina-classic-2023",
+   "distance": "main",
+   "division": "Unlimited Men",
+   "craft": "Prone unlimited",
+   "time": "9:00:01",
+   "place": 51,
+   "field": 51,
+   "source": "https://catalinaclassicpaddleboardrace.com/2023-race-results/"
+  }
+ ]
+}

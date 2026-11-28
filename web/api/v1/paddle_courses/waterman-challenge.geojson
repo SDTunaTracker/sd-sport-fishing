@@ -1,0 +1,157 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "id": "waterman-challenge",
+    "name": "Waterman Challenge (~14 mi)",
+    "status": "draft — confirm",
+    "summary": "Open ocean down the San Diego coast, Swami's (Encinitas) to Windansea (La Jolla).",
+    "sources": [
+      "SurfTech, 2023 Waterman Challenge recap",
+      "Race listing (course description, ~14 mi direct)"
+    ],
+    "drawnBy": "Tunatracker, from public descriptions; waypoints approximate"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "course"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -117.2975,
+            33.0345
+          ],
+          [
+            -117.28,
+            32.96
+          ],
+          [
+            -117.265,
+            32.89
+          ],
+          [
+            -117.283,
+            32.854
+          ],
+          [
+            -117.2845,
+            32.841
+          ],
+          [
+            -117.2818,
+            32.83
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 0,
+        "name": "Start, off Swami's",
+        "role": "start",
+        "leg": "down the coast",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.2975,
+          33.0345
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 1,
+        "name": "Off Del Mar",
+        "role": "via",
+        "leg": "past Torrey Pines",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.28,
+          32.96
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 2,
+        "name": "Off Torrey Pines",
+        "role": "via",
+        "leg": "across La Jolla Bay",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.265,
+          32.89
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 3,
+        "name": "Off La Jolla Cove",
+        "role": "via",
+        "leg": "to Windansea",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.283,
+          32.854
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 4,
+        "name": "Off Hospital Point",
+        "role": "via",
+        "leg": "to Windansea",
+        "water": "ocean"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.2845,
+          32.841
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "waypoint",
+        "i": 5,
+        "name": "Finish, Windansea",
+        "role": "finish"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.2818,
+          32.83
+        ]
+      }
+    }
+  ]
+}
