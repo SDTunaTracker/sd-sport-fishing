@@ -17,10 +17,23 @@ const SF_TZ = 'America/Los_Angeles';
 const SF_STALE_H = 12;
 const SF_FT = 3.281;
 
+const _sfFmt = new Map();
 function sfLocal(iso, opts) {
-  return new Date(iso).toLocaleString('en-US', Object.assign({ timeZone: SF_TZ }, opts));
+  const k = opts ? JSON.stringify(opts) : '';
+  let f = _sfFmt.get(k);
+  if (!f) { f = new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: SF_TZ }, opts)); _sfFmt.set(k, f); }
+  return f.format(new Date(iso));
 }
-function sfDayKey(iso) { return sfLocal(iso, { year: 'numeric', month: '2-digit', day: '2-digit' }); }
+const _sfDay = new Map();
+function sfDayKey(iso) {
+  let v = _sfDay.get(iso);
+  if (v === undefined) {
+    if (_sfDay.size > 20000) _sfDay.clear();
+    v = sfLocal(iso, { year: 'numeric', month: '2-digit', day: '2-digit' });
+    _sfDay.set(iso, v);
+  }
+  return v;
+}
 function sfHour(iso) { return Number(sfLocal(iso, { hour: 'numeric', hour12: false })) % 24; }
 // Local time of day in hours (e.g. 6.5 = 6:30 AM).
 function sfFrac(iso) {
@@ -284,7 +297,8 @@ function sfEnsureLeaflet() {
   return _sfLeaflet;
 }
 
-function SurfMap({ breaks, best, open, onPick, cap }) {
+const _sfMaps = {};   // cacheKey -> { el, map, layer, labels }: reused when the tab comes back
+function SurfMap({ breaks, best, open, onPick, cap, cacheKey }) {
   const box = useSfRef(null);
   const map = useSfRef(null);
   const layer = useSfRef(null);
@@ -295,7 +309,20 @@ function SurfMap({ breaks, best, open, onPick, cap }) {
     let alive = true;
     sfEnsureLeaflet().then(L => {
       if (!alive || !box.current || map.current) return;
-      const m = L.map(box.current, { scrollWheelZoom: false, zoomControl: true, attributionControl: true });
+      const c = cacheKey && _sfMaps[cacheKey];
+      if (c) {
+        box.current.appendChild(c.el);
+        map.current = c.map; layer.current = c.layer; labels.current = c.labels;
+        c.place = () => placeRef.current && placeRef.current();
+        c.map.invalidateSize();
+        c.map.fitBounds(breaks.map(b => [b.lat, b.lon]), { padding: [18, 18], animate: false });   // same view as a fresh map
+        draw();
+        return;
+      }
+      const el = document.createElement('div');
+      el.className = 'sf-map-el';
+      box.current.appendChild(el);
+      const m = L.map(el, { scrollWheelZoom: false, zoomControl: true, attributionControl: true });
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 16, attribution: 'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors',
       }).addTo(m);
@@ -306,10 +333,18 @@ function SurfMap({ breaks, best, open, onPick, cap }) {
       m.createPane('sfLabels').style.zIndex = 590;   // under the pins (600), over tiles
       layer.current = L.layerGroup().addTo(m);
       labels.current = L.layerGroup().addTo(m);
-      m.on('zoomend moveend resize', () => placeRef.current && placeRef.current());
+      const entry = { el, map: m, layer: layer.current, labels: labels.current, place: () => placeRef.current && placeRef.current() };
+      m.on('zoomend moveend resize', () => entry.place());
+      if (cacheKey) _sfMaps[cacheKey] = entry;
       draw();
     }).catch(() => { if (alive) setFailed(true); });
-    return () => { alive = false; if (map.current) { map.current.remove(); map.current = null; } };
+    return () => {
+      alive = false;
+      const c = cacheKey && _sfMaps[cacheKey];
+      if (c && c.map === map.current) { c.place = null; if (c.el.parentNode) c.el.parentNode.removeChild(c.el); }
+      else if (map.current) map.current.remove();
+      map.current = null;
+    };
   }, []);
   function draw() {
     const L = window.L;
@@ -468,7 +503,25 @@ function SurfBest({ bw, isToday, dayLabel }) {
   );
 }
 
-function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, onToggle, onDay, fav, onFav, navigate }) {
+// Render children once the placeholder comes within ~1.5 screens of the viewport (or after 2.5 s).
+function SfLazy({ minHeight, children }) {
+  const ref = useSfRef(null);
+  const [on, setOn] = useSfState(typeof IntersectionObserver === 'undefined');
+  useSfEffect(() => {
+    if (on || !ref.current) return undefined;
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { setOn(true); io.disconnect(); } }, { rootMargin: '1200px 0px' });
+    io.observe(ref.current);
+    const t = setTimeout(() => setOn(true), 2500);   // never leave a strip unrendered (hidden tabs pause the observer)
+    return () => { io.disconnect(); clearTimeout(t); };
+  }, [on]);
+  return on ? children : <div ref={ref} style={{ minHeight }} aria-hidden="true"/>;
+}
+
+const SurfBreakRow = React.memo(SurfBreakRowInner, (a, b) => {
+  for (const k in a) if (k !== 'navigate' && a[k] !== b[k]) return false;
+  return true;
+});
+function SurfBreakRowInner({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, onToggle, onDay, fav, onFav, navigate }) {
   const am = sfPick(b.hours, dayKey, 7);
   const pm = sfPick(b.hours, dayKey, 13);
   const ref = am || pm;
@@ -476,7 +529,7 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
   const isToday = days[0] && days[0].key === dayKey;
   return (
     <li className={`sf-break${open ? ' open' : ''}`} id={`sf-${b.id}`}>
-      <button className="sf-break-head" onClick={onToggle} aria-expanded={open}>
+      <button className="sf-break-head" onClick={() => onToggle(b.id)} aria-expanded={open}>
         <span className="sf-break-name">{b.name}
           <i>{b.type === 'reef' ? 'reef' : 'beach'} · faces {sfDir(b.shoreNormal)}</i>
         </span>
@@ -487,7 +540,7 @@ function SurfBreakRow({ b, days, dayKey, dayLabel, sun, tides, buoy, bw, open, o
       {b.note && <div className="sf-note" role="note">{b.note}</div>}
       <div className="sf-break-glance">
         <SurfBest bw={bw} isToday={isToday} dayLabel={dayLabel}/>
-        <SurfStrip b={b} days={days} dayKey={dayKey} sun={sun} onDay={onDay}/>
+        <SfLazy minHeight={74}><SurfStrip b={b} days={days} dayKey={dayKey} sun={sun} onDay={onDay}/></SfLazy>
       </div>
       {ref && (
         <div className="sf-break-sub">
@@ -666,11 +719,11 @@ function useSurfFavs() {
     try { const v = JSON.parse(localStorage.getItem(SF_FAV_KEY) || '[]'); return Array.isArray(v) ? v : []; }
     catch (e) { return []; }
   });
-  const toggle = id => setFavs(f => {
+  const toggle = React.useCallback(id => setFavs(f => {
     const next = f.indexOf(id) >= 0 ? f.filter(x => x !== id) : f.concat([id]);
     try { localStorage.setItem(SF_FAV_KEY, JSON.stringify(next)); } catch (e) {}
     return next;
-  });
+  }), []);
   return [favs, toggle];
 }
 function SurfStar({ on, onClick, name, compact }) {
@@ -687,13 +740,13 @@ function SurfStar({ on, onClick, name, compact }) {
 function useSurfAll() {
   const { data, error } = useSurfData();
   const extra = useSurfSpots();
+  const base = useSfMemo(() => (data ? data.breaks.map(b => Object.assign({}, b, { area: sfArea(b.lat), key: true })) : []), [data]);
+  const more = useSfMemo(() => ((extra && extra.spots) || []).map(b => Object.assign({}, b, { area: b.area || sfArea(b.lat) })), [extra]);
   const all = useSfMemo(() => {
-    if (!data) return [];
     const have = {};
-    const list = data.breaks.map(b => { have[b.id] = 1; return Object.assign({}, b, { area: sfArea(b.lat), key: true }); });
-    ((extra && extra.spots) || []).forEach(b => { if (!have[b.id]) list.push(Object.assign({}, b, { area: b.area || sfArea(b.lat) })); });
-    return list.sort((a, b) => b.lat - a.lat);
-  }, [data, extra]);
+    base.forEach(b => { have[b.id] = 1; });
+    return base.concat(more.filter(b => !have[b.id])).sort((a, b) => b.lat - a.lat);
+  }, [base, more]);
   const days = useSfMemo(() => {
     if (!data || !data.breaks[0]) return [];
     const now = Date.now() - 3 * 3600000;
@@ -889,6 +942,7 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
   const [day, setDay] = useSfState(null);
   const [open, setOpen] = useSfState(null);
   const [area, setArea] = useSfState('key');
+  const toggleOpen = React.useCallback(id => setOpen(o => (o === id ? null : id)), []);
   useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
   const best = useSfMemo(() => {
     const out = {};
@@ -910,7 +964,7 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
       {day && (
         <div className="sf-overview">
           <SurfConditions data={data} dayKey={day}/>
-          <SurfMap breaks={all} best={best} open={open} onPick={pick}/>
+          <SurfMap breaks={all} best={best} open={open} onPick={pick} cacheKey="forecast"/>
         </div>
       )}
       {extra && <SurfAreaChips value={area} onChange={id => { setArea(id); setOpen(null); }} counts={sfCounts(all)} withKey total={all.length}/>}
@@ -920,7 +974,7 @@ function SurfForecastPage({ ctx, navigate, favs, toggleFav }) {
           <SurfBreakRow key={b.id} b={b} days={days} dayKey={day} dayLabel={dayObj ? dayObj.wd : ''}
                         sun={data.sun} tides={data.tides} buoy={data.buoys && data.buoys[b.buoy]}
                         bw={best[b.id]} open={open === b.id}
-                        onToggle={() => setOpen(open === b.id ? null : b.id)} onDay={setDay}
+                        onToggle={toggleOpen} onDay={setDay}
                         fav={favs.indexOf(b.id) >= 0} onFav={toggleFav} navigate={navigate}/>
         ))}
       </ul>
@@ -948,7 +1002,7 @@ function SurfMapPage({ ctx, navigate }) {
       <SurfTopBar title="Surf map" data={data}/>
       <SurfDays days={days} day={day} setDay={setDay}/>
       <div className="st-bigmap">
-        <SurfMap breaks={all} best={best} open={sel} onPick={id => setSel(id)}
+        <SurfMap breaks={all} best={best} open={sel} onPick={id => setSel(id)} cacheKey="map"
                  cap="Coloured by each break's best model rating for the day. Tap a dot or name for its spot compass."/>
       </div>
       <SurfLegend/>
@@ -1290,9 +1344,11 @@ function SurfBreakPage({ ctx, navigate, spot, favs, toggleFav }) {
   const [day, setDay] = useSfState(null);
   useSfEffect(() => { if (!day && days.length) setDay(days[0].key); }, [days]);
   useSfEffect(() => { window.scrollTo(0, 0); }, [spot]);
+  const [tried, setTried] = useSfState(false);
+  useSfEffect(() => { const t = setTimeout(() => setTried(true), 4000); return () => clearTimeout(t); }, []);
   const b = all.find(x => x.id === spot);
   if (!b) {
-    if (!extra && !ctx.spotsTried) return <div className="sf-wrap"><p className="sf-muted">Loading…</p></div>;
+    if (!extra && !tried) return <div className="sf-wrap"><p className="sf-muted">Loading…</p></div>;
     return (
       <div className="sf-wrap">
         <h1 className="sf-title">Spot not found</h1>
@@ -1578,8 +1634,6 @@ function SurfBreakCams({ spot, navigate }) {
 function SurfView({ navigate, sub, spot }) {
   const ctx = useSurfAll();
   const [favs, toggleFav] = useSurfFavs();
-  const [spotsTried, setSpotsTried] = useSfState(false);
-  useSfEffect(() => { const t = setTimeout(() => setSpotsTried(true), 4000); return () => clearTimeout(t); }, []);
   const { data, error } = ctx;
   if (sub === 'paddle' && window.PaddleView) {
     return <window.PaddleView spot={spot}
@@ -1588,7 +1642,7 @@ function SurfView({ navigate, sub, spot }) {
   }
   if (error) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">The surf forecast is unavailable right now.</p></div>;
   if (!data) return <div className="sf-wrap"><h1 className="sf-title">Surftracker</h1><p className="sf-muted">Loading surf forecast…</p></div>;
-  const props = { ctx: Object.assign({}, ctx, { spotsTried }), navigate, favs, toggleFav };
+  const props = { ctx, navigate, favs, toggleFav };
   const page = sub === 'forecast' ? <SurfForecastPage {...props}/>
     : sub === 'map' ? <SurfMapPage {...props}/>
     : sub === 'cams' ? <SurfCamsPage {...props} camId={spot}/>

@@ -1527,3 +1527,7 @@ main[data-screen-label="charts"] { max-width: none; padding-top: 16px; } /* map'
   .pd-hr { grid-template-columns: 46px auto minmax(0, 1fr); } .pd-hr-x { grid-column: 3; } .pd-hr-r { grid-column: 1 / -1; }
   .pd-title { font-size: 26px; }
 }
+
+/* Surftracker overview maps: Leaflet lives in a child element that survives tab switches */
+.sf-map { position: relative; }
+.sf-map > .sf-map-el { position: absolute; inset: 0; }
