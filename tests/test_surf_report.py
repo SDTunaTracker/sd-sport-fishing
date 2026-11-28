@@ -166,7 +166,7 @@ def test_api_failure_and_no_key_fall_back(monkeypatch):
 
 def test_build_and_due(tmp_path):
     rep = R.build(NOW, use_claude=False, surf=surf_payload(), spots=None)
-    assert rep["engine"] == "template" and rep["note"].startswith("Written automatically")
+    assert rep["engine"] == "template" and rep["note"].startswith("Auto-written")
     assert R.due(None, surf_payload(), NOW)
     assert R.due(rep, surf_payload(), NOW + timedelta(hours=R.REFRESH_H))
 

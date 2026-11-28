@@ -25,9 +25,15 @@ function useSurfAutoReport() {
   return ageH > (rep.staleAfterHours || 8) ? null : rep;
 }
 
+// "6:05 AM" today, "Fri 6:05 AM" otherwise (Pacific time).
 function srWhen(iso) {
   try {
-    return new Date(iso).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    const tz = { timeZone: 'America/Los_Angeles' };
+    const d = new Date(iso);
+    const day = x => x.toLocaleDateString('en-US', tz);
+    const opts = Object.assign({ hour: 'numeric', minute: '2-digit' }, tz,
+      day(d) === day(new Date()) ? {} : { weekday: 'short' });
+    return d.toLocaleString('en-US', opts);
   } catch (e) { return ''; }
 }
 
@@ -46,10 +52,7 @@ function srSentences(text) {
 
 function SurfAutoSrc({ rep }) {
   return (
-    <div className="sfr-src">
-      Issued {srWhen(rep.generatedAt)}. Written automatically from Surftracker's forecast and NWS data.
-      {' '}Heights are breaking face height.
-    </div>
+    <div className="sfr-src">Auto-written from Surftracker's forecast and NWS data · {srWhen(rep.generatedAt)}</div>
   );
 }
 
@@ -75,7 +78,7 @@ function SurfAutoReport() {
       )}
       {more && (
         <button type="button" className="sfr-more" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? 'Show less' : 'Full report, regions and paddle'}
+          {open ? 'Less' : 'More'}
         </button>
       )}
       <SurfAutoSrc rep={rep}/>
@@ -94,7 +97,7 @@ function SurfAutoOutlook() {
       <p className="sfr-p">{open ? rep.outlook : sents.slice(0, 2).join(' ')}</p>
       {sents.length > 2 && (
         <button type="button" className="sfr-more" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? 'Show less' : 'Rest of the week'}
+          {open ? 'Less' : 'More'}
         </button>
       )}
       <SurfAutoSrc rep={rep}/>

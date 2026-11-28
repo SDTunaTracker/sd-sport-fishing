@@ -240,15 +240,14 @@ def _swell(main_days: list[dict], surf: dict, now: datetime, use_buoy: bool) -> 
     tps = [h["tpS"] for d in main_days for h in d["steps"] if h.get("tpS")]
     dps = [h["dpDeg"] for d in main_days for h in d["steps"] if h.get("dpDeg") is not None]
     out = {"periodS": int(round(median(tps))) if tps else None,
-           "fromDir": compass(circ_mean(dps)), "note": "model swell period and direction at the beaches"}
+           "fromDir": compass(circ_mean(dps))}
     if use_buoy:
         for st in SWELL_BUOYS:
             b = (surf.get("buoys") or {}).get(st)
             if b and b.get("hsFt") and b.get("t") and now - _t(b["t"]) < timedelta(hours=6):
                 out["buoy"] = {"name": f"{BUOY_NAMES.get(st, st)} buoy", "swellFt": round(b["hsFt"], 1),
                                "periodS": int(round(b["tpS"])) if b.get("tpS") else None,
-                               "fromDir": compass(b.get("dpDeg")), "fromDeg": b.get("dpDeg"),
-                               "note": "open-water swell height, not surf height"}
+                               "fromDir": compass(b.get("dpDeg")), "fromDeg": b.get("dpDeg")}
                 break
     out["kind"] = ("long-period" if (out["periodS"] or 0) >= 14 else
                    "mid-period" if (out["periodS"] or 0) >= 10 else "short-period")
@@ -605,7 +604,7 @@ Hard rules:
 11. Sizes in FACTS.outlook and typicalFaceFt are county-wide "most spots" ranges: never attach them to one spot. Body-size words (waist, chest, head high, overhead...) only as given in a "feel" field. Tide direction only from today.tideTrend ("on the push" = rising, "on the drop" = falling). Mention NWS alerts only if FACTS.nws.alerts lists them; say there are none only if FACTS.nws.alerts is an empty list. Don't characterise wave quality beyond FACTS (no "soft", "punchy", "hollow").
 12. NWS forecaster notes were issued at FACTS.nws.notesIssued; skip anything in them that is already past (e.g. "this morning" when it is now afternoon).
 
-Style: write like a person, not a data dump. Say "most spots run 3–6 ft" for typicalFaceFt and "the biggest is Ab's at 6–9 ft" for biggestFaceFt; don't repeat the words "typically" or "biggest faces" in every sentence. Ratings in lower case ("fair to good"). For the buoy say e.g. "the Point Loma South buoy has 7.3 ft of open-ocean swell at 14 s". Use "s" for seconds. Name a spot and a time when you give a best bet. Skip a fact rather than force it in awkwardly.
+Style: write like a person, not a data dump. Say "most spots run 3–6 ft" for typicalFaceFt and "the biggest is Ab's at 6–9 ft" for biggestFaceFt; don't repeat the words "typically" or "biggest faces" in every sentence. Ratings in lower case ("fair to good"). For the buoy say e.g. "the Point Loma South buoy has 7.3 ft of open-ocean swell at 14 s". Use "s" for seconds. Name a spot and a time when you give a best bet. Skip a fact rather than force it in awkwardly. Readers are surfers and paddlers who know the terms: never define or explain terms, measurements or how the report is made (no "which is not surf height", "face height means", "per the model").
 """
 
 SCHEMA = {
@@ -676,7 +675,10 @@ LONG_DIRS = {"north": "N", "north-northeast": "NNE", "northeast": "NE", "east-no
              "northerly": "N", "easterly": "E", "northeasterly": "NE", "southeasterly": "SE"}
 BANNED = re.compile(r"surfline|stormsurf|magicseaweed|swellnet|surf-forecast|swellinfo|surf captain|"
                     r"\bwe saw\b|\breports? (?:say|from|of)\b|lifeguards? (?:say|report)|on the cams?\b|"
-                    r"\bmph\b|\bmetres?\b|\bmeters?\b|!|[\U0001F300-\U0001FAFF]", re.I)
+                    r"\bmph\b|\bmetres?\b|\bmeters?\b|!|[\U0001F300-\U0001FAFF]|"
+                    # no definitions or method talk: readers know the terms
+                    r"not (?:the )?surf height|face height|breaking height|per the model|model readings?|"
+                    r"\bwhich means\b|\bmeaning\b", re.I)
 NUM = r"[-−]?\d+(?:\.\d+)?"
 TIME_RE = re.compile(r"\b(\d{1,2}(?::\d{2})?)\s*(AM|PM|a\.m\.|p\.m\.)", re.I)
 QTY_RE = re.compile(rf"({NUM})(?:\s*(?:–|-|to)\s*({NUM}))?\s*(ft|feet|foot|kt|knots?|°F|°|degrees|F\b|s\b|sec\b|seconds?)?",
@@ -988,8 +990,7 @@ def build(now: datetime | None = None, use_claude: bool = True, client=None,
     r = write_report(f, use_claude=use_claude, client=client)
     return {"generatedAt": now.isoformat(timespec="minutes"), "dataAt": surf.get("generatedAt"),
             "staleAfterHours": 8, "key": _key(f), "reportDay": f["reportDay"], "covers": f["covers"],
-            "note": "Written automatically from Surftracker's forecast and NWS data. "
-                    "Surf heights are breaking face height.",
+            "note": "Auto-written from Surftracker's forecast and NWS data.",
             **r, "facts": f}
 
 
